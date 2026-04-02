@@ -23,7 +23,7 @@ export type Milestone = {
 export const currentFocus = {
   phaseId: 'F2',
   phaseName: 'Autenticación y Usuarios',
-  done: 0,
+  done: 2,
   total: 10,
 }
 export const lastUpdated = '2 de abril de 2026'
@@ -154,7 +154,7 @@ export const milestones: Milestone[] = [
           {
             id: '2.1',
             name: 'Crear tabla users en Convex',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.2',
@@ -176,7 +176,7 @@ export const milestones: Milestone[] = [
             name: 'Configurar WorkOS Organizations',
             status: 'pending',
           },
-          { id: '2.6', name: 'Definir enum de roles', status: 'pending' },
+          { id: '2.6', name: 'Definir enum de roles', status: 'done' },
           {
             id: '2.7',
             name: 'Crear middleware de protección de rutas',

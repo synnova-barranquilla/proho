@@ -3,7 +3,7 @@
 > **Última actualización:** 2 de abril de 2026
 > **Total de tareas:** 172
 > **MVP (M1+M2+M3):** 114 tareas
-> **Completadas:** 15 (8.7%)
+> **Completadas:** 17 (9.9%)
 
 ---
 
@@ -52,16 +52,16 @@
 | 1.9  | Implementar feature flags por módulo            | deferred |
 | 1.10 | Configurar DNS y SSL wildcard                   | deferred |
 
-### Fase 2 — Autenticación y Usuarios (0/10)
+### Fase 2 — Autenticación y Usuarios (2/10)
 
 | ID   | Tarea                                          | Estado  |
 | ---- | ---------------------------------------------- | ------- |
-| 2.1  | Crear tabla users en Convex                    | pending |
+| 2.1  | Crear tabla users en Convex                    | done    |
 | 2.2  | Implementar login con WorkOS AuthKit           | pending |
 | 2.3  | Implementar callback de autenticación          | pending |
 | 2.4  | Implementar sync WorkOS → Convex               | pending |
 | 2.5  | Configurar WorkOS Organizations                | pending |
-| 2.6  | Definir enum de roles                          | pending |
+| 2.6  | Definir enum de roles                          | done    |
 | 2.7  | Crear middleware de protección de rutas        | pending |
 | 2.8  | Implementar middleware de autorización por rol | pending |
 | 2.9  | Implementar logout                             | pending |
@@ -284,9 +284,9 @@
 
 | Milestone            | Fases             | Total   | Done   | Progreso |
 | -------------------- | ----------------- | ------- | ------ | -------- |
-| **M1 — Foundation**  | F0 + F1 + F2      | 33      | 15     | 45%      |
+| **M1 — Foundation**  | F0 + F1 + F2      | 33      | 17     | 52%      |
 | **M2 — Admin Ready** | F3 + F4           | 27      | 0      | 0%       |
 | **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 54      | 0      | 0%       |
-| **MVP TOTAL**        | F0–F8             | **114** | **15** | **13%**  |
+| **MVP TOTAL**        | F0–F8             | **114** | **17** | **15%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **172** | **15** | **9%**   |
+| **TOTAL**            | F0–F14            | **172** | **17** | **10%**  |
