@@ -34,10 +34,12 @@ Suscripción mensual por conjunto administrado con tiers basados en módulos act
 El MVP incluye **dos módulos**: Administración y Control de Parqueaderos. El objetivo es que un primer cliente real pueda operar un conjunto completo.
 
 **Administración (Super Admin + Conjunto Admin):**
+
 - Super Admin puede registrar empresas de administración (tenants) y asignar admins de conjunto.
 - Conjunto Admin puede configurar su conjunto: torres, apartamentos, residentes, vehículos, parqueaderos, reglas, estado de mora y permisos de vigilantes.
 
 **Control de Parqueaderos:**
+
 - Vigilante opera desde tablet con motor de reglas completo (offline-first).
 - Admin ve dashboards, histórico, novedades y auditoría desde escritorio.
 - Crons server-side para alertas automáticas.
@@ -70,6 +72,7 @@ Todo lo demás (convivencia, reservas, inspecciones, dashboard ejecutivo, notifi
 Gestión completa del control vehicular operado desde tablets por vigilantes. Motor de reglas con evaluación por fases (bloqueantes, zona gris, candado con justificación, alertas periódicas). Offline-first con sincronización a la nube.
 
 **Casos de uso:**
+
 - Vigilante registra ingreso/salida de vehículos por placa.
 - Sistema bloquea ingreso si cupo está ocupado (mismo tipo) o vehículo dado de baja.
 - Sistema alerta pero permite decisión del vigilante en zona gris (carro vs moto) y plan candado (mora).
@@ -82,6 +85,7 @@ Gestión completa del control vehicular operado desde tablets por vigilantes. Mo
 Registro y seguimiento de quejas de convivencia. WhatsApp se mantiene como canal de entrada (toque humano), pero la administración gestiona todo en el sistema.
 
 **Casos de uso:**
+
 - Administradora registra incidente con tipo, descripción, evidencia fotográfica.
 - Vista Kanban para gestión de estados (Pendiente → En Proceso → Resuelto).
 - Dashboard con métricas de evolución mensual y distribución por tipo.
@@ -93,6 +97,7 @@ Registro y seguimiento de quejas de convivencia. WhatsApp se mantiene como canal
 Sistema de reservas con calendario centralizado y reglas configurables.
 
 **Casos de uso:**
+
 - Residente solicita reserva de zona social (salón comunal, BBQ, etc.).
 - Administración aprueba o rechaza con notificación automática.
 - Calendario visual con disponibilidad en tiempo real.
@@ -103,6 +108,7 @@ Sistema de reservas con calendario centralizado y reglas configurables.
 Checklist diario de inspección de áreas comunes (AM y PM).
 
 **Casos de uso:**
+
 - Asistente administrativo inspecciona áreas (cámaras, motobombas, piscina, gimnasio, etc.).
 - Registro fotográfico obligatorio por área con estado OK / Novedad / Requiere acción.
 - Dashboard de tendencias para detectar patrones de deterioro.
@@ -113,6 +119,7 @@ Checklist diario de inspección de áreas comunes (AM y PM).
 Vista macro de KPIs con capacidad multi-conjunto.
 
 **Casos de uso:**
+
 - Administrador ve métricas agregadas de ocupación, incidentes, reservas, inspecciones.
 - Vista comparativa entre conjuntos para empresas con múltiples propiedades.
 - Reportes exportables para junta directiva.
@@ -125,13 +132,13 @@ Identificado como necesidad real. Requiere sesión de descubrimiento con el clie
 
 ## Roles
 
-| Rol | Descripción | Dispositivo |
-|-----|------------|-------------|
-| Super Admin | Gestión de todos los tenants, onboarding de clientes | Escritorio |
-| Admin | Acceso total a su(s) conjunto(s), configuración | Escritorio |
-| Asistente Administrativo | Operación diaria, reportes, inspecciones | Escritorio |
-| Vigilante/Portero | Control vehicular (módulo parqueaderos exclusivamente) | Tablet |
-| Residente | Reportes de convivencia, reservas, consulta de información | Móvil |
+| Rol                      | Descripción                                                | Dispositivo |
+| ------------------------ | ---------------------------------------------------------- | ----------- |
+| Super Admin              | Gestión de todos los tenants, onboarding de clientes       | Escritorio  |
+| Admin                    | Acceso total a su(s) conjunto(s), configuración            | Escritorio  |
+| Asistente Administrativo | Operación diaria, reportes, inspecciones                   | Escritorio  |
+| Vigilante/Portero        | Control vehicular (módulo parqueaderos exclusivamente)     | Tablet      |
+| Residente                | Reportes de convivencia, reservas, consulta de información | Móvil       |
 
 ---
 
@@ -162,33 +169,33 @@ Los demás módulos (convivencia, reservas, inspecciones, dashboard) operan onli
 
 ## Stack Tecnológico
 
-| Capa | Tecnología | Propósito |
-|------|-----------|-----------|
-| Lenguaje | TypeScript | Tipado end-to-end |
-| Frontend | React 19 | UI reactiva |
-| Meta-framework | TanStack Start | SSR, routing full-stack |
-| Routing | TanStack Router | Navegación type-safe, middleware de tenant |
-| Server State | TanStack Query + Convex | Cache, sincronización, suscripciones reactivas |
-| Formularios | TanStack Form + Zod | Formularios con validación type-safe |
-| UI Kit | shadcn/ui | Componentes accesibles y personalizables |
-| Estilos | Tailwind CSS v4 | Utilidades CSS |
-| Backend / BD | Convex | BD reactiva en tiempo real + funciones serverless |
-| Autenticación | WorkOS (AuthKit) | Auth, SSO/SAML, Organizations (multi-tenant) |
-| Email | Resend + React Email | Correos transaccionales |
-| Archivos | UploadThing | Carga de evidencias y fotos |
-| WhatsApp | Meta API (WhatsApp Business) | Notificaciones y comunicación con residentes |
-| Hosting | Vercel | Deploy, CDN, wildcard subdomains |
-| Offline Storage | Dexie.js (IndexedDB) | Cache local y cola de sincronización (parqueaderos) |
-| Env Vars | t3-oss/env | Validación type-safe de variables de entorno |
+| Capa            | Tecnología                   | Propósito                                           |
+| --------------- | ---------------------------- | --------------------------------------------------- |
+| Lenguaje        | TypeScript                   | Tipado end-to-end                                   |
+| Frontend        | React 19                     | UI reactiva                                         |
+| Meta-framework  | TanStack Start               | SSR, routing full-stack                             |
+| Routing         | TanStack Router              | Navegación type-safe, middleware de tenant          |
+| Server State    | TanStack Query + Convex      | Cache, sincronización, suscripciones reactivas      |
+| Formularios     | TanStack Form + Zod          | Formularios con validación type-safe                |
+| UI Kit          | shadcn/ui                    | Componentes accesibles y personalizables            |
+| Estilos         | Tailwind CSS v4              | Utilidades CSS                                      |
+| Backend / BD    | Convex                       | BD reactiva en tiempo real + funciones serverless   |
+| Autenticación   | WorkOS (AuthKit)             | Auth, SSO/SAML, Organizations (multi-tenant)        |
+| Email           | Resend + React Email         | Correos transaccionales                             |
+| Archivos        | UploadThing                  | Carga de evidencias y fotos                         |
+| WhatsApp        | Meta API (WhatsApp Business) | Notificaciones y comunicación con residentes        |
+| Hosting         | Vercel                       | Deploy, CDN, wildcard subdomains                    |
+| Offline Storage | Dexie.js (IndexedDB)         | Cache local y cola de sincronización (parqueaderos) |
+| Env Vars        | t3-oss/env                   | Validación type-safe de variables de entorno        |
 
 ---
 
 ## Costos de Infraestructura
 
-| Escenario | Costo/mes (USD) | Descripción |
-|-----------|-----------------|-------------|
-| MVP / Validación | ~$6 | Free tiers, 1 conjunto de prueba |
-| Producción inicial (1-3 conjuntos) | ~$41 | Vercel Pro + Convex pay-as-you-go |
-| Producción a escala (10-20 conjuntos) | ~$131 | Todos los servicios en plan Pro |
+| Escenario                             | Costo/mes (USD) | Descripción                       |
+| ------------------------------------- | --------------- | --------------------------------- |
+| MVP / Validación                      | ~$6             | Free tiers, 1 conjunto de prueba  |
+| Producción inicial (1-3 conjuntos)    | ~$41            | Vercel Pro + Convex pay-as-you-go |
+| Producción a escala (10-20 conjuntos) | ~$131           | Todos los servicios en plan Pro   |
 
 Comparado con el stack actual de Airtable ($170/mes por 1 conjunto, escalando linealmente), Synnova es costo fijo hasta ~20 conjuntos gracias al multi-tenant.

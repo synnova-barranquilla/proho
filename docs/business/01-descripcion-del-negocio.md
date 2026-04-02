@@ -37,6 +37,7 @@ Synnova opera bajo un modelo multi-tenant con subdominios:
 Gestión completa del control vehicular en el conjunto residencial, operado desde tablets por los vigilantes.
 
 **Flujo principal:**
+
 - El vigilante anota la placa del vehículo (carro o moto).
 - El sistema busca en la BD si el vehículo está registrado.
 - Si está registrado: se le da ingreso y queda en estado "dentro del conjunto".
@@ -45,12 +46,14 @@ Gestión completa del control vehicular en el conjunto residencial, operado desd
 - Para la salida: el vigilante anota la placa y registra la salida.
 
 **Reglas de negocio:**
+
 - Los vehículos no pueden permanecer más de 30 días estacionados.
 - Los residentes en mora de administración no pueden ingresar sus vehículos.
 - Los vehículos de visitantes deben salir antes de las 5:00 PM.
 - El sistema genera alertas automáticas cuando se incumple cualquiera de estas reglas.
 
 **Funcionalidades:**
+
 - Registro de ingreso y salida de vehículos por placa.
 - Base de datos de vehículos con propietario, apartamento, tipo de parqueadero (residentes, visitantes, discapacitados, motocicletas).
 - Dashboard de disponibilidad en tiempo real.
@@ -64,13 +67,14 @@ Gestión completa del control vehicular en el conjunto residencial, operado desd
 
 Registra y gestiona las quejas de convivencia de los residentes, predominantemente sobre otros residentes.
 
-**Insight clave del cliente:** *"A la gente le gusta quejarse con personas, no con bots. Deben percibir que le escriben y se quejan con alguien que los escucha y es capaz de empatizar. A la gente le encanta ser escuchada, tengan o no tengan razón."*
+**Insight clave del cliente:** _"A la gente le gusta quejarse con personas, no con bots. Deben percibir que le escriben y se quejan con alguien que los escucha y es capaz de empatizar. A la gente le encanta ser escuchada, tengan o no tengan razón."_
 
 **Flujo actual:** Los residentes escriben por WhatsApp a la administradora, quien digita y arma el registro del reporte.
 
 **Flujo propuesto:** El canal de WhatsApp se mantiene como punto de entrada principal (toque humano), pero la administradora cuenta con herramientas para registrar, categorizar y dar seguimiento a cada reporte en el sistema, generando trazabilidad sin perder la empatía.
 
 **Funcionalidades:**
+
 - Formularios de registro de incidentes con campos tipificados.
 - Dashboard con métricas clave (total, pendientes, en proceso, resueltos).
 - Gráficos de evolución mensual, distribución por tipo, estado actual.
@@ -84,6 +88,7 @@ Registra y gestiona las quejas de convivencia de los residentes, predominantemen
 Sistema de reservas para las zonas sociales del conjunto.
 
 **Funcionalidades:**
+
 - Formulario de solicitud de reserva (residente, zona, fecha, horario, condiciones).
 - Vista de calendario con fechas reservadas, quién reservó y condiciones.
 - Reglas configurables por conjunto (límite de reservas por residente, fechas bloqueadas, horarios permitidos).
@@ -98,6 +103,7 @@ Checklist diario de inspección de áreas comunes, ejecutado dos veces al día (
 **Áreas de inspección (configurables por conjunto):** Cámaras (CCTV), puntos fijos estratégicos, shuts de basura, motobombas, agua del tanque, gimnasio, nivel de cloro de la piscina, parque infantil, jardines, y otras áreas personalizadas.
 
 **Funcionalidades:**
+
 - Checklist configurable de áreas a inspeccionar.
 - Registro fotográfico obligatorio por cada área (AM y PM).
 - Estado por área: OK / Novedad / Requiere acción.
@@ -106,13 +112,14 @@ Checklist diario de inspección de áreas comunes, ejecutado dos veces al día (
 - Alertas automáticas cuando se detectan novedades recurrentes.
 - Dashboard de tendencias para detectar patrones de deterioro.
 
-> *Nota: Requiere asistente administrativo dedicado, que solo tienen algunos conjuntos.*
+> _Nota: Requiere asistente administrativo dedicado, que solo tienen algunos conjuntos._
 
 ### 5. Módulo Administrativo (Dashboard Ejecutivo) — Importancia: 5/5 (sin implementar actualmente)
 
 Vista macro de KPIs e índices de desempeño del conjunto, con capacidad multi-conjunto.
 
 **Funcionalidades:**
+
 - Dashboard ejecutivo con KPIs agregados por conjunto.
 - Vista comparativa entre conjuntos para empresas que administran múltiples propiedades.
 - Métricas financieras (pendiente definición con módulo de contabilidad).
@@ -122,7 +129,7 @@ Vista macro de KPIs e índices de desempeño del conjunto, con capacidad multi-c
 
 ### 6. Módulo de Contabilidad — Importancia: 5/5 (sin definir actualmente)
 
-> *Estado: Identificado como dolor real ("inside pain") pero sin definición funcional aún. Requiere sesión de descubrimiento específica con el cliente para mapear procesos, integraciones y requerimientos contables de propiedad horizontal en Colombia.*
+> _Estado: Identificado como dolor real ("inside pain") pero sin definición funcional aún. Requiere sesión de descubrimiento específica con el cliente para mapear procesos, integraciones y requerimientos contables de propiedad horizontal en Colombia._
 
 ### 7. Sistema de Notificaciones (Transversal a todos los módulos)
 
@@ -133,6 +140,7 @@ Vista macro de KPIs e índices de desempeño del conjunto, con capacidad multi-c
 ### 8. Autenticación y Gestión de Acceso
 
 **Roles del sistema:**
+
 - **Super Admin (Synnova):** Gestión de todos los tenants, onboarding de clientes.
 - **Admin (Empresa de administración):** Acceso total a su(s) conjunto(s).
 - **Asistente Administrativo:** Operación diaria, reportes, inspecciones.
@@ -142,23 +150,23 @@ Vista macro de KPIs e índices de desempeño del conjunto, con capacidad multi-c
 
 ## Stack Tecnológico
 
-| Capa | Tecnología | Propósito |
-|------|-----------|-----------|
-| Frontend Framework | React + TypeScript | Interfaz de usuario tipada y reactiva |
-| Meta-framework | TanStack Start | Server-side rendering y routing full-stack |
-| Routing | TanStack Router | Navegación type-safe con middleware de tenant |
-| Data Fetching | TanStack Query | Cache, sincronización y estado del servidor |
-| Formularios | TanStack Form | Formularios con validación integrada |
-| Validación | Zod | Esquemas de validación type-safe |
-| UI Kit | ShadCN-UI | Componentes accesibles y personalizables |
-| Estilos | TailwindCSS | Utilidades CSS para diseño rápido |
-| Variables de Entorno | t3-oss/env | Validación type-safe de env vars |
-| Autenticación | WorkOS (AuthKit) | Auth, SSO/SAML, Organizations (multi-tenant) |
-| Base de Datos / Backend | Convex | Base de datos reactiva en tiempo real + funciones serverless |
-| Email | Resend + React Email | Envío de correos transaccionales con templates en React |
-| Almacenamiento de Archivos | UploadThing | Carga y gestión de archivos (evidencias, fotos) |
-| Mensajería WhatsApp | Meta API (WhatsApp Business) | Notificaciones y comunicación por WhatsApp |
-| Hosting Frontend | Vercel | Deploy, CDN global, wildcard subdomains |
+| Capa                       | Tecnología                   | Propósito                                                    |
+| -------------------------- | ---------------------------- | ------------------------------------------------------------ |
+| Frontend Framework         | React + TypeScript           | Interfaz de usuario tipada y reactiva                        |
+| Meta-framework             | TanStack Start               | Server-side rendering y routing full-stack                   |
+| Routing                    | TanStack Router              | Navegación type-safe con middleware de tenant                |
+| Data Fetching              | TanStack Query               | Cache, sincronización y estado del servidor                  |
+| Formularios                | TanStack Form                | Formularios con validación integrada                         |
+| Validación                 | Zod                          | Esquemas de validación type-safe                             |
+| UI Kit                     | ShadCN-UI                    | Componentes accesibles y personalizables                     |
+| Estilos                    | TailwindCSS                  | Utilidades CSS para diseño rápido                            |
+| Variables de Entorno       | t3-oss/env                   | Validación type-safe de env vars                             |
+| Autenticación              | WorkOS (AuthKit)             | Auth, SSO/SAML, Organizations (multi-tenant)                 |
+| Base de Datos / Backend    | Convex                       | Base de datos reactiva en tiempo real + funciones serverless |
+| Email                      | Resend + React Email         | Envío de correos transaccionales con templates en React      |
+| Almacenamiento de Archivos | UploadThing                  | Carga y gestión de archivos (evidencias, fotos)              |
+| Mensajería WhatsApp        | Meta API (WhatsApp Business) | Notificaciones y comunicación por WhatsApp                   |
+| Hosting Frontend           | Vercel                       | Deploy, CDN global, wildcard subdomains                      |
 
 ## Modelo de Negocio
 

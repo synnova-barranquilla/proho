@@ -86,14 +86,14 @@ Registra todos los eventos que requieren seguimiento administrativo. Cubre alert
 
 Tipos válidos del campo `tipo` en NOVEDAD:
 
-| Tipo | Descripción |
-|------|-------------|
-| `alerta_candado` | Candado activo al momento del intento de ingreso — cualquier decisión. |
-| `zona_gris_vehicular` | Carro y moto del mismo apartamento/torre, sin norma definida aún. |
-| `tiempo_excedido` | Vehículo superó el tiempo máximo de permanencia configurado. |
-| `vehiculo_no_registrado` | Placa desconocida — requiere decisión del vigilante. |
-| `nuevo_vehiculo_detectado` | Vigilante registró un vehículo nuevo de un residente existente. |
-| `salida_forzada` | Salida registrada manualmente por error operativo. |
+| Tipo                       | Descripción                                                            |
+| -------------------------- | ---------------------------------------------------------------------- |
+| `alerta_candado`           | Candado activo al momento del intento de ingreso — cualquier decisión. |
+| `zona_gris_vehicular`      | Carro y moto del mismo apartamento/torre, sin norma definida aún.      |
+| `tiempo_excedido`          | Vehículo superó el tiempo máximo de permanencia configurado.           |
+| `vehiculo_no_registrado`   | Placa desconocida — requiere decisión del vigilante.                   |
+| `nuevo_vehiculo_detectado` | Vigilante registró un vehículo nuevo de un residente existente.        |
+| `salida_forzada`           | Salida registrada manualmente por error operativo.                     |
 
 **REGLA_CONFIG**
 Parámetros configurables del motor de reglas. Permite que la administración ajuste el comportamiento del sistema sin modificar código. Se sincroniza periódicamente desde la nube.
@@ -106,15 +106,15 @@ Permisos granulares temporales. El permiso `registrar_vehiculos` permite al vigi
 
 #### 2.1.3 Relaciones
 
-| Relación | Cardinalidad | Descripción |
-|----------|-------------|-------------|
-| APARTAMENTO → VEHICULO | Uno a muchos | Un apartamento tiene varios vehículos registrados. `cupos_ocupados` controla cuántos pueden estar dentro simultáneamente. |
-| APARTAMENTO → REGISTRO_ACCESO | Uno a muchos | Todos los eventos de acceso quedan vinculados al apartamento. |
-| APARTAMENTO → VISITANTE_ACCESO | Uno a muchos | Un apartamento puede recibir múltiples visitas. |
-| VEHICULO → REGISTRO_ACCESO | Uno a muchos | Cada vehículo acumula su historial completo de accesos. |
-| VISITANTE_ACCESO → REGISTRO_ACCESO | Uno a uno opcional | Cada visita genera exactamente un registro de acceso. |
-| REGISTRO_ACCESO → NOVEDAD | Uno a muchos | Un evento puede generar cero o varias novedades. |
-| USUARIO → PERMISO_USUARIO | Uno a muchos | Un usuario puede tener múltiples permisos granulares en el tiempo. |
+| Relación                           | Cardinalidad       | Descripción                                                                                                               |
+| ---------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| APARTAMENTO → VEHICULO             | Uno a muchos       | Un apartamento tiene varios vehículos registrados. `cupos_ocupados` controla cuántos pueden estar dentro simultáneamente. |
+| APARTAMENTO → REGISTRO_ACCESO      | Uno a muchos       | Todos los eventos de acceso quedan vinculados al apartamento.                                                             |
+| APARTAMENTO → VISITANTE_ACCESO     | Uno a muchos       | Un apartamento puede recibir múltiples visitas.                                                                           |
+| VEHICULO → REGISTRO_ACCESO         | Uno a muchos       | Cada vehículo acumula su historial completo de accesos.                                                                   |
+| VISITANTE_ACCESO → REGISTRO_ACCESO | Uno a uno opcional | Cada visita genera exactamente un registro de acceso.                                                                     |
+| REGISTRO_ACCESO → NOVEDAD          | Uno a muchos       | Un evento puede generar cero o varias novedades.                                                                          |
+| USUARIO → PERMISO_USUARIO          | Uno a muchos       | Un usuario puede tener múltiples permisos granulares en el tiempo.                                                        |
 
 ---
 
@@ -127,16 +127,19 @@ El motor evalúa las reglas en fases ordenadas por prioridad. Las reglas bloquea
 Si alguna regla de esta fase falla, la decisión es `rechazado` y la evaluación se detiene. El vigilante **no puede sobrepasar** estas reglas.
 
 **R1 · Cupo ocupado — mismo tipo de vehículo**
+
 - **Condición:** `cupos_ocupados >= cupos_permitidos` Y el vehículo que intenta ingresar es del mismo tipo que el que está dentro.
 - **Acción:** `decision_motor = "rechazado"` · `motivo = "cupo_ocupado"` · Detener evaluación.
 - **Nota:** Ejemplo: hay un carro dentro y entra otro carro → rechazo automático. No hay excepción posible.
 
 **R2 · Vehículo dado de baja**
+
 - **Condición:** `vehiculo.activo = false`
 - **Acción:** `decision_motor = "rechazado"` · `motivo = "vehiculo_inactivo"` · Detener evaluación.
 - **Nota:** El vehículo dado de baja por el admin no puede ingresar bajo ninguna circunstancia.
 
 **R3 · Vehículo no registrado**
+
 - **Condición:** `placa NOT IN vehiculos AND placa NOT IN visitantes_activos`
 - **Acción:** `decision_motor = "no_identificado"` · Mostrar 3 opciones al vigilante.
 - **Opciones:**
@@ -150,6 +153,7 @@ Si alguna regla de esta fase falla, la decisión es `rechazado` y la evaluación
 El conjunto no tiene norma definida para este caso. El motor no bloquea automáticamente. El vigilante toma la decisión y queda registrada como novedad para que la administración analice y eventualmente defina una política.
 
 **ZG · Cupo ocupado por vehículo de distinto tipo**
+
 - **Condición:** `cupos_ocupados >= cupos_permitidos` PERO el vehículo dentro es de tipo diferente al que intenta ingresar (ej: carro dentro, moto quiere entrar).
 - **Acción del motor:** `decision_motor = "zona_gris"` · Mostrar advertencia clara al vigilante. No bloquear.
 - **Si vigilante permite:** `decision_final = "permitido_zona_gris"` · `cupos_ocupados += 1` · NOVEDAD tipo `zona_gris_vehicular` resuelta = false.
@@ -160,6 +164,7 @@ El conjunto no tiene norma definida para este caso. El motor no bloquea automát
 El motor bloquea el ingreso pero el vigilante puede sobrepasar la decisión escribiendo una justificación. La justificación es campo obligatorio — el botón de confirmar ingreso está deshabilitado sin ella. La decisión siempre genera NOVEDAD pendiente para el administrador.
 
 **R4 · Plan candado activo**
+
 - **Condición:** `apto.candado_activo = true`
 - **Acción del motor:** `decision_motor = "rechazado_candado"` · Mostrar alerta prominente · Solicitar justificación.
 - **Si vigilante permite:** `decision_final = "permitido_con_excepcion"` · justificación obligatoria (mínimo 10 caracteres) · NOVEDAD tipo `alerta_candado` resuelta = false.
@@ -172,10 +177,12 @@ El vigilante puede consultar con la administración por los medios habituales de
 Un job local corre cada 60 minutos en el dispositivo, sin requerir conexión. Genera novedades automáticamente sin intervención del vigilante. No bloquea la operación.
 
 **A1 · Tiempo máximo de residente excedido**
+
 - **Condición:** `NOW - registro.entrada_en > config("tiempo_max_residente_horas") * 60 AND registro.salida_en IS NULL`
 - **Acción:** Generar NOVEDAD tipo `tiempo_excedido`. Si ya existe novedad no resuelta del mismo registro, actualizar descripción sin duplicar.
 
 **A2 · Tiempo máximo de visitante excedido**
+
 - **Condición:** `NOW - visitante.entrada_en > config("tiempo_max_visitante_horas") * 60 AND visitante.activo = true`
 - **Acción:** Mismo mecanismo que A1 pero sobre VISITANTE_ACCESO.
 
@@ -187,17 +194,18 @@ La app es un módulo dentro de una plataforma más grande. El vigilante accede c
 
 #### 2.3.1 Roles y accesos
 
-| Rol | Acceso al módulo | Dispositivo principal |
-|-----|-----------------|----------------------|
-| Super Admin (Synnova) | Gestión de todos los tenants, onboarding | Escritorio |
-| Admin (Empresa de administración) | Acceso total a su(s) conjunto(s), configuración | Escritorio |
-| Asistente Administrativo | Operación diaria, reportes | Escritorio |
-| Vigilante/Portero | Parqueadero, ingreso/salida de vehículos | **Tablet** |
-| Residente | Consulta de información | Móvil |
+| Rol                               | Acceso al módulo                                | Dispositivo principal |
+| --------------------------------- | ----------------------------------------------- | --------------------- |
+| Super Admin (Synnova)             | Gestión de todos los tenants, onboarding        | Escritorio            |
+| Admin (Empresa de administración) | Acceso total a su(s) conjunto(s), configuración | Escritorio            |
+| Asistente Administrativo          | Operación diaria, reportes                      | Escritorio            |
+| Vigilante/Portero                 | Parqueadero, ingreso/salida de vehículos        | **Tablet**            |
+| Residente                         | Consulta de información                         | Móvil                 |
 
 #### 2.3.2 Permiso `registrar_vehiculos`
 
 Cuando el administrador activa este permiso para un vigilante, la pantalla principal del vigilante muestra dos cambios visuales:
+
 1. Un **chip ámbar "Registro activo"** en el encabezado para que el vigilante sepa en qué modo está operando.
 2. Un **tercer botón ámbar "Registrar vehículo"** en la zona de acción inferior.
 
@@ -232,6 +240,7 @@ Fondo/icono morado. Muestra: advertencia de tipo diferente al cupo ocupado, nomb
 
 **Pantalla 6 — Resultado: No identificado**
 Fondo/icono neutro. Muestra: aviso de que la placa no está registrada. Tres opciones como botones:
+
 1. Ingresar como visitante — requiere seleccionar apartamento destino y agregar observación.
 2. Registrar como vehículo nuevo de residente — solo visible si permiso activo.
 3. Rechazar — requiere justificación.
@@ -258,16 +267,16 @@ El sistema opera bajo un modelo **offline-first estricto**. Hay una tablet de po
 
 #### 2.4.2 Sincronización por entidad
 
-| Entidad | Dirección | Frecuencia |
-|---------|-----------|------------|
-| APARTAMENTO | Nube → Dispositivo | Pull cada 5 minutos |
-| VEHICULO | Nube → Dispositivo (maestro) / Dispositivo → Nube (nuevos registros) | Pull cada 5 min / Push vía SYNC_QUEUE |
-| REGISTRO_ACCESO | Dispositivo → Nube | Push vía SYNC_QUEUE (inmediato con conexión) |
-| VISITANTE_ACCESO | Dispositivo → Nube | Push vía SYNC_QUEUE |
-| NOVEDAD | Dispositivo → Nube | Push vía SYNC_QUEUE |
-| REGLA_CONFIG | Nube → Dispositivo | Pull cada 5 minutos |
-| USUARIO | Nube → Dispositivo | Pull al iniciar sesión |
-| PERMISO_USUARIO | Nube → Dispositivo | Pull cada 5 minutos |
+| Entidad          | Dirección                                                            | Frecuencia                                   |
+| ---------------- | -------------------------------------------------------------------- | -------------------------------------------- |
+| APARTAMENTO      | Nube → Dispositivo                                                   | Pull cada 5 minutos                          |
+| VEHICULO         | Nube → Dispositivo (maestro) / Dispositivo → Nube (nuevos registros) | Pull cada 5 min / Push vía SYNC_QUEUE        |
+| REGISTRO_ACCESO  | Dispositivo → Nube                                                   | Push vía SYNC_QUEUE (inmediato con conexión) |
+| VISITANTE_ACCESO | Dispositivo → Nube                                                   | Push vía SYNC_QUEUE                          |
+| NOVEDAD          | Dispositivo → Nube                                                   | Push vía SYNC_QUEUE                          |
+| REGLA_CONFIG     | Nube → Dispositivo                                                   | Pull cada 5 minutos                          |
+| USUARIO          | Nube → Dispositivo                                                   | Pull al iniciar sesión                       |
+| PERMISO_USUARIO  | Nube → Dispositivo                                                   | Pull cada 5 minutos                          |
 
 #### 2.4.3 Cola offline — SYNC_QUEUE
 
@@ -285,14 +294,14 @@ Un proceso en background corre cada 60 minutos en el dispositivo, sin requerir c
 
 La especificación original es agnóstica al stack. Al implementar con **Convex** como backend, hay oportunidades y diferencias a considerar:
 
-| Aspecto de la spec | Spec original | Consideración con Convex |
-|-------------------|---------------|--------------------------|
-| BD local completa | Copia local de todos los datos | Convex usa suscripciones reactivas en tiempo real. Los datos se sincronizan automáticamente cuando hay conexión. La "BD local" podría ser el cache de Convex en el cliente. |
-| SYNC_QUEUE | Cola FIFO manual con reintentos | Las mutations de Convex ya tienen retry automático y garantía de orden. La cola podría simplificarse significativamente. |
-| Pull periódico (5 min) | Job manual que descarga datos maestros | Las queries reactivas de Convex actualizan el cliente automáticamente cuando los datos cambian en el servidor — latencia de segundos, no minutos. |
-| Job local cada 60 min | Proceso en background en el dispositivo | Convex tiene **crons nativos** que corren en el servidor. Las alertas de tiempo excedido podrían evaluarse server-side y propagarse vía suscripción reactiva. |
-| Offline estricto | Operación sin conexión garantizada | Convex **no tiene soporte offline nativo**. Este es el principal gap. Opciones: (1) Service worker + IndexedDB como capa offline que se sincroniza con Convex al reconectar. (2) Evaluar si el WiFi del conjunto es lo suficientemente confiable para operar online-first con fallback offline mínimo. (3) PWA con cache strategy para operaciones críticas. |
-| 5 reintentos → error_permanente | Lógica de reintentos manual | Las mutations de Convex reintentan automáticamente. Los errores permanentes se manejarían como mutations fallidas con notificación al admin. |
+| Aspecto de la spec              | Spec original                           | Consideración con Convex                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| BD local completa               | Copia local de todos los datos          | Convex usa suscripciones reactivas en tiempo real. Los datos se sincronizan automáticamente cuando hay conexión. La "BD local" podría ser el cache de Convex en el cliente.                                                                                                                                                                                  |
+| SYNC_QUEUE                      | Cola FIFO manual con reintentos         | Las mutations de Convex ya tienen retry automático y garantía de orden. La cola podría simplificarse significativamente.                                                                                                                                                                                                                                     |
+| Pull periódico (5 min)          | Job manual que descarga datos maestros  | Las queries reactivas de Convex actualizan el cliente automáticamente cuando los datos cambian en el servidor — latencia de segundos, no minutos.                                                                                                                                                                                                            |
+| Job local cada 60 min           | Proceso en background en el dispositivo | Convex tiene **crons nativos** que corren en el servidor. Las alertas de tiempo excedido podrían evaluarse server-side y propagarse vía suscripción reactiva.                                                                                                                                                                                                |
+| Offline estricto                | Operación sin conexión garantizada      | Convex **no tiene soporte offline nativo**. Este es el principal gap. Opciones: (1) Service worker + IndexedDB como capa offline que se sincroniza con Convex al reconectar. (2) Evaluar si el WiFi del conjunto es lo suficientemente confiable para operar online-first con fallback offline mínimo. (3) PWA con cache strategy para operaciones críticas. |
+| 5 reintentos → error_permanente | Lógica de reintentos manual             | Las mutations de Convex reintentan automáticamente. Los errores permanentes se manejarían como mutations fallidas con notificación al admin.                                                                                                                                                                                                                 |
 
 **Decisión clave pendiente:** Definir si el módulo de parqueaderos opera como **online-first** (confiando en la conectividad del conjunto) con fallback offline limitado, o si se implementa una capa offline completa sobre Convex. Esta decisión impacta significativamente la complejidad del desarrollo.
 
@@ -301,42 +310,52 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 ### 2.5 Casos de borde
 
 **Vehículo ya está dentro e intenta ingresar de nuevo**
+
 - Condición: placa consultada tiene REGISTRO_ACCESO con `entrada_en != null` y `salida_en = null`.
 - Comportamiento: El motor muestra estado informativo "Vehículo ya está dentro". No es un rechazo. El vigilante puede registrar salida directamente o cancelar. Puede significar que se olvidó registrar la salida anterior.
 
 **Placa digitada con variaciones de formato**
+
 - Condición: El vigilante digita "abc 123" o "ABC-123" o "abc123".
 - Comportamiento: El sistema normaliza la placa: mayúsculas, elimina espacios y caracteres especiales. `placa_raw` guarda lo que digitó; la búsqueda usa `ABC123`.
 
 **Admin da de baja un vehículo que está actualmente dentro**
+
 - Condición: `vehiculo.activo = false` pero existe REGISTRO_ACCESO activo.
 - Comportamiento: El vehículo puede salir normalmente. R2 solo bloquea ingresos, nunca salidas. `cupos_ocupados` se decrementa con normalidad.
 
 **Vigilante registra salida de vehículo sin entrada registrada**
+
 - Condición: Placa consultada para salida no tiene REGISTRO_ACCESO activo.
 - Comportamiento: "No hay ingreso activo para esta placa". Se ofrece opción de salida forzada con observación.
 
 **Candado se activa mientras el vehículo está dentro**
+
 - Condición: Vehículo ingresó sin candado. Admin activa candado después.
 - Comportamiento: El vehículo puede salir sin restricción. El candado solo aplica a nuevos ingresos.
 
 **Admin reduce `cupos_permitidos` con vehículos excedentes dentro**
+
 - Condición: `cupos_permitidos` baja de 2 a 1 pero `cupos_ocupados = 2`.
 - Comportamiento: No se expulsa ningún vehículo. `cupos_ocupados` puede exceder `cupos_permitidos` temporalmente. Se genera NOVEDAD. Se resuelve naturalmente cuando salgan.
 
 **Admin registra vehículo nuevo mientras el vigilante está offline**
+
 - Condición: Admin agrega VEHICULO. Tablet sin conexión.
 - Comportamiento: Hasta que reconecte y se ejecute el pull, el motor lo trata como `no_identificado`. El vigilante debe conocer este comportamiento.
 
 **Cola offline con evento que falla repetidamente**
+
 - Condición: Evento en SYNC_QUEUE falla 5 veces consecutivas.
 - Comportamiento: Pasa a `error_permanente`. Se genera NOVEDAD para el admin. Los demás eventos continúan. El registro existe en la BD local aunque no haya llegado a la nube.
 
 **Sesión del vigilante expira mientras está offline**
+
 - Condición: Token vence sin conexión para renovar.
 - Comportamiento: Opera normalmente offline con **gracia de 24 horas**. Al reconectar, renueva token automáticamente.
 
 **Admin desactiva permiso `registrar_vehiculos` mientras el vigilante lo está usando**
+
 - Condición: `permiso_usuario.activo` cambia a false en la nube. Vigilante completando formulario.
 - Comportamiento: El formulario en curso se completa sin interrupción. El cambio aplica en el siguiente pull (máx. 5 min). Botón y chip desaparecen — nunca en medio de una acción activa.
 
@@ -345,6 +364,7 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 ### 2.6 Criterios de aceptación
 
 #### CA-01 · Ingreso de residente sin restricciones
+
 - El motor responde con decisión "permitido" en menos de 1 segundo.
 - La pantalla muestra nombre del apartamento (torre + numero), cupos disponibles y estado del candado.
 - Al confirmar, `cupos_ocupados` se incrementa en 1 inmediatamente en la BD local.
@@ -352,12 +372,14 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 - REGISTRO_ACCESO guarda `decision_motor = decision_final = "permitido"`.
 
 #### CA-02 · Rechazo por cupo ocupado
+
 - El motor responde "rechazado" mostrando qué vehículo ocupa el cupo actualmente.
 - No existe botón ni opción para sobrepasar este rechazo.
 - `cupos_ocupados` no cambia.
 - REGISTRO_ACCESO guarda `decision_motor = decision_final = "rechazado"`, `motivo = "cupo_ocupado"`.
 
 #### CA-03 · Ingreso con plan candado activo
+
 - Pantalla muestra alerta prominente de candado y que el sistema recomienda rechazar.
 - Botón "Permitir con justificación" deshabilitado hasta que haya texto.
 - Si permite: `decision_motor = "rechazado_candado"`, `decision_final = "permitido_con_excepcion"` y justificación.
@@ -365,18 +387,21 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 - Si rechaza: también genera NOVEDAD para registro del intento.
 
 #### CA-04 · Zona gris — carro y moto mismo apartamento/torre
+
 - Pantalla muestra advertencia clara — no es un rechazo.
 - Campo de observación obligatorio antes de confirmar cualquier decisión.
 - Tanto "permitir" como "rechazar" generan NOVEDAD tipo `zona_gris_vehicular` con `resuelta = false`.
 - REGISTRO_ACCESO guarda la decisión final con prefijo `zona_gris`.
 
 #### CA-05 · Vehículo no identificado
+
 - Pantalla muestra exactamente 3 opciones con descripción de qué implica cada una.
 - "Registrar como vehículo nuevo" solo aparece si el permiso está activo.
 - Cada opción requiere observación antes de confirmar.
 - En todos los casos se genera NOVEDAD con `accion_tomada` obligatorio.
 
 #### CA-06 · Salida normal
+
 - Muestra tiempo de permanencia calculado correctamente.
 - Al confirmar, `cupos_ocupados` se decrementa en 1 inmediatamente.
 - El vehículo desaparece de la lista "dentro ahora".
@@ -384,6 +409,7 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 - Si permanencia supera el límite: se genera NOVEDAD tipo `tiempo_excedido`.
 
 #### CA-07 · Salida forzada
+
 - Botón de salida forzada aparece solo como opción secundaria.
 - Campo de justificación obligatorio.
 - REGISTRO_ACCESO guarda `salida_forzada = true` y `motivo_forzado`.
@@ -391,6 +417,7 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 - Se genera NOVEDAD tipo `salida_forzada`.
 
 #### CA-08 · Operación offline
+
 - Al perder conexión, indicador cambia pero la app sigue funcionando.
 - Entradas y salidas sin mensaje de error de red.
 - Eventos offline en SYNC_QUEUE se envían automáticamente al reconectar.
@@ -398,6 +425,7 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 - Job de alertas de tiempo corre sin conexión.
 
 #### CA-09 · Tiempos de respuesta (no negociables)
+
 - Consulta de placa → resultado del motor: **máximo 1 segundo**.
 - Confirmar ingreso o salida → pantalla actualizada: **máximo 500 ms**.
 - Apertura de la app hasta pantalla operativa: **máximo 3 segundos** con BD local cargada.
@@ -405,6 +433,7 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 - La app es funcional en **tablets de gama media-baja** (2 GB RAM, procesador básico).
 
 #### CA-10 · Auditoría y trazabilidad
+
 - Todo evento tiene: placa normalizada, timestamp, apartamento (torre + numero), `decision_motor`, `decision_final` y vigilante.
 - Ningún registro puede eliminarse — solo crearse nuevos.
 - El admin puede filtrar registros donde `decision_motor ≠ decision_final` para detectar sobreposiciones.
@@ -412,6 +441,7 @@ La especificación original es agnóstica al stack. Al implementar con **Convex*
 - Historial de PERMISO_USUARIO muestra quién activó/desactivó cada permiso y cuándo.
 
 #### CA-11 · Permiso `registrar_vehiculos`
+
 - Con permiso activo: chip ámbar en header + tercer botón ámbar.
 - Sin permiso: botón y chip desaparecen completamente.
 - Cambio de permiso se refleja en máximo 5 minutos.
@@ -436,30 +466,32 @@ Synnova opera bajo un modelo multi-tenant con subdominios:
 
 ### 3.2 Stack tecnológico
 
-| Capa | Tecnología | Propósito |
-|------|-----------|-----------|
-| Frontend Framework | React + TypeScript | Interfaz de usuario tipada y reactiva |
-| Meta-framework | TanStack Start | Server-side rendering y routing full-stack |
-| Routing | TanStack Router | Navegación type-safe con middleware de tenant |
-| Data Fetching | TanStack Query | Cache, sincronización y estado del servidor |
-| Formularios | TanStack Form | Formularios con validación integrada |
-| Validación | Zod | Esquemas de validación type-safe |
-| UI Kit | ShadCN-UI | Componentes accesibles y personalizables |
-| Estilos | TailwindCSS | Utilidades CSS para diseño rápido |
-| Variables de Entorno | t3-oss/env | Validación type-safe de env vars |
-| Autenticación | WorkOS (AuthKit) | Auth, SSO/SAML, Organizations (multi-tenant) |
-| Base de Datos / Backend | Convex | Base de datos reactiva en tiempo real + funciones serverless |
-| Email | Resend + React Email | Envío de correos transaccionales con templates en React |
-| Almacenamiento de Archivos | UploadThing | Carga y gestión de archivos (evidencias, fotos) |
-| Mensajería WhatsApp | Meta API (WhatsApp Business) | Notificaciones y comunicación por WhatsApp |
-| Hosting Frontend | Vercel | Deploy, CDN global, wildcard subdomains |
+| Capa                       | Tecnología                   | Propósito                                                    |
+| -------------------------- | ---------------------------- | ------------------------------------------------------------ |
+| Frontend Framework         | React + TypeScript           | Interfaz de usuario tipada y reactiva                        |
+| Meta-framework             | TanStack Start               | Server-side rendering y routing full-stack                   |
+| Routing                    | TanStack Router              | Navegación type-safe con middleware de tenant                |
+| Data Fetching              | TanStack Query               | Cache, sincronización y estado del servidor                  |
+| Formularios                | TanStack Form                | Formularios con validación integrada                         |
+| Validación                 | Zod                          | Esquemas de validación type-safe                             |
+| UI Kit                     | ShadCN-UI                    | Componentes accesibles y personalizables                     |
+| Estilos                    | TailwindCSS                  | Utilidades CSS para diseño rápido                            |
+| Variables de Entorno       | t3-oss/env                   | Validación type-safe de env vars                             |
+| Autenticación              | WorkOS (AuthKit)             | Auth, SSO/SAML, Organizations (multi-tenant)                 |
+| Base de Datos / Backend    | Convex                       | Base de datos reactiva en tiempo real + funciones serverless |
+| Email                      | Resend + React Email         | Envío de correos transaccionales con templates en React      |
+| Almacenamiento de Archivos | UploadThing                  | Carga y gestión de archivos (evidencias, fotos)              |
+| Mensajería WhatsApp        | Meta API (WhatsApp Business) | Notificaciones y comunicación por WhatsApp                   |
+| Hosting Frontend           | Vercel                       | Deploy, CDN global, wildcard subdomains                      |
 
 ### 3.3 Sistema de notificaciones (relevante para parqueaderos)
 
 **Email (Resend + React Email):**
+
 - Template de alerta de parqueadero: exceso de permanencia, moroso, visitante fuera de horario.
 
 **WhatsApp (Meta API):**
+
 - Alertas críticas de parqueadero integradas al canal principal de comunicación con residentes.
 
 ---
@@ -472,47 +504,47 @@ Synnova opera bajo un modelo multi-tenant con subdominios:
 
 ### 4.2 Fases prerequisito (antes de parqueaderos)
 
-| Fase | Tareas | Descripción |
-|------|--------|-------------|
-| F0 — Configuración del Proyecto | 15 | Repo, TanStack Start, TailwindCSS, ShadCN-UI, Convex, WorkOS, Vercel, etc. |
-| F1 — Arquitectura Multi-Tenant | 10 | Wildcard domain, middleware de tenant, tablas organizations, feature flags |
-| F2 — Autenticación y Usuarios | 13 | Login, registro, roles, middleware de autorización |
-| F3 — Modelo de Datos Base | 15 | Esquema completo de datos en Convex (incluye tablas de parqueaderos) |
-| F4 — Layout y Navegación | 9 | Dashboard layout, sidebar dinámica, layout tablet-first para vigilantes |
+| Fase                            | Tareas | Descripción                                                                |
+| ------------------------------- | ------ | -------------------------------------------------------------------------- |
+| F0 — Configuración del Proyecto | 15     | Repo, TanStack Start, TailwindCSS, ShadCN-UI, Convex, WorkOS, Vercel, etc. |
+| F1 — Arquitectura Multi-Tenant  | 10     | Wildcard domain, middleware de tenant, tablas organizations, feature flags |
+| F2 — Autenticación y Usuarios   | 13     | Login, registro, roles, middleware de autorización                         |
+| F3 — Modelo de Datos Base       | 15     | Esquema completo de datos en Convex (incluye tablas de parqueaderos)       |
+| F4 — Layout y Navegación        | 9      | Dashboard layout, sidebar dinámica, layout tablet-first para vigilantes    |
 
 ### 4.3 Fase 5 — Módulo de Control de Parqueaderos (22 tareas)
 
-| # | Tarea |
-|---|-------|
-| 5.1 | Crear pantalla principal de parqueadero (tablet-first) |
-| 5.2 | Implementar búsqueda de vehículo por placa |
-| 5.3 | Crear flujo de ingreso: vehículo registrado |
-| 5.4 | Crear flujo de ingreso: vehículo no registrado |
-| 5.5 | Implementar campo de observaciones al ingreso |
-| 5.6 | Crear mutation de ingreso vehicular |
-| 5.7 | Implementar validación de morosos |
-| 5.8 | Crear flujo de salida vehicular |
-| 5.9 | Crear mutation de salida vehicular |
-| 5.10 | Crear dashboard de disponibilidad |
-| 5.11 | Implementar KPIs: Disponibles por tipo |
-| 5.12 | Implementar KPI: Parqueaderos ocupados |
-| 5.13 | Crear tabla de vehículos actualmente parqueados |
+| #    | Tarea                                                  |
+| ---- | ------------------------------------------------------ |
+| 5.1  | Crear pantalla principal de parqueadero (tablet-first) |
+| 5.2  | Implementar búsqueda de vehículo por placa             |
+| 5.3  | Crear flujo de ingreso: vehículo registrado            |
+| 5.4  | Crear flujo de ingreso: vehículo no registrado         |
+| 5.5  | Implementar campo de observaciones al ingreso          |
+| 5.6  | Crear mutation de ingreso vehicular                    |
+| 5.7  | Implementar validación de morosos                      |
+| 5.8  | Crear flujo de salida vehicular                        |
+| 5.9  | Crear mutation de salida vehicular                     |
+| 5.10 | Crear dashboard de disponibilidad                      |
+| 5.11 | Implementar KPIs: Disponibles por tipo                 |
+| 5.12 | Implementar KPI: Parqueaderos ocupados                 |
+| 5.13 | Crear tabla de vehículos actualmente parqueados        |
 | 5.14 | Implementar filtros por tipo de parqueadero y vehículo |
-| 5.15 | Crear vista de monitoreo en vivo |
-| 5.16 | Crear vista de histórico |
-| 5.17 | Crear CRUD de vehículos registrados |
-| 5.18 | Implementar regla de 30 días de permanencia |
-| 5.19 | Implementar regla de visitantes hasta las 5pm |
-| 5.20 | Implementar alertas automáticas |
-| 5.21 | Crear configuración de parqueaderos por conjunto |
-| 5.22 | Implementar queries reactivas para tiempo real |
+| 5.15 | Crear vista de monitoreo en vivo                       |
+| 5.16 | Crear vista de histórico                               |
+| 5.17 | Crear CRUD de vehículos registrados                    |
+| 5.18 | Implementar regla de 30 días de permanencia            |
+| 5.19 | Implementar regla de visitantes hasta las 5pm          |
+| 5.20 | Implementar alertas automáticas                        |
+| 5.21 | Crear configuración de parqueaderos por conjunto       |
+| 5.22 | Implementar queries reactivas para tiempo real         |
 
 ### 4.4 Tareas transversales relacionadas
 
-| Fase | Tareas relevantes |
-|------|------------------|
-| F9 — Email | 9.4: Template de alerta de parqueadero · 9.7: Servicio de envío en Convex · 9.8: Integrar envío automático |
-| F10 — WhatsApp | 10.5: Integrar WhatsApp en alertas de parqueadero |
+| Fase                | Tareas relevantes                                                                                               |
+| ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| F9 — Email          | 9.4: Template de alerta de parqueadero · 9.7: Servicio de envío en Convex · 9.8: Integrar envío automático      |
+| F10 — WhatsApp      | 10.5: Integrar WhatsApp en alertas de parqueadero                                                               |
 | F11 — Admin/Tenants | 11.4: CRUD de conjuntos · 11.5: CRUD de unidades · 11.10: Gestión de estado de mora · 11.11: Vista de auditoría |
 
 ---
@@ -527,11 +559,11 @@ El módulo de parqueaderos en Synnova es significativamente más completo (motor
 
 ### 5.2 Límites relevantes por escenario
 
-| Escenario | Convex | Costo total/mes |
-|-----------|--------|-----------------|
-| MVP / Free (1 conjunto prueba) | 0.5 GB DB, 1M function calls | ~$6.25 USD |
-| Producción inicial (1-3 conjuntos) | Pay-as-you-go ~2-5 GB | ~$41.25 USD |
-| Producción a escala (10-20 conjuntos) | 50 GB DB, 25M function calls | ~$131.25 USD |
+| Escenario                             | Convex                       | Costo total/mes |
+| ------------------------------------- | ---------------------------- | --------------- |
+| MVP / Free (1 conjunto prueba)        | 0.5 GB DB, 1M function calls | ~$6.25 USD      |
+| Producción inicial (1-3 conjuntos)    | Pay-as-you-go ~2-5 GB        | ~$41.25 USD     |
+| Producción a escala (10-20 conjuntos) | 50 GB DB, 25M function calls | ~$131.25 USD    |
 
 ### 5.3 Consideraciones de capacidad para parqueaderos
 
