@@ -8,13 +8,27 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import type { createStart } from '@tanstack/react-start'
+
+import type { getRouter } from './router.tsx'
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProgressRouteImport } from './routes/progress'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
+import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
+import { Route as AuthenticatedVigilanteIndexRouteImport } from './routes/_authenticated/vigilante/index'
+import { Route as AuthenticatedVigilanteRouteRouteImport } from './routes/_authenticated/vigilante/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProgressRouteImport } from './routes/progress'
 
 const ProgressRoute = ProgressRouteImport.update({
   id: '/progress',
   path: '/progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,30 +36,99 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVigilanteRouteRoute =
+  AuthenticatedVigilanteRouteRouteImport.update({
+    id: '/vigilante',
+    path: '/vigilante',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSuperAdminRouteRoute =
+  AuthenticatedSuperAdminRouteRouteImport.update({
+    id: '/super-admin',
+    path: '/super-admin',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedVigilanteIndexRoute =
+  AuthenticatedVigilanteIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedVigilanteRouteRoute,
+  } as any)
+const AuthenticatedSuperAdminIndexRoute =
+  AuthenticatedSuperAdminIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/progress': typeof ProgressRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
+  '/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
+  '/vigilante/': typeof AuthenticatedVigilanteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/progress': typeof ProgressRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/super-admin': typeof AuthenticatedSuperAdminIndexRoute
+  '/vigilante': typeof AuthenticatedVigilanteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/progress': typeof ProgressRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
+  '/_authenticated/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
+  '/_authenticated/vigilante/': typeof AuthenticatedVigilanteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/progress'
+  fullPaths:
+    | '/'
+    | '/progress'
+    | '/admin'
+    | '/super-admin'
+    | '/vigilante'
+    | '/admin/'
+    | '/super-admin/'
+    | '/vigilante/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/progress'
-  id: '__root__' | '/' | '/progress'
+  to: '/' | '/progress' | '/admin' | '/super-admin' | '/vigilante'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/progress'
+    | '/_authenticated/admin'
+    | '/_authenticated/super-admin'
+    | '/_authenticated/vigilante'
+    | '/_authenticated/admin/'
+    | '/_authenticated/super-admin/'
+    | '/_authenticated/vigilante/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ProgressRoute: typeof ProgressRoute
 }
 
@@ -58,6 +141,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,19 +155,120 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/vigilante': {
+      id: '/_authenticated/vigilante'
+      path: '/vigilante'
+      fullPath: '/vigilante'
+      preLoaderRoute: typeof AuthenticatedVigilanteRouteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/super-admin': {
+      id: '/_authenticated/super-admin'
+      path: '/super-admin'
+      fullPath: '/super-admin'
+      preLoaderRoute: typeof AuthenticatedSuperAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/vigilante/': {
+      id: '/_authenticated/vigilante/'
+      path: '/'
+      fullPath: '/vigilante/'
+      preLoaderRoute: typeof AuthenticatedVigilanteIndexRouteImport
+      parentRoute: typeof AuthenticatedVigilanteRouteRoute
+    }
+    '/_authenticated/super-admin/': {
+      id: '/_authenticated/super-admin/'
+      path: '/'
+      fullPath: '/super-admin/'
+      preLoaderRoute: typeof AuthenticatedSuperAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedSuperAdminRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
+interface AuthenticatedSuperAdminRouteRouteChildren {
+  AuthenticatedSuperAdminIndexRoute: typeof AuthenticatedSuperAdminIndexRoute
+}
+
+const AuthenticatedSuperAdminRouteRouteChildren: AuthenticatedSuperAdminRouteRouteChildren =
+  {
+    AuthenticatedSuperAdminIndexRoute: AuthenticatedSuperAdminIndexRoute,
+  }
+
+const AuthenticatedSuperAdminRouteRouteWithChildren =
+  AuthenticatedSuperAdminRouteRoute._addFileChildren(
+    AuthenticatedSuperAdminRouteRouteChildren,
+  )
+
+interface AuthenticatedVigilanteRouteRouteChildren {
+  AuthenticatedVigilanteIndexRoute: typeof AuthenticatedVigilanteIndexRoute
+}
+
+const AuthenticatedVigilanteRouteRouteChildren: AuthenticatedVigilanteRouteRouteChildren =
+  {
+    AuthenticatedVigilanteIndexRoute: AuthenticatedVigilanteIndexRoute,
+  }
+
+const AuthenticatedVigilanteRouteRouteWithChildren =
+  AuthenticatedVigilanteRouteRoute._addFileChildren(
+    AuthenticatedVigilanteRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedSuperAdminRouteRoute: typeof AuthenticatedSuperAdminRouteRouteWithChildren
+  AuthenticatedVigilanteRouteRoute: typeof AuthenticatedVigilanteRouteRouteWithChildren
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedSuperAdminRouteRoute:
+    AuthenticatedSuperAdminRouteRouteWithChildren,
+  AuthenticatedVigilanteRouteRoute:
+    AuthenticatedVigilanteRouteRouteWithChildren,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ProgressRoute: ProgressRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
