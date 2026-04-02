@@ -9,6 +9,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
+import WorkOSProvider from '../integrations/workos/provider'
 import appCss from '../styles.css?url'
 
 interface MyRouterContext {
@@ -59,7 +60,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootLayout() {
   return (
-    <>
+    <WorkOSProvider>
       <Outlet />
       <TanStackDevtools
         config={{
@@ -73,6 +74,6 @@ function RootLayout() {
           TanStackQueryDevtools,
         ]}
       />
-    </>
+    </WorkOSProvider>
   )
 }

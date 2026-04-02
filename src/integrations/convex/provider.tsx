@@ -10,16 +10,18 @@ if (!CONVEX_URL) {
 
 const convexQueryClient = new ConvexQueryClient(CONVEX_URL)
 
-export function getQueryClient() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        queryKeyHashFn: convexQueryClient.hashFn(),
-        queryFn: convexQueryClient.queryFn(),
-      },
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryKeyHashFn: convexQueryClient.hashFn(),
+      queryFn: convexQueryClient.queryFn(),
     },
-  })
-  convexQueryClient.connect(queryClient)
+  },
+})
+
+convexQueryClient.connect(queryClient)
+
+export function getQueryClient() {
   return queryClient
 }
 
