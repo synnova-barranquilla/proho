@@ -20,6 +20,12 @@ export type Milestone = {
   scope: 'mvp' | 'post-mvp'
 }
 
+export const currentFocus = {
+  phaseId: 'F0',
+  phaseName: 'Configuración del Proyecto',
+  done: 13,
+  total: 13,
+}
 export const lastUpdated = '2 de abril de 2026'
 
 export const milestones: Milestone[] = [
@@ -75,14 +81,14 @@ export const milestones: Milestone[] = [
           {
             id: '0.11',
             name: 'Configurar TanStack Router (rutas base)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '0.12',
             name: 'Configurar ESLint, Prettier, TypeScript strict',
             status: 'done',
           },
-          { id: '0.13', name: 'Configurar CI/CD básico', status: 'pending' },
+          { id: '0.13', name: 'Configurar CI/CD básico', status: 'done' },
         ],
       },
       {

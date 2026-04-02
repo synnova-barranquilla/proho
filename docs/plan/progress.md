@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
-> **Última actualización:** 1 de abril de 2026
+> **Última actualización:** 2 de abril de 2026
 > **Total de tareas:** 172
 > **MVP (M1+M2+M3):** 114 tareas
-> **Completadas:** 10 (5.8%)
+> **Completadas:** 13 (7.6%)
 
 ---
 
@@ -19,23 +19,23 @@
 
 ## M1 — Foundation
 
-### Fase 0 — Configuración del Proyecto (11/13)
+### Fase 0 — Configuración del Proyecto (13/13)
 
-| ID   | Tarea                                                    | Estado  |
-| ---- | -------------------------------------------------------- | ------- |
-| 0.1  | Inicializar repositorio Git                              | done    |
-| 0.2  | Scaffold TanStack Start + TypeScript                     | done    |
-| 0.3  | Configurar Tailwind CSS v4 con dark mode                 | done    |
-| 0.4  | Configurar shadcn/ui con tema base + dark mode tokens    | done    |
-| 0.5  | Implementar theme toggle (light/dark/system)             | done    |
-| 0.6  | Configurar t3-oss/env con Zod                            | done    |
-| 0.7  | Crear proyecto Convex, instalar SDK, configurar provider | done    |
-| 0.8  | Integrar Convex con TanStack Query                       | done    |
-| 0.9  | Crear cuenta WorkOS, obtener API keys                    | done    |
-| 0.10 | Conectar repo a Vercel                                   | done    |
-| 0.11 | Configurar TanStack Router (rutas base)                  | pending |
-| 0.12 | Configurar ESLint, Prettier, TypeScript strict           | done    |
-| 0.13 | Configurar CI/CD básico                                  | pending |
+| ID   | Tarea                                                    | Estado |
+| ---- | -------------------------------------------------------- | ------ |
+| 0.1  | Inicializar repositorio Git                              | done   |
+| 0.2  | Scaffold TanStack Start + TypeScript                     | done   |
+| 0.3  | Configurar Tailwind CSS v4 con dark mode                 | done   |
+| 0.4  | Configurar shadcn/ui con tema base + dark mode tokens    | done   |
+| 0.5  | Implementar theme toggle (light/dark/system)             | done   |
+| 0.6  | Configurar t3-oss/env con Zod                            | done   |
+| 0.7  | Crear proyecto Convex, instalar SDK, configurar provider | done   |
+| 0.8  | Integrar Convex con TanStack Query                       | done   |
+| 0.9  | Crear cuenta WorkOS, obtener API keys                    | done   |
+| 0.10 | Conectar repo a Vercel                                   | done   |
+| 0.11 | Configurar TanStack Router (rutas base)                  | done   |
+| 0.12 | Configurar ESLint, Prettier, TypeScript strict           | done   |
+| 0.13 | Configurar CI/CD básico                                  | done   |
 
 ### Fase 1 — Arquitectura Multi-Tenant (0/2 active, 8 deferred to pre-prod)
 
@@ -284,9 +284,9 @@
 
 | Milestone            | Fases             | Total   | Done   | Progreso |
 | -------------------- | ----------------- | ------- | ------ | -------- |
-| **M1 — Foundation**  | F0 + F1 + F2      | 33      | 10     | 30%      |
+| **M1 — Foundation**  | F0 + F1 + F2      | 33      | 13     | 39%      |
 | **M2 — Admin Ready** | F3 + F4           | 27      | 0      | 0%       |
 | **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 54      | 0      | 0%       |
-| **MVP TOTAL**        | F0–F8             | **114** | **10** | **9%**   |
+| **MVP TOTAL**        | F0–F8             | **114** | **13** | **11%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **172** | **10** | **6%**   |
+| **TOTAL**            | F0–F14            | **172** | **13** | **8%**   |

@@ -18,21 +18,21 @@
 
 ## Fase 0 — Configuración del Proyecto
 
-| ID   | Tarea                                                                                                                                                   | Estado  |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| 0.1  | Inicializar repositorio Git con .gitignore y estructura de carpetas                                                                                     | done    |
-| 0.2  | Scaffold del proyecto con TanStack Start + TypeScript                                                                                                   | done    |
-| 0.3  | Configurar Tailwind CSS v4 con dark mode (class strategy, `prefers-color-scheme` default)                                                               | done    |
-| 0.4  | Configurar shadcn/ui con tema base: colores (incluyendo semánticos para motor: verde, rojo, ámbar, morado), tipografía, border-radius, dark mode tokens | done    |
-| 0.5  | Implementar theme toggle (light/dark/system) persistido en localStorage                                                                                 | done    |
-| 0.6  | Configurar t3-oss/env con esquema Zod de variables de entorno                                                                                           | done    |
-| 0.7  | Crear proyecto en Convex, instalar SDK, configurar provider                                                                                             | done    |
-| 0.8  | Integrar Convex con TanStack Query (@convex-dev/react-query)                                                                                            | done    |
-| 0.9  | Crear cuenta WorkOS, obtener API keys, instalar AuthKit SDK                                                                                             | done    |
-| 0.10 | Conectar repositorio a Vercel, configurar variables de entorno                                                                                          | done    |
-| 0.11 | Configurar TanStack Router con estructura base de rutas (public, auth, super-admin, admin, vigilante)                                                   | pending |
-| 0.12 | Configurar ESLint, Prettier, TypeScript strict                                                                                                          | done    |
-| 0.13 | Configurar CI/CD básico (GitHub Actions o Vercel auto-deploy)                                                                                           | pending |
+| ID   | Tarea                                                                                                                                                   | Estado |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 0.1  | Inicializar repositorio Git con .gitignore y estructura de carpetas                                                                                     | done   |
+| 0.2  | Scaffold del proyecto con TanStack Start + TypeScript                                                                                                   | done   |
+| 0.3  | Configurar Tailwind CSS v4 con dark mode (class strategy, `prefers-color-scheme` default)                                                               | done   |
+| 0.4  | Configurar shadcn/ui con tema base: colores (incluyendo semánticos para motor: verde, rojo, ámbar, morado), tipografía, border-radius, dark mode tokens | done   |
+| 0.5  | Implementar theme toggle (light/dark/system) persistido en localStorage                                                                                 | done   |
+| 0.6  | Configurar t3-oss/env con esquema Zod de variables de entorno                                                                                           | done   |
+| 0.7  | Crear proyecto en Convex, instalar SDK, configurar provider                                                                                             | done   |
+| 0.8  | Integrar Convex con TanStack Query (@convex-dev/react-query)                                                                                            | done   |
+| 0.9  | Crear cuenta WorkOS, obtener API keys, instalar AuthKit SDK                                                                                             | done   |
+| 0.10 | Conectar repositorio a Vercel, configurar variables de entorno                                                                                          | done   |
+| 0.11 | Configurar TanStack Router con estructura base de rutas (public, auth, super-admin, admin, vigilante)                                                   | done   |
+| 0.12 | Configurar ESLint, Prettier, TypeScript strict                                                                                                          | done   |
+| 0.13 | Configurar CI/CD básico (GitHub Actions o Vercel auto-deploy)                                                                                           | done   |
 
 ---
 

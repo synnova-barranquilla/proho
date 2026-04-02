@@ -14,6 +14,7 @@ import {
 
 import ThemeToggle from '#/components/ThemeToggle'
 import {
+  currentFocus,
   getMilestoneStats,
   getPhaseStats,
   getTotalStats,
@@ -239,11 +240,11 @@ function ProgressPage() {
               className="shrink-0 text-emerald-600 dark:text-emerald-400"
             />
             <p className="text-sm font-semibold leading-snug">
-              F0 — Configuración del Proyecto
+              {currentFocus.phaseId} — {currentFocus.phaseName}
             </p>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            11 de 13 tareas completadas
+            {currentFocus.done} de {currentFocus.total} tareas completadas
           </p>
         </div>
       </section>
