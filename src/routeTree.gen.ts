@@ -8,20 +8,71 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import type { getRouter } from './router.tsx'
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedVigilanteRouteRouteImport } from './routes/_authenticated/vigilante/route'
-import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
-import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedVigilanteIndexRouteImport } from './routes/_authenticated/vigilante/index'
-import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
+import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
+import { Route as AuthenticatedVigilanteIndexRouteImport } from './routes/_authenticated/vigilante/index'
+import { Route as AuthenticatedVigilanteRouteRouteImport } from './routes/_authenticated/vigilante/route'
+import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as CuentaDesactivadaRouteImport } from './routes/cuenta-desactivada'
+import { Route as ErrorAuthRouteImport } from './routes/error-auth'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as InvitacionExpiradaRouteImport } from './routes/invitacion-expirada'
+import { Route as InvitacionRevocadaRouteImport } from './routes/invitacion-revocada'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LogoutRouteImport } from './routes/logout'
+import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
+import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
+import { Route as ProgressRouteImport } from './routes/progress'
+import type { startInstance } from './start.ts'
 
 const ProgressRoute = ProgressRouteImport.update({
   id: '/progress',
   path: '/progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NoRegistradoRoute = NoRegistradoRouteImport.update({
+  id: '/no-registrado',
+  path: '/no-registrado',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NoAutorizadoRoute = NoAutorizadoRouteImport.update({
+  id: '/no-autorizado',
+  path: '/no-autorizado',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LogoutRoute = LogoutRouteImport.update({
+  id: '/logout',
+  path: '/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitacionRevocadaRoute = InvitacionRevocadaRouteImport.update({
+  id: '/invitacion-revocada',
+  path: '/invitacion-revocada',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitacionExpiradaRoute = InvitacionExpiradaRouteImport.update({
+  id: '/invitacion-expirada',
+  path: '/invitacion-expirada',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErrorAuthRoute = ErrorAuthRouteImport.update({
+  id: '/error-auth',
+  path: '/error-auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CuentaDesactivadaRoute = CuentaDesactivadaRouteImport.update({
+  id: '/cuenta-desactivada',
+  path: '/cuenta-desactivada',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -67,20 +118,43 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
+  id: '/api/auth/callback',
+  path: '/api/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cuenta-desactivada': typeof CuentaDesactivadaRoute
+  '/error-auth': typeof ErrorAuthRoute
+  '/invitacion-expirada': typeof InvitacionExpiradaRoute
+  '/invitacion-revocada': typeof InvitacionRevocadaRoute
+  '/login': typeof LoginRoute
+  '/logout': typeof LogoutRoute
+  '/no-autorizado': typeof NoAutorizadoRoute
+  '/no-registrado': typeof NoRegistradoRoute
   '/progress': typeof ProgressRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
   '/vigilante/': typeof AuthenticatedVigilanteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cuenta-desactivada': typeof CuentaDesactivadaRoute
+  '/error-auth': typeof ErrorAuthRoute
+  '/invitacion-expirada': typeof InvitacionExpiradaRoute
+  '/invitacion-revocada': typeof InvitacionRevocadaRoute
+  '/login': typeof LoginRoute
+  '/logout': typeof LogoutRoute
+  '/no-autorizado': typeof NoAutorizadoRoute
+  '/no-registrado': typeof NoRegistradoRoute
   '/progress': typeof ProgressRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/super-admin': typeof AuthenticatedSuperAdminIndexRoute
   '/vigilante': typeof AuthenticatedVigilanteIndexRoute
@@ -89,10 +163,19 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/cuenta-desactivada': typeof CuentaDesactivadaRoute
+  '/error-auth': typeof ErrorAuthRoute
+  '/invitacion-expirada': typeof InvitacionExpiradaRoute
+  '/invitacion-revocada': typeof InvitacionRevocadaRoute
+  '/login': typeof LoginRoute
+  '/logout': typeof LogoutRoute
+  '/no-autorizado': typeof NoAutorizadoRoute
+  '/no-registrado': typeof NoRegistradoRoute
   '/progress': typeof ProgressRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/_authenticated/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
   '/_authenticated/vigilante/': typeof AuthenticatedVigilanteIndexRoute
@@ -101,23 +184,55 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/cuenta-desactivada'
+    | '/error-auth'
+    | '/invitacion-expirada'
+    | '/invitacion-revocada'
+    | '/login'
+    | '/logout'
+    | '/no-autorizado'
+    | '/no-registrado'
     | '/progress'
     | '/admin'
     | '/super-admin'
     | '/vigilante'
+    | '/api/auth/callback'
     | '/admin/'
     | '/super-admin/'
     | '/vigilante/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/progress' | '/admin' | '/super-admin' | '/vigilante'
+  to:
+    | '/'
+    | '/cuenta-desactivada'
+    | '/error-auth'
+    | '/invitacion-expirada'
+    | '/invitacion-revocada'
+    | '/login'
+    | '/logout'
+    | '/no-autorizado'
+    | '/no-registrado'
+    | '/progress'
+    | '/api/auth/callback'
+    | '/admin'
+    | '/super-admin'
+    | '/vigilante'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/cuenta-desactivada'
+    | '/error-auth'
+    | '/invitacion-expirada'
+    | '/invitacion-revocada'
+    | '/login'
+    | '/logout'
+    | '/no-autorizado'
+    | '/no-registrado'
     | '/progress'
     | '/_authenticated/admin'
     | '/_authenticated/super-admin'
     | '/_authenticated/vigilante'
+    | '/api/auth/callback'
     | '/_authenticated/admin/'
     | '/_authenticated/super-admin/'
     | '/_authenticated/vigilante/'
@@ -126,7 +241,16 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  CuentaDesactivadaRoute: typeof CuentaDesactivadaRoute
+  ErrorAuthRoute: typeof ErrorAuthRoute
+  InvitacionExpiradaRoute: typeof InvitacionExpiradaRoute
+  InvitacionRevocadaRoute: typeof InvitacionRevocadaRoute
+  LoginRoute: typeof LoginRoute
+  LogoutRoute: typeof LogoutRoute
+  NoAutorizadoRoute: typeof NoAutorizadoRoute
+  NoRegistradoRoute: typeof NoRegistradoRoute
   ProgressRoute: typeof ProgressRoute
+  ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -136,6 +260,62 @@ declare module '@tanstack/react-router' {
       path: '/progress'
       fullPath: '/progress'
       preLoaderRoute: typeof ProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/no-registrado': {
+      id: '/no-registrado'
+      path: '/no-registrado'
+      fullPath: '/no-registrado'
+      preLoaderRoute: typeof NoRegistradoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/no-autorizado': {
+      id: '/no-autorizado'
+      path: '/no-autorizado'
+      fullPath: '/no-autorizado'
+      preLoaderRoute: typeof NoAutorizadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/logout': {
+      id: '/logout'
+      path: '/logout'
+      fullPath: '/logout'
+      preLoaderRoute: typeof LogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invitacion-revocada': {
+      id: '/invitacion-revocada'
+      path: '/invitacion-revocada'
+      fullPath: '/invitacion-revocada'
+      preLoaderRoute: typeof InvitacionRevocadaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invitacion-expirada': {
+      id: '/invitacion-expirada'
+      path: '/invitacion-expirada'
+      fullPath: '/invitacion-expirada'
+      preLoaderRoute: typeof InvitacionExpiradaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/error-auth': {
+      id: '/error-auth'
+      path: '/error-auth'
+      fullPath: '/error-auth'
+      preLoaderRoute: typeof ErrorAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cuenta-desactivada': {
+      id: '/cuenta-desactivada'
+      path: '/cuenta-desactivada'
+      fullPath: '/cuenta-desactivada'
+      preLoaderRoute: typeof CuentaDesactivadaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -193,6 +373,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/api/auth/callback': {
+      id: '/api/auth/callback'
+      path: '/api/auth/callback'
+      fullPath: '/api/auth/callback'
+      preLoaderRoute: typeof ApiAuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -260,17 +447,25 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  CuentaDesactivadaRoute: CuentaDesactivadaRoute,
+  ErrorAuthRoute: ErrorAuthRoute,
+  InvitacionExpiradaRoute: InvitacionExpiradaRoute,
+  InvitacionRevocadaRoute: InvitacionRevocadaRoute,
+  LoginRoute: LoginRoute,
+  LogoutRoute: LogoutRoute,
+  NoAutorizadoRoute: NoAutorizadoRoute,
+  NoRegistradoRoute: NoRegistradoRoute,
   ProgressRoute: ProgressRoute,
+  ApiAuthCallbackRoute: ApiAuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

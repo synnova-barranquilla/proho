@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
-> **Última actualización:** 2 de abril de 2026
-> **Total de tareas:** 172
-> **MVP (M1+M2+M3):** 114 tareas
-> **Completadas:** 17 (9.9%)
+> **Última actualización:** 6 de abril de 2026
+> **Total de tareas:** 187
+> **MVP (M1+M2+M3):** 129 tareas
+> **Completadas:** 17 (9.1%)
 
 ---
 
@@ -52,20 +52,29 @@
 | 1.9  | Implementar feature flags por módulo            | deferred |
 | 1.10 | Configurar DNS y SSL wildcard                   | deferred |
 
-### Fase 2 — Autenticación y Usuarios (2/10)
+### Fase 2 — Autenticación y Usuarios (2/19)
 
-| ID   | Tarea                                          | Estado  |
-| ---- | ---------------------------------------------- | ------- |
-| 2.1  | Crear tabla users en Convex                    | done    |
-| 2.2  | Implementar login con WorkOS AuthKit           | pending |
-| 2.3  | Implementar callback de autenticación          | pending |
-| 2.4  | Implementar sync WorkOS → Convex               | pending |
-| 2.5  | Configurar WorkOS Organizations                | pending |
-| 2.6  | Definir enum de roles                          | done    |
-| 2.7  | Crear middleware de protección de rutas        | pending |
-| 2.8  | Implementar middleware de autorización por rol | pending |
-| 2.9  | Implementar logout                             | pending |
-| 2.10 | Implementar recuperación de contraseña         | pending |
+| ID   | Tarea                                                                  | Estado  |
+| ---- | ---------------------------------------------------------------------- | ------- |
+| 2.1  | Crear tabla users en Convex (orgRole, sin conjuntoId/role monolíticos) | done    |
+| 2.2  | Implementar login con WorkOS AuthKit                                   | pending |
+| 2.3  | Implementar callback de autenticación                                  | pending |
+| 2.4  | Implementar sync WorkOS → Convex                                       | pending |
+| 2.5  | Configurar WorkOS Organizations (campo minimal en schema)              | pending |
+| 2.6  | Definir enum orgRoles (SUPER_ADMIN, ADMIN); conjuntoRoles en F4        | done    |
+| 2.7  | Crear middleware de protección de rutas                                | pending |
+| 2.8  | Implementar middleware de autorización por rol                         | pending |
+| 2.9  | Implementar logout                                                     | pending |
+| 2.10 | Implementar recuperación de contraseña                                 | pending |
+| 2.11 | Configurar Convex custom JWT auth con WorkOS                           | pending |
+| 2.12 | Reorganizar providers: ConvexProviderWithAuth + AppProviders           | pending |
+| 2.13 | Crear tabla invitations en Convex                                      | pending |
+| 2.14 | CRUD de invitations (create, revoke, getByEmail, listByOrg)            | pending |
+| 2.15 | Helpers de autorización en convex/lib/auth.ts                          | pending |
+| 2.16 | handleLogin mutation (coordinador del flujo de login)                  | pending |
+| 2.17 | Seed bootstrap + script CLI super-admin                                | pending |
+| 2.18 | 6 páginas de error + componente ErrorPage                              | pending |
+| 2.19 | Landing pública + /login + home con redirect por rol                   | pending |
 
 ---
 
@@ -73,40 +82,46 @@
 
 ### Fase 3 — Admin: Super Admin (0/7)
 
-| ID  | Tarea                                      | Estado  |
-| --- | ------------------------------------------ | ------- |
-| 3.1 | Layout de Super Admin                      | pending |
-| 3.2 | Listado de organizaciones/tenants          | pending |
-| 3.3 | Onboarding de nuevo tenant                 | pending |
-| 3.4 | Edición y desactivación de tenants         | pending |
-| 3.5 | Listado de usuarios (filtro por org y rol) | pending |
-| 3.6 | Registro de admin de conjunto              | pending |
-| 3.7 | Toggle de módulos por tenant               | pending |
+| ID  | Tarea                                                        | Estado  |
+| --- | ------------------------------------------------------------ | ------- |
+| 3.1 | Layout de Super Admin                                        | pending |
+| 3.2 | Listado de organizaciones/tenants                            | pending |
+| 3.3 | Onboarding de nuevo tenant (crea org + invita admin via F2)  | pending |
+| 3.4 | Edición y desactivación de tenants                           | pending |
+| 3.5 | Listado de usuarios (filtro por org y rol)                   | pending |
+| 3.6 | Registro de admin de conjunto (usa invitations.create de F2) | pending |
+| 3.7 | Toggle de módulos por tenant                                 | pending |
 
-### Fase 4 — Admin: Conjunto Admin (0/20)
+### Fase 4 — Admin: Conjunto Admin (0/26)
 
-| ID   | Tarea                                  | Estado  |
-| ---- | -------------------------------------- | ------- |
-| 4.1  | Layout de Admin de conjunto            | pending |
-| 4.2  | Crear tabla conjuntos en Convex        | pending |
-| 4.3  | CRUD de conjuntos                      | pending |
-| 4.4  | Selector de conjunto en header         | pending |
-| 4.5  | Crear tabla unidades en Convex         | pending |
-| 4.6  | CRUD de unidades/apartamentos          | pending |
-| 4.7  | Crear tabla residentes en Convex       | pending |
-| 4.8  | CRUD de residentes                     | pending |
-| 4.9  | Crear tabla vehiculos en Convex        | pending |
-| 4.10 | CRUD de vehículos                      | pending |
-| 4.11 | Crear tabla parqueaderos en Convex     | pending |
-| 4.12 | Configuración de parqueaderos          | pending |
-| 4.13 | Crear tabla regla_config en Convex     | pending |
-| 4.14 | Configuración de reglas del motor      | pending |
-| 4.15 | Gestión de estado de mora/candado      | pending |
-| 4.16 | Crear tabla permisos_usuario en Convex | pending |
-| 4.17 | Gestión de permisos granulares         | pending |
-| 4.18 | Gestión de usuarios del conjunto       | pending |
-| 4.19 | Script de seed con datos realistas     | pending |
-| 4.20 | Dashboard general del admin            | pending |
+| ID   | Tarea                                                             | Estado  |
+| ---- | ----------------------------------------------------------------- | ------- |
+| 4.1  | Layout de Admin de conjunto                                       | pending |
+| 4.2  | Crear tabla conjuntos en Convex                                   | pending |
+| 4.3  | CRUD de conjuntos                                                 | pending |
+| 4.4  | Selector de conjunto en header                                    | pending |
+| 4.5  | Crear tabla unidades en Convex                                    | pending |
+| 4.6  | CRUD de unidades/apartamentos                                     | pending |
+| 4.7  | Crear tabla residentes en Convex                                  | pending |
+| 4.8  | CRUD de residentes                                                | pending |
+| 4.9  | Crear tabla vehiculos en Convex                                   | pending |
+| 4.10 | CRUD de vehículos                                                 | pending |
+| 4.11 | Crear tabla parqueaderos en Convex                                | pending |
+| 4.12 | Configuración de parqueaderos                                     | pending |
+| 4.13 | Crear tabla regla_config en Convex                                | pending |
+| 4.14 | Configuración de reglas del motor                                 | pending |
+| 4.15 | Gestión de estado de mora/candado                                 | pending |
+| 4.16 | Crear tabla permisos_usuario en Convex                            | pending |
+| 4.17 | Gestión de permisos granulares                                    | pending |
+| 4.18 | Gestión de usuarios del conjunto (usa invitations con conjuntoId) | pending |
+| 4.19 | Script de seed con datos realistas                                | pending |
+| 4.20 | Dashboard general del admin                                       | pending |
+| 4.21 | Crear tabla conjuntoMemberships en Convex                         | pending |
+| 4.22 | Definir enum conjuntoRoles y migrar users.orgRole a optional      | pending |
+| 4.23 | Mutations de conjuntoMemberships (CRUD)                           | pending |
+| 4.24 | Expandir invitations a nivel conjunto (conjuntoId + conjuntoRole) | pending |
+| 4.25 | Selector de conjunto post-login + cookie selectedConjuntoId       | pending |
+| 4.26 | Refactor loader \_authenticated para contexto de conjunto activo  | pending |
 
 ---
 
@@ -284,9 +299,9 @@
 
 | Milestone            | Fases             | Total   | Done   | Progreso |
 | -------------------- | ----------------- | ------- | ------ | -------- |
-| **M1 — Foundation**  | F0 + F1 + F2      | 33      | 17     | 52%      |
-| **M2 — Admin Ready** | F3 + F4           | 27      | 0      | 0%       |
+| **M1 — Foundation**  | F0 + F1 + F2      | 42      | 17     | 40%      |
+| **M2 — Admin Ready** | F3 + F4           | 33      | 0      | 0%       |
 | **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 54      | 0      | 0%       |
-| **MVP TOTAL**        | F0–F8             | **114** | **17** | **15%**  |
+| **MVP TOTAL**        | F0–F8             | **129** | **17** | **13%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **172** | **17** | **10%**  |
+| **TOTAL**            | F0–F14            | **187** | **17** | **9%**   |

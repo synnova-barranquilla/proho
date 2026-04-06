@@ -1,9 +1,8 @@
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 
-import AppConvexProvider, {
-  getQueryClient,
-} from './integrations/convex/provider'
+import { getQueryClient } from './integrations/convex/provider'
+import AppProviders from './integrations/providers'
 import { routeTree } from './routeTree.gen'
 
 export function getRouter() {
@@ -15,7 +14,7 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
-    Wrap: AppConvexProvider,
+    Wrap: AppProviders,
   })
 
   setupRouterSsrQueryIntegration({ router, queryClient })

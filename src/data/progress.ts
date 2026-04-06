@@ -24,9 +24,9 @@ export const currentFocus = {
   phaseId: 'F2',
   phaseName: 'Autenticación y Usuarios',
   done: 2,
-  total: 10,
+  total: 19,
 }
-export const lastUpdated = '2 de abril de 2026'
+export const lastUpdated = '6 de abril de 2026'
 
 export const milestones: Milestone[] = [
   {
@@ -153,7 +153,7 @@ export const milestones: Milestone[] = [
         tasks: [
           {
             id: '2.1',
-            name: 'Crear tabla users en Convex',
+            name: 'Crear tabla users en Convex (orgRole, sin conjuntoId/role monolíticos)',
             status: 'done',
           },
           {
@@ -173,10 +173,14 @@ export const milestones: Milestone[] = [
           },
           {
             id: '2.5',
-            name: 'Configurar WorkOS Organizations',
+            name: 'Configurar WorkOS Organizations (campo minimal en schema)',
             status: 'pending',
           },
-          { id: '2.6', name: 'Definir enum de roles', status: 'done' },
+          {
+            id: '2.6',
+            name: 'Definir enum orgRoles (SUPER_ADMIN, ADMIN); conjuntoRoles en F4',
+            status: 'done',
+          },
           {
             id: '2.7',
             name: 'Crear middleware de protección de rutas',
@@ -191,6 +195,51 @@ export const milestones: Milestone[] = [
           {
             id: '2.10',
             name: 'Implementar recuperación de contraseña',
+            status: 'pending',
+          },
+          {
+            id: '2.11',
+            name: 'Configurar Convex custom JWT auth con WorkOS',
+            status: 'pending',
+          },
+          {
+            id: '2.12',
+            name: 'Reorganizar providers: ConvexProviderWithAuth + AppProviders',
+            status: 'pending',
+          },
+          {
+            id: '2.13',
+            name: 'Crear tabla invitations en Convex',
+            status: 'pending',
+          },
+          {
+            id: '2.14',
+            name: 'CRUD de invitations (create, revoke, getByEmail, listByOrg)',
+            status: 'pending',
+          },
+          {
+            id: '2.15',
+            name: 'Helpers de autorización en convex/lib/auth.ts',
+            status: 'pending',
+          },
+          {
+            id: '2.16',
+            name: 'handleLogin mutation (coordinador del flujo de login)',
+            status: 'pending',
+          },
+          {
+            id: '2.17',
+            name: 'Seed bootstrap + script CLI super-admin',
+            status: 'pending',
+          },
+          {
+            id: '2.18',
+            name: '6 páginas de error + componente ErrorPage',
+            status: 'pending',
+          },
+          {
+            id: '2.19',
+            name: 'Landing pública + /login + home con redirect por rol',
             status: 'pending',
           },
         ],
@@ -216,7 +265,7 @@ export const milestones: Milestone[] = [
           },
           {
             id: '3.3',
-            name: 'Onboarding de nuevo tenant',
+            name: 'Onboarding de nuevo tenant (crea org + invita admin via F2)',
             status: 'pending',
           },
           {
@@ -231,7 +280,7 @@ export const milestones: Milestone[] = [
           },
           {
             id: '3.6',
-            name: 'Registro de admin de conjunto',
+            name: 'Registro de admin de conjunto (usa invitations.create de F2)',
             status: 'pending',
           },
           {
@@ -320,7 +369,7 @@ export const milestones: Milestone[] = [
           },
           {
             id: '4.18',
-            name: 'Gestión de usuarios del conjunto',
+            name: 'Gestión de usuarios del conjunto (usa invitations con conjuntoId)',
             status: 'pending',
           },
           {
@@ -331,6 +380,36 @@ export const milestones: Milestone[] = [
           {
             id: '4.20',
             name: 'Dashboard general del admin',
+            status: 'pending',
+          },
+          {
+            id: '4.21',
+            name: 'Crear tabla conjuntoMemberships en Convex',
+            status: 'pending',
+          },
+          {
+            id: '4.22',
+            name: 'Definir enum conjuntoRoles y migrar users.orgRole a optional',
+            status: 'pending',
+          },
+          {
+            id: '4.23',
+            name: 'Mutations de conjuntoMemberships (CRUD)',
+            status: 'pending',
+          },
+          {
+            id: '4.24',
+            name: 'Expandir invitations a nivel conjunto (conjuntoId + conjuntoRole)',
+            status: 'pending',
+          },
+          {
+            id: '4.25',
+            name: 'Selector de conjunto post-login + cookie selectedConjuntoId',
+            status: 'pending',
+          },
+          {
+            id: '4.26',
+            name: 'Refactor loader _authenticated para contexto de conjunto activo',
             status: 'pending',
           },
         ],

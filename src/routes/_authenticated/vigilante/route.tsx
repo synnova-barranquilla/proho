@@ -1,10 +1,11 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/vigilante')({
-  // TODO: Add role check in beforeLoad when roles are implemented (Phase 2)
-  // beforeLoad: ({ context }) => {
-  //   if (context.auth?.role !== 'VIGILANTE') throw redirect({ to: '/' })
-  // },
+  beforeLoad: () => {
+    // VIGILANTE role is a conjunto-level membership introduced in F4.
+    // In F2, no user can legitimately reach this route — always reject.
+    throw redirect({ to: '/no-autorizado' })
+  },
   component: VigilanteLayout,
 })
 

@@ -1,0 +1,83 @@
+#!/usr/bin/env tsx
+/**
+ * Bootstraps the initial SUPER_ADMIN user in Convex.
+ *
+ * Prerequisites:
+ * 1. Create the user manually in the WorkOS Dashboard.
+ * 2. Copy the WorkOS User ID (format: user_xxxxxxxxxxxxxxxx).
+ * 3. Run this script with --email, --name, --workos-id flags.
+ *
+ * Usage:
+ *   pnpm bootstrap:super-admin \
+ *     --email admin@synnova.com.co \
+ *     --name "Admin Synnova" \
+ *     --workos-id user_01K7M4BH5CBKNN92DANSQBBMWD
+ *
+ * The script is idempotent: running it multiple times with the same
+ * --workos-id will detect the existing user and not duplicate.
+ */
+import { execSync } from 'node:child_process'
+import { parseArgs } from 'node:util'
+
+const HELP_TEXT = `
+Uso: pnpm bootstrap:super-admin --email <email> --name <nombre> --workos-id <id>
+
+Ejemplo:
+  pnpm bootstrap:super-admin \\
+    --email admin@synnova.com.co \\
+    --name "Admin Synnova" \\
+    --workos-id user_01K7M4BH5CBKNN92DANSQBBMWD
+
+Flags:
+  --email       Email del super admin (debe coincidir con WorkOS)
+  --name        Nombre completo
+  --workos-id   WorkOS User ID (desde el dashboard de WorkOS)
+  -h, --help    Muestra esta ayuda
+`
+
+const { values } = parseArgs({
+  options: {
+    email: { type: 'string' },
+    name: { type: 'string' },
+    'workos-id': { type: 'string' },
+    help: { type: 'boolean', short: 'h' },
+  },
+  strict: false,
+})
+
+if (values.help) {
+  console.log(HELP_TEXT)
+  process.exit(0)
+}
+
+const missing: Array<string> = []
+if (!values.email) missing.push('--email')
+if (!values.name) missing.push('--name')
+if (!values['workos-id']) missing.push('--workos-id')
+
+if (missing.length > 0) {
+  console.error(`\n✗ Faltan flags requeridos: ${missing.join(', ')}`)
+  console.log(HELP_TEXT)
+  process.exit(1)
+}
+
+const args = JSON.stringify({
+  superAdminEmail: values.email,
+  superAdminName: values.name,
+  superAdminWorkosId: values['workos-id'],
+})
+
+console.log('\n→ Ejecutando seed:bootstrap en Convex...')
+console.log(`  email:      ${values.email}`)
+console.log(`  name:       ${values.name}`)
+console.log(`  workos-id:  ${values['workos-id']}\n`)
+
+try {
+  execSync(`npx convex run seed:bootstrap '${args}'`, {
+    stdio: 'inherit',
+  })
+  console.log('\n✓ Bootstrap completado')
+} catch {
+  console.error('\n✗ Error en bootstrap')
+  process.exit(1)
+}

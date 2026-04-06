@@ -4,6 +4,7 @@ export const organizationFields = {
   slug: v.string(),
   name: v.string(),
   active: v.boolean(),
+  workosOrganizationId: v.optional(v.string()),
 }
 
 export const moduleKeys = v.union(

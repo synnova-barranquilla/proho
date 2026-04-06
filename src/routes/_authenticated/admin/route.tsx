@@ -1,10 +1,13 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/admin')({
-  // TODO: Add role check in beforeLoad when roles are implemented (Phase 2)
-  // beforeLoad: ({ context }) => {
-  //   if (context.auth?.role !== 'ADMIN') throw redirect({ to: '/' })
-  // },
+  beforeLoad: ({ context }) => {
+    const convexUser = (context as { convexUser?: { orgRole: string } })
+      .convexUser
+    if (!convexUser || convexUser.orgRole !== 'ADMIN') {
+      throw redirect({ to: '/no-autorizado' })
+    }
+  },
   component: AdminLayout,
 })
 

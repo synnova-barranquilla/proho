@@ -57,18 +57,27 @@
 
 ## Fase 2 — Autenticación y Usuarios
 
-| ID   | Tarea                                                                                                 |
-| ---- | ----------------------------------------------------------------------------------------------------- |
-| 2.1  | Crear tabla `users` en Convex (email, nombre, rol, organization_id, conjunto_id) con schema validator |
-| 2.2  | Implementar pantalla de login con WorkOS AuthKit                                                      |
-| 2.3  | Implementar callback de autenticación (redirect de WorkOS, extraer sesión)                            |
-| 2.4  | Implementar sincronización WorkOS → Convex al login/registro                                          |
-| 2.5  | Configurar WorkOS Organizations (una por tenant)                                                      |
-| 2.6  | Definir enum de roles: SUPER_ADMIN, ADMIN, ASISTENTE, VIGILANTE, RESIDENTE                            |
-| 2.7  | Crear middleware de protección de rutas (redirigir a login si no autenticado)                         |
-| 2.8  | Implementar middleware de autorización por rol en funciones Convex                                    |
-| 2.9  | Implementar flujo de logout                                                                           |
-| 2.10 | Implementar flujo de recuperación de contraseña vía WorkOS                                            |
+| ID   | Tarea                                                                                                                                                                            |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.1  | Crear tabla `users` en Convex con `orgRole` (SUPER_ADMIN/ADMIN); sin `conjuntoId`/`role` monolíticos                                                                             |
+| 2.2  | Implementar pantalla de login con WorkOS AuthKit (landing + ruta `/login` + middleware `src/start.ts`)                                                                           |
+| 2.3  | Implementar callback de autenticación (redirect de WorkOS, extraer sesión, coordinar con Convex)                                                                                 |
+| 2.4  | Implementar sincronización WorkOS → Convex al login (email/name auto-sync, resolver invitations)                                                                                 |
+| 2.5  | Configurar WorkOS Organizations (campo `workosOrganizationId` optional en schema; flujo completo en F3)                                                                          |
+| 2.6  | Definir enum `orgRoles` (SUPER_ADMIN, ADMIN); `conjuntoRoles` (ASISTENTE, VIGILANTE, RESIDENTE) se define en F4                                                                  |
+| 2.7  | Crear middleware de protección de rutas (`_authenticated` loader: `getAuth()` + Convex user lookup)                                                                              |
+| 2.8  | Implementar middleware de autorización por rol en funciones Convex (`requireOrgRole`, `canInvite`)                                                                               |
+| 2.9  | Implementar flujo de logout (`/logout` con `signOut()` server-side)                                                                                                              |
+| 2.10 | Implementar flujo de recuperación de contraseña vía WorkOS (nativo en hosted page)                                                                                               |
+| 2.11 | Configurar Convex custom JWT auth con WorkOS (`convex/auth.config.ts` con JWKS)                                                                                                  |
+| 2.12 | Reorganizar providers: `ConvexProviderWithAuth` + `AppProviders` wrapper (WorkOS fuera, Convex dentro)                                                                           |
+| 2.13 | Crear tabla `invitations` en Convex (status, expiración 7 días, invitedBy, name, acceptedUserId)                                                                                 |
+| 2.14 | Implementar CRUD de invitations (`create`, `revoke`, `getByEmail`, `listByOrganization`) con validaciones de rol                                                                 |
+| 2.15 | Implementar helpers de autorización en `convex/lib/auth.ts` (`getCurrentUser`, `requireUser`, `requireOrgRole`, `canInvite`)                                                     |
+| 2.16 | Implementar `handleLogin` en `convex/auth/mutations.ts` (coordinador del flujo: lookup + sync + invitation acceptance + discriminated union de resultado)                        |
+| 2.17 | Implementar seed `bootstrap` + script CLI (`tools/scripts/convex/super_admin_bootstrap.ts`) con flags `--email --name --workos-id`                                               |
+| 2.18 | Crear 6 páginas de error (`/no-registrado`, `/invitacion-expirada`, `/invitacion-revocada`, `/cuenta-desactivada`, `/no-autorizado`, `/error-auth`) + componente `<ErrorPage />` |
+| 2.19 | Crear landing pública minimal + ruta `/login` + home con redirect por rol + helper `getDashboardPathForRole`                                                                     |
 
 ---
 
@@ -76,15 +85,15 @@
 
 > El Super Admin (equipo Synnova) gestiona las organizaciones y asigna administradores de conjunto.
 
-| ID  | Tarea                                                                                           |
-| --- | ----------------------------------------------------------------------------------------------- |
-| 3.1 | Crear layout de Super Admin (sidebar: organizaciones, usuarios)                                 |
-| 3.2 | Crear vista de listado de organizaciones/tenants                                                |
-| 3.3 | Crear flujo de onboarding de nuevo tenant (formulario: nombre, slug, plan, módulos activos)     |
-| 3.4 | Implementar edición y desactivación de tenants                                                  |
-| 3.5 | Crear vista de listado de usuarios con filtro por organización y rol                            |
-| 3.6 | Crear flujo de registro de admin de conjunto (asignar usuario con rol ADMIN a una organización) |
-| 3.7 | Implementar toggle de módulos activos por tenant                                                |
+| ID  | Tarea                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------- |
+| 3.1 | Crear layout de Super Admin (sidebar: organizaciones, usuarios)                                               |
+| 3.2 | Crear vista de listado de organizaciones/tenants                                                              |
+| 3.3 | Crear flujo de onboarding de nuevo tenant (crea org + invita admin inicial usando `invitations.create` de F2) |
+| 3.4 | Implementar edición y desactivación de tenants                                                                |
+| 3.5 | Crear vista de listado de usuarios con filtro por organización y rol                                          |
+| 3.6 | Crear flujo de registro de admin de conjunto (usa `invitations.create` de F2 con `orgRole: ADMIN`)            |
+| 3.7 | Implementar toggle de módulos activos por tenant                                                              |
 
 ---
 
@@ -111,9 +120,15 @@
 | 4.15 | Implementar gestión de estado de mora (marcar/desmarcar candado por unidad)                                                               |
 | 4.16 | Crear tabla `permisos_usuario` en Convex (usuario_id, permiso, activo, activado_por, fecha) con schema validator                          |
 | 4.17 | Implementar gestión de permisos granulares (activar/desactivar `registrar_vehiculos` por vigilante)                                       |
-| 4.18 | Crear gestión de usuarios del conjunto (asignar roles ASISTENTE, VIGILANTE a usuarios)                                                    |
+| 4.18 | Crear gestión de usuarios del conjunto (usa `invitations.create` con `conjuntoId` + `conjuntoRole`, expandido en 4.24)                    |
 | 4.19 | Crear script de seed con datos realistas de prueba (conjunto con 2 torres, 50 aptos, 80 vehículos, reglas configuradas, candados activos) |
 | 4.20 | Crear página de inicio/dashboard general del admin con resumen del conjunto                                                               |
+| 4.21 | Crear tabla `conjuntoMemberships` en Convex con schema validator (userId, conjuntoId, role, active)                                       |
+| 4.22 | Definir enum `conjuntoRoles` (ASISTENTE, VIGILANTE, RESIDENTE) y migrar `users.orgRole` a optional                                        |
+| 4.23 | Implementar mutations de `conjuntoMemberships` (`create`, `update`, `deactivate`, `listByConjunto`, `listByUser`)                         |
+| 4.24 | Expandir mutations de invitations para soportar nivel conjunto (`conjuntoId` + `conjuntoRole`)                                            |
+| 4.25 | Implementar selector de conjunto post-login: ruta `/seleccionar-conjunto`, cookie `selectedConjuntoId`, lógica en loader `_authenticated` |
+| 4.26 | Refactorizar loader `_authenticated` para soportar contexto de conjunto activo (además del contexto org)                                  |
 
 ---
 
@@ -323,9 +338,9 @@
 | --------- | ------------------------------------ | ------- | --------- |
 | 0         | Configuración del Proyecto           | 13      | M1        |
 | 1         | Arquitectura Multi-Tenant            | 10      | M1        |
-| 2         | Autenticación y Usuarios             | 10      | M1        |
+| 2         | Autenticación y Usuarios             | 19      | M1        |
 | 3         | Admin: Super Admin                   | 7       | M2        |
-| 4         | Admin: Conjunto Admin                | 20      | M2        |
+| 4         | Admin: Conjunto Admin                | 26      | M2        |
 | 5         | Parqueaderos: Datos Offline-First    | 23      | M3        |
 | 6         | Parqueaderos: Reglas y Pantallas     | 19      | M3        |
 | 7         | Parqueaderos: Dashboards y Auditoría | 6       | M3        |
@@ -336,6 +351,6 @@
 | 12        | Notificaciones                       | 12      | M4        |
 | 13        | Dashboard Ejecutivo                  | 5       | M4        |
 | 14        | Testing Final y Deploy               | 10      | M3/M4     |
-| **Total** |                                      | **172** |           |
+| **Total** |                                      | **187** |           |
 
-> **MVP = M1 + M2 + M3 = Fases 0-8 + F14 (parcial) = 114 tareas**
+> **MVP = M1 + M2 + M3 = Fases 0-8 + F14 (parcial) = 129 tareas**
