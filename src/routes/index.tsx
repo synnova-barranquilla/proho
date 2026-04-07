@@ -2,6 +2,7 @@ import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 
 import { getAuth } from '@workos/authkit-tanstack-react-start'
 import { ConvexHttpClient } from 'convex/browser'
+import { ConvexError } from 'convex/values'
 
 import { api } from '../../convex/_generated/api'
 import { buttonVariants } from '../components/ui/button'
@@ -17,22 +18,39 @@ export const Route = createFileRoute('/')({
       return { authenticated: false as const }
     }
 
-    // Authenticated — decide dashboard by role.
     const client = new ConvexHttpClient(CONVEX_URL)
     client.setAuth(auth.accessToken)
-    const convexUser = await client.query(
-      api.users.queries.getCurrentUser_public,
-      {},
-    )
 
-    if (!convexUser) {
-      throw redirect({ to: '/no-registrado' })
-    }
-    if (!convexUser.active) {
-      throw redirect({ to: '/cuenta-desactivada' })
+    let result
+    try {
+      result = await client.mutation(api.auth.mutations.handleLogin, {})
+    } catch (err) {
+      // Log every detail so we can diagnose JWT / Convex auth problems.
+      const asConvex = err instanceof ConvexError ? err.data : null
+      console.error('[/] handleLogin failed', {
+        workosUserId: auth.user.id,
+        email: auth.user.email,
+        errName: (err as { constructor?: { name?: string } } | undefined)
+          ?.constructor?.name,
+        errMessage: err instanceof Error ? err.message : String(err),
+        convexErrorData: asConvex,
+      })
+      throw redirect({ to: '/error-auth' })
     }
 
-    throw redirect({ to: getDashboardPathForRole(convexUser.orgRole) })
+    switch (result.status) {
+      case 'not_registered':
+        throw redirect({ to: '/no-registrado' })
+      case 'invitation_expired':
+        throw redirect({ to: '/invitacion-expirada' })
+      case 'invitation_revoked':
+        throw redirect({ to: '/invitacion-revocada' })
+      case 'cuenta_desactivada':
+        throw redirect({ to: '/cuenta-desactivada' })
+      case 'existing':
+      case 'accepted':
+        throw redirect({ to: getDashboardPathForRole(result.orgRole) })
+    }
   },
   component: HomePage,
 })

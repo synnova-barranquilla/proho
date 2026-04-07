@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values'
+
 import { mutation } from '../_generated/server'
 
 /**
@@ -15,13 +17,24 @@ export const handleLogin = mutation({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) {
-      throw new Error('Unauthenticated: missing JWT identity')
+      throw new ConvexError({
+        code: 'UNAUTHENTICATED',
+        message:
+          'JWT identity no disponible. Verifica que convex/auth.config.ts (issuer/jwks) coincide con el access token real de WorkOS.',
+      })
     }
 
     const workosUserId = identity.subject
     const email = identity.email ?? null
     if (!email) {
-      throw new Error('JWT does not contain email claim')
+      throw new ConvexError({
+        code: 'MISSING_EMAIL_CLAIM',
+        message: `JWT no contiene claim 'email'. Identity: ${JSON.stringify({
+          subject: identity.subject,
+          issuer: identity.issuer,
+          tokenIdentifier: identity.tokenIdentifier,
+        })}`,
+      })
     }
 
     const nameFromJwt =
