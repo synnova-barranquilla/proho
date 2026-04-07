@@ -1,20 +1,25 @@
-import { ConvexError } from 'convex/values'
+import { ConvexError, v } from 'convex/values'
 
 import { mutation } from '../_generated/server'
 
 /**
  * Coordinates the login flow after WorkOS authenticates the user.
  *
- * Called by the OAuth callback route. Reads the user identity from the JWT
- * (verified by Convex) — no arguments needed from the client, which means a
- * caller cannot impersonate another user.
+ * Called by the `/` loader. The JWT provides cryptographically-verified
+ * identity (subject = WorkOS user ID). email/name come as arguments from
+ * the server-side loader that decrypts the WorkOS session cookie via
+ * `getAuth()` — WorkOS access tokens are minimal and do not include these.
+ * The caller (the Vercel server) is trusted to forward the authenticated
+ * session's values.
  *
- * Returns a discriminated union that the callback uses to decide where to
- * redirect the user.
+ * Returns a discriminated union used to decide where to redirect the user.
  */
 export const handleLogin = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    email: v.string(),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) {
       throw new ConvexError({
@@ -25,22 +30,8 @@ export const handleLogin = mutation({
     }
 
     const workosUserId = identity.subject
-    const email = identity.email ?? null
-    if (!email) {
-      throw new ConvexError({
-        code: 'MISSING_EMAIL_CLAIM',
-        message: `JWT no contiene claim 'email'. Identity: ${JSON.stringify({
-          subject: identity.subject,
-          issuer: identity.issuer,
-          tokenIdentifier: identity.tokenIdentifier,
-        })}`,
-      })
-    }
-
-    const nameFromJwt =
-      `${identity.givenName ?? ''} ${identity.familyName ?? ''}`.trim() ||
-      (typeof identity.name === 'string' ? identity.name : '') ||
-      ''
+    const email = args.email
+    const nameFromArgs = args.name.trim()
 
     // 1. Does the user already exist? → sync email/name and return.
     const existing = await ctx.db
@@ -51,7 +42,8 @@ export const handleLogin = mutation({
     if (existing) {
       const patch: Partial<typeof existing> = {}
       if (existing.email !== email) patch.email = email
-      if (nameFromJwt && existing.name !== nameFromJwt) patch.name = nameFromJwt
+      if (nameFromArgs && existing.name !== nameFromArgs)
+        patch.name = nameFromArgs
       if (Object.keys(patch).length > 0) {
         await ctx.db.patch(existing._id, patch)
       }
@@ -103,7 +95,7 @@ export const handleLogin = mutation({
     }
 
     // 4. Accept: create the user and mark the invitation as ACCEPTED.
-    const finalName = nameFromJwt || invitation.name
+    const finalName = nameFromArgs || invitation.name
     const userId = await ctx.db.insert('users', {
       email,
       name: finalName,
