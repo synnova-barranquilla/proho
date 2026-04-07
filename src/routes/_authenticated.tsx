@@ -33,6 +33,23 @@ export const Route = createFileRoute('/_authenticated')({
       throw redirect({ to: '/cuenta-desactivada' })
     }
 
+    // Path-based role check. Centralized here because TanStack Router does
+    // not pipe parent loader data through child `beforeLoad` context.
+    const path = location.pathname
+    if (
+      path.startsWith('/super-admin') &&
+      convexUser.orgRole !== 'SUPER_ADMIN'
+    ) {
+      throw redirect({ to: '/no-autorizado' })
+    }
+    if (path.startsWith('/admin') && convexUser.orgRole !== 'ADMIN') {
+      throw redirect({ to: '/no-autorizado' })
+    }
+    if (path.startsWith('/vigilante')) {
+      // F2 has no vigilantes — they require conjuntoMemberships from F4.
+      throw redirect({ to: '/no-autorizado' })
+    }
+
     return { workosUser: auth.user, convexUser }
   },
   component: AuthenticatedLayout,

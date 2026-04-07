@@ -1,11 +1,9 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
+// Role guard is enforced in the parent `_authenticated` loader. In F2,
+// vigilantes do not exist yet (they require conjuntoMemberships from F4),
+// so the parent loader always rejects /vigilante/* with /no-autorizado.
 export const Route = createFileRoute('/_authenticated/vigilante')({
-  beforeLoad: () => {
-    // VIGILANTE role is a conjunto-level membership introduced in F4.
-    // In F2, no user can legitimately reach this route — always reject.
-    throw redirect({ to: '/no-autorizado' })
-  },
   component: VigilanteLayout,
 })
 

@@ -31,9 +31,12 @@ export function ErrorPage({
           </Link>
         )}
         {showLogout && (
-          <Link to="/logout" className={buttonVariants({ variant: 'outline' })}>
+          // Plain anchor (not TanStack Link) so it doesn't trigger client-side
+          // preload or client navigation. /logout must run server-side so that
+          // WorkOS signOut() throws a real HTTP redirect the browser follows.
+          <a href="/logout" className={buttonVariants({ variant: 'outline' })}>
             Cerrar sesión
-          </Link>
+          </a>
         )}
       </div>
     </div>
