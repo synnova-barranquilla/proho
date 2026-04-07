@@ -43,7 +43,9 @@ export function UserMenu() {
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<a href="/logout">Cerrar sesión</a>} />
+        <DropdownMenuItem render={<a href="/logout" />}>
+          Cerrar sesión
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
