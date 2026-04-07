@@ -18,6 +18,24 @@ export const Route = createFileRoute('/')({
       return { authenticated: false as const }
     }
 
+    // TEMP DIAGNOSTIC: decode JWT payload to see real issuer/audience claims.
+    // Once convex/auth.config.ts matches the real values, this log can be removed.
+    try {
+      const [, payloadB64] = auth.accessToken.split('.')
+      const payloadJson = Buffer.from(payloadB64, 'base64url').toString('utf-8')
+      const payload = JSON.parse(payloadJson) as Record<string, unknown>
+      console.log('[/] Decoded JWT payload for auth.config.ts alignment', {
+        iss: payload.iss,
+        aud: payload.aud,
+        sub: payload.sub,
+        email: payload.email,
+        org_id: payload.org_id,
+        allClaims: Object.keys(payload),
+      })
+    } catch (decodeErr) {
+      console.error('[/] Failed to decode JWT for diagnostic', decodeErr)
+    }
+
     const client = new ConvexHttpClient(CONVEX_URL)
     client.setAuth(auth.accessToken)
 

@@ -20,18 +20,26 @@ import { execSync } from 'node:child_process'
 import { parseArgs } from 'node:util'
 
 const HELP_TEXT = `
-Uso: pnpm bootstrap:super-admin --email <email> --name <nombre> --workos-id <id>
+Uso: pnpm bootstrap:super-admin --email <email> --name <nombre> --workos-id <id> [--prod]
 
-Ejemplo:
+Ejemplo (dev, default):
   pnpm bootstrap:super-admin \\
     --email admin@synnova.com.co \\
     --name "Admin Synnova" \\
     --workos-id user_01K7M4BH5CBKNN92DANSQBBMWD
 
+Ejemplo (production):
+  pnpm bootstrap:super-admin \\
+    --email admin@synnova.com.co \\
+    --name "Admin Synnova" \\
+    --workos-id user_01K7M4BH5CBKNN92DANSQBBMWD \\
+    --prod
+
 Flags:
   --email       Email del super admin (debe coincidir con WorkOS)
   --name        Nombre completo
   --workos-id   WorkOS User ID (desde el dashboard de WorkOS)
+  --prod        Ejecutar contra el deployment de producción de Convex
   -h, --help    Muestra esta ayuda
 `
 
@@ -40,6 +48,7 @@ const { values } = parseArgs({
     email: { type: 'string' },
     name: { type: 'string' },
     'workos-id': { type: 'string' },
+    prod: { type: 'boolean' },
     help: { type: 'boolean', short: 'h' },
   },
   strict: false,
@@ -67,13 +76,16 @@ const args = JSON.stringify({
   superAdminWorkosId: values['workos-id'],
 })
 
-console.log('\n→ Ejecutando seed:bootstrap en Convex...')
+const target = values.prod ? 'production' : 'dev'
+const prodFlag = values.prod ? ' --prod' : ''
+
+console.log(`\n→ Ejecutando seed:bootstrap en Convex (${target})...`)
 console.log(`  email:      ${values.email}`)
 console.log(`  name:       ${values.name}`)
 console.log(`  workos-id:  ${values['workos-id']}\n`)
 
 try {
-  execSync(`npx convex run seed:bootstrap '${args}'`, {
+  execSync(`npx convex run${prodFlag} seed:bootstrap '${args}'`, {
     stdio: 'inherit',
   })
   console.log('\n✓ Bootstrap completado')
