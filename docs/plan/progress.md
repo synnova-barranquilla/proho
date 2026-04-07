@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
-> **Última actualización:** 6 de abril de 2026
+> **Última actualización:** 7 de abril de 2026
 > **Total de tareas:** 187
 > **MVP (M1+M2+M3):** 129 tareas
-> **Completadas:** 17 (9.1%)
+> **Completadas:** 34 (18.2%)
 
 ---
 
@@ -52,29 +52,29 @@
 | 1.9  | Implementar feature flags por módulo            | deferred |
 | 1.10 | Configurar DNS y SSL wildcard                   | deferred |
 
-### Fase 2 — Autenticación y Usuarios (2/19)
+### Fase 2 — Autenticación y Usuarios (19/19) ✅
 
-| ID   | Tarea                                                                  | Estado  |
-| ---- | ---------------------------------------------------------------------- | ------- |
-| 2.1  | Crear tabla users en Convex (orgRole, sin conjuntoId/role monolíticos) | done    |
-| 2.2  | Implementar login con WorkOS AuthKit                                   | pending |
-| 2.3  | Implementar callback de autenticación                                  | pending |
-| 2.4  | Implementar sync WorkOS → Convex                                       | pending |
-| 2.5  | Configurar WorkOS Organizations (campo minimal en schema)              | pending |
-| 2.6  | Definir enum orgRoles (SUPER_ADMIN, ADMIN); conjuntoRoles en F4        | done    |
-| 2.7  | Crear middleware de protección de rutas                                | pending |
-| 2.8  | Implementar middleware de autorización por rol                         | pending |
-| 2.9  | Implementar logout                                                     | pending |
-| 2.10 | Implementar recuperación de contraseña                                 | pending |
-| 2.11 | Configurar Convex custom JWT auth con WorkOS                           | pending |
-| 2.12 | Reorganizar providers: ConvexProviderWithAuth + AppProviders           | pending |
-| 2.13 | Crear tabla invitations en Convex                                      | pending |
-| 2.14 | CRUD de invitations (create, revoke, getByEmail, listByOrg)            | pending |
-| 2.15 | Helpers de autorización en convex/lib/auth.ts                          | pending |
-| 2.16 | handleLogin mutation (coordinador del flujo de login)                  | pending |
-| 2.17 | Seed bootstrap + script CLI super-admin                                | pending |
-| 2.18 | 6 páginas de error + componente ErrorPage                              | pending |
-| 2.19 | Landing pública + /login + home con redirect por rol                   | pending |
+| ID   | Tarea                                                                  | Estado |
+| ---- | ---------------------------------------------------------------------- | ------ |
+| 2.1  | Crear tabla users en Convex (orgRole, sin conjuntoId/role monolíticos) | done   |
+| 2.2  | Implementar login con WorkOS AuthKit                                   | done   |
+| 2.3  | Implementar callback de autenticación                                  | done   |
+| 2.4  | Implementar sync WorkOS → Convex                                       | done   |
+| 2.5  | Configurar WorkOS Organizations (campo minimal en schema)              | done   |
+| 2.6  | Definir enum orgRoles (SUPER_ADMIN, ADMIN); conjuntoRoles en F4        | done   |
+| 2.7  | Crear middleware de protección de rutas                                | done   |
+| 2.8  | Implementar middleware de autorización por rol                         | done   |
+| 2.9  | Implementar logout                                                     | done   |
+| 2.10 | Implementar recuperación de contraseña                                 | done   |
+| 2.11 | Configurar Convex custom JWT auth con WorkOS                           | done   |
+| 2.12 | Reorganizar providers: ConvexProviderWithAuth + AppProviders           | done   |
+| 2.13 | Crear tabla invitations en Convex                                      | done   |
+| 2.14 | CRUD de invitations (create, revoke, getByEmail, listByOrg)            | done   |
+| 2.15 | Helpers de autorización en convex/lib/auth.ts                          | done   |
+| 2.16 | handleLogin mutation (coordinador del flujo de login)                  | done   |
+| 2.17 | Seed bootstrap + script CLI super-admin                                | done   |
+| 2.18 | 6 páginas de error + componente ErrorPage                              | done   |
+| 2.19 | Landing pública + /login + home con redirect por rol                   | done   |
 
 ---
 
@@ -299,9 +299,9 @@
 
 | Milestone            | Fases             | Total   | Done   | Progreso |
 | -------------------- | ----------------- | ------- | ------ | -------- |
-| **M1 — Foundation**  | F0 + F1 + F2      | 42      | 17     | 40%      |
+| **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34     | 81%      |
 | **M2 — Admin Ready** | F3 + F4           | 33      | 0      | 0%       |
 | **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 54      | 0      | 0%       |
-| **MVP TOTAL**        | F0–F8             | **129** | **17** | **13%**  |
+| **MVP TOTAL**        | F0–F8             | **129** | **34** | **26%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **187** | **17** | **9%**   |
+| **TOTAL**            | F0–F14            | **187** | **34** | **18%**  |

@@ -21,12 +21,12 @@ export type Milestone = {
 }
 
 export const currentFocus = {
-  phaseId: 'F2',
-  phaseName: 'Autenticación y Usuarios',
-  done: 2,
-  total: 19,
+  phaseId: 'F3',
+  phaseName: 'Admin: Super Admin',
+  done: 0,
+  total: 7,
 }
-export const lastUpdated = '6 de abril de 2026'
+export const lastUpdated = '7 de abril de 2026'
 
 export const milestones: Milestone[] = [
   {
@@ -159,22 +159,22 @@ export const milestones: Milestone[] = [
           {
             id: '2.2',
             name: 'Implementar login con WorkOS AuthKit',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.3',
             name: 'Implementar callback de autenticación',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.4',
             name: 'Implementar sync WorkOS → Convex',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.5',
             name: 'Configurar WorkOS Organizations (campo minimal en schema)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.6',
@@ -184,63 +184,63 @@ export const milestones: Milestone[] = [
           {
             id: '2.7',
             name: 'Crear middleware de protección de rutas',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.8',
             name: 'Implementar middleware de autorización por rol',
-            status: 'pending',
+            status: 'done',
           },
-          { id: '2.9', name: 'Implementar logout', status: 'pending' },
+          { id: '2.9', name: 'Implementar logout', status: 'done' },
           {
             id: '2.10',
             name: 'Implementar recuperación de contraseña',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.11',
             name: 'Configurar Convex custom JWT auth con WorkOS',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.12',
             name: 'Reorganizar providers: ConvexProviderWithAuth + AppProviders',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.13',
             name: 'Crear tabla invitations en Convex',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.14',
             name: 'CRUD de invitations (create, revoke, getByEmail, listByOrg)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.15',
             name: 'Helpers de autorización en convex/lib/auth.ts',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.16',
             name: 'handleLogin mutation (coordinador del flujo de login)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.17',
             name: 'Seed bootstrap + script CLI super-admin',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.18',
             name: '6 páginas de error + componente ErrorPage',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '2.19',
             name: 'Landing pública + /login + home con redirect por rol',
-            status: 'pending',
+            status: 'done',
           },
         ],
       },
