@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -127,153 +128,130 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className="space-y-4"
+          className="flex min-h-0 flex-1 flex-col"
         >
-          <FieldGroup>
-            <form.Field name="name">
-              {(field) => (
-                <Field>
-                  <FieldLabel>Nombre de la organización</FieldLabel>
-                  <Input
-                    placeholder="Conjunto Altos del Prado"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      const nextName = e.target.value
-                      field.handleChange(nextName)
-                      if (!slugTouched) {
-                        form.setFieldValue('slug', slugify(nextName))
-                      }
-                    }}
-                  />
-                  <FieldError
-                    errors={
-                      field.state.meta.isTouched
-                        ? (field.state.meta.errors as Array<{
-                            message?: string
-                          }>)
-                        : undefined
-                    }
-                  />
-                </Field>
-              )}
-            </form.Field>
-
-            <form.Field name="slug">
-              {(field) => (
-                <Field>
-                  <FieldLabel>Slug</FieldLabel>
-                  <Input
-                    className="font-mono text-sm"
-                    placeholder="altos-del-prado"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      setSlugTouched(true)
-                      field.handleChange(e.target.value)
-                    }}
-                  />
-                  <FieldDescription>
-                    Identificador único de la organización. Se genera
-                    automáticamente desde el nombre.
-                  </FieldDescription>
-                  <FieldError
-                    errors={
-                      field.state.meta.isTouched
-                        ? (field.state.meta.errors as Array<{
-                            message?: string
-                          }>)
-                        : undefined
-                    }
-                  />
-                </Field>
-              )}
-            </form.Field>
-
-            <form.Field name="activeModules">
-              {(field) => (
-                <Field>
-                  <FieldLabel>Módulos activos</FieldLabel>
-                  <FieldDescription>
-                    Elige qué módulos estarán disponibles para esta
-                    organización. Puedes cambiarlos después.
-                  </FieldDescription>
-                  <div className="space-y-3 rounded-md border p-3">
-                    {MODULE_KEYS.map((moduleKey) => {
-                      const isActive = field.state.value.includes(moduleKey)
-                      return (
-                        <div
-                          key={moduleKey}
-                          className="flex items-start justify-between gap-4"
-                        >
-                          <div className="flex-1 space-y-0.5">
-                            <Label className="text-sm font-medium">
-                              {MODULE_LABELS[moduleKey]}
-                            </Label>
-                            <p className="text-xs text-muted-foreground">
-                              {MODULE_DESCRIPTIONS[moduleKey]}
-                            </p>
-                          </div>
-                          <Switch
-                            checked={isActive}
-                            onCheckedChange={(checked) => {
-                              const next = checked === true
-                              const current = new Set(field.state.value)
-                              if (next) current.add(moduleKey)
-                              else current.delete(moduleKey)
-                              field.handleChange(Array.from(current))
-                            }}
-                          />
-                        </div>
-                      )
-                    })}
-                  </div>
-                </Field>
-              )}
-            </form.Field>
-          </FieldGroup>
-
-          <FieldSeparator />
-
-          <div>
-            <h3 className="text-sm font-medium">Administrador inicial</h3>
-            <p className="text-sm text-muted-foreground">
-              Se creará una invitación pendiente para este usuario.
-            </p>
-          </div>
-
-          <FieldGroup>
-            <form.Field name="adminEmail">
-              {(field) => (
-                <Field>
-                  <FieldLabel>Email</FieldLabel>
-                  <Input
-                    type="email"
-                    placeholder="admin@ejemplo.com"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  <FieldError
-                    errors={
-                      field.state.meta.isTouched
-                        ? (field.state.meta.errors as Array<{
-                            message?: string
-                          }>)
-                        : undefined
-                    }
-                  />
-                </Field>
-              )}
-            </form.Field>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <form.Field name="adminFirstName">
+          <DialogBody className="space-y-4">
+            <FieldGroup>
+              <form.Field name="name">
                 {(field) => (
                   <Field>
-                    <FieldLabel>Nombre</FieldLabel>
+                    <FieldLabel>Nombre de la organización</FieldLabel>
                     <Input
-                      placeholder="Juan"
+                      placeholder="Conjunto Altos del Prado"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => {
+                        const nextName = e.target.value
+                        field.handleChange(nextName)
+                        if (!slugTouched) {
+                          form.setFieldValue('slug', slugify(nextName))
+                        }
+                      }}
+                    />
+                    <FieldError
+                      errors={
+                        field.state.meta.isTouched
+                          ? (field.state.meta.errors as Array<{
+                              message?: string
+                            }>)
+                          : undefined
+                      }
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="slug">
+                {(field) => (
+                  <Field>
+                    <FieldLabel>Slug</FieldLabel>
+                    <Input
+                      className="font-mono text-sm"
+                      placeholder="altos-del-prado"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => {
+                        setSlugTouched(true)
+                        field.handleChange(e.target.value)
+                      }}
+                    />
+                    <FieldDescription>
+                      Identificador único de la organización. Se genera
+                      automáticamente desde el nombre.
+                    </FieldDescription>
+                    <FieldError
+                      errors={
+                        field.state.meta.isTouched
+                          ? (field.state.meta.errors as Array<{
+                              message?: string
+                            }>)
+                          : undefined
+                      }
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="activeModules">
+                {(field) => (
+                  <Field>
+                    <FieldLabel>Módulos activos</FieldLabel>
+                    <FieldDescription>
+                      Elige qué módulos estarán disponibles para esta
+                      organización. Puedes cambiarlos después.
+                    </FieldDescription>
+                    <div className="space-y-3 rounded-md border p-3">
+                      {MODULE_KEYS.map((moduleKey) => {
+                        const isActive = field.state.value.includes(moduleKey)
+                        return (
+                          <div
+                            key={moduleKey}
+                            className="flex items-start justify-between gap-4"
+                          >
+                            <div className="flex-1 space-y-0.5">
+                              <Label className="text-sm font-medium">
+                                {MODULE_LABELS[moduleKey]}
+                              </Label>
+                              <p className="text-xs text-muted-foreground">
+                                {MODULE_DESCRIPTIONS[moduleKey]}
+                              </p>
+                            </div>
+                            <Switch
+                              checked={isActive}
+                              onCheckedChange={(checked) => {
+                                const next = checked === true
+                                const current = new Set(field.state.value)
+                                if (next) current.add(moduleKey)
+                                else current.delete(moduleKey)
+                                field.handleChange(Array.from(current))
+                              }}
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </Field>
+                )}
+              </form.Field>
+            </FieldGroup>
+
+            <FieldSeparator />
+
+            <div>
+              <h3 className="text-sm font-medium">Administrador inicial</h3>
+              <p className="text-sm text-muted-foreground">
+                Se creará una invitación pendiente para este usuario.
+              </p>
+            </div>
+
+            <FieldGroup>
+              <form.Field name="adminEmail">
+                {(field) => (
+                  <Field>
+                    <FieldLabel>Email</FieldLabel>
+                    <Input
+                      type="email"
+                      placeholder="admin@ejemplo.com"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -291,33 +269,58 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
                 )}
               </form.Field>
 
-              <form.Field name="adminLastName">
-                {(field) => (
-                  <Field>
-                    <FieldLabel>Apellido</FieldLabel>
-                    <Input
-                      placeholder="Pérez"
-                      value={field.state.value ?? ''}
-                      onBlur={field.handleBlur}
-                      onChange={(e) =>
-                        field.handleChange(e.target.value || undefined)
-                      }
-                    />
-                    <FieldDescription>Opcional</FieldDescription>
-                    <FieldError
-                      errors={
-                        field.state.meta.isTouched
-                          ? (field.state.meta.errors as Array<{
-                              message?: string
-                            }>)
-                          : undefined
-                      }
-                    />
-                  </Field>
-                )}
-              </form.Field>
-            </div>
-          </FieldGroup>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <form.Field name="adminFirstName">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel>Nombre</FieldLabel>
+                      <Input
+                        placeholder="Juan"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                      <FieldError
+                        errors={
+                          field.state.meta.isTouched
+                            ? (field.state.meta.errors as Array<{
+                                message?: string
+                              }>)
+                            : undefined
+                        }
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+
+                <form.Field name="adminLastName">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel>Apellido</FieldLabel>
+                      <Input
+                        placeholder="Pérez"
+                        value={field.state.value ?? ''}
+                        onBlur={field.handleBlur}
+                        onChange={(e) =>
+                          field.handleChange(e.target.value || undefined)
+                        }
+                      />
+                      <FieldDescription>Opcional</FieldDescription>
+                      <FieldError
+                        errors={
+                          field.state.meta.isTouched
+                            ? (field.state.meta.errors as Array<{
+                                message?: string
+                              }>)
+                            : undefined
+                        }
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+              </div>
+            </FieldGroup>
+          </DialogBody>
 
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancelar</Button>} />

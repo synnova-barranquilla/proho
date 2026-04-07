@@ -1,6 +1,7 @@
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogFooter,
@@ -38,16 +39,18 @@ export function RowDetailsDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <dl className="grid gap-3">
-          {items.map(({ label, value }) => (
-            <div key={label} className="grid gap-1">
-              <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                {label}
-              </dt>
-              <dd className="text-sm">{value}</dd>
-            </div>
-          ))}
-        </dl>
+        <DialogBody>
+          <dl className="grid gap-3">
+            {items.map(({ label, value }) => (
+              <div key={label} className="grid gap-1">
+                <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  {label}
+                </dt>
+                <dd className="text-sm">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </DialogBody>
         <DialogFooter>
           <DialogClose render={<Button variant="outline">Cerrar</Button>} />
         </DialogFooter>

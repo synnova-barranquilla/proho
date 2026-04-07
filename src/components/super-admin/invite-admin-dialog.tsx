@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -150,85 +151,62 @@ export function InviteAdminDialog({
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className="space-y-4"
+          className="flex min-h-0 flex-1 flex-col"
         >
-          <FieldGroup>
-            {initialOrgId ? (
-              selectedOrg && (
-                <div className="rounded-md bg-muted px-3 py-2 text-sm">
-                  Invitando para{' '}
-                  <strong className="font-medium">{selectedOrg.name}</strong>
-                </div>
-              )
-            ) : (
-              <form.Field name="organizationId">
-                {(field) => (
-                  <Field>
-                    <FieldLabel>Organización</FieldLabel>
-                    {orgsQuery.isLoading ? (
-                      <Skeleton className="h-9 w-full" />
-                    ) : (
-                      <Select
-                        value={field.state.value}
-                        onValueChange={(v) => field.handleChange(v ?? '')}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una organización" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {invitableOrgs.map((org) => (
-                            <SelectItem key={org._id} value={org._id}>
-                              {org.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                    <FieldError
-                      errors={
-                        field.state.meta.isTouched
-                          ? (field.state.meta.errors as Array<{
-                              message?: string
-                            }>)
-                          : undefined
-                      }
-                    />
-                  </Field>
-                )}
-              </form.Field>
-            )}
-
-            <form.Field name="email">
-              {(field) => (
-                <Field>
-                  <FieldLabel>Email</FieldLabel>
-                  <Input
-                    type="email"
-                    placeholder="admin@ejemplo.com"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  <FieldError
-                    errors={
-                      field.state.meta.isTouched
-                        ? (field.state.meta.errors as Array<{
-                            message?: string
-                          }>)
-                        : undefined
-                    }
-                  />
-                </Field>
+          <DialogBody>
+            <FieldGroup>
+              {initialOrgId ? (
+                selectedOrg && (
+                  <div className="rounded-md bg-muted px-3 py-2 text-sm">
+                    Invitando para{' '}
+                    <strong className="font-medium">{selectedOrg.name}</strong>
+                  </div>
+                )
+              ) : (
+                <form.Field name="organizationId">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel>Organización</FieldLabel>
+                      {orgsQuery.isLoading ? (
+                        <Skeleton className="h-9 w-full" />
+                      ) : (
+                        <Select
+                          value={field.state.value}
+                          onValueChange={(v) => field.handleChange(v ?? '')}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una organización" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {invitableOrgs.map((org) => (
+                              <SelectItem key={org._id} value={org._id}>
+                                {org.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <FieldError
+                        errors={
+                          field.state.meta.isTouched
+                            ? (field.state.meta.errors as Array<{
+                                message?: string
+                              }>)
+                            : undefined
+                        }
+                      />
+                    </Field>
+                  )}
+                </form.Field>
               )}
-            </form.Field>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <form.Field name="firstName">
+              <form.Field name="email">
                 {(field) => (
                   <Field>
-                    <FieldLabel>Nombre</FieldLabel>
+                    <FieldLabel>Email</FieldLabel>
                     <Input
-                      placeholder="Juan"
+                      type="email"
+                      placeholder="admin@ejemplo.com"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -246,33 +224,58 @@ export function InviteAdminDialog({
                 )}
               </form.Field>
 
-              <form.Field name="lastName">
-                {(field) => (
-                  <Field>
-                    <FieldLabel>Apellido</FieldLabel>
-                    <Input
-                      placeholder="Pérez"
-                      value={field.state.value ?? ''}
-                      onBlur={field.handleBlur}
-                      onChange={(e) =>
-                        field.handleChange(e.target.value || undefined)
-                      }
-                    />
-                    <FieldDescription>Opcional</FieldDescription>
-                    <FieldError
-                      errors={
-                        field.state.meta.isTouched
-                          ? (field.state.meta.errors as Array<{
-                              message?: string
-                            }>)
-                          : undefined
-                      }
-                    />
-                  </Field>
-                )}
-              </form.Field>
-            </div>
-          </FieldGroup>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <form.Field name="firstName">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel>Nombre</FieldLabel>
+                      <Input
+                        placeholder="Juan"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                      <FieldError
+                        errors={
+                          field.state.meta.isTouched
+                            ? (field.state.meta.errors as Array<{
+                                message?: string
+                              }>)
+                            : undefined
+                        }
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+
+                <form.Field name="lastName">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel>Apellido</FieldLabel>
+                      <Input
+                        placeholder="Pérez"
+                        value={field.state.value ?? ''}
+                        onBlur={field.handleBlur}
+                        onChange={(e) =>
+                          field.handleChange(e.target.value || undefined)
+                        }
+                      />
+                      <FieldDescription>Opcional</FieldDescription>
+                      <FieldError
+                        errors={
+                          field.state.meta.isTouched
+                            ? (field.state.meta.errors as Array<{
+                                message?: string
+                              }>)
+                            : undefined
+                        }
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+              </div>
+            </FieldGroup>
+          </DialogBody>
 
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancelar</Button>} />

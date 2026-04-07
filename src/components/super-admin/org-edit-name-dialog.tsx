@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -91,30 +92,32 @@ export function OrgEditNameDialog({
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className="space-y-4"
+          className="flex min-h-0 flex-1 flex-col"
         >
-          <form.Field name="name">
-            {(field) => (
-              <Field>
-                <FieldLabel>Nombre</FieldLabel>
-                <Input
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  autoFocus
-                />
-                <FieldError
-                  errors={
-                    field.state.meta.isTouched
-                      ? (field.state.meta.errors as Array<{
-                          message?: string
-                        }>)
-                      : undefined
-                  }
-                />
-              </Field>
-            )}
-          </form.Field>
+          <DialogBody>
+            <form.Field name="name">
+              {(field) => (
+                <Field>
+                  <FieldLabel>Nombre</FieldLabel>
+                  <Input
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    autoFocus
+                  />
+                  <FieldError
+                    errors={
+                      field.state.meta.isTouched
+                        ? (field.state.meta.errors as Array<{
+                            message?: string
+                          }>)
+                        : undefined
+                    }
+                  />
+                </Field>
+              )}
+            </form.Field>
+          </DialogBody>
 
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancelar</Button>} />

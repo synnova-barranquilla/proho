@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -75,7 +76,7 @@ export function OrgConfirmDeactivateDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2">
+        <DialogBody className="space-y-2">
           <Label htmlFor="confirm-slug" className="text-sm">
             Para confirmar, escribe el slug de la organización:{' '}
             <code className="font-mono text-foreground">{org.slug}</code>
@@ -87,7 +88,7 @@ export function OrgConfirmDeactivateDialog({
             placeholder={org.slug}
             autoComplete="off"
           />
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline">Cancelar</Button>} />
