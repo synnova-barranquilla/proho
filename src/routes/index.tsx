@@ -24,15 +24,15 @@ export const Route = createFileRoute('/')({
     // WorkOS AuthKit access tokens don't include email/name — we pass them
     // from the decrypted session via getAuth(). The JWT still provides the
     // cryptographically-verified identity (workosUserId = sub).
-    const fullName =
-      `${auth.user.firstName ?? ''} ${auth.user.lastName ?? ''}`.trim() ||
-      auth.user.email
+    const firstName = auth.user.firstName?.trim() || auth.user.email
+    const lastName = auth.user.lastName?.trim() || undefined
 
     let result
     try {
       result = await client.mutation(api.auth.mutations.handleLogin, {
         email: auth.user.email,
-        name: fullName,
+        firstName,
+        lastName,
       })
     } catch (err) {
       // Log every detail so we can diagnose JWT / Convex auth problems.
@@ -57,6 +57,8 @@ export const Route = createFileRoute('/')({
         throw redirect({ to: '/invitacion-revocada' })
       case 'cuenta_desactivada':
         throw redirect({ to: '/cuenta-desactivada' })
+      case 'organizacion_inactiva':
+        throw redirect({ to: '/organizacion-inactiva' })
       case 'existing':
       case 'accepted':
         throw redirect({ to: getDashboardPathForRole(result.orgRole) })

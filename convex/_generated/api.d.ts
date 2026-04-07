@@ -19,6 +19,10 @@ import type * as invitations_mutations from '../invitations/mutations.js'
 import type * as invitations_queries from '../invitations/queries.js'
 import type * as invitations_validators from '../invitations/validators.js'
 import type * as lib_auth from '../lib/auth.js'
+import type * as lib_errors from '../lib/errors.js'
+import type * as lib_organizations from '../lib/organizations.js'
+import type * as organizations_mutations from '../organizations/mutations.js'
+import type * as organizations_queries from '../organizations/queries.js'
 import type * as organizations_validators from '../organizations/validators.js'
 import type * as seed from '../seed.js'
 import type * as users_queries from '../users/queries.js'
@@ -30,6 +34,10 @@ declare const fullApi: ApiFromModules<{
   'invitations/queries': typeof invitations_queries
   'invitations/validators': typeof invitations_validators
   'lib/auth': typeof lib_auth
+  'lib/errors': typeof lib_errors
+  'lib/organizations': typeof lib_organizations
+  'organizations/mutations': typeof organizations_mutations
+  'organizations/queries': typeof organizations_queries
   'organizations/validators': typeof organizations_validators
   seed: typeof seed
   'users/queries': typeof users_queries

@@ -21,16 +21,19 @@ export const Route = createFileRoute('/_authenticated')({
     const client = new ConvexHttpClient(CONVEX_URL)
     client.setAuth(auth.accessToken)
 
-    const convexUser = await client.query(
-      api.users.queries.getCurrentUser_public,
-      {},
-    )
+    const context = await client.query(api.users.queries.getCurrentContext, {})
 
-    if (!convexUser) {
+    if (!context) {
       throw redirect({ to: '/no-registrado' })
     }
+
+    const { user: convexUser, organization } = context
+
     if (!convexUser.active) {
       throw redirect({ to: '/cuenta-desactivada' })
+    }
+    if (!organization.active) {
+      throw redirect({ to: '/organizacion-inactiva' })
     }
 
     // Path-based role check. Centralized here because TanStack Router does
@@ -46,11 +49,11 @@ export const Route = createFileRoute('/_authenticated')({
       throw redirect({ to: '/no-autorizado' })
     }
     if (path.startsWith('/vigilante')) {
-      // F2 has no vigilantes — they require conjuntoMemberships from F4.
+      // F2/F3 has no vigilantes — they require conjuntoMemberships from F4.
       throw redirect({ to: '/no-autorizado' })
     }
 
-    return { workosUser: auth.user, convexUser }
+    return { workosUser: auth.user, convexUser, organization }
   },
   component: AuthenticatedLayout,
 })

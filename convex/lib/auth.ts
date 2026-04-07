@@ -1,5 +1,6 @@
 import type { Doc } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
+import { ERROR_CODES, throwConvexError } from './errors'
 
 type OrgRole = Doc<'users'>['orgRole']
 
@@ -23,18 +24,32 @@ export async function getCurrentUser(
 }
 
 /**
- * Requires an authenticated, active user. Throws if not found or inactive.
+ * Requires an authenticated, active user whose organization is also active.
+ * Throws if the user or their org is missing or inactive. Provides
+ * defense-in-depth for all mutations/queries without changing call sites.
  */
 export async function requireUser(
   ctx: QueryCtx | MutationCtx,
 ): Promise<Doc<'users'>> {
   const user = await getCurrentUser(ctx)
   if (!user) {
-    throw new Error('Unauthenticated: user not found in Convex')
+    throwConvexError(
+      ERROR_CODES.UNAUTHENTICATED,
+      'Unauthenticated: user not found in Convex',
+    )
   }
   if (!user.active) {
-    throw new Error('Forbidden: user is inactive')
+    throwConvexError(ERROR_CODES.FORBIDDEN, 'User is inactive')
   }
+
+  const organization = await ctx.db.get(user.organizationId)
+  if (!organization) {
+    throwConvexError(ERROR_CODES.ORG_NOT_FOUND, 'Organization not found')
+  }
+  if (!organization.active) {
+    throwConvexError(ERROR_CODES.ORG_INACTIVE, 'User organization is inactive')
+  }
+
   return user
 }
 
@@ -47,8 +62,9 @@ export async function requireOrgRole(
 ): Promise<Doc<'users'>> {
   const user = await requireUser(ctx)
   if (!allowedRoles.includes(user.orgRole)) {
-    throw new Error(
-      `Forbidden: requires role ${allowedRoles.join(' or ')} (user has ${user.orgRole})`,
+    throwConvexError(
+      ERROR_CODES.FORBIDDEN,
+      `Requires role ${allowedRoles.join(' or ')} (user has ${user.orgRole})`,
     )
   }
   return user

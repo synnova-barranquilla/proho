@@ -1,12 +1,5 @@
 import { v } from 'convex/values'
 
-export const organizationFields = {
-  slug: v.string(),
-  name: v.string(),
-  active: v.boolean(),
-  workosOrganizationId: v.optional(v.string()),
-}
-
 export const moduleKeys = v.union(
   v.literal('parking'),
   v.literal('convivencia'),
@@ -15,9 +8,10 @@ export const moduleKeys = v.union(
   v.literal('dashboard'),
 )
 
-export const organizationModuleFields = {
-  organizationId: v.id('organizations'),
-  moduleKey: moduleKeys,
+export const organizationFields = {
+  slug: v.string(),
+  name: v.string(),
   active: v.boolean(),
-  config: v.optional(v.record(v.string(), v.string())),
+  workosOrganizationId: v.optional(v.string()),
+  activeModules: v.array(moduleKeys),
 }

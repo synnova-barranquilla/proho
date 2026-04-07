@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 
 import { query } from '../_generated/server'
 import { requireOrgRole } from '../lib/auth'
+import { ERROR_CODES, throwConvexError } from '../lib/errors'
 
 /**
  * Lists invitations for a given organization.
@@ -19,8 +20,9 @@ export const listByOrganization = query({
       caller.orgRole === 'ADMIN' &&
       caller.organizationId !== args.organizationId
     ) {
-      throw new Error(
-        'Forbidden: cannot list invitations of another organization',
+      throwConvexError(
+        ERROR_CODES.FORBIDDEN,
+        'Cannot list invitations of another organization',
       )
     }
 
@@ -30,5 +32,35 @@ export const listByOrganization = query({
         q.eq('organizationId', args.organizationId),
       )
       .collect()
+  },
+})
+
+/**
+ * Lists all PENDING invitations in the system with their organization and
+ * invitedBy user embedded. Only SUPER_ADMIN can call this.
+ *
+ * Used by `/super-admin/usuarios` for the "Pendientes" table.
+ */
+export const listAllPendingWithOrg = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireOrgRole(ctx, ['SUPER_ADMIN'])
+
+    const [invitations, orgs, users] = await Promise.all([
+      ctx.db.query('invitations').order('desc').collect(),
+      ctx.db.query('organizations').collect(),
+      ctx.db.query('users').collect(),
+    ])
+
+    const orgMap = new Map(orgs.map((o) => [o._id, o]))
+    const userMap = new Map(users.map((u) => [u._id, u]))
+
+    return invitations
+      .filter((inv) => inv.status === 'PENDING')
+      .map((inv) => ({
+        ...inv,
+        organization: orgMap.get(inv.organizationId) ?? null,
+        invitedByUser: userMap.get(inv.invitedBy) ?? null,
+      }))
   },
 })

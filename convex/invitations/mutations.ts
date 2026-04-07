@@ -2,20 +2,24 @@ import { v } from 'convex/values'
 
 import { mutation } from '../_generated/server'
 import { canInvite, requireOrgRole } from '../lib/auth'
+import { ERROR_CODES, throwConvexError } from '../lib/errors'
+import { isInternalOrg } from '../lib/organizations'
 import { orgRoles } from '../users/validators'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 
 /**
  * Creates a new invitation.
- * - Only SUPER_ADMIN can invite ADMINs in F2.
+ * - Only SUPER_ADMIN can invite ADMINs in F2/F3.
+ * - Blocks invitations to the internal Synnova org.
  * - Revokes any previous PENDING invitations for the same email+org.
  * - Fails if there is an active user with the same email in the same org.
  */
 export const create = mutation({
   args: {
     email: v.string(),
-    name: v.string(),
+    firstName: v.string(),
+    lastName: v.optional(v.string()),
     orgRole: orgRoles,
     organizationId: v.id('organizations'),
   },
@@ -23,12 +27,27 @@ export const create = mutation({
     const caller = await requireOrgRole(ctx, ['SUPER_ADMIN'])
 
     if (!canInvite(caller, args.orgRole)) {
-      throw new Error('No tienes permisos para invitar usuarios con este rol')
+      throwConvexError(
+        ERROR_CODES.FORBIDDEN,
+        'No tienes permisos para invitar usuarios con este rol',
+      )
     }
 
     const org = await ctx.db.get(args.organizationId)
-    if (!org || !org.active) {
-      throw new Error('Organización no válida o inactiva')
+    if (!org) {
+      throwConvexError(ERROR_CODES.ORG_NOT_FOUND, 'Organización no encontrada')
+    }
+    if (!org.active) {
+      throwConvexError(
+        ERROR_CODES.ORG_INACTIVE,
+        'No se pueden enviar invitaciones a una organización inactiva',
+      )
+    }
+    if (isInternalOrg(org.slug)) {
+      throwConvexError(
+        ERROR_CODES.CANNOT_INVITE_TO_INTERNAL_ORG,
+        'No se pueden invitar usuarios a la organización interna de Synnova',
+      )
     }
 
     // Reject if an active user already exists in this org with the same email.
@@ -40,7 +59,8 @@ export const create = mutation({
       (u) => u.organizationId === args.organizationId && u.active,
     )
     if (activeInSameOrg) {
-      throw new Error(
+      throwConvexError(
+        ERROR_CODES.USER_ALREADY_EXISTS_IN_ORG,
         'Ya existe un usuario activo con este email en la organización',
       )
     }
@@ -61,7 +81,8 @@ export const create = mutation({
     const now = Date.now()
     const invitationId = await ctx.db.insert('invitations', {
       email: args.email,
-      name: args.name,
+      firstName: args.firstName,
+      lastName: args.lastName,
       orgRole: args.orgRole,
       organizationId: args.organizationId,
       status: 'PENDING',
@@ -87,10 +108,14 @@ export const revoke = mutation({
 
     const invitation = await ctx.db.get(args.invitationId)
     if (!invitation) {
-      throw new Error('Invitación no encontrada')
+      throwConvexError(
+        ERROR_CODES.INVITATION_NOT_FOUND,
+        'Invitación no encontrada',
+      )
     }
     if (invitation.status !== 'PENDING') {
-      throw new Error(
+      throwConvexError(
+        ERROR_CODES.FORBIDDEN,
         `Solo se pueden revocar invitaciones pendientes (estado actual: ${invitation.status})`,
       )
     }

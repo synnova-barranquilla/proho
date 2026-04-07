@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
-> **Última actualización:** 7 de abril de 2026
+> **Última actualización:** 8 de abril de 2026
 > **Total de tareas:** 187
 > **MVP (M1+M2+M3):** 129 tareas
-> **Completadas:** 34 (18.2%)
+> **Completadas:** 41 (21.9%)
 
 ---
 
@@ -80,17 +80,17 @@
 
 ## M2 — Admin Ready
 
-### Fase 3 — Admin: Super Admin (0/7)
+### Fase 3 — Admin: Super Admin (7/7) ✅
 
-| ID  | Tarea                                                        | Estado  |
-| --- | ------------------------------------------------------------ | ------- |
-| 3.1 | Layout de Super Admin                                        | pending |
-| 3.2 | Listado de organizaciones/tenants                            | pending |
-| 3.3 | Onboarding de nuevo tenant (crea org + invita admin via F2)  | pending |
-| 3.4 | Edición y desactivación de tenants                           | pending |
-| 3.5 | Listado de usuarios (filtro por org y rol)                   | pending |
-| 3.6 | Registro de admin de conjunto (usa invitations.create de F2) | pending |
-| 3.7 | Toggle de módulos por tenant                                 | pending |
+| ID  | Tarea                                                        | Estado |
+| --- | ------------------------------------------------------------ | ------ |
+| 3.1 | Layout de Super Admin                                        | done   |
+| 3.2 | Listado de organizaciones/tenants                            | done   |
+| 3.3 | Onboarding de nuevo tenant (crea org + invita admin via F2)  | done   |
+| 3.4 | Edición y desactivación de tenants                           | done   |
+| 3.5 | Listado de usuarios (filtro por org y rol)                   | done   |
+| 3.6 | Registro de admin de conjunto (usa invitations.create de F2) | done   |
+| 3.7 | Toggle de módulos por tenant                                 | done   |
 
 ### Fase 4 — Admin: Conjunto Admin (0/26)
 
@@ -300,8 +300,8 @@
 | Milestone            | Fases             | Total   | Done   | Progreso |
 | -------------------- | ----------------- | ------- | ------ | -------- |
 | **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34     | 81%      |
-| **M2 — Admin Ready** | F3 + F4           | 33      | 0      | 0%       |
+| **M2 — Admin Ready** | F3 + F4           | 33      | 7      | 21%      |
 | **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 54      | 0      | 0%       |
-| **MVP TOTAL**        | F0–F8             | **129** | **34** | **26%**  |
+| **MVP TOTAL**        | F0–F8             | **129** | **41** | **32%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **187** | **34** | **18%**  |
+| **TOTAL**            | F0–F14            | **187** | **41** | **22%**  |

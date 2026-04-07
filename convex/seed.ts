@@ -1,11 +1,16 @@
 import { v } from 'convex/values'
 
 import { internalMutation } from './_generated/server'
+import { INTERNAL_ORG_SLUG } from './lib/organizations'
+
+const DEMO_ORG_SLUG = 'demo-conjunto'
 
 /**
  * Bootstrap the system with the initial SUPER_ADMIN user and two
  * organizations: "Synnova Internal" (owner of the super admin) and
  * "Demo Conjunto" (sandbox for manual testing of invitations during F2-F11).
+ *
+ * Both orgs start with `activeModules: []` — no modules enabled by default.
  *
  * Idempotent: safe to re-run. Existing records are detected by slug/workosUserId
  * and not duplicated.
@@ -15,20 +20,22 @@ import { internalMutation } from './_generated/server'
 export const bootstrap = internalMutation({
   args: {
     superAdminEmail: v.string(),
-    superAdminName: v.string(),
+    superAdminFirstName: v.string(),
+    superAdminLastName: v.optional(v.string()),
     superAdminWorkosId: v.string(),
   },
   handler: async (ctx, args) => {
     // 1. Synnova internal org
     let synnovaOrg = await ctx.db
       .query('organizations')
-      .withIndex('by_slug', (q) => q.eq('slug', 'synnova-internal'))
+      .withIndex('by_slug', (q) => q.eq('slug', INTERNAL_ORG_SLUG))
       .unique()
     if (!synnovaOrg) {
       const id = await ctx.db.insert('organizations', {
-        slug: 'synnova-internal',
+        slug: INTERNAL_ORG_SLUG,
         name: 'Synnova',
         active: true,
+        activeModules: [],
       })
       synnovaOrg = await ctx.db.get(id)
     }
@@ -36,13 +43,14 @@ export const bootstrap = internalMutation({
     // 2. Demo conjunto org (sandbox for manual testing)
     let demoOrg = await ctx.db
       .query('organizations')
-      .withIndex('by_slug', (q) => q.eq('slug', 'demo-conjunto'))
+      .withIndex('by_slug', (q) => q.eq('slug', DEMO_ORG_SLUG))
       .unique()
     if (!demoOrg) {
       const id = await ctx.db.insert('organizations', {
-        slug: 'demo-conjunto',
+        slug: DEMO_ORG_SLUG,
         name: 'Demo Conjunto',
         active: true,
+        activeModules: [],
       })
       demoOrg = await ctx.db.get(id)
     }
@@ -66,7 +74,8 @@ export const bootstrap = internalMutation({
 
     const userId = await ctx.db.insert('users', {
       email: args.superAdminEmail,
-      name: args.superAdminName,
+      firstName: args.superAdminFirstName,
+      lastName: args.superAdminLastName,
       workosUserId: args.superAdminWorkosId,
       organizationId: synnovaOrg!._id,
       orgRole: 'SUPER_ADMIN',

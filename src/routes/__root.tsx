@@ -9,6 +9,8 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
+import { Toaster } from '../components/ui/sonner'
+import { TooltipProvider } from '../components/ui/tooltip'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
@@ -73,8 +75,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootLayout() {
   return (
-    <>
+    <TooltipProvider>
       <Outlet />
+      <Toaster position="top-right" richColors />
       <TanStackDevtools
         config={{
           position: 'bottom-right',
@@ -87,6 +90,6 @@ function RootLayout() {
           TanStackQueryDevtools,
         ]}
       />
-    </>
+    </TooltipProvider>
   )
 }

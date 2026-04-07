@@ -1,29 +1,30 @@
 import { ConvexError, v } from 'convex/values'
 
 import { mutation } from '../_generated/server'
+import { ERROR_CODES } from '../lib/errors'
 
 /**
  * Coordinates the login flow after WorkOS authenticates the user.
  *
  * Called by the `/` loader. The JWT provides cryptographically-verified
- * identity (subject = WorkOS user ID). email/name come as arguments from
- * the server-side loader that decrypts the WorkOS session cookie via
- * `getAuth()` — WorkOS access tokens are minimal and do not include these.
- * The caller (the Vercel server) is trusted to forward the authenticated
- * session's values.
+ * identity (subject = WorkOS user ID). email/firstName/lastName come as
+ * arguments from the server-side loader that decrypts the WorkOS session
+ * cookie via `getAuth()` — WorkOS access tokens are minimal and do not
+ * include these claims.
  *
  * Returns a discriminated union used to decide where to redirect the user.
  */
 export const handleLogin = mutation({
   args: {
     email: v.string(),
-    name: v.string(),
+    firstName: v.string(),
+    lastName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) {
       throw new ConvexError({
-        code: 'UNAUTHENTICATED',
+        code: ERROR_CODES.UNAUTHENTICATED,
         message:
           'JWT identity no disponible. Verifica que convex/auth.config.ts (issuer/jwks) coincide con el access token real de WorkOS.',
       })
@@ -31,9 +32,10 @@ export const handleLogin = mutation({
 
     const workosUserId = identity.subject
     const email = args.email
-    const nameFromArgs = args.name.trim()
+    const firstName = args.firstName.trim()
+    const lastName = args.lastName?.trim() || undefined
 
-    // 1. Does the user already exist? → sync email/name and return.
+    // 1. Does the user already exist? → sync email/firstName/lastName and return.
     const existing = await ctx.db
       .query('users')
       .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', workosUserId))
@@ -42,14 +44,21 @@ export const handleLogin = mutation({
     if (existing) {
       const patch: Partial<typeof existing> = {}
       if (existing.email !== email) patch.email = email
-      if (nameFromArgs && existing.name !== nameFromArgs)
-        patch.name = nameFromArgs
+      if (firstName && existing.firstName !== firstName)
+        patch.firstName = firstName
+      if (existing.lastName !== lastName) patch.lastName = lastName
       if (Object.keys(patch).length > 0) {
         await ctx.db.patch(existing._id, patch)
       }
 
       if (!existing.active) {
         return { status: 'cuenta_desactivada' as const }
+      }
+
+      // Check org active status (defense in depth)
+      const organization = await ctx.db.get(existing.organizationId)
+      if (!organization || !organization.active) {
+        return { status: 'organizacion_inactiva' as const }
       }
 
       return {
@@ -94,11 +103,19 @@ export const handleLogin = mutation({
       return { status: 'invitation_expired' as const }
     }
 
-    // 4. Accept: create the user and mark the invitation as ACCEPTED.
-    const finalName = nameFromArgs || invitation.name
+    // 4. Check that the invitation's org is active. If not, block acceptance.
+    const invitationOrg = await ctx.db.get(invitation.organizationId)
+    if (!invitationOrg || !invitationOrg.active) {
+      return { status: 'organizacion_inactiva' as const }
+    }
+
+    // 5. Accept: create the user and mark the invitation as ACCEPTED.
+    const finalFirstName = firstName || invitation.firstName
+    const finalLastName = lastName ?? invitation.lastName
     const userId = await ctx.db.insert('users', {
       email,
-      name: finalName,
+      firstName: finalFirstName,
+      lastName: finalLastName,
       workosUserId,
       organizationId: invitation.organizationId,
       orgRole: invitation.orgRole,

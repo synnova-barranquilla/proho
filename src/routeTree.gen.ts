@@ -14,7 +14,9 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
+import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from './routes/_authenticated/super-admin/organizaciones/$orgId'
 import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
+import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
 import { Route as AuthenticatedVigilanteIndexRouteImport } from './routes/_authenticated/vigilante/index'
 import { Route as AuthenticatedVigilanteRouteRouteImport } from './routes/_authenticated/vigilante/route'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
@@ -27,12 +29,18 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
 import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
+import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
 import { Route as ProgressRouteImport } from './routes/progress'
 import type { startInstance } from './start.ts'
 
 const ProgressRoute = ProgressRouteImport.update({
   id: '/progress',
   path: '/progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganizacionInactivaRoute = OrganizacionInactivaRouteImport.update({
+  id: '/organizacion-inactiva',
+  path: '/organizacion-inactiva',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NoRegistradoRoute = NoRegistradoRouteImport.update({
@@ -123,6 +131,18 @@ const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
   path: '/api/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSuperAdminUsuariosRoute =
+  AuthenticatedSuperAdminUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
+  } as any)
+const AuthenticatedSuperAdminOrganizacionesOrgIdRoute =
+  AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport.update({
+    id: '/organizaciones/$orgId',
+    path: '/organizaciones/$orgId',
+    getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -134,14 +154,17 @@ export interface FileRoutesByFullPath {
   '/logout': typeof LogoutRoute
   '/no-autorizado': typeof NoAutorizadoRoute
   '/no-registrado': typeof NoRegistradoRoute
+  '/organizacion-inactiva': typeof OrganizacionInactivaRoute
   '/progress': typeof ProgressRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
+  '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
   '/vigilante/': typeof AuthenticatedVigilanteIndexRoute
+  '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -153,11 +176,14 @@ export interface FileRoutesByTo {
   '/logout': typeof LogoutRoute
   '/no-autorizado': typeof NoAutorizadoRoute
   '/no-registrado': typeof NoRegistradoRoute
+  '/organizacion-inactiva': typeof OrganizacionInactivaRoute
   '/progress': typeof ProgressRoute
+  '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/super-admin': typeof AuthenticatedSuperAdminIndexRoute
   '/vigilante': typeof AuthenticatedVigilanteIndexRoute
+  '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -171,14 +197,17 @@ export interface FileRoutesById {
   '/logout': typeof LogoutRoute
   '/no-autorizado': typeof NoAutorizadoRoute
   '/no-registrado': typeof NoRegistradoRoute
+  '/organizacion-inactiva': typeof OrganizacionInactivaRoute
   '/progress': typeof ProgressRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/_authenticated/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
+  '/_authenticated/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
   '/_authenticated/vigilante/': typeof AuthenticatedVigilanteIndexRoute
+  '/_authenticated/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -192,14 +221,17 @@ export interface FileRouteTypes {
     | '/logout'
     | '/no-autorizado'
     | '/no-registrado'
+    | '/organizacion-inactiva'
     | '/progress'
     | '/admin'
     | '/super-admin'
     | '/vigilante'
+    | '/super-admin/usuarios'
     | '/api/auth/callback'
     | '/admin/'
     | '/super-admin/'
     | '/vigilante/'
+    | '/super-admin/organizaciones/$orgId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -211,11 +243,14 @@ export interface FileRouteTypes {
     | '/logout'
     | '/no-autorizado'
     | '/no-registrado'
+    | '/organizacion-inactiva'
     | '/progress'
+    | '/super-admin/usuarios'
     | '/api/auth/callback'
     | '/admin'
     | '/super-admin'
     | '/vigilante'
+    | '/super-admin/organizaciones/$orgId'
   id:
     | '__root__'
     | '/'
@@ -228,14 +263,17 @@ export interface FileRouteTypes {
     | '/logout'
     | '/no-autorizado'
     | '/no-registrado'
+    | '/organizacion-inactiva'
     | '/progress'
     | '/_authenticated/admin'
     | '/_authenticated/super-admin'
     | '/_authenticated/vigilante'
+    | '/_authenticated/super-admin/usuarios'
     | '/api/auth/callback'
     | '/_authenticated/admin/'
     | '/_authenticated/super-admin/'
     | '/_authenticated/vigilante/'
+    | '/_authenticated/super-admin/organizaciones/$orgId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -249,6 +287,7 @@ export interface RootRouteChildren {
   LogoutRoute: typeof LogoutRoute
   NoAutorizadoRoute: typeof NoAutorizadoRoute
   NoRegistradoRoute: typeof NoRegistradoRoute
+  OrganizacionInactivaRoute: typeof OrganizacionInactivaRoute
   ProgressRoute: typeof ProgressRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
 }
@@ -260,6 +299,13 @@ declare module '@tanstack/react-router' {
       path: '/progress'
       fullPath: '/progress'
       preLoaderRoute: typeof ProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organizacion-inactiva': {
+      id: '/organizacion-inactiva'
+      path: '/organizacion-inactiva'
+      fullPath: '/organizacion-inactiva'
+      preLoaderRoute: typeof OrganizacionInactivaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/no-registrado': {
@@ -381,6 +427,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/super-admin/usuarios': {
+      id: '/_authenticated/super-admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/super-admin/usuarios'
+      preLoaderRoute: typeof AuthenticatedSuperAdminUsuariosRouteImport
+      parentRoute: typeof AuthenticatedSuperAdminRouteRoute
+    }
+    '/_authenticated/super-admin/organizaciones/$orgId': {
+      id: '/_authenticated/super-admin/organizaciones/$orgId'
+      path: '/organizaciones/$orgId'
+      fullPath: '/super-admin/organizaciones/$orgId'
+      preLoaderRoute: typeof AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport
+      parentRoute: typeof AuthenticatedSuperAdminRouteRoute
+    }
   }
 }
 
@@ -399,12 +459,17 @@ const AuthenticatedAdminRouteRouteWithChildren =
   )
 
 interface AuthenticatedSuperAdminRouteRouteChildren {
+  AuthenticatedSuperAdminUsuariosRoute: typeof AuthenticatedSuperAdminUsuariosRoute
   AuthenticatedSuperAdminIndexRoute: typeof AuthenticatedSuperAdminIndexRoute
+  AuthenticatedSuperAdminOrganizacionesOrgIdRoute: typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
 }
 
 const AuthenticatedSuperAdminRouteRouteChildren: AuthenticatedSuperAdminRouteRouteChildren =
   {
+    AuthenticatedSuperAdminUsuariosRoute: AuthenticatedSuperAdminUsuariosRoute,
     AuthenticatedSuperAdminIndexRoute: AuthenticatedSuperAdminIndexRoute,
+    AuthenticatedSuperAdminOrganizacionesOrgIdRoute:
+      AuthenticatedSuperAdminOrganizacionesOrgIdRoute,
   }
 
 const AuthenticatedSuperAdminRouteRouteWithChildren =
@@ -455,6 +520,7 @@ const rootRouteChildren: RootRouteChildren = {
   LogoutRoute: LogoutRoute,
   NoAutorizadoRoute: NoAutorizadoRoute,
   NoRegistradoRoute: NoRegistradoRoute,
+  OrganizacionInactivaRoute: OrganizacionInactivaRoute,
   ProgressRoute: ProgressRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
 }

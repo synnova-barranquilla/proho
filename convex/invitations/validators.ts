@@ -11,7 +11,8 @@ export const invitationStatus = v.union(
 
 export const invitationFields = {
   email: v.string(),
-  name: v.string(),
+  firstName: v.string(),
+  lastName: v.optional(v.string()),
   orgRole: orgRoles,
   organizationId: v.id('organizations'),
   status: invitationStatus,

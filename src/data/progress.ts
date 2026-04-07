@@ -21,12 +21,12 @@ export type Milestone = {
 }
 
 export const currentFocus = {
-  phaseId: 'F3',
-  phaseName: 'Admin: Super Admin',
+  phaseId: 'F4',
+  phaseName: 'Admin: Conjunto Admin',
   done: 0,
-  total: 7,
+  total: 26,
 }
-export const lastUpdated = '7 de abril de 2026'
+export const lastUpdated = '8 de abril de 2026'
 
 export const milestones: Milestone[] = [
   {
@@ -257,36 +257,36 @@ export const milestones: Milestone[] = [
         id: 'F3',
         name: 'Admin: Super Admin',
         tasks: [
-          { id: '3.1', name: 'Layout de Super Admin', status: 'pending' },
+          { id: '3.1', name: 'Layout de Super Admin', status: 'done' },
           {
             id: '3.2',
             name: 'Listado de organizaciones/tenants',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '3.3',
             name: 'Onboarding de nuevo tenant (crea org + invita admin via F2)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '3.4',
             name: 'Edición y desactivación de tenants',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '3.5',
             name: 'Listado de usuarios (filtro por org y rol)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '3.6',
             name: 'Registro de admin de conjunto (usa invitations.create de F2)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: '3.7',
             name: 'Toggle de módulos por tenant',
-            status: 'pending',
+            status: 'done',
           },
         ],
       },
