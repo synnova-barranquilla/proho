@@ -3,7 +3,7 @@ import { Suspense, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import { useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
@@ -16,15 +16,16 @@ import { OrgsTableSkeleton } from '#/components/super-admin/skeletons/orgs-table
 import { Button } from '#/components/ui/button'
 import { Label } from '#/components/ui/label'
 import { Switch } from '#/components/ui/switch'
+import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../convex/_generated/api'
 import type { Doc } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/super-admin/')({
-  loader: ({ context: { queryClient } }) => {
-    void queryClient.prefetchQuery(
-      convexQuery(api.organizations.queries.listAll, {
-        includeInactive: false,
-      }),
+  loader: async ({ context: { queryClient } }) => {
+    await prefetchAuthenticatedQuery(
+      queryClient,
+      api.organizations.queries.listAll,
+      { includeInactive: false },
     )
     return null
   },

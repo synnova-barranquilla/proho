@@ -31,6 +31,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '#/components/ui/tooltip'
+import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { formatAbsolute, formatRelative } from '#/lib/date'
 import { getFullName } from '#/lib/user'
 import { api } from '../../../../convex/_generated/api'
@@ -39,18 +40,24 @@ import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 const ALL_ORGS_VALUE = 'all'
 
 export const Route = createFileRoute('/_authenticated/super-admin/usuarios')({
-  loader: ({ context: { queryClient } }) => {
-    void queryClient.prefetchQuery(
-      convexQuery(api.users.queries.listAllWithOrg, {}),
-    )
-    void queryClient.prefetchQuery(
-      convexQuery(api.invitations.queries.listAllPendingWithOrg, {}),
-    )
-    void queryClient.prefetchQuery(
-      convexQuery(api.organizations.queries.listAll, {
-        includeInactive: false,
-      }),
-    )
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.users.queries.listAllWithOrg,
+        {},
+      ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.invitations.queries.listAllPendingWithOrg,
+        {},
+      ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.organizations.queries.listAll,
+        { includeInactive: false },
+      ),
+    ])
     return null
   },
   component: UsuariosPage,

@@ -12,6 +12,7 @@ import { OrgDetailInfoCard } from '#/components/super-admin/org-detail-info-card
 import { OrgDetailModulesCard } from '#/components/super-admin/org-detail-modules-card'
 import { OrgDetailSkeleton } from '#/components/super-admin/skeletons/org-detail-skeleton'
 import { Badge } from '#/components/ui/badge'
+import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { isInternalOrgSlug } from '#/lib/organizations'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
@@ -21,8 +22,10 @@ export const Route = createFileRoute(
 )({
   loader: async ({ context: { queryClient }, params }) => {
     const orgId = params.orgId as Id<'organizations'>
-    const data = await queryClient.ensureQueryData(
-      convexQuery(api.organizations.queries.getWithDetails, { orgId }),
+    const data = await prefetchAuthenticatedQuery(
+      queryClient,
+      api.organizations.queries.getWithDetails,
+      { orgId },
     )
     if (!data) {
       throw notFound()
