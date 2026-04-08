@@ -25,7 +25,6 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
@@ -235,11 +234,9 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
               </form.Field>
             </FieldGroup>
 
-            <FieldSeparator />
-
-            <div>
+            <div className="mt-6 border-t pt-6">
               <h3 className="text-sm font-medium">Administrador inicial</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Se creará una invitación pendiente para este usuario.
               </p>
             </div>

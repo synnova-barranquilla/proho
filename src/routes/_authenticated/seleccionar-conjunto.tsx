@@ -1,9 +1,7 @@
-import { Suspense } from 'react'
-
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 
-import { convexQuery } from '@convex-dev/react-query'
+import { getAuth } from '@workos/authkit-tanstack-react-start'
+import { ConvexHttpClient } from 'convex/browser'
 import { Building2, MapPin } from 'lucide-react'
 
 import {
@@ -13,20 +11,32 @@ import {
   CardHeader,
   CardTitle,
 } from '#/components/ui/card'
-import { Skeleton } from '#/components/ui/skeleton'
-import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
+const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL
+
 export const Route = createFileRoute('/_authenticated/seleccionar-conjunto')({
-  loader: async ({ context: { queryClient } }) => {
-    const conjuntos = await prefetchAuthenticatedQuery(
-      queryClient,
+  loader: async () => {
+    // Cargamos los conjuntos directamente con un HTTP client autenticado
+    // y los pasamos por loaderData en lugar de usar useSuspenseQuery/Suspense.
+    // Esto evita un problema de hidratación entre SSR y cliente donde la
+    // caché de react-query no se hidrata correctamente y `useSuspenseQuery`
+    // vuelve a suspender en el cliente causando un hydration mismatch
+    // (React minified error #520).
+    const auth = await getAuth()
+    if (!auth.user) {
+      throw redirect({ to: '/login' })
+    }
+
+    const client = new ConvexHttpClient(CONVEX_URL)
+    client.setAuth(auth.accessToken)
+
+    const conjuntos = await client.query(
       api.conjuntos.queries.listForCurrentUser,
       {},
     )
 
-    // Si solo hay un conjunto accesible, redirect directo.
     if (conjuntos.length === 1) {
       throw redirect({
         to: '/admin/c/$conjuntoId',
@@ -34,12 +44,14 @@ export const Route = createFileRoute('/_authenticated/seleccionar-conjunto')({
       })
     }
 
-    return null
+    return { conjuntos }
   },
   component: SeleccionarConjuntoPage,
 })
 
 function SeleccionarConjuntoPage() {
+  const { conjuntos } = Route.useLoaderData()
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
@@ -52,27 +64,22 @@ function SeleccionarConjuntoPage() {
           </p>
         </div>
 
-        <Suspense fallback={<ConjuntosGridSkeleton />}>
-          <ConjuntosGrid />
-        </Suspense>
+        {conjuntos.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <ConjuntosGrid conjuntos={conjuntos} />
+        )}
       </div>
     </main>
   )
 }
 
-function ConjuntosGrid() {
+function ConjuntosGrid({ conjuntos }: { conjuntos: Array<Doc<'conjuntos'>> }) {
   const navigate = useNavigate()
-  const { data: conjuntos } = useSuspenseQuery(
-    convexQuery(api.conjuntos.queries.listForCurrentUser, {}),
-  )
-
-  if (conjuntos.length === 0) {
-    return <EmptyState />
-  }
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {conjuntos.map((c: Doc<'conjuntos'>) => (
+      {conjuntos.map((c) => (
         <button
           key={c._id}
           type="button"
@@ -126,24 +133,5 @@ function EmptyState() {
         paso (F4.27).
       </CardContent>
     </Card>
-  )
-}
-
-function ConjuntosGridSkeleton() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader>
-            <Skeleton className="mb-2 h-10 w-10 rounded-md" />
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-3 w-32" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-3 w-28" />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
   )
 }

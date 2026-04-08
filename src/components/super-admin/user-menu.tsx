@@ -18,6 +18,7 @@ export function UserMenu() {
   const { convexUser } = authenticatedRoute.useLoaderData()
   const fullName = getFullName(convexUser)
   const initials = getInitials(convexUser)
+  const isOwner = convexUser.isOrgOwner === true
 
   return (
     <DropdownMenu>
@@ -41,6 +42,11 @@ export function UserMenu() {
           <span className="text-xs text-muted-foreground truncate">
             {convexUser.email}
           </span>
+          {isOwner ? (
+            <span className="mt-1 inline-flex w-fit rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+              Owner
+            </span>
+          ) : null}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<a href="/logout" />}>
