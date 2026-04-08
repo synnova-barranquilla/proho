@@ -1,6 +1,7 @@
-import { Link, useLocation } from '@tanstack/react-router'
+import { getRouteApi, Link, useLocation } from '@tanstack/react-router'
 
 import {
+  ArrowLeft,
   Building2,
   Car,
   Home,
@@ -26,19 +27,111 @@ import {
 import type { Doc } from '../../../convex/_generated/dataModel'
 
 interface AdminSidebarProps {
-  conjunto: Doc<'conjuntos'>
+  /**
+   * The currently active conjunto, or `null` for org-level admin routes
+   * like `/admin/equipo`. When `null` the sidebar renders a "back to
+   * selector" link and only shows items that do not require a conjunto
+   * context (Equipo de la org).
+   */
+  conjunto: Doc<'conjuntos'> | null
 }
+
+const authenticatedRoute = getRouteApi('/_authenticated')
 
 export function AdminSidebar({ conjunto }: AdminSidebarProps) {
   const location = useLocation()
   const pathname = location.pathname
+  const { organization } = authenticatedRoute.useLoaderData()
+
+  if (conjunto === null) {
+    return <OrgLevelSidebar orgName={organization.name} pathname={pathname} />
+  }
+
+  return <ConjuntoScopedSidebar conjunto={conjunto} pathname={pathname} />
+}
+
+// ---------------------------------------------------------------------------
+// Org-level sidebar (used by /admin/equipo and other future org-scoped routes)
+// ---------------------------------------------------------------------------
+
+function OrgLevelSidebar({
+  orgName,
+  pathname,
+}: {
+  orgName: string
+  pathname: string
+}) {
+  return (
+    <Sidebar>
+      <SidebarHeader>
+        <div className="px-2 py-1.5">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <Shield className="h-4 w-4" />
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <h2 className="truncate text-sm font-semibold">{orgName}</h2>
+              <p className="truncate text-xs text-muted-foreground">
+                Gestión de organización
+              </p>
+            </div>
+          </div>
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <Link to="/seleccionar-conjunto">
+                      <ArrowLeft />
+                      <span>Volver al selector</span>
+                    </Link>
+                  }
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Gestión</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={pathname === '/admin/equipo'}
+                  render={
+                    <Link to="/admin/equipo">
+                      <Shield />
+                      <span>Equipo de la org</span>
+                    </Link>
+                  }
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Conjunto-scoped sidebar (used by /admin/c/$conjuntoId/*)
+// ---------------------------------------------------------------------------
+
+function ConjuntoScopedSidebar({
+  conjunto,
+  pathname,
+}: {
+  conjunto: Doc<'conjuntos'>
+  pathname: string
+}) {
   const base = `/admin/c/${conjunto._id}`
 
-  // NOTA: pasamos las rutas como strings. TanStack Router en mode type-safe
-  // vería estas como dinámicas, pero al usar `Link` con `to` string acepta
-  // cualquier string (TypeScript se queja — lo cubrimos con `as never` o con
-  // el patrón de `resolve`). Usamos `<Link to={...} params={...}>` con el
-  // route id estático donde sea posible.
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(path + '/')
 

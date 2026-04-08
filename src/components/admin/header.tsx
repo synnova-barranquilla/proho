@@ -5,7 +5,12 @@ import { ConjuntoSwitcher } from './conjunto-switcher'
 import { AdminUserMenu } from './user-menu'
 
 interface AdminHeaderProps {
-  conjunto: Doc<'conjuntos'>
+  /**
+   * The active conjunto, or `null` on organization-level admin routes
+   * (e.g. `/admin/equipo`). When `null` the header hides the
+   * ConjuntoSwitcher and shows a static "Gestión de organización" label.
+   */
+  conjunto: Doc<'conjuntos'> | null
 }
 
 export function AdminHeader({ conjunto }: AdminHeaderProps) {
@@ -16,7 +21,13 @@ export function AdminHeader({ conjunto }: AdminHeaderProps) {
         orientation="vertical"
         className="mr-2 data-[orientation=vertical]:h-4"
       />
-      <ConjuntoSwitcher current={conjunto} />
+      {conjunto ? (
+        <ConjuntoSwitcher current={conjunto} />
+      ) : (
+        <span className="text-sm font-medium text-muted-foreground">
+          Gestión de organización
+        </span>
+      )}
       <div className="flex flex-1 items-center justify-end">
         <AdminUserMenu />
       </div>

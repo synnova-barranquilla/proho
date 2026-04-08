@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 
 import { InviteOrgAdminDialog } from '#/components/admin/equipo/invite-org-admin-dialog'
 import { ManageAccessDialog } from '#/components/admin/equipo/manage-access-dialog'
+import { AdminLayout } from '#/components/admin/layout'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
@@ -71,8 +72,8 @@ function EquipoPage() {
   const [manageAccessFor, setManageAccessFor] = useState<AdminRow | null>(null)
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:py-12">
+    <AdminLayout conjunto={null}>
+      <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -114,7 +115,7 @@ function EquipoPage() {
           if (!open) setManageAccessFor(null)
         }}
       />
-    </main>
+    </AdminLayout>
   )
 }
 
