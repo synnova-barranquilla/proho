@@ -24,7 +24,16 @@ export const Route = createFileRoute('/')({
     // WorkOS AuthKit access tokens don't include email/name — we pass them
     // from the decrypted session via getAuth(). The JWT still provides the
     // cryptographically-verified identity (workosUserId = sub).
-    const firstName = auth.user.firstName?.trim() || auth.user.email
+    //
+    // IMPORTANT: do NOT fall back to `auth.user.email` when WorkOS has no
+    // firstName. Email-OTP signups through WorkOS don't collect a name,
+    // so `auth.user.firstName` is commonly empty. If we fell back to the
+    // email, `handleLogin` would (a) create the user with firstName =
+    // email, and worse (b) overwrite a previously-correct firstName with
+    // the email on every subsequent login. Send an empty string instead
+    // so `handleLogin` falls back to `invitation.firstName` (the name the
+    // inviter typed in the invite dialog) via its internal `||` check.
+    const firstName = auth.user.firstName?.trim() ?? ''
     const lastName = auth.user.lastName?.trim() || undefined
 
     let result
