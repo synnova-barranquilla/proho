@@ -71,6 +71,11 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
         api.conjuntos.queries.listForCurrentUser,
         {},
       ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.invitations.queries.listPendingOrgAdminInvitations,
+        {},
+      ),
     ])
 
     // If a `from` conjunto id was passed, resolve it so the sidebar
@@ -131,6 +136,21 @@ function EquipoPage() {
               <AdminsTable
                 onManageAccess={(admin) => setManageAccessFor(admin)}
               />
+            </Suspense>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Invitaciones pendientes</CardTitle>
+            <CardDescription>
+              Invitaciones enviadas que aún no han sido aceptadas. Puedes
+              revocarlas en cualquier momento.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Suspense fallback={<AdminsTableSkeleton />}>
+              <PendingInvitationsTable />
             </Suspense>
           </CardContent>
         </Card>
@@ -295,5 +315,94 @@ function AdminsTableSkeleton() {
         <Skeleton key={i} className="h-12 w-full" />
       ))}
     </div>
+  )
+}
+
+function PendingInvitationsTable() {
+  const { data: invitations } = useSuspenseQuery(
+    convexQuery(api.invitations.queries.listPendingOrgAdminInvitations, {}),
+  )
+
+  const revokeFn = useConvexMutation(api.invitations.mutations.revoke)
+  const revoke = useMutation({ mutationFn: revokeFn })
+
+  const handleRevoke = async (invitationId: Id<'invitations'>) => {
+    try {
+      await revoke.mutateAsync({ invitationId })
+      toast.success('Invitación revocada')
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const data = err.data as { message?: string }
+        toast.error(data.message ?? 'Error al revocar')
+      } else {
+        toast.error('Error inesperado')
+      }
+    }
+  }
+
+  if (invitations.length === 0) {
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        No hay invitaciones pendientes.
+      </div>
+    )
+  }
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Invitado</TableHead>
+          <TableHead>Enviada</TableHead>
+          <TableHead>Expira</TableHead>
+          <TableHead className="text-right">Acciones</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {invitations.map((inv) => {
+          const fullName = inv.lastName
+            ? `${inv.firstName} ${inv.lastName}`
+            : inv.firstName
+          const invitedAt = new Date(inv.invitedAt).toLocaleDateString('es-CO')
+          const expiresAt = new Date(inv.expiresAt).toLocaleDateString('es-CO')
+          const expired = inv.expiresAt < Date.now()
+          return (
+            <TableRow key={inv._id}>
+              <TableCell>
+                <div className="flex flex-col">
+                  <span className="font-medium">{fullName}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {inv.email}
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell className="text-xs text-muted-foreground">
+                {invitedAt}
+              </TableCell>
+              <TableCell>
+                {expired ? (
+                  <Badge variant="secondary">Expirada</Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    {expiresAt}
+                  </span>
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRevoke(inv._id)}
+                  disabled={revoke.isPending}
+                >
+                  <X />
+                  Revocar
+                </Button>
+              </TableCell>
+            </TableRow>
+          )
+        })}
+      </TableBody>
+    </Table>
   )
 }

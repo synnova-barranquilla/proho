@@ -157,10 +157,12 @@ export const create = mutation({
 /**
  * Revokes a PENDING invitation.
  *
- * F4 expansion:
+ * Authorization mirrors `create`:
  * - SUPER_ADMIN can revoke any invitation.
  * - ADMIN with conjunto access can revoke conjunto-scoped invitations
  *   for their own conjuntos.
+ * - ADMIN with `isOrgOwner === true` can revoke org-scoped ADMIN
+ *   invitations that belong to their own organization.
  */
 export const revoke = mutation({
   args: {
@@ -181,8 +183,22 @@ export const revoke = mutation({
         allowedRoles: ['ADMIN'],
       })
     } else {
-      // Org-scoped: solo SUPER_ADMIN
-      await requireOrgRole(ctx, ['SUPER_ADMIN'])
+      // Org-scoped: SUPER_ADMIN o ADMIN owner de la misma org
+      const caller = await requireOrgRole(ctx, ['ADMIN', 'SUPER_ADMIN'])
+      if (caller.orgRole === 'ADMIN') {
+        if (caller.isOrgOwner !== true) {
+          throwConvexError(
+            ERROR_CODES.FORBIDDEN,
+            'Solo el dueño de la organización puede revocar invitaciones org-scoped',
+          )
+        }
+        if (invitation.organizationId !== caller.organizationId) {
+          throwConvexError(
+            ERROR_CODES.FORBIDDEN,
+            'No puedes revocar invitaciones de otra organización',
+          )
+        }
+      }
     }
 
     if (invitation.status !== 'PENDING') {

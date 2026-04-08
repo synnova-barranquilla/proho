@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 
 import { query } from '../_generated/server'
-import { requireOrgRole } from '../lib/auth'
+import { getCurrentUser, requireOrgRole } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 
 /**
@@ -62,5 +62,39 @@ export const listAllPendingWithOrg = query({
         organization: orgMap.get(inv.organizationId) ?? null,
         invitedByUser: userMap.get(inv.invitedBy) ?? null,
       }))
+  },
+})
+
+/**
+ * F4: Lista las invitaciones pendientes de rol ADMIN a nivel org para la
+ * organización del usuario autenticado. Solo accesible para org owners.
+ *
+ * "Pendientes a nivel org" significa:
+ *   - `status === 'PENDING'`
+ *   - `orgRole === 'ADMIN'`
+ *   - `conjuntoId === undefined` (las conjunto-scoped no aplican aquí; esas
+ *     se listan desde `/admin/c/$conjuntoId/usuarios`)
+ *
+ * Usada por `/admin/equipo` para mostrar la sección "Invitaciones pendientes"
+ * junto a la tabla de administradores ya activos.
+ */
+export const listPendingOrgAdminInvitations = query({
+  args: {},
+  handler: async (ctx) => {
+    const caller = await getCurrentUser(ctx)
+    if (!caller) return []
+    // Solo owners ven las invitaciones pendientes del equipo de la org.
+    if (caller.orgRole === 'ADMIN' && caller.isOrgOwner !== true) return []
+
+    const pending = await ctx.db
+      .query('invitations')
+      .withIndex('by_organization_id_and_status', (q) =>
+        q.eq('organizationId', caller.organizationId).eq('status', 'PENDING'),
+      )
+      .collect()
+
+    return pending.filter(
+      (inv) => inv.orgRole === 'ADMIN' && inv.conjuntoId === undefined,
+    )
   },
 })

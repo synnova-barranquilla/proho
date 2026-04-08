@@ -24,6 +24,7 @@ import type * as invitations_validators from "../invitations/validators.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_organizations from "../lib/organizations.js";
+import type * as migrations_fixUserNames from "../migrations/fixUserNames.js";
 import type * as organizations_mutations from "../organizations/mutations.js";
 import type * as organizations_queries from "../organizations/queries.js";
 import type * as organizations_validators from "../organizations/validators.js";
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/errors": typeof lib_errors;
   "lib/organizations": typeof lib_organizations;
+  "migrations/fixUserNames": typeof migrations_fixUserNames;
   "organizations/mutations": typeof organizations_mutations;
   "organizations/queries": typeof organizations_queries;
   "organizations/validators": typeof organizations_validators;
