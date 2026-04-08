@@ -21,7 +21,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from '#/components/ui/field'
-import { Input } from '#/components/ui/input'
+import { NumberInput } from '#/components/ui/number-input'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../../convex/_generated/dataModel'
 
@@ -161,15 +161,7 @@ function NumberField({
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>
-      <Input
-        type="number"
-        min={0}
-        value={value}
-        onChange={(e) => {
-          const n = parseInt(e.target.value, 10)
-          onChange(isNaN(n) ? 0 : Math.max(0, n))
-        }}
-      />
+      <NumberInput min={0} value={value} onChange={(v) => onChange(v ?? 0)} />
       <FieldDescription>{description}</FieldDescription>
     </Field>
   )

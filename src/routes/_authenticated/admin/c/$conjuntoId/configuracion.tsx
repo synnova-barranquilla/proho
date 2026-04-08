@@ -21,7 +21,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from '#/components/ui/field'
-import { Input } from '#/components/ui/input'
+import { NumberInput } from '#/components/ui/number-input'
 import { Switch } from '#/components/ui/switch'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
@@ -123,14 +123,11 @@ function ConfiguracionPage() {
             <FieldGroup>
               <Field>
                 <FieldLabel>Máximo horas por visita</FieldLabel>
-                <Input
-                  type="number"
+                <NumberInput
                   min={0}
                   max={168}
                   value={maxHorasVisitante}
-                  onChange={(e) =>
-                    setMaxHorasVisitante(parseInt(e.target.value, 10) || 0)
-                  }
+                  onChange={(v) => setMaxHorasVisitante(v ?? 0)}
                 />
                 <FieldDescription>
                   Máximo tiempo que un visitante puede permanecer en el
@@ -139,14 +136,11 @@ function ConfiguracionPage() {
               </Field>
               <Field>
                 <FieldLabel>Tolerancia de salida (minutos)</FieldLabel>
-                <Input
-                  type="number"
+                <NumberInput
                   min={0}
                   max={240}
                   value={toleranciaMin}
-                  onChange={(e) =>
-                    setToleranciaMin(parseInt(e.target.value, 10) || 0)
-                  }
+                  onChange={(v) => setToleranciaMin(v ?? 0)}
                 />
                 <FieldDescription>
                   Minutos de gracia antes de aplicar tiempo extra.
