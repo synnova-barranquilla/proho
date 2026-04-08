@@ -8,7 +8,12 @@ import { api } from '../../convex/_generated/api'
 const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL
 
 export const Route = createFileRoute('/_authenticated')({
-  loader: async ({ location }) => {
+  // beforeLoad runs SEQUENTIALLY top-down before any `loader` in the tree.
+  // We do the entire auth + identity + role check here so that if any
+  // guard throws a redirect, NO child loader fires at all — this prevents
+  // child routes from firing Convex queries in parallel with an
+  // unauthenticated session. (Loaders run in parallel; beforeLoads do not.)
+  beforeLoad: async ({ location }) => {
     const auth = await getAuth()
 
     if (!auth.user) {
@@ -56,7 +61,18 @@ export const Route = createFileRoute('/_authenticated')({
       throw redirect({ to: '/no-autorizado' })
     }
 
+    // Pass context through to the loader so it can return it as loader
+    // data for child components to consume via getRouteApi().useLoaderData()
     return { workosUser: auth.user, convexUser, organization }
+  },
+  loader: async ({ context }) => {
+    // beforeLoad already did all the validation — just return its result
+    // so that children can read it with getRouteApi('/_authenticated').useLoaderData()
+    return {
+      workosUser: context.workosUser,
+      convexUser: context.convexUser,
+      organization: context.organization,
+    }
   },
   component: AuthenticatedLayout,
 })
