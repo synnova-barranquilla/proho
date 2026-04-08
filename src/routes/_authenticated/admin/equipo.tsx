@@ -9,6 +9,7 @@ import { ConvexHttpClient } from 'convex/browser'
 import { ConvexError } from 'convex/values'
 import { Check, Plus, Shield, UserMinus, UserPlus, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 import { InviteOrgAdminDialog } from '#/components/admin/equipo/invite-org-admin-dialog'
 import { ManageAccessDialog } from '#/components/admin/equipo/manage-access-dialog'
@@ -33,12 +34,22 @@ import {
 } from '#/components/ui/table'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../convex/_generated/api'
-import type { Doc } from '../../../../convex/_generated/dataModel'
+import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 
 const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL
 
+// Optional `from` search param: the conjunto id the user was visiting
+// before navigating to /admin/equipo. The sidebar uses it to render a
+// "Volver al conjunto <nombre>" shortcut so the user lands back where
+// they came from instead of going through the selector.
+const equipoSearchSchema = z.object({
+  from: z.string().optional(),
+})
+
 export const Route = createFileRoute('/_authenticated/admin/equipo')({
-  loader: async ({ context: { queryClient } }) => {
+  validateSearch: equipoSearchSchema,
+  loaderDeps: ({ search }) => ({ from: search.from }),
+  loader: async ({ context: { queryClient }, deps }) => {
     // Guard: solo org owners pueden entrar
     const auth = await getAuth()
     if (!auth.user) throw redirect({ to: '/login' })
@@ -62,17 +73,34 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
       ),
     ])
 
-    return null
+    // If a `from` conjunto id was passed, resolve it so the sidebar
+    // can render a back link with the conjunto's display name. If the
+    // fetch fails (invalid id, revoked access, etc.) we silently drop
+    // the back link — the user can still use "Volver al selector".
+    let fromConjunto: Doc<'conjuntos'> | null = null
+    if (deps.from) {
+      try {
+        const result = await client.query(api.conjuntos.queries.getById, {
+          conjuntoId: deps.from as Id<'conjuntos'>,
+        })
+        fromConjunto = result.conjunto
+      } catch {
+        fromConjunto = null
+      }
+    }
+
+    return { fromConjunto }
   },
   component: EquipoPage,
 })
 
 function EquipoPage() {
+  const { fromConjunto } = Route.useLoaderData()
   const [inviteOpen, setInviteOpen] = useState(false)
   const [manageAccessFor, setManageAccessFor] = useState<AdminRow | null>(null)
 
   return (
-    <AdminLayout conjunto={null}>
+    <AdminLayout conjunto={null} fromConjunto={fromConjunto}>
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-start justify-between">
           <div>

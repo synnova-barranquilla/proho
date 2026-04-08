@@ -34,17 +34,29 @@ interface AdminSidebarProps {
    * context (Equipo de la org).
    */
   conjunto: Doc<'conjuntos'> | null
+  /**
+   * When rendering the org-level variant and the user navigated here
+   * from a specific conjunto, show a primary "Volver a <nombre>" link
+   * back to that conjunto. Ignored when `conjunto` is set.
+   */
+  fromConjunto?: Doc<'conjuntos'> | null
 }
 
 const authenticatedRoute = getRouteApi('/_authenticated')
 
-export function AdminSidebar({ conjunto }: AdminSidebarProps) {
+export function AdminSidebar({ conjunto, fromConjunto }: AdminSidebarProps) {
   const location = useLocation()
   const pathname = location.pathname
   const { organization } = authenticatedRoute.useLoaderData()
 
   if (conjunto === null) {
-    return <OrgLevelSidebar orgName={organization.name} pathname={pathname} />
+    return (
+      <OrgLevelSidebar
+        orgName={organization.name}
+        pathname={pathname}
+        fromConjunto={fromConjunto ?? null}
+      />
+    )
   }
 
   return <ConjuntoScopedSidebar conjunto={conjunto} pathname={pathname} />
@@ -57,9 +69,11 @@ export function AdminSidebar({ conjunto }: AdminSidebarProps) {
 function OrgLevelSidebar({
   orgName,
   pathname,
+  fromConjunto,
 }: {
   orgName: string
   pathname: string
+  fromConjunto: Doc<'conjuntos'> | null
 }) {
   return (
     <Sidebar>
@@ -82,6 +96,23 @@ function OrgLevelSidebar({
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              {fromConjunto ? (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    render={
+                      <Link
+                        to="/admin/c/$conjuntoId"
+                        params={{ conjuntoId: fromConjunto._id }}
+                      >
+                        <ArrowLeft />
+                        <span className="truncate">
+                          Volver a {fromConjunto.nombre}
+                        </span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+              ) : null}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={
@@ -277,7 +308,7 @@ function ConjuntoScopedSidebar({
                 <SidebarMenuButton
                   isActive={pathname === '/admin/equipo'}
                   render={
-                    <Link to="/admin/equipo">
+                    <Link to="/admin/equipo" search={{ from: conjunto._id }}>
                       <Shield />
                       <span>Equipo de la org</span>
                     </Link>
