@@ -21,21 +21,48 @@ export const Route = createFileRoute('/_authenticated/seleccionar-conjunto')({
       console.log('[seleccionar-conjunto] no user, redirect to login')
       throw redirect({ to: '/login' })
     }
-    console.log('[seleccionar-conjunto] auth ok')
+    console.log('[seleccionar-conjunto] auth ok', {
+      hasToken: !!auth.accessToken,
+      tokenPreview: auth.accessToken.slice(0, 20),
+    })
 
     const client = new ConvexHttpClient(CONVEX_URL)
     client.setAuth(auth.accessToken)
 
-    const conjuntos = await client.query(
-      api.conjuntos.queries.listForCurrentUser,
-      {},
-    )
+    console.log('[seleccionar-conjunto] about to query listForCurrentUser')
+
+    let conjuntos
+    try {
+      conjuntos = await client.query(
+        api.conjuntos.queries.listForCurrentUser,
+        {},
+      )
+    } catch (err) {
+      // Capture the exact error so we can see what Convex is returning.
+      // Without this try/catch the error propagates silently and Nitro
+      // returns a generic 500 with no server-side log.
+      const errorInfo = {
+        name: err instanceof Error ? err.name : 'unknown',
+        message: err instanceof Error ? err.message : String(err),
+        data: (err as { data?: unknown }).data,
+        stack:
+          err instanceof Error && err.stack
+            ? err.stack.slice(0, 500)
+            : undefined,
+      }
+      console.error(
+        '[seleccionar-conjunto] client.query threw',
+        JSON.stringify(errorInfo),
+      )
+      // Re-throw so the loader still fails and we see the 500 — but now
+      // with the error logged.
+      throw err
+    }
+
     console.log('[seleccionar-conjunto] conjuntos fetched', {
       count: conjuntos.length,
     })
 
-    // Return a plain primitive count — no objects, no arrays of Convex docs.
-    // This isolates whether serialization of Doc<'conjuntos'> is the problem.
     return { count: conjuntos.length }
   },
   component: SeleccionarConjuntoPage,
