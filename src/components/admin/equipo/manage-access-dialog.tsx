@@ -52,7 +52,9 @@ export function ManageAccessDialog({
     api.conjuntos.queries.listForCurrentUser,
     {},
   )
-  const conjuntosData = queryClient.getQueryData(conjuntosQuery.queryKey)
+  const conjuntosData = queryClient.getQueryData<Array<Doc<'conjuntos'>>>(
+    conjuntosQuery.queryKey,
+  )
   const conjuntos = conjuntosData ?? []
 
   // Copia local de las memberships del admin (para feedback inmediato)
