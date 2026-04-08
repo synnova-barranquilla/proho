@@ -147,12 +147,28 @@ export async function requireConjuntoAccess(
 }
 
 /**
- * Validates whether `inviter` can invite a user with `targetRole`.
- * In F2, only SUPER_ADMIN can invite ADMINs. Nobody can invite SUPER_ADMINs
- * (those are created via seed bootstrap only).
+ * Validates whether `inviter` can invite a user with `targetRole` to
+ * `targetOrgId`. Rules:
+ *
+ * - Nobody can invite SUPER_ADMINs (they come from seed bootstrap only).
+ * - SUPER_ADMIN can invite ADMINs to any org.
+ * - ADMIN with `isOrgOwner === true` can invite ADMINs **to their own org**
+ *   (F4+ — lets org owners grow their admin team without requiring
+ *   super-admin intervention).
  */
-export function canInvite(inviter: Doc<'users'>, targetRole: OrgRole): boolean {
+export function canInvite(
+  inviter: Doc<'users'>,
+  targetRole: OrgRole,
+  targetOrgId: Id<'organizations'>,
+): boolean {
   if (targetRole === 'SUPER_ADMIN') return false
-  // targetRole is narrowed to 'ADMIN' here — only SUPER_ADMIN can invite ADMINs.
-  return inviter.orgRole === 'SUPER_ADMIN'
+
+  if (inviter.orgRole === 'SUPER_ADMIN') return true
+
+  // orgRole is narrowed to 'ADMIN' here (the only remaining union member).
+  if (inviter.isOrgOwner === true && inviter.organizationId === targetOrgId) {
+    return true
+  }
+
+  return false
 }

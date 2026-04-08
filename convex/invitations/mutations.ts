@@ -68,18 +68,21 @@ export const create = mutation({
       organizationId = conjunto.organizationId
       orgRoleForInvitation = 'ADMIN'
     } else {
-      // Modo A — org-scoped. Solo SUPER_ADMIN.
+      // Modo A — org-scoped. Aceptado para:
+      //  - SUPER_ADMIN: puede invitar ADMINs a cualquier org (onboarding, recuperación)
+      //  - ADMIN + isOrgOwner=true: puede invitar ADMINs a SU propia org
+      //    (crecer el equipo de administradores sin intervención del super-admin)
       if (!args.organizationId || !args.orgRole) {
         throwConvexError(
           ERROR_CODES.VALIDATION_ERROR,
           'organizationId y orgRole son obligatorios en invitaciones org-scoped',
         )
       }
-      const caller = await requireOrgRole(ctx, ['SUPER_ADMIN'])
-      if (!canInvite(caller, args.orgRole)) {
+      const caller = await requireOrgRole(ctx, ['ADMIN', 'SUPER_ADMIN'])
+      if (!canInvite(caller, args.orgRole, args.organizationId)) {
         throwConvexError(
           ERROR_CODES.FORBIDDEN,
-          'No tienes permisos para invitar usuarios con este rol',
+          'No tienes permisos para invitar usuarios con este rol a esta organización',
         )
       }
       callerId = caller._id
