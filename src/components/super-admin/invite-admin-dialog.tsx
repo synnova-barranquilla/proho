@@ -175,7 +175,14 @@ export function InviteAdminDialog({
                           onValueChange={(v) => field.handleChange(v ?? '')}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona una organización" />
+                            <SelectValue placeholder="Selecciona una organización">
+                              {(value: string) => {
+                                const org = invitableOrgs.find(
+                                  (o) => o._id === value,
+                                )
+                                return org ? org.name : null
+                              }}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {invitableOrgs.map((org) => (

@@ -125,7 +125,12 @@ export function VehiculoDialog({
                     onValueChange={(v) => v && setUnidadId(v)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecciona una unidad" />
+                      <SelectValue placeholder="Selecciona una unidad">
+                        {(value: string) => {
+                          const u = unidades.find((x) => x._id === value)
+                          return u ? `Torre ${u.torre} — ${u.numero}` : null
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {unidades.map((u) => (

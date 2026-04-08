@@ -92,7 +92,14 @@ function UsuariosPage() {
             onValueChange={(v) => setOrgFilter(v ?? ALL_ORGS_VALUE)}
           >
             <SelectTrigger className="w-full sm:w-[220px]">
-              <SelectValue placeholder="Organización" />
+              <SelectValue placeholder="Organización">
+                {(value: string) => {
+                  if (value === ALL_ORGS_VALUE)
+                    return 'Todas las organizaciones'
+                  const org = orgsQuery.data.find((o) => o._id === value)
+                  return org ? org.name : null
+                }}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL_ORGS_VALUE}>
