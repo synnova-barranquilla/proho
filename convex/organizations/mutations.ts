@@ -122,7 +122,9 @@ export const onboardTenant = mutation({
       activeModules: args.activeModules,
     })
 
-    // 2. Create the pending invitation for the initial admin
+    // 2. Create the pending invitation for the initial admin.
+    // F4: marcamos isOrgOwnerOnAccept=true para que al aceptar, el primer
+    // ADMIN de la org se cree como owner (ve todos los conjuntos automáticamente).
     const now = Date.now()
     const invitationId = await ctx.db.insert('invitations', {
       email: args.adminEmail,
@@ -134,6 +136,7 @@ export const onboardTenant = mutation({
       invitedBy: caller._id,
       invitedAt: now,
       expiresAt: now + SEVEN_DAYS_MS,
+      isOrgOwnerOnAccept: true,
     })
 
     return { orgId, invitationId }

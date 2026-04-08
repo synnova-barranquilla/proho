@@ -120,7 +120,24 @@ export const handleLogin = mutation({
       organizationId: invitation.organizationId,
       orgRole: invitation.orgRole,
       active: true,
+      // F4: isOrgOwner se propaga desde la invitación. Solo true cuando
+      // `onboardTenant` marcó esta invitación como la del primer admin.
+      isOrgOwner: invitation.isOrgOwnerOnAccept === true,
     })
+
+    // F4: si la invitación es conjunto-scoped, crear la membership activa
+    // para el user recién creado.
+    if (invitation.conjuntoId && invitation.conjuntoRole) {
+      await ctx.db.insert('conjuntoMemberships', {
+        userId,
+        conjuntoId: invitation.conjuntoId,
+        role: invitation.conjuntoRole,
+        active: true,
+        assignedBy: invitation.invitedBy,
+        assignedAt: Date.now(),
+        createdByOwner: false,
+      })
+    }
 
     await ctx.db.patch(invitation._id, {
       status: 'ACCEPTED',
@@ -131,6 +148,8 @@ export const handleLogin = mutation({
     return {
       status: 'accepted' as const,
       orgRole: invitation.orgRole,
+      conjuntoId: invitation.conjuntoId,
+      conjuntoRole: invitation.conjuntoRole,
     }
   },
 })

@@ -1,7 +1,9 @@
 import { v } from 'convex/values'
 
+import type { Doc } from '../_generated/dataModel'
 import { mutation } from '../_generated/server'
-import { canInvite, requireOrgRole } from '../lib/auth'
+import { conjuntoRoles } from '../conjuntoMemberships/validators'
+import { canInvite, requireConjuntoAccess, requireOrgRole } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { isInternalOrg } from '../lib/organizations'
 import { orgRoles } from '../users/validators'
@@ -10,30 +12,82 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 
 /**
  * Creates a new invitation.
- * - Only SUPER_ADMIN can invite ADMINs in F2/F3.
- * - Blocks invitations to the internal Synnova org.
- * - Revokes any previous PENDING invitations for the same email+org.
- * - Fails if there is an active user with the same email in the same org.
+ *
+ * Supports two modes:
+ *
+ * **Modo A — invitación a nivel organización (como en F3):**
+ *   - SUPER_ADMIN invita ADMINs a una org (usado por `/super-admin/organizaciones`).
+ *   - No se pasa conjuntoId ni conjuntoRole.
+ *
+ * **Modo B — invitación con contexto de conjunto (F4):**
+ *   - Un ADMIN del conjunto invita a alguien con un rol específico de conjunto.
+ *   - Si `conjuntoId` está presente, `conjuntoRole` es obligatorio.
+ *   - El caller debe tener acceso al conjunto con rol ADMIN.
+ *   - El orgRole de la invitation se setea automáticamente a 'ADMIN' (requerido
+ *     por el schema actual). La restricción real vive en la conjuntoMembership.
+ *
+ * Reglas comunes:
+ * - Bloquea invitaciones a la organización interna de Synnova.
+ * - Revoca invitaciones PENDING previas para el mismo email en la misma org.
+ * - Falla si hay un user activo con el mismo email en la misma org.
  */
 export const create = mutation({
   args: {
     email: v.string(),
     firstName: v.string(),
     lastName: v.optional(v.string()),
-    orgRole: orgRoles,
-    organizationId: v.id('organizations'),
+    orgRole: v.optional(orgRoles),
+    organizationId: v.optional(v.id('organizations')),
+    // F4: modo conjunto-scoped
+    conjuntoId: v.optional(v.id('conjuntos')),
+    conjuntoRole: v.optional(conjuntoRoles),
   },
   handler: async (ctx, args) => {
-    const caller = await requireOrgRole(ctx, ['SUPER_ADMIN'])
+    // Discriminar: ¿modo org-scoped (SUPER_ADMIN) o conjunto-scoped (ADMIN)?
+    const isConjuntoScoped = args.conjuntoId !== undefined
 
-    if (!canInvite(caller, args.orgRole)) {
+    if (isConjuntoScoped && !args.conjuntoRole) {
       throwConvexError(
-        ERROR_CODES.FORBIDDEN,
-        'No tienes permisos para invitar usuarios con este rol',
+        ERROR_CODES.VALIDATION_ERROR,
+        'conjuntoRole es obligatorio cuando se invita a un conjunto',
       )
     }
 
-    const org = await ctx.db.get(args.organizationId)
+    let callerId: Doc<'users'>['_id']
+    let organizationId: Doc<'users'>['organizationId']
+    let orgRoleForInvitation: Doc<'users'>['orgRole']
+
+    if (isConjuntoScoped) {
+      // Modo B — conjunto-scoped. El caller debe ser ADMIN del conjunto.
+      const { user, conjunto } = await requireConjuntoAccess(
+        ctx,
+        args.conjuntoId!,
+        { allowedRoles: ['ADMIN'] },
+      )
+      callerId = user._id
+      organizationId = conjunto.organizationId
+      orgRoleForInvitation = 'ADMIN'
+    } else {
+      // Modo A — org-scoped. Solo SUPER_ADMIN.
+      if (!args.organizationId || !args.orgRole) {
+        throwConvexError(
+          ERROR_CODES.VALIDATION_ERROR,
+          'organizationId y orgRole son obligatorios en invitaciones org-scoped',
+        )
+      }
+      const caller = await requireOrgRole(ctx, ['SUPER_ADMIN'])
+      if (!canInvite(caller, args.orgRole)) {
+        throwConvexError(
+          ERROR_CODES.FORBIDDEN,
+          'No tienes permisos para invitar usuarios con este rol',
+        )
+      }
+      callerId = caller._id
+      organizationId = args.organizationId
+      orgRoleForInvitation = args.orgRole
+    }
+
+    const org = await ctx.db.get(organizationId!)
     if (!org) {
       throwConvexError(ERROR_CODES.ORG_NOT_FOUND, 'Organización no encontrada')
     }
@@ -56,7 +110,7 @@ export const create = mutation({
       .withIndex('by_email', (q) => q.eq('email', args.email))
       .collect()
     const activeInSameOrg = existingUsers.find(
-      (u) => u.organizationId === args.organizationId && u.active,
+      (u) => u.organizationId === organizationId && u.active,
     )
     if (activeInSameOrg) {
       throwConvexError(
@@ -73,7 +127,7 @@ export const create = mutation({
       )
       .collect()
     for (const prev of previousPending) {
-      if (prev.organizationId === args.organizationId) {
+      if (prev.organizationId === organizationId) {
         await ctx.db.patch(prev._id, { status: 'REVOKED' })
       }
     }
@@ -83,12 +137,14 @@ export const create = mutation({
       email: args.email,
       firstName: args.firstName,
       lastName: args.lastName,
-      orgRole: args.orgRole,
-      organizationId: args.organizationId,
+      orgRole: orgRoleForInvitation,
+      organizationId: organizationId!,
       status: 'PENDING',
-      invitedBy: caller._id,
+      invitedBy: callerId,
       invitedAt: now,
       expiresAt: now + SEVEN_DAYS_MS,
+      conjuntoId: args.conjuntoId,
+      conjuntoRole: args.conjuntoRole,
     })
 
     return { invitationId }
@@ -97,15 +153,17 @@ export const create = mutation({
 
 /**
  * Revokes a PENDING invitation.
- * Only SUPER_ADMIN can revoke (F2). ADMIN will gain this ability in F4.
+ *
+ * F4 expansion:
+ * - SUPER_ADMIN can revoke any invitation.
+ * - ADMIN with conjunto access can revoke conjunto-scoped invitations
+ *   for their own conjuntos.
  */
 export const revoke = mutation({
   args: {
     invitationId: v.id('invitations'),
   },
   handler: async (ctx, args) => {
-    await requireOrgRole(ctx, ['SUPER_ADMIN'])
-
     const invitation = await ctx.db.get(args.invitationId)
     if (!invitation) {
       throwConvexError(
@@ -113,6 +171,17 @@ export const revoke = mutation({
         'Invitación no encontrada',
       )
     }
+
+    if (invitation.conjuntoId) {
+      // Conjunto-scoped: cualquier ADMIN del conjunto puede revocar
+      await requireConjuntoAccess(ctx, invitation.conjuntoId, {
+        allowedRoles: ['ADMIN'],
+      })
+    } else {
+      // Org-scoped: solo SUPER_ADMIN
+      await requireOrgRole(ctx, ['SUPER_ADMIN'])
+    }
+
     if (invitation.status !== 'PENDING') {
       throwConvexError(
         ERROR_CODES.FORBIDDEN,
