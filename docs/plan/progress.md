@@ -92,36 +92,39 @@
 | 3.6 | Registro de admin de conjunto (usa invitations.create de F2) | done   |
 | 3.7 | Toggle de módulos por tenant                                 | done   |
 
-### Fase 4 — Admin: Conjunto Admin (0/26)
+### Fase 4 — Admin: Conjunto Admin (25/25)
 
-| ID   | Tarea                                                             | Estado  |
-| ---- | ----------------------------------------------------------------- | ------- |
-| 4.1  | Layout de Admin de conjunto                                       | pending |
-| 4.2  | Crear tabla conjuntos en Convex                                   | pending |
-| 4.3  | CRUD de conjuntos                                                 | pending |
-| 4.4  | Selector de conjunto en header                                    | pending |
-| 4.5  | Crear tabla unidades en Convex                                    | pending |
-| 4.6  | CRUD de unidades/apartamentos                                     | pending |
-| 4.7  | Crear tabla residentes en Convex                                  | pending |
-| 4.8  | CRUD de residentes                                                | pending |
-| 4.9  | Crear tabla vehiculos en Convex                                   | pending |
-| 4.10 | CRUD de vehículos                                                 | pending |
-| 4.11 | Crear tabla parqueaderos en Convex                                | pending |
-| 4.12 | Configuración de parqueaderos                                     | pending |
-| 4.13 | Crear tabla regla_config en Convex                                | pending |
-| 4.14 | Configuración de reglas del motor                                 | pending |
-| 4.15 | Gestión de estado de mora/candado                                 | pending |
-| 4.16 | Crear tabla permisos_usuario en Convex                            | pending |
-| 4.17 | Gestión de permisos granulares                                    | pending |
-| 4.18 | Gestión de usuarios del conjunto (usa invitations con conjuntoId) | pending |
-| 4.19 | Script de seed con datos realistas                                | pending |
-| 4.20 | Dashboard general del admin                                       | pending |
-| 4.21 | Crear tabla conjuntoMemberships en Convex                         | pending |
-| 4.22 | Definir enum conjuntoRoles y migrar users.orgRole a optional      | pending |
-| 4.23 | Mutations de conjuntoMemberships (CRUD)                           | pending |
-| 4.24 | Expandir invitations a nivel conjunto (conjuntoId + conjuntoRole) | pending |
-| 4.25 | Selector de conjunto post-login + cookie selectedConjuntoId       | pending |
-| 4.26 | Refactor loader \_authenticated para contexto de conjunto activo  | pending |
+> **Alcance ajustado:** 4.16 y 4.17 (permisos granulares) diferidas a F7. 4.20 reducida a stub de counters. 4.13 reemplazada por `conjuntoConfig` tipada. Tarea nueva 4.27 (pantalla de equipo de org para Caso B — empresas administradoras).
+
+| ID   | Tarea                                                           | Estado   |
+| ---- | --------------------------------------------------------------- | -------- |
+| 4.1  | Layout de Admin de conjunto (sidebar + header + switcher)       | done     |
+| 4.2  | Crear tabla conjuntos en Convex                                 | done     |
+| 4.3  | CRUD de conjuntos                                               | done     |
+| 4.4  | ConjuntoSwitcher en header                                      | done     |
+| 4.5  | Crear tabla unidades en Convex                                  | done     |
+| 4.6  | CRUD de unidades con vista por torre                            | done     |
+| 4.7  | Crear tabla residentes en Convex                                | done     |
+| 4.8  | CRUD de residentes                                              | done     |
+| 4.9  | Crear tabla vehiculos en Convex                                 | done     |
+| 4.10 | CRUD de vehículos                                               | done     |
+| 4.11 | Crear tabla parqueaderos en Convex (sin estado OCUPADO)         | done     |
+| 4.12 | Wizard bulk generate de parqueaderos                            | done     |
+| 4.13 | `conjuntoConfig` tipada (reemplaza regla_config EAV)            | done     |
+| 4.14 | Pantalla tipada de configuración del conjunto                   | done     |
+| 4.15 | Gestión de mora (toggle por unidad)                             | done     |
+| 4.16 | ~~Crear tabla permisos_usuario~~                                | deferred |
+| 4.17 | ~~Gestión de permisos granulares~~                              | deferred |
+| 4.18 | Invitar usuarios del conjunto (VIGILANTE/ASISTENTE)             | done     |
+| 4.19 | Script de seed `seedConjuntoDemo`                               | done     |
+| 4.20 | Dashboard stub con 4 counters                                   | done     |
+| 4.21 | Crear tabla conjuntoMemberships con auditoría                   | done     |
+| 4.22 | Definir `conjuntoRoles` + agregar `isOrgOwner` a users          | done     |
+| 4.23 | Mutations de conjuntoMemberships (CRUD)                         | done     |
+| 4.24 | Expandir invitations con conjuntoId/conjuntoRole + isOrgOwner   | done     |
+| 4.25 | Selector post-login `/seleccionar-conjunto`                     | done     |
+| 4.26 | URL segmentada `/admin/c/$conjuntoId/*` + requireConjuntoAccess | done     |
+| 4.27 | **[NUEVA]** Pantalla `/admin/equipo` (Caso B empresas admin.)   | done     |
 
 ---
 

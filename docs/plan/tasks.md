@@ -99,36 +99,43 @@
 
 ## Fase 4 — Admin: Conjunto Admin (Configuración del Conjunto)
 
-> El Admin de conjunto configura todo lo necesario para que el módulo de parqueaderos funcione: torres, apartamentos, vehículos, residentes, parqueaderos, reglas y permisos.
+> El Admin de conjunto configura todo lo necesario para que el módulo de parqueaderos funcione: torres, apartamentos, vehículos, residentes, parqueaderos, reglas y permisos. Caso B soportado (empresas administradoras con staff múltiple) vía `isOrgOwner` + `conjuntoMemberships`.
 
-| ID   | Tarea                                                                                                                                     |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.1  | Crear layout de Admin de conjunto (sidebar: conjunto, unidades, residentes, vehículos, parqueaderos, configuración, usuarios)             |
-| 4.2  | Crear tabla `conjuntos` en Convex (organization_id, nombre, dirección, ciudad, configs) con schema validator                              |
-| 4.3  | Crear CRUD de conjuntos (un admin puede gestionar múltiples conjuntos dentro de su organización)                                          |
-| 4.4  | Implementar selector de conjunto (dropdown en header para orgs con múltiples conjuntos)                                                   |
-| 4.5  | Crear tabla `unidades` en Convex (conjunto_id, torre, numero, tipo, estado_mora) con schema validator e índices                           |
-| 4.6  | Crear CRUD de unidades/apartamentos con vista por torre                                                                                   |
-| 4.7  | Crear tabla `residentes` en Convex (usuario_id, unidad_id, tipo propietario/arrendatario, activo, telefono) con schema validator          |
-| 4.8  | Crear CRUD de residentes con asociación a unidad                                                                                          |
-| 4.9  | Crear tabla `vehiculos` en Convex (placa, tipo carro/moto, propietario_id, unidad_id, activo) con schema validator e índice por placa     |
-| 4.10 | Crear CRUD de vehículos registrados con asociación a unidad y propietario                                                                 |
-| 4.11 | Crear tabla `parqueaderos` en Convex (conjunto_id, numero, tipo auto/moto/discap/visitante, estado) con schema validator                  |
-| 4.12 | Crear pantalla de configuración de parqueaderos (cantidades por tipo, cupos por apartamento)                                              |
-| 4.13 | Crear tabla `regla_config` en Convex (conjunto_id, clave, valor, descripcion) con schema validator                                        |
-| 4.14 | Crear pantalla de configuración de reglas del motor (tiempo_max_residente, tiempo_max_visitante, hora_limite_visitante, etc.)             |
-| 4.15 | Implementar gestión de estado de mora (marcar/desmarcar candado por unidad)                                                               |
-| 4.16 | Crear tabla `permisos_usuario` en Convex (usuario_id, permiso, activo, activado_por, fecha) con schema validator                          |
-| 4.17 | Implementar gestión de permisos granulares (activar/desactivar `registrar_vehiculos` por vigilante)                                       |
-| 4.18 | Crear gestión de usuarios del conjunto (usa `invitations.create` con `conjuntoId` + `conjuntoRole`, expandido en 4.24)                    |
-| 4.19 | Crear script de seed con datos realistas de prueba (conjunto con 2 torres, 50 aptos, 80 vehículos, reglas configuradas, candados activos) |
-| 4.20 | Crear página de inicio/dashboard general del admin con resumen del conjunto                                                               |
-| 4.21 | Crear tabla `conjuntoMemberships` en Convex con schema validator (userId, conjuntoId, role, active)                                       |
-| 4.22 | Definir enum `conjuntoRoles` (ASISTENTE, VIGILANTE, RESIDENTE) y migrar `users.orgRole` a optional                                        |
-| 4.23 | Implementar mutations de `conjuntoMemberships` (`create`, `update`, `deactivate`, `listByConjunto`, `listByUser`)                         |
-| 4.24 | Expandir mutations de invitations para soportar nivel conjunto (`conjuntoId` + `conjuntoRole`)                                            |
-| 4.25 | Implementar selector de conjunto post-login: ruta `/seleccionar-conjunto`, cookie `selectedConjuntoId`, lógica en loader `_authenticated` |
-| 4.26 | Refactorizar loader `_authenticated` para soportar contexto de conjunto activo (además del contexto org)                                  |
+**Cambios de alcance (plan final):**
+
+- **4.16 y 4.17 (permisos granulares)** → diferidas a F7 cuando el flujo de parking defina qué acciones requieren restricción individual.
+- **4.20** → reducida a stub de 4 counters. El dashboard rico con gráficos y actividad se hace post-parking.
+- **4.27 (nueva)** → Pantalla de equipo de la organización para que owners gestionen ADMINs no-owner y sus accesos por conjunto.
+
+| ID       | Tarea                                                                                                                         |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 4.1      | Crear layout de Admin de conjunto (sidebar: conjunto, unidades, residentes, vehículos, parqueaderos, configuración, usuarios) |
+| 4.2      | Crear tabla `conjuntos` en Convex                                                                                             |
+| 4.3      | Crear CRUD de conjuntos                                                                                                       |
+| 4.4      | Implementar selector de conjunto (ConjuntoSwitcher en header)                                                                 |
+| 4.5      | Crear tabla `unidades` en Convex (torre + número únicos por conjunto)                                                         |
+| 4.6      | Crear CRUD de unidades/apartamentos con vista por torre                                                                       |
+| 4.7      | Crear tabla `residentes` en Convex (sin userId — los residentes no son users en el MVP)                                       |
+| 4.8      | Crear CRUD de residentes con asociación a unidad                                                                              |
+| 4.9      | Crear tabla `vehiculos` en Convex (placa única por conjunto, asociación a unidad)                                             |
+| 4.10     | Crear CRUD de vehículos registrados con asociación a unidad                                                                   |
+| 4.11     | Crear tabla `parqueaderos` en Convex (sin campo `estado` — ocupado se deriva en F5)                                           |
+| 4.12     | Crear wizard bulk generate de parqueaderos (cantidades por tipo)                                                              |
+| 4.13     | ~~Crear tabla `regla_config`~~ → Reemplazada por `conjuntoConfig` tipada (row único por conjunto)                             |
+| 4.14     | Crear pantalla tipada de configuración del conjunto (`conjuntoConfig`)                                                        |
+| 4.15     | Implementar gestión de estado de mora (toggle por unidad)                                                                     |
+| ~~4.16~~ | ~~Crear tabla `permisos_usuario`~~ → **Diferida a F7**                                                                        |
+| ~~4.17~~ | ~~Implementar gestión de permisos granulares~~ → **Diferida a F7**                                                            |
+| 4.18     | Crear gestión de usuarios del conjunto (invita VIGILANTE/ASISTENTE vía invitations expandidas)                                |
+| 4.19     | Crear script de seed `seedConjuntoDemo` (2 torres × 20 aptos, 30 residentes, 25 vehículos, 62 parqueaderos)                   |
+| 4.20     | Crear dashboard stub con 4 counters simples (unidades, residentes, vehículos, parqueaderos)                                   |
+| 4.21     | Crear tabla `conjuntoMemberships` con auditoría (assignedBy, assignedAt, revokedAt, createdByOwner)                           |
+| 4.22     | Definir enum `conjuntoRoles` (ADMIN, ASISTENTE, VIGILANTE, RESIDENTE) + agregar `isOrgOwner` a users                          |
+| 4.23     | Implementar mutations de `conjuntoMemberships` (`create`, `updateRole`, `setActive`, `remove`)                                |
+| 4.24     | Expandir mutations de invitations con `conjuntoId` + `conjuntoRole` + propagación de `isOrgOwnerOnAccept`                     |
+| 4.25     | Implementar selector de conjunto post-login `/seleccionar-conjunto`                                                           |
+| 4.26     | Refactorizar loaders: URL segmentada `/admin/c/$conjuntoId/*`, layout con `requireConjuntoAccess`                             |
+| 4.27     | Pantalla `/admin/equipo` para owners: lista de ADMINs, invitar nuevos, matriz de accesos conjunto × admin                     |
 
 ---
 

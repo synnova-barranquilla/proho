@@ -11,8 +11,19 @@
 import type { getRouter } from './router.tsx'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedAdminCConjuntoIdConfiguracionRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/configuracion'
+import { Route as AuthenticatedAdminCConjuntoIdIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/index'
+import { Route as AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar'
+import { Route as AuthenticatedAdminCConjuntoIdParqueaderosIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/parqueaderos/index'
+import { Route as AuthenticatedAdminCConjuntoIdResidentesIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/residentes/index'
+import { Route as AuthenticatedAdminCConjuntoIdRouteRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/route'
+import { Route as AuthenticatedAdminCConjuntoIdUnidadesIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/unidades/index'
+import { Route as AuthenticatedAdminCConjuntoIdUsuariosRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/usuarios'
+import { Route as AuthenticatedAdminCConjuntoIdVehiculosIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/vehiculos/index'
+import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedSeleccionarConjuntoRouteImport } from './routes/_authenticated/seleccionar-conjunto'
 import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
 import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from './routes/_authenticated/super-admin/organizaciones/$orgId'
 import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
@@ -92,6 +103,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSeleccionarConjuntoRoute =
+  AuthenticatedSeleccionarConjuntoRouteImport.update({
+    id: '/seleccionar-conjunto',
+    path: '/seleccionar-conjunto',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedVigilanteRouteRoute =
   AuthenticatedVigilanteRouteRouteImport.update({
     id: '/vigilante',
@@ -137,11 +154,71 @@ const AuthenticatedSuperAdminUsuariosRoute =
     path: '/usuarios',
     getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
   } as any)
+const AuthenticatedAdminEquipoRoute =
+  AuthenticatedAdminEquipoRouteImport.update({
+    id: '/equipo',
+    path: '/equipo',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedSuperAdminOrganizacionesOrgIdRoute =
   AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport.update({
     id: '/organizaciones/$orgId',
     path: '/organizaciones/$orgId',
     getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdRouteRoute =
+  AuthenticatedAdminCConjuntoIdRouteRouteImport.update({
+    id: '/c/$conjuntoId',
+    path: '/c/$conjuntoId',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdIndexRoute =
+  AuthenticatedAdminCConjuntoIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdUsuariosRoute =
+  AuthenticatedAdminCConjuntoIdUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdConfiguracionRoute =
+  AuthenticatedAdminCConjuntoIdConfiguracionRouteImport.update({
+    id: '/configuracion',
+    path: '/configuracion',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdVehiculosIndexRoute =
+  AuthenticatedAdminCConjuntoIdVehiculosIndexRouteImport.update({
+    id: '/vehiculos/',
+    path: '/vehiculos/',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdUnidadesIndexRoute =
+  AuthenticatedAdminCConjuntoIdUnidadesIndexRouteImport.update({
+    id: '/unidades/',
+    path: '/unidades/',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdResidentesIndexRoute =
+  AuthenticatedAdminCConjuntoIdResidentesIndexRouteImport.update({
+    id: '/residentes/',
+    path: '/residentes/',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute =
+  AuthenticatedAdminCConjuntoIdParqueaderosIndexRouteImport.update({
+    id: '/parqueaderos/',
+    path: '/parqueaderos/',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
+  } as any)
+const AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute =
+  AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRouteImport.update({
+    id: '/parqueaderos/configurar',
+    path: '/parqueaderos/configurar',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -159,12 +236,23 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
+  '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
+  '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
   '/vigilante/': typeof AuthenticatedVigilanteIndexRoute
+  '/admin/c/$conjuntoId': typeof AuthenticatedAdminCConjuntoIdRouteRouteWithChildren
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
+  '/admin/c/$conjuntoId/configuracion': typeof AuthenticatedAdminCConjuntoIdConfiguracionRoute
+  '/admin/c/$conjuntoId/usuarios': typeof AuthenticatedAdminCConjuntoIdUsuariosRoute
+  '/admin/c/$conjuntoId/': typeof AuthenticatedAdminCConjuntoIdIndexRoute
+  '/admin/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute
+  '/admin/c/$conjuntoId/parqueaderos/': typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute
+  '/admin/c/$conjuntoId/residentes/': typeof AuthenticatedAdminCConjuntoIdResidentesIndexRoute
+  '/admin/c/$conjuntoId/unidades/': typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRoute
+  '/admin/c/$conjuntoId/vehiculos/': typeof AuthenticatedAdminCConjuntoIdVehiculosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -178,12 +266,22 @@ export interface FileRoutesByTo {
   '/no-registrado': typeof NoRegistradoRoute
   '/organizacion-inactiva': typeof OrganizacionInactivaRoute
   '/progress': typeof ProgressRoute
+  '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
+  '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/super-admin': typeof AuthenticatedSuperAdminIndexRoute
   '/vigilante': typeof AuthenticatedVigilanteIndexRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
+  '/admin/c/$conjuntoId/configuracion': typeof AuthenticatedAdminCConjuntoIdConfiguracionRoute
+  '/admin/c/$conjuntoId/usuarios': typeof AuthenticatedAdminCConjuntoIdUsuariosRoute
+  '/admin/c/$conjuntoId': typeof AuthenticatedAdminCConjuntoIdIndexRoute
+  '/admin/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute
+  '/admin/c/$conjuntoId/parqueaderos': typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute
+  '/admin/c/$conjuntoId/residentes': typeof AuthenticatedAdminCConjuntoIdResidentesIndexRoute
+  '/admin/c/$conjuntoId/unidades': typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRoute
+  '/admin/c/$conjuntoId/vehiculos': typeof AuthenticatedAdminCConjuntoIdVehiculosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -202,12 +300,23 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/_authenticated/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
+  '/_authenticated/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
+  '/_authenticated/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/_authenticated/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
   '/_authenticated/vigilante/': typeof AuthenticatedVigilanteIndexRoute
+  '/_authenticated/admin/c/$conjuntoId': typeof AuthenticatedAdminCConjuntoIdRouteRouteWithChildren
   '/_authenticated/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
+  '/_authenticated/admin/c/$conjuntoId/configuracion': typeof AuthenticatedAdminCConjuntoIdConfiguracionRoute
+  '/_authenticated/admin/c/$conjuntoId/usuarios': typeof AuthenticatedAdminCConjuntoIdUsuariosRoute
+  '/_authenticated/admin/c/$conjuntoId/': typeof AuthenticatedAdminCConjuntoIdIndexRoute
+  '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute
+  '/_authenticated/admin/c/$conjuntoId/parqueaderos/': typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute
+  '/_authenticated/admin/c/$conjuntoId/residentes/': typeof AuthenticatedAdminCConjuntoIdResidentesIndexRoute
+  '/_authenticated/admin/c/$conjuntoId/unidades/': typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRoute
+  '/_authenticated/admin/c/$conjuntoId/vehiculos/': typeof AuthenticatedAdminCConjuntoIdVehiculosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -226,12 +335,23 @@ export interface FileRouteTypes {
     | '/admin'
     | '/super-admin'
     | '/vigilante'
+    | '/seleccionar-conjunto'
+    | '/admin/equipo'
     | '/super-admin/usuarios'
     | '/api/auth/callback'
     | '/admin/'
     | '/super-admin/'
     | '/vigilante/'
+    | '/admin/c/$conjuntoId'
     | '/super-admin/organizaciones/$orgId'
+    | '/admin/c/$conjuntoId/configuracion'
+    | '/admin/c/$conjuntoId/usuarios'
+    | '/admin/c/$conjuntoId/'
+    | '/admin/c/$conjuntoId/parqueaderos/configurar'
+    | '/admin/c/$conjuntoId/parqueaderos/'
+    | '/admin/c/$conjuntoId/residentes/'
+    | '/admin/c/$conjuntoId/unidades/'
+    | '/admin/c/$conjuntoId/vehiculos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -245,12 +365,22 @@ export interface FileRouteTypes {
     | '/no-registrado'
     | '/organizacion-inactiva'
     | '/progress'
+    | '/seleccionar-conjunto'
+    | '/admin/equipo'
     | '/super-admin/usuarios'
     | '/api/auth/callback'
     | '/admin'
     | '/super-admin'
     | '/vigilante'
     | '/super-admin/organizaciones/$orgId'
+    | '/admin/c/$conjuntoId/configuracion'
+    | '/admin/c/$conjuntoId/usuarios'
+    | '/admin/c/$conjuntoId'
+    | '/admin/c/$conjuntoId/parqueaderos/configurar'
+    | '/admin/c/$conjuntoId/parqueaderos'
+    | '/admin/c/$conjuntoId/residentes'
+    | '/admin/c/$conjuntoId/unidades'
+    | '/admin/c/$conjuntoId/vehiculos'
   id:
     | '__root__'
     | '/'
@@ -268,12 +398,23 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/super-admin'
     | '/_authenticated/vigilante'
+    | '/_authenticated/seleccionar-conjunto'
+    | '/_authenticated/admin/equipo'
     | '/_authenticated/super-admin/usuarios'
     | '/api/auth/callback'
     | '/_authenticated/admin/'
     | '/_authenticated/super-admin/'
     | '/_authenticated/vigilante/'
+    | '/_authenticated/admin/c/$conjuntoId'
     | '/_authenticated/super-admin/organizaciones/$orgId'
+    | '/_authenticated/admin/c/$conjuntoId/configuracion'
+    | '/_authenticated/admin/c/$conjuntoId/usuarios'
+    | '/_authenticated/admin/c/$conjuntoId/'
+    | '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar'
+    | '/_authenticated/admin/c/$conjuntoId/parqueaderos/'
+    | '/_authenticated/admin/c/$conjuntoId/residentes/'
+    | '/_authenticated/admin/c/$conjuntoId/unidades/'
+    | '/_authenticated/admin/c/$conjuntoId/vehiculos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -378,6 +519,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/seleccionar-conjunto': {
+      id: '/_authenticated/seleccionar-conjunto'
+      path: '/seleccionar-conjunto'
+      fullPath: '/seleccionar-conjunto'
+      preLoaderRoute: typeof AuthenticatedSeleccionarConjuntoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/vigilante': {
       id: '/_authenticated/vigilante'
       path: '/vigilante'
@@ -434,6 +582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuperAdminUsuariosRouteImport
       parentRoute: typeof AuthenticatedSuperAdminRouteRoute
     }
+    '/_authenticated/admin/equipo': {
+      id: '/_authenticated/admin/equipo'
+      path: '/equipo'
+      fullPath: '/admin/equipo'
+      preLoaderRoute: typeof AuthenticatedAdminEquipoRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/super-admin/organizaciones/$orgId': {
       id: '/_authenticated/super-admin/organizaciones/$orgId'
       path: '/organizaciones/$orgId'
@@ -441,16 +596,120 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport
       parentRoute: typeof AuthenticatedSuperAdminRouteRoute
     }
+    '/_authenticated/admin/c/$conjuntoId': {
+      id: '/_authenticated/admin/c/$conjuntoId'
+      path: '/c/$conjuntoId'
+      fullPath: '/admin/c/$conjuntoId'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdRouteRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/c/$conjuntoId/': {
+      id: '/_authenticated/admin/c/$conjuntoId/'
+      path: '/'
+      fullPath: '/admin/c/$conjuntoId/'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
+    '/_authenticated/admin/c/$conjuntoId/usuarios': {
+      id: '/_authenticated/admin/c/$conjuntoId/usuarios'
+      path: '/usuarios'
+      fullPath: '/admin/c/$conjuntoId/usuarios'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdUsuariosRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
+    '/_authenticated/admin/c/$conjuntoId/configuracion': {
+      id: '/_authenticated/admin/c/$conjuntoId/configuracion'
+      path: '/configuracion'
+      fullPath: '/admin/c/$conjuntoId/configuracion'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdConfiguracionRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
+    '/_authenticated/admin/c/$conjuntoId/vehiculos/': {
+      id: '/_authenticated/admin/c/$conjuntoId/vehiculos/'
+      path: '/vehiculos'
+      fullPath: '/admin/c/$conjuntoId/vehiculos/'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdVehiculosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
+    '/_authenticated/admin/c/$conjuntoId/unidades/': {
+      id: '/_authenticated/admin/c/$conjuntoId/unidades/'
+      path: '/unidades'
+      fullPath: '/admin/c/$conjuntoId/unidades/'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
+    '/_authenticated/admin/c/$conjuntoId/residentes/': {
+      id: '/_authenticated/admin/c/$conjuntoId/residentes/'
+      path: '/residentes'
+      fullPath: '/admin/c/$conjuntoId/residentes/'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdResidentesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
+    '/_authenticated/admin/c/$conjuntoId/parqueaderos/': {
+      id: '/_authenticated/admin/c/$conjuntoId/parqueaderos/'
+      path: '/parqueaderos'
+      fullPath: '/admin/c/$conjuntoId/parqueaderos/'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
+    '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar': {
+      id: '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar'
+      path: '/parqueaderos/configurar'
+      fullPath: '/admin/c/$conjuntoId/parqueaderos/configurar'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAdminCConjuntoIdRouteRouteChildren {
+  AuthenticatedAdminCConjuntoIdConfiguracionRoute: typeof AuthenticatedAdminCConjuntoIdConfiguracionRoute
+  AuthenticatedAdminCConjuntoIdUsuariosRoute: typeof AuthenticatedAdminCConjuntoIdUsuariosRoute
+  AuthenticatedAdminCConjuntoIdIndexRoute: typeof AuthenticatedAdminCConjuntoIdIndexRoute
+  AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute: typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute
+  AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute: typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute
+  AuthenticatedAdminCConjuntoIdResidentesIndexRoute: typeof AuthenticatedAdminCConjuntoIdResidentesIndexRoute
+  AuthenticatedAdminCConjuntoIdUnidadesIndexRoute: typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRoute
+  AuthenticatedAdminCConjuntoIdVehiculosIndexRoute: typeof AuthenticatedAdminCConjuntoIdVehiculosIndexRoute
+}
+
+const AuthenticatedAdminCConjuntoIdRouteRouteChildren: AuthenticatedAdminCConjuntoIdRouteRouteChildren =
+  {
+    AuthenticatedAdminCConjuntoIdConfiguracionRoute:
+      AuthenticatedAdminCConjuntoIdConfiguracionRoute,
+    AuthenticatedAdminCConjuntoIdUsuariosRoute:
+      AuthenticatedAdminCConjuntoIdUsuariosRoute,
+    AuthenticatedAdminCConjuntoIdIndexRoute:
+      AuthenticatedAdminCConjuntoIdIndexRoute,
+    AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute:
+      AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute,
+    AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute:
+      AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute,
+    AuthenticatedAdminCConjuntoIdResidentesIndexRoute:
+      AuthenticatedAdminCConjuntoIdResidentesIndexRoute,
+    AuthenticatedAdminCConjuntoIdUnidadesIndexRoute:
+      AuthenticatedAdminCConjuntoIdUnidadesIndexRoute,
+    AuthenticatedAdminCConjuntoIdVehiculosIndexRoute:
+      AuthenticatedAdminCConjuntoIdVehiculosIndexRoute,
+  }
+
+const AuthenticatedAdminCConjuntoIdRouteRouteWithChildren =
+  AuthenticatedAdminCConjuntoIdRouteRoute._addFileChildren(
+    AuthenticatedAdminCConjuntoIdRouteRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminEquipoRoute: typeof AuthenticatedAdminEquipoRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminCConjuntoIdRouteRoute: typeof AuthenticatedAdminCConjuntoIdRouteRouteWithChildren
 }
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminEquipoRoute: AuthenticatedAdminEquipoRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+    AuthenticatedAdminCConjuntoIdRouteRoute:
+      AuthenticatedAdminCConjuntoIdRouteRouteWithChildren,
   }
 
 const AuthenticatedAdminRouteRouteWithChildren =
@@ -495,6 +754,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedSuperAdminRouteRoute: typeof AuthenticatedSuperAdminRouteRouteWithChildren
   AuthenticatedVigilanteRouteRoute: typeof AuthenticatedVigilanteRouteRouteWithChildren
+  AuthenticatedSeleccionarConjuntoRoute: typeof AuthenticatedSeleccionarConjuntoRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -503,6 +763,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedSuperAdminRouteRouteWithChildren,
   AuthenticatedVigilanteRouteRoute:
     AuthenticatedVigilanteRouteRouteWithChildren,
+  AuthenticatedSeleccionarConjuntoRoute: AuthenticatedSeleccionarConjuntoRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
