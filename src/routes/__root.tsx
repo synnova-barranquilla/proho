@@ -1,4 +1,5 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { formDevtoolsPlugin } from '@tanstack/react-form-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import {
   createRootRouteWithContext,
@@ -88,6 +89,7 @@ function RootLayout() {
             render: <TanStackRouterDevtoolsPanel />,
           },
           TanStackQueryDevtools,
+          formDevtoolsPlugin(),
         ]}
       />
     </TooltipProvider>
