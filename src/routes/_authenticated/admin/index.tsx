@@ -1,13 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
+/**
+ * `/admin` es solo un punto de entrada. El usuario siempre pasa por el
+ * selector, que decide (según 0/1/N conjuntos accesibles) dónde mandarlo.
+ */
 export const Route = createFileRoute('/_authenticated/admin/')({
-  component: AdminHome,
+  loader: () => {
+    throw redirect({ to: '/seleccionar-conjunto' })
+  },
 })
-
-function AdminHome() {
-  return (
-    <main className="flex min-h-screen items-center justify-center">
-      <h1 className="text-2xl font-bold">Admin</h1>
-    </main>
-  )
-}

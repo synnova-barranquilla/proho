@@ -48,8 +48,11 @@ export const Route = createFileRoute('/_authenticated')({
     if (path.startsWith('/admin') && convexUser.orgRole !== 'ADMIN') {
       throw redirect({ to: '/no-autorizado' })
     }
-    if (path.startsWith('/vigilante')) {
-      // F2/F3 has no vigilantes — they require conjuntoMemberships from F4.
+    // /vigilante/* requiere user autenticado con orgRole ADMIN (los VIGILANTE
+    // se modelan como users con orgRole='ADMIN' pero cuya autorización real
+    // vive en conjuntoMemberships). El loader del segmento c/$conjuntoId se
+    // encarga de validar la membership específica.
+    if (path.startsWith('/vigilante') && convexUser.orgRole !== 'ADMIN') {
       throw redirect({ to: '/no-autorizado' })
     }
 
