@@ -24,6 +24,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '#/components/ui/sidebar'
+import { isConjuntoAdmin } from '#/lib/conjunto-role'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
 interface AdminSidebarProps {
@@ -35,6 +36,12 @@ interface AdminSidebarProps {
    */
   conjunto: Doc<'conjuntos'> | null
   /**
+   * The user's membership for `conjunto`, if any. `null` for owners,
+   * SUPER_ADMINs, or any org-level rendering. Used to derive the
+   * effective role which gates admin-only items.
+   */
+  membership: Doc<'conjuntoMemberships'> | null
+  /**
    * When rendering the org-level variant and the user navigated here
    * from a specific conjunto, show a primary "Volver a <nombre>" link
    * back to that conjunto. Ignored when `conjunto` is set.
@@ -44,10 +51,15 @@ interface AdminSidebarProps {
 
 const authenticatedRoute = getRouteApi('/_authenticated')
 
-export function AdminSidebar({ conjunto, fromConjunto }: AdminSidebarProps) {
+export function AdminSidebar({
+  conjunto,
+  membership,
+  fromConjunto,
+}: AdminSidebarProps) {
   const location = useLocation()
   const pathname = location.pathname
-  const { organization } = authenticatedRoute.useLoaderData()
+  const { convexUser, organization } = authenticatedRoute.useLoaderData()
+  const isOrgOwner = convexUser.isOrgOwner === true
 
   if (conjunto === null) {
     return (
@@ -55,11 +67,24 @@ export function AdminSidebar({ conjunto, fromConjunto }: AdminSidebarProps) {
         orgName={organization.name}
         pathname={pathname}
         fromConjunto={fromConjunto ?? null}
+        isOrgOwner={isOrgOwner}
       />
     )
   }
 
-  return <ConjuntoScopedSidebar conjunto={conjunto} pathname={pathname} />
+  // Conjunto-scoped: derive the effective role to decide which items
+  // to show. The backend already enforces these checks on every
+  // mutation; this is front-end gating for UX clarity.
+  const isAdmin = isConjuntoAdmin(convexUser, conjunto, membership)
+
+  return (
+    <ConjuntoScopedSidebar
+      conjunto={conjunto}
+      pathname={pathname}
+      isAdmin={isAdmin}
+      isOrgOwner={isOrgOwner}
+    />
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -70,10 +95,12 @@ function OrgLevelSidebar({
   orgName,
   pathname,
   fromConjunto,
+  isOrgOwner,
 }: {
   orgName: string
   pathname: string
   fromConjunto: Doc<'conjuntos'> | null
+  isOrgOwner: boolean
 }) {
   return (
     <Sidebar>
@@ -127,24 +154,26 @@ function OrgLevelSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Gestión</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={pathname === '/admin/equipo'}
-                  render={
-                    <Link to="/admin/equipo">
-                      <Shield />
-                      <span>Equipo de la org</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {isOrgOwner ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Gestión</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={pathname === '/admin/equipo'}
+                    render={
+                      <Link to="/admin/equipo">
+                        <Shield />
+                        <span>Equipo de la org</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
       </SidebarContent>
     </Sidebar>
   )
@@ -157,14 +186,23 @@ function OrgLevelSidebar({
 function ConjuntoScopedSidebar({
   conjunto,
   pathname,
+  isAdmin,
+  isOrgOwner,
 }: {
   conjunto: Doc<'conjuntos'>
   pathname: string
+  isAdmin: boolean
+  isOrgOwner: boolean
 }) {
   const base = `/admin/c/${conjunto._id}`
 
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(path + '/')
+
+  // The "Gestión" group collapses entirely if the user has no items to
+  // see — non-admin non-owner users (e.g. a raw VIGILANTE) get just
+  // Resumen + Inventario.
+  const showGestionGroup = isAdmin || isOrgOwner
 
   return (
     <Sidebar>
@@ -272,52 +310,63 @@ function ConjuntoScopedSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Gestión</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isActive(`${base}/usuarios`)}
-                  render={
-                    <Link
-                      to="/admin/c/$conjuntoId/usuarios"
-                      params={{ conjuntoId: conjunto._id }}
-                    >
-                      <Users />
-                      <span>Usuarios del conjunto</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isActive(`${base}/configuracion`)}
-                  render={
-                    <Link
-                      to="/admin/c/$conjuntoId/configuracion"
-                      params={{ conjuntoId: conjunto._id }}
-                    >
-                      <Settings />
-                      <span>Configuración</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={pathname === '/admin/equipo'}
-                  render={
-                    <Link to="/admin/equipo" search={{ from: conjunto._id }}>
-                      <Shield />
-                      <span>Equipo de la org</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {showGestionGroup ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Gestión</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {isAdmin ? (
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(`${base}/usuarios`)}
+                        render={
+                          <Link
+                            to="/admin/c/$conjuntoId/usuarios"
+                            params={{ conjuntoId: conjunto._id }}
+                          >
+                            <Users />
+                            <span>Usuarios del conjunto</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(`${base}/configuracion`)}
+                        render={
+                          <Link
+                            to="/admin/c/$conjuntoId/configuracion"
+                            params={{ conjuntoId: conjunto._id }}
+                          >
+                            <Settings />
+                            <span>Configuración</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                  </>
+                ) : null}
+                {isOrgOwner ? (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin/equipo'}
+                      render={
+                        <Link
+                          to="/admin/equipo"
+                          search={{ from: conjunto._id }}
+                        >
+                          <Shield />
+                          <span>Equipo de la org</span>
+                        </Link>
+                      }
+                    />
+                  </SidebarMenuItem>
+                ) : null}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
       </SidebarContent>
     </Sidebar>
   )

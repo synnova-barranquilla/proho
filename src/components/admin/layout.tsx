@@ -13,6 +13,15 @@ interface AdminLayoutProps {
    */
   conjunto: Doc<'conjuntos'> | null
   /**
+   * The current user's membership for the active conjunto, if any.
+   * - `null` for owners and SUPER_ADMINs (they don't need a membership).
+   * - Contains the role (ADMIN / ASISTENTE / VIGILANTE / RESIDENTE) for
+   *   everyone else.
+   * The sidebar uses this to gate "admin-only" items (Usuarios,
+   * Configuración) when rendering inside a conjunto.
+   */
+  membership?: Doc<'conjuntoMemberships'> | null
+  /**
    * When an org-level page (e.g. `/admin/equipo`) was opened from a
    * conjunto-scoped page, pass the source conjunto here so the sidebar
    * can render a "Volver a <nombre>" shortcut back to it. Ignored when
@@ -24,12 +33,17 @@ interface AdminLayoutProps {
 
 export function AdminLayout({
   conjunto,
+  membership,
   fromConjunto,
   children,
 }: AdminLayoutProps) {
   return (
     <SidebarProvider>
-      <AdminSidebar conjunto={conjunto} fromConjunto={fromConjunto} />
+      <AdminSidebar
+        conjunto={conjunto}
+        membership={membership ?? null}
+        fromConjunto={fromConjunto}
+      />
       <SidebarInset>
         <AdminHeader conjunto={conjunto} />
         <main className="flex-1 p-4 sm:p-6">{children}</main>
