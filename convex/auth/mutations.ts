@@ -139,6 +139,33 @@ export const handleLogin = mutation({
       })
     }
 
+    // F4: si la invitación es org-scoped y trae conjuntos pre-asignados,
+    // crear las memberships ADMIN ahora. Solo aplica si el user NO es
+    // owner — los owners ya ven todos los conjuntos automáticamente
+    // por la lógica de `requireConjuntoAccess`, así que pre-asignar
+    // memberships sería redundante (la mutation de invitations ya valida
+    // esto y limpia la lista cuando isOrgOwnerOnAccept es true).
+    if (
+      invitation.isOrgOwnerOnAccept !== true &&
+      invitation.conjuntoIdsOnAccept &&
+      invitation.conjuntoIdsOnAccept.length > 0
+    ) {
+      for (const conjuntoId of invitation.conjuntoIdsOnAccept) {
+        await ctx.db.insert('conjuntoMemberships', {
+          userId,
+          conjuntoId,
+          role: 'ADMIN',
+          active: true,
+          assignedBy: invitation.invitedBy,
+          assignedAt: Date.now(),
+          // Pre-assigned by an owner at invitation time, so this counts as
+          // "created by owner" — same semantics as if the owner had used
+          // the ManageAccessDialog matrix after the user accepted.
+          createdByOwner: true,
+        })
+      }
+    }
+
     await ctx.db.patch(invitation._id, {
       status: 'ACCEPTED',
       acceptedAt: Date.now(),

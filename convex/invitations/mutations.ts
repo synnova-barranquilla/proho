@@ -41,15 +41,31 @@ export const create = mutation({
     // F4: modo conjunto-scoped
     conjuntoId: v.optional(v.id('conjuntos')),
     conjuntoRole: v.optional(conjuntoRoles),
+    // F4: extras solo para org-scoped (rol ADMIN). Permiten que un owner
+    // invite otro admin como owner y/o pre-asigne conjuntos.
+    isOrgOwnerOnAccept: v.optional(v.boolean()),
+    conjuntoIdsOnAccept: v.optional(v.array(v.id('conjuntos'))),
   },
   handler: async (ctx, args) => {
-    // Discriminar: ¿modo org-scoped (SUPER_ADMIN) o conjunto-scoped (ADMIN)?
+    // Discriminar: ¿modo org-scoped (SUPER_ADMIN/owner) o conjunto-scoped (ADMIN del conjunto)?
     const isConjuntoScoped = args.conjuntoId !== undefined
 
     if (isConjuntoScoped && !args.conjuntoRole) {
       throwConvexError(
         ERROR_CODES.VALIDATION_ERROR,
         'conjuntoRole es obligatorio cuando se invita a un conjunto',
+      )
+    }
+
+    // isOrgOwnerOnAccept y conjuntoIdsOnAccept solo aplican a invitaciones
+    // org-scoped (rol ADMIN). Para conjunto-scoped no tienen sentido.
+    if (
+      isConjuntoScoped &&
+      (args.isOrgOwnerOnAccept || args.conjuntoIdsOnAccept)
+    ) {
+      throwConvexError(
+        ERROR_CODES.VALIDATION_ERROR,
+        'isOrgOwnerOnAccept y conjuntoIdsOnAccept solo se permiten en invitaciones org-scoped',
       )
     }
 
@@ -122,6 +138,37 @@ export const create = mutation({
       )
     }
 
+    // Validate that any conjunto in `conjuntoIdsOnAccept` belongs to the
+    // target organization. This prevents an owner of org A from sneaking
+    // a valid conjunto id from org B into the payload (data leak).
+    // Skip the check entirely when isOrgOwnerOnAccept is true — owners
+    // see all conjuntos automatically so explicit memberships are noise.
+    let normalizedConjuntoIds: typeof args.conjuntoIdsOnAccept = undefined
+    if (
+      !args.isOrgOwnerOnAccept &&
+      args.conjuntoIdsOnAccept &&
+      args.conjuntoIdsOnAccept.length > 0
+    ) {
+      const validIds: Array<(typeof args.conjuntoIdsOnAccept)[number]> = []
+      for (const cid of args.conjuntoIdsOnAccept) {
+        const conjunto = await ctx.db.get(cid)
+        if (!conjunto) {
+          throwConvexError(
+            ERROR_CODES.CONJUNTO_NOT_FOUND,
+            `Conjunto ${cid} no encontrado`,
+          )
+        }
+        if (conjunto.organizationId !== organizationId) {
+          throwConvexError(
+            ERROR_CODES.FORBIDDEN,
+            'No puedes pre-asignar conjuntos de otra organización',
+          )
+        }
+        validIds.push(cid)
+      }
+      normalizedConjuntoIds = validIds
+    }
+
     // Revoke any previous PENDING invitations for this email in this org.
     const previousPending = await ctx.db
       .query('invitations')
@@ -148,6 +195,8 @@ export const create = mutation({
       expiresAt: now + SEVEN_DAYS_MS,
       conjuntoId: args.conjuntoId,
       conjuntoRole: args.conjuntoRole,
+      isOrgOwnerOnAccept: args.isOrgOwnerOnAccept,
+      conjuntoIdsOnAccept: normalizedConjuntoIds,
     })
 
     return { invitationId }
