@@ -2,6 +2,7 @@ import { Suspense, useState } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
 
 import { convexQuery } from '@convex-dev/react-query'
 import { Plus } from 'lucide-react'
@@ -9,25 +10,18 @@ import { Plus } from 'lucide-react'
 import { ResidenteDialog } from '#/components/admin/residentes/residente-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { DataTable } from '#/components/ui/data-table'
 import { Skeleton } from '#/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
+import { formatDocument, formatPhone } from '#/lib/formatters'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute(
   '/_authenticated/admin/c/$conjuntoId/residentes/',
 )({
-  loader: async ({ context: { queryClient }, params }) => {
-    const conjuntoId = params.conjuntoId as Id<'conjuntos'>
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
@@ -48,7 +42,7 @@ export const Route = createFileRoute(
 type ResidenteRow = Doc<'residentes'> & { unidad: Doc<'unidades'> | null }
 
 function ResidentesPage() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<ResidenteRow | null>(null)
@@ -77,7 +71,7 @@ function ResidentesPage() {
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <ResidentesTable
-          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          conjuntoId={conjuntoId}
           isAdmin={isAdmin}
           onEdit={(r) => {
             setEditing(r)
@@ -93,7 +87,7 @@ function ResidentesPage() {
             setDialogOpen(open)
             if (!open) setEditing(null)
           }}
-          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          conjuntoId={conjuntoId}
           residente={editing}
         />
       ) : null}
@@ -114,64 +108,94 @@ function ResidentesTable({
     convexQuery(api.residentes.queries.listByConjunto, { conjuntoId }),
   )
 
-  if (residentes.length === 0) {
-    return (
-      <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        {isAdmin
-          ? 'No hay residentes. Crea el primero con el botón "Nuevo residente".'
-          : 'No hay residentes registrados.'}
-      </div>
-    )
-  }
+  const columns: ColumnDef<ResidenteRow>[] = [
+    {
+      id: 'nombre',
+      header: 'Nombre',
+      accessorFn: (r) => `${r.nombres} ${r.apellidos}`,
+      cell: ({ row }) => (
+        <span className="font-medium">
+          {row.original.nombres} {row.original.apellidos}
+        </span>
+      ),
+    },
+    {
+      id: 'documento',
+      header: 'Documento',
+      accessorFn: (r) => r.numeroDocumento,
+      cell: ({ row }) => (
+        <span className="text-xs">
+          {row.original.tipoDocumento}{' '}
+          {formatDocument(row.original.numeroDocumento)}
+        </span>
+      ),
+    },
+    {
+      id: 'unidad',
+      header: 'Unidad',
+      accessorFn: (r) =>
+        r.unidad ? `${r.unidad.torre}-${r.unidad.numero}` : '',
+      cell: ({ row }) =>
+        row.original.unidad
+          ? `${row.original.unidad.torre}-${row.original.unidad.numero}`
+          : '—',
+    },
+    {
+      id: 'tipo',
+      header: 'Tipo',
+      accessorKey: 'tipo',
+      cell: ({ row }) => (
+        <Badge variant="outline" className="text-xs">
+          {row.original.tipo}
+        </Badge>
+      ),
+    },
+    {
+      id: 'contacto',
+      header: 'Contacto',
+      accessorFn: (r) => r.telefono ?? r.email ?? '',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span className="text-xs text-muted-foreground">
+          {row.original.telefono
+            ? formatPhone(row.original.telefono)
+            : row.original.email || '—'}
+        </span>
+      ),
+    },
+    ...(isAdmin
+      ? [
+          {
+            id: 'acciones',
+            header: () => <span className="sr-only">Acciones</span>,
+            enableSorting: false,
+            meta: {
+              headClassName: 'text-right',
+              cellClassName: 'text-right',
+            },
+            cell: ({ row }: { row: { original: ResidenteRow } }) => (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(row.original)}
+              >
+                Editar
+              </Button>
+            ),
+          } satisfies ColumnDef<ResidenteRow>,
+        ]
+      : []),
+  ]
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nombre</TableHead>
-          <TableHead>Documento</TableHead>
-          <TableHead>Unidad</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Contacto</TableHead>
-          {isAdmin ? (
-            <TableHead className="text-right">Acciones</TableHead>
-          ) : null}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {residentes.map((r) => (
-          <TableRow key={r._id}>
-            <TableCell className="font-medium">
-              {r.nombres} {r.apellidos}
-            </TableCell>
-            <TableCell className="text-xs">
-              {r.tipoDocumento} {r.numeroDocumento}
-            </TableCell>
-            <TableCell>
-              {r.unidad ? `${r.unidad.torre}-${r.unidad.numero}` : '—'}
-            </TableCell>
-            <TableCell>
-              <Badge variant="outline" className="text-xs">
-                {r.tipo}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-xs text-muted-foreground">
-              {r.telefono || r.email || '—'}
-            </TableCell>
-            {isAdmin ? (
-              <TableCell className="text-right">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(r as ResidenteRow)}
-                >
-                  Editar
-                </Button>
-              </TableCell>
-            ) : null}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <DataTable
+      columns={columns}
+      data={residentes as ResidenteRow[]}
+      emptyMessage={
+        isAdmin
+          ? 'No hay residentes. Crea el primero con el botón "Nuevo residente".'
+          : 'No hay residentes registrados.'
+      }
+    />
   )
 }

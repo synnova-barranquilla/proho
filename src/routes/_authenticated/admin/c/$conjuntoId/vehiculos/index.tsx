@@ -2,6 +2,7 @@ import { Suspense, useState } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
 
 import { convexQuery } from '@convex-dev/react-query'
 import { Plus } from 'lucide-react'
@@ -9,25 +10,18 @@ import { Plus } from 'lucide-react'
 import { VehiculoDialog } from '#/components/admin/vehiculos/vehiculo-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { DataTable } from '#/components/ui/data-table'
 import { Skeleton } from '#/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
+import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute(
   '/_authenticated/admin/c/$conjuntoId/vehiculos/',
 )({
-  loader: async ({ context: { queryClient }, params }) => {
-    const conjuntoId = params.conjuntoId as Id<'conjuntos'>
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
@@ -48,7 +42,7 @@ export const Route = createFileRoute(
 type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
 
 function VehiculosPage() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<VehiculoRow | null>(null)
@@ -77,7 +71,7 @@ function VehiculosPage() {
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <VehiculosTable
-          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          conjuntoId={conjuntoId}
           isAdmin={isAdmin}
           onEdit={(v) => {
             setEditing(v)
@@ -93,7 +87,7 @@ function VehiculosPage() {
             setDialogOpen(open)
             if (!open) setEditing(null)
           }}
-          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          conjuntoId={conjuntoId}
           vehiculo={editing}
         />
       ) : null}
@@ -114,64 +108,87 @@ function VehiculosTable({
     convexQuery(api.vehiculos.queries.listByConjunto, { conjuntoId }),
   )
 
-  if (data.length === 0) {
-    return (
-      <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        {isAdmin
-          ? 'No hay vehículos registrados. Crea el primero con "Nuevo vehículo".'
-          : 'No hay vehículos registrados.'}
-      </div>
-    )
-  }
+  const columns: ColumnDef<VehiculoRow>[] = [
+    {
+      id: 'placa',
+      header: 'Placa',
+      accessorKey: 'placa',
+      cell: ({ row }) => (
+        <span className="font-mono font-medium">
+          {formatPlaca(row.original.placa)}
+        </span>
+      ),
+    },
+    {
+      id: 'tipo',
+      header: 'Tipo',
+      accessorKey: 'tipo',
+      cell: ({ row }) => <Badge variant="outline">{row.original.tipo}</Badge>,
+    },
+    {
+      id: 'unidad',
+      header: 'Unidad',
+      accessorFn: (v) =>
+        v.unidad ? `${v.unidad.torre}-${v.unidad.numero}` : '',
+      cell: ({ row }) =>
+        row.original.unidad
+          ? `${row.original.unidad.torre}-${row.original.unidad.numero}`
+          : '—',
+    },
+    {
+      id: 'propietario',
+      header: 'Propietario',
+      accessorFn: (v) => v.propietarioNombre ?? '',
+      cell: ({ row }) => (
+        <span className="text-xs text-muted-foreground">
+          {row.original.propietarioNombre ?? '—'}
+        </span>
+      ),
+    },
+    {
+      id: 'estado',
+      header: 'Estado',
+      accessorFn: (v) => (v.active ? 'Activo' : 'Inactivo'),
+      cell: ({ row }) =>
+        row.original.active ? (
+          <Badge variant="outline">Activo</Badge>
+        ) : (
+          <Badge variant="secondary">Inactivo</Badge>
+        ),
+    },
+    ...(isAdmin
+      ? [
+          {
+            id: 'acciones',
+            header: () => <span className="sr-only">Acciones</span>,
+            enableSorting: false,
+            meta: {
+              headClassName: 'text-right',
+              cellClassName: 'text-right',
+            },
+            cell: ({ row }: { row: { original: VehiculoRow } }) => (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(row.original)}
+              >
+                Editar
+              </Button>
+            ),
+          } satisfies ColumnDef<VehiculoRow>,
+        ]
+      : []),
+  ]
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Placa</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Unidad</TableHead>
-          <TableHead>Propietario</TableHead>
-          <TableHead>Estado</TableHead>
-          {isAdmin ? (
-            <TableHead className="text-right">Acciones</TableHead>
-          ) : null}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((v) => (
-          <TableRow key={v._id}>
-            <TableCell className="font-mono font-medium">{v.placa}</TableCell>
-            <TableCell>
-              <Badge variant="outline">{v.tipo}</Badge>
-            </TableCell>
-            <TableCell>
-              {v.unidad ? `${v.unidad.torre}-${v.unidad.numero}` : '—'}
-            </TableCell>
-            <TableCell className="text-xs text-muted-foreground">
-              {v.propietarioNombre ?? '—'}
-            </TableCell>
-            <TableCell>
-              {v.active ? (
-                <Badge variant="outline">Activo</Badge>
-              ) : (
-                <Badge variant="secondary">Inactivo</Badge>
-              )}
-            </TableCell>
-            {isAdmin ? (
-              <TableCell className="text-right">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(v as VehiculoRow)}
-                >
-                  Editar
-                </Button>
-              </TableCell>
-            ) : null}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <DataTable
+      columns={columns}
+      data={data as VehiculoRow[]}
+      emptyMessage={
+        isAdmin
+          ? 'No hay vehículos registrados. Crea el primero con "Nuevo vehículo".'
+          : 'No hay vehículos registrados.'
+      }
+    />
   )
 }

@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
@@ -10,15 +11,8 @@ import { toast } from 'sonner'
 
 import { Badge } from '#/components/ui/badge'
 import { Button, buttonVariants } from '#/components/ui/button'
+import { DataTable } from '#/components/ui/data-table'
 import { Skeleton } from '#/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../../convex/_generated/api'
@@ -27,11 +21,11 @@ import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
 export const Route = createFileRoute(
   '/_authenticated/admin/c/$conjuntoId/parqueaderos/',
 )({
-  loader: async ({ context: { queryClient }, params }) => {
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
       api.parqueaderos.queries.listByConjunto,
-      { conjuntoId: params.conjuntoId as Id<'conjuntos'> },
+      { conjuntoId },
     )
     return null
   },
@@ -39,7 +33,7 @@ export const Route = createFileRoute(
 })
 
 function ParqueaderosPage() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   return (
     <div className="flex flex-col gap-6">
@@ -66,10 +60,7 @@ function ParqueaderosPage() {
       </div>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
-        <ParqueaderosTable
-          conjuntoId={conjuntoId as Id<'conjuntos'>}
-          isAdmin={isAdmin}
-        />
+        <ParqueaderosTable conjuntoId={conjuntoId} isAdmin={isAdmin} />
       </Suspense>
     </div>
   )
@@ -110,56 +101,65 @@ function ParqueaderosTable({
     }
   }
 
-  if (parqs.length === 0) {
-    return (
-      <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        {isAdmin
-          ? 'No hay parqueaderos creados. Usa "Configurar en bulk" para generarlos.'
-          : 'No hay parqueaderos configurados en este conjunto.'}
-      </div>
-    )
-  }
+  const columns: ColumnDef<Doc<'parqueaderos'>>[] = [
+    {
+      id: 'numero',
+      header: 'Número',
+      accessorKey: 'numero',
+      cell: ({ row }) => (
+        <span className="font-mono font-medium">{row.original.numero}</span>
+      ),
+    },
+    {
+      id: 'tipo',
+      header: 'Tipo',
+      accessorKey: 'tipo',
+      cell: ({ row }) => <Badge variant="outline">{row.original.tipo}</Badge>,
+    },
+    {
+      id: 'estado',
+      header: 'Estado',
+      accessorFn: (p) => (p.inhabilitado ? 'Inhabilitado' : 'Habilitado'),
+      cell: ({ row }) =>
+        row.original.inhabilitado ? (
+          <Badge variant="destructive">Inhabilitado</Badge>
+        ) : (
+          <Badge variant="outline">Habilitado</Badge>
+        ),
+    },
+    ...(isAdmin
+      ? [
+          {
+            id: 'acciones',
+            header: () => <span className="sr-only">Acciones</span>,
+            enableSorting: false,
+            meta: {
+              headClassName: 'text-right',
+              cellClassName: 'text-right',
+            },
+            cell: ({ row }: { row: { original: Doc<'parqueaderos'> } }) => (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleToggle(row.original)}
+              >
+                {row.original.inhabilitado ? 'Habilitar' : 'Inhabilitar'}
+              </Button>
+            ),
+          } satisfies ColumnDef<Doc<'parqueaderos'>>,
+        ]
+      : []),
+  ]
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Número</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Estado</TableHead>
-          {isAdmin ? (
-            <TableHead className="text-right">Acciones</TableHead>
-          ) : null}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {parqs.map((p) => (
-          <TableRow key={p._id}>
-            <TableCell className="font-mono font-medium">{p.numero}</TableCell>
-            <TableCell>
-              <Badge variant="outline">{p.tipo}</Badge>
-            </TableCell>
-            <TableCell>
-              {p.inhabilitado ? (
-                <Badge variant="destructive">Inhabilitado</Badge>
-              ) : (
-                <Badge variant="outline">Habilitado</Badge>
-              )}
-            </TableCell>
-            {isAdmin ? (
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleToggle(p)}
-                >
-                  {p.inhabilitado ? 'Habilitar' : 'Inhabilitar'}
-                </Button>
-              </TableCell>
-            ) : null}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <DataTable
+      columns={columns}
+      data={parqs}
+      emptyMessage={
+        isAdmin
+          ? 'No hay parqueaderos creados. Usa "Configurar en bulk" para generarlos.'
+          : 'No hay parqueaderos configurados en este conjunto.'
+      }
+    />
   )
 }
