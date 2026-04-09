@@ -55,16 +55,12 @@ export const Route = createFileRoute('/_authenticated')({
     ) {
       throw redirect({ to: '/no-autorizado' })
     }
-    if (path.startsWith('/admin') && convexUser.orgRole !== 'ADMIN') {
-      throw redirect({ to: '/no-autorizado' })
-    }
-    // /vigilante/* requiere user autenticado con orgRole ADMIN (los VIGILANTE
-    // se modelan como users con orgRole='ADMIN' pero cuya autorización real
-    // vive en conjuntoMemberships). El loader del segmento c/$conjuntoId se
-    // encarga de validar la membership específica.
-    if (path.startsWith('/vigilante') && convexUser.orgRole !== 'ADMIN') {
-      throw redirect({ to: '/no-autorizado' })
-    }
+    // /admin/* y /vigilante/* son accesibles para ADMIN y SUPER_ADMIN
+    // (los super admins pueden entrar a cualquier conjunto desde el panel
+    // super admin para debugging). Con el orgRole actual que sólo tiene
+    // esos dos valores, cualquier usuario autenticado con identidad válida
+    // puede pasar — no hay nada más que chequear aquí. Si agregamos un
+    // rol adicional (p.ej. VIGILANTE standalone) reintroducir un guard.
 
     // Pass context through to the loader so it can return it as loader
     // data for child components to consume via getRouteApi().useLoaderData()

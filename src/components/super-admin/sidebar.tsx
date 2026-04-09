@@ -1,6 +1,6 @@
 import { Link, useLocation } from '@tanstack/react-router'
 
-import { Building2, Users } from 'lucide-react'
+import { Building2, SquareStack, Users } from 'lucide-react'
 
 import {
   Sidebar,
@@ -21,6 +21,12 @@ const NAV_ITEMS = [
     isActive: (pathname: string) =>
       pathname === '/super-admin' ||
       pathname.startsWith('/super-admin/organizaciones'),
+  },
+  {
+    title: 'Conjuntos',
+    to: '/super-admin/conjuntos',
+    icon: SquareStack,
+    isActive: (pathname: string) => pathname === '/super-admin/conjuntos',
   },
   {
     title: 'Usuarios',

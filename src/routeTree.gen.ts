@@ -30,6 +30,7 @@ import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
+import { Route as AuthenticatedSuperAdminConjuntosRouteImport } from './routes/_authenticated/super-admin/conjuntos'
 import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
 import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from './routes/_authenticated/super-admin/organizaciones/$orgId'
 import { Route as AuthenticatedAdminCConjuntoIdRouteRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/route'
@@ -152,6 +153,12 @@ const AuthenticatedSuperAdminUsuariosRoute =
     path: '/usuarios',
     getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
   } as any)
+const AuthenticatedSuperAdminConjuntosRoute =
+  AuthenticatedSuperAdminConjuntosRouteImport.update({
+    id: '/conjuntos',
+    path: '/conjuntos',
+    getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminEquipoRoute =
   AuthenticatedAdminEquipoRouteImport.update({
     id: '/equipo',
@@ -236,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
   '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
   '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
+  '/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
   '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -266,6 +274,7 @@ export interface FileRoutesByTo {
   '/progress': typeof ProgressRoute
   '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
   '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
+  '/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
   '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -300,6 +309,7 @@ export interface FileRoutesById {
   '/_authenticated/vigilante': typeof AuthenticatedVigilanteRouteRouteWithChildren
   '/_authenticated/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
   '/_authenticated/admin/equipo': typeof AuthenticatedAdminEquipoRoute
+  '/_authenticated/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
   '/_authenticated/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/vigilante'
     | '/seleccionar-conjunto'
     | '/admin/equipo'
+    | '/super-admin/conjuntos'
     | '/super-admin/usuarios'
     | '/api/auth/callback'
     | '/admin/'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/seleccionar-conjunto'
     | '/admin/equipo'
+    | '/super-admin/conjuntos'
     | '/super-admin/usuarios'
     | '/api/auth/callback'
     | '/admin'
@@ -398,6 +410,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vigilante'
     | '/_authenticated/seleccionar-conjunto'
     | '/_authenticated/admin/equipo'
+    | '/_authenticated/super-admin/conjuntos'
     | '/_authenticated/super-admin/usuarios'
     | '/api/auth/callback'
     | '/_authenticated/admin/'
@@ -580,6 +593,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuperAdminUsuariosRouteImport
       parentRoute: typeof AuthenticatedSuperAdminRouteRoute
     }
+    '/_authenticated/super-admin/conjuntos': {
+      id: '/_authenticated/super-admin/conjuntos'
+      path: '/conjuntos'
+      fullPath: '/super-admin/conjuntos'
+      preLoaderRoute: typeof AuthenticatedSuperAdminConjuntosRouteImport
+      parentRoute: typeof AuthenticatedSuperAdminRouteRoute
+    }
     '/_authenticated/admin/equipo': {
       id: '/_authenticated/admin/equipo'
       path: '/equipo'
@@ -716,6 +736,7 @@ const AuthenticatedAdminRouteRouteWithChildren =
   )
 
 interface AuthenticatedSuperAdminRouteRouteChildren {
+  AuthenticatedSuperAdminConjuntosRoute: typeof AuthenticatedSuperAdminConjuntosRoute
   AuthenticatedSuperAdminUsuariosRoute: typeof AuthenticatedSuperAdminUsuariosRoute
   AuthenticatedSuperAdminIndexRoute: typeof AuthenticatedSuperAdminIndexRoute
   AuthenticatedSuperAdminOrganizacionesOrgIdRoute: typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
@@ -723,6 +744,8 @@ interface AuthenticatedSuperAdminRouteRouteChildren {
 
 const AuthenticatedSuperAdminRouteRouteChildren: AuthenticatedSuperAdminRouteRouteChildren =
   {
+    AuthenticatedSuperAdminConjuntosRoute:
+      AuthenticatedSuperAdminConjuntosRoute,
     AuthenticatedSuperAdminUsuariosRoute: AuthenticatedSuperAdminUsuariosRoute,
     AuthenticatedSuperAdminIndexRoute: AuthenticatedSuperAdminIndexRoute,
     AuthenticatedSuperAdminOrganizacionesOrgIdRoute:

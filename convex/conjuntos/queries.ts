@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import { query, type QueryCtx } from '../_generated/server'
-import { requireConjuntoAccess, requireUser } from '../lib/auth'
+import { requireConjuntoAccess, requireOrgRole, requireUser } from '../lib/auth'
 
 /**
  * Lista los conjuntos accesibles para el usuario autenticado.
@@ -95,12 +95,22 @@ export const getBySlug = query({
   handler: async (ctx, args) => {
     const user = await requireUser(ctx)
 
-    const conjunto = await ctx.db
-      .query('conjuntos')
-      .withIndex('by_organization_id_and_slug', (q) =>
-        q.eq('organizationId', user.organizationId).eq('slug', args.slug),
-      )
-      .unique()
+    // SUPER_ADMIN resuelve el slug globalmente (puede entrar a cualquier
+    // org). Los slugs de conjunto son únicos por-org, no globalmente, así
+    // que en el caso (muy improbable) de dos orgs con el mismo slug el
+    // super admin verá el primero — suficiente para debugging manual.
+    // Cualquier otro rol resuelve sólo dentro de su propia org.
+    const conjunto =
+      user.orgRole === 'SUPER_ADMIN'
+        ? ((await ctx.db.query('conjuntos').collect()).find(
+            (c) => c.slug === args.slug,
+          ) ?? null)
+        : await ctx.db
+            .query('conjuntos')
+            .withIndex('by_organization_id_and_slug', (q) =>
+              q.eq('organizationId', user.organizationId).eq('slug', args.slug),
+            )
+            .unique()
 
     if (!conjunto) return null
 
@@ -113,6 +123,42 @@ export const getBySlug = query({
       .unique()
 
     return { conjunto, membership: membership ?? null, config }
+  },
+})
+
+/**
+ * Lista global de conjuntos — uso exclusivo del panel super admin.
+ * Incluye nombre + slug de la organización a la que pertenecen para
+ * poder mostrarlos en una tabla cross-org con contexto. Incluye tanto
+ * activos como inactivos para que el super admin pueda diagnosticar.
+ */
+export const listAllForSuperAdmin = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireOrgRole(ctx, ['SUPER_ADMIN'])
+
+    const conjuntos = await ctx.db.query('conjuntos').collect()
+    const orgIds = new Set(conjuntos.map((c) => c.organizationId))
+    const orgs = await Promise.all(
+      Array.from(orgIds).map((id) => ctx.db.get(id)),
+    )
+    const orgById = new Map(
+      orgs
+        .filter((o): o is Doc<'organizations'> => o !== null)
+        .map((o) => [o._id, o]),
+    )
+
+    return conjuntos
+      .map((c) => ({
+        ...c,
+        organization: orgById.get(c.organizationId) ?? null,
+      }))
+      .sort((a, b) => {
+        const orgA = a.organization?.name ?? ''
+        const orgB = b.organization?.name ?? ''
+        if (orgA !== orgB) return orgA.localeCompare(orgB)
+        return a.nombre.localeCompare(b.nombre)
+      })
   },
 })
 
