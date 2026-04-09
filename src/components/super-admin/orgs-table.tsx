@@ -2,18 +2,12 @@ import { useState } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
 
 import { convexQuery } from '@convex-dev/react-query'
 
 import { Badge } from '#/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
+import { DataTable } from '#/components/ui/data-table'
 import {
   Tooltip,
   TooltipContent,
@@ -60,90 +54,116 @@ export function OrgsTable({
     return <OrgsEmptyState onCreate={onCreate} showInactive={showInactive} />
   }
 
+  const columns: ColumnDef<Doc<'organizations'>>[] = [
+    {
+      id: 'nombre',
+      header: 'Nombre',
+      accessorKey: 'name',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Link
+            to="/super-admin/organizaciones/$orgId"
+            params={{ orgId: row.original._id }}
+            className="font-medium hover:underline"
+          >
+            {row.original.name}
+          </Link>
+          {isInternalOrgSlug(row.original.slug) && (
+            <Badge variant="secondary" className="text-xs">
+              Interno
+            </Badge>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'slug',
+      header: 'Slug',
+      accessorKey: 'slug',
+      meta: {
+        headClassName: 'hidden sm:table-cell',
+        cellClassName: 'hidden sm:table-cell',
+      },
+      cell: ({ row }) => (
+        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+          {row.original.slug}
+        </code>
+      ),
+    },
+    {
+      id: 'estado',
+      header: 'Estado',
+      accessorFn: (o) => (o.active ? 'Activa' : 'Inactiva'),
+      cell: ({ row }) => (
+        <Badge
+          variant={row.original.active ? 'default' : 'secondary'}
+          className="text-xs"
+        >
+          {row.original.active ? 'Activa' : 'Inactiva'}
+        </Badge>
+      ),
+    },
+    {
+      id: 'modulos',
+      header: 'Módulos',
+      enableSorting: false,
+      meta: {
+        headClassName: 'hidden md:table-cell',
+        cellClassName: 'hidden md:table-cell',
+      },
+      cell: ({ row }) =>
+        row.original.activeModules.length === 0 ? (
+          <span className="text-xs text-muted-foreground">Ninguno</span>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {row.original.activeModules.map((m) => (
+              <Badge key={m} variant="outline" className="text-xs">
+                {MODULE_LABELS[m]}
+              </Badge>
+            ))}
+          </div>
+        ),
+    },
+    {
+      id: 'creada',
+      header: 'Creada',
+      accessorFn: (o) => o._creationTime,
+      meta: {
+        headClassName: 'hidden lg:table-cell',
+        cellClassName: 'hidden lg:table-cell',
+      },
+      cell: ({ row }) => (
+        <Tooltip>
+          <TooltipTrigger className="text-xs text-muted-foreground">
+            {formatRelative(row.original._creationTime)}
+          </TooltipTrigger>
+          <TooltipContent>
+            {formatAbsolute(row.original._creationTime)}
+          </TooltipContent>
+        </Tooltip>
+      ),
+    },
+    {
+      id: 'acciones',
+      header: () => <span className="sr-only">Acciones</span>,
+      enableSorting: false,
+      meta: { headClassName: 'w-10' },
+      cell: ({ row }) => (
+        <OrgRowActions
+          org={row.original}
+          onSeeDetails={() => setDetailsOrgId(row.original._id)}
+          onInviteAdmin={() => onInviteAdmin(row.original)}
+          onDeactivate={() => onDeactivate(row.original)}
+          onReactivate={() => onReactivate(row.original)}
+        />
+      ),
+    },
+  ]
+
   return (
     <>
       <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead className="hidden sm:table-cell">Slug</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="hidden md:table-cell">Módulos</TableHead>
-              <TableHead className="hidden lg:table-cell">Creada</TableHead>
-              <TableHead className="w-10" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orgs.map((org) => (
-              <TableRow key={org._id}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Link
-                      to="/super-admin/organizaciones/$orgId"
-                      params={{ orgId: org._id }}
-                      className="font-medium hover:underline"
-                    >
-                      {org.name}
-                    </Link>
-                    {isInternalOrgSlug(org.slug) && (
-                      <Badge variant="secondary" className="text-xs">
-                        Interno
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
-                    {org.slug}
-                  </code>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={org.active ? 'default' : 'secondary'}
-                    className="text-xs"
-                  >
-                    {org.active ? 'Activa' : 'Inactiva'}
-                  </Badge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {org.activeModules.length === 0 ? (
-                    <span className="text-xs text-muted-foreground">
-                      Ninguno
-                    </span>
-                  ) : (
-                    <div className="flex flex-wrap gap-1">
-                      {org.activeModules.map((m) => (
-                        <Badge key={m} variant="outline" className="text-xs">
-                          {MODULE_LABELS[m]}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell className="hidden lg:table-cell">
-                  <Tooltip>
-                    <TooltipTrigger className="text-xs text-muted-foreground">
-                      {formatRelative(org._creationTime)}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {formatAbsolute(org._creationTime)}
-                    </TooltipContent>
-                  </Tooltip>
-                </TableCell>
-                <TableCell>
-                  <OrgRowActions
-                    org={org}
-                    onSeeDetails={() => setDetailsOrgId(org._id)}
-                    onInviteAdmin={() => onInviteAdmin(org)}
-                    onDeactivate={() => onDeactivate(org)}
-                    onReactivate={() => onReactivate(org)}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataTable columns={columns} data={orgs} />
       </div>
 
       {detailsOrg && (

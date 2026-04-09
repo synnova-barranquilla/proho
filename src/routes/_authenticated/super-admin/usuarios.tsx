@@ -2,6 +2,7 @@ import { Suspense, useMemo, useState } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
 
 import { convexQuery } from '@convex-dev/react-query'
 import { UserPlus } from 'lucide-react'
@@ -10,6 +11,7 @@ import { InviteAdminDialog } from '#/components/super-admin/invite-admin-dialog'
 import { UsersTableSkeleton } from '#/components/super-admin/skeletons/users-table-skeleton'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { DataTable } from '#/components/ui/data-table'
 import { Input } from '#/components/ui/input'
 import {
   Select,
@@ -18,14 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
 import {
   Tooltip,
   TooltipContent,
@@ -185,41 +179,53 @@ function ActiveUsersTable({
     return <EmptyRow text="No hay usuarios activos que coincidan." />
   }
 
+  const columns: ColumnDef<ActiveUserWithOrg>[] = [
+    {
+      id: 'nombre',
+      header: 'Nombre',
+      accessorFn: (u) => getFullName(u),
+      cell: ({ row }) => (
+        <span className="font-medium">{getFullName(row.original)}</span>
+      ),
+    },
+    {
+      id: 'email',
+      header: 'Email',
+      accessorKey: 'email',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.original.email}</span>
+      ),
+    },
+    {
+      id: 'organizacion',
+      header: 'Organización',
+      accessorFn: (u) => u.organization?.name ?? '',
+      meta: {
+        headClassName: 'hidden md:table-cell',
+        cellClassName: 'hidden md:table-cell',
+      },
+      cell: ({ row }) => row.original.organization?.name ?? '—',
+    },
+    {
+      id: 'rol',
+      header: 'Rol',
+      accessorKey: 'orgRole',
+      meta: {
+        headClassName: 'hidden sm:table-cell',
+        cellClassName: 'hidden sm:table-cell',
+      },
+      cell: ({ row }) => (
+        <Badge variant="outline" className="text-xs">
+          {row.original.orgRole}
+        </Badge>
+      ),
+    },
+  ]
+
   return (
     <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead className="hidden md:table-cell">Organización</TableHead>
-            <TableHead className="hidden sm:table-cell">Rol</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filtered.map((u) => (
-            <UserRow key={u._id} user={u} />
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable columns={columns} data={filtered} />
     </div>
-  )
-}
-
-function UserRow({ user }: { user: ActiveUserWithOrg }) {
-  return (
-    <TableRow>
-      <TableCell className="font-medium">{getFullName(user)}</TableCell>
-      <TableCell className="text-muted-foreground">{user.email}</TableCell>
-      <TableCell className="hidden md:table-cell">
-        {user.organization?.name ?? '—'}
-      </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        <Badge variant="outline" className="text-xs">
-          {user.orgRole}
-        </Badge>
-      </TableCell>
-    </TableRow>
   )
 }
 
@@ -261,46 +267,60 @@ function PendingInvitationsTable({
     return <EmptyRow text="No hay invitaciones pendientes que coincidan." />
   }
 
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead className="hidden md:table-cell">Organización</TableHead>
-            <TableHead className="hidden lg:table-cell">Expira</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filtered.map((inv) => (
-            <InvitationRow key={inv._id} inv={inv} />
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
-
-function InvitationRow({ inv }: { inv: PendingInvitationWithOrg }) {
-  return (
-    <TableRow>
-      <TableCell className="font-medium">{getFullName(inv)}</TableCell>
-      <TableCell className="text-muted-foreground">{inv.email}</TableCell>
-      <TableCell className="hidden md:table-cell">
-        {inv.organization?.name ?? '—'}
-      </TableCell>
-      <TableCell className="hidden lg:table-cell">
+  const columns: ColumnDef<PendingInvitationWithOrg>[] = [
+    {
+      id: 'nombre',
+      header: 'Nombre',
+      accessorFn: (inv) => getFullName(inv),
+      cell: ({ row }) => (
+        <span className="font-medium">{getFullName(row.original)}</span>
+      ),
+    },
+    {
+      id: 'email',
+      header: 'Email',
+      accessorKey: 'email',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.original.email}</span>
+      ),
+    },
+    {
+      id: 'organizacion',
+      header: 'Organización',
+      accessorFn: (inv) => inv.organization?.name ?? '',
+      meta: {
+        headClassName: 'hidden md:table-cell',
+        cellClassName: 'hidden md:table-cell',
+      },
+      cell: ({ row }) => row.original.organization?.name ?? '—',
+    },
+    {
+      id: 'expira',
+      header: 'Expira',
+      accessorFn: (inv) => inv.expiresAt,
+      meta: {
+        headClassName: 'hidden lg:table-cell',
+        cellClassName: 'hidden lg:table-cell',
+      },
+      cell: ({ row }) => (
         <Tooltip>
           <TooltipTrigger>
             <Badge variant="outline" className="text-xs">
-              {formatRelative(inv.expiresAt)}
+              {formatRelative(row.original.expiresAt)}
             </Badge>
           </TooltipTrigger>
-          <TooltipContent>{formatAbsolute(inv.expiresAt)}</TooltipContent>
+          <TooltipContent>
+            {formatAbsolute(row.original.expiresAt)}
+          </TooltipContent>
         </Tooltip>
-      </TableCell>
-    </TableRow>
+      ),
+    },
+  ]
+
+  return (
+    <div className="rounded-md border">
+      <DataTable columns={columns} data={filtered} />
+    </div>
   )
 }
 
