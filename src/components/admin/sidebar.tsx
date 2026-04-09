@@ -60,6 +60,7 @@ export function AdminSidebar({
   const pathname = location.pathname
   const { convexUser, organization } = authenticatedRoute.useLoaderData()
   const isOrgOwner = convexUser.isOrgOwner === true
+  const isSuperAdmin = convexUser.orgRole === 'SUPER_ADMIN'
 
   if (conjunto === null) {
     return (
@@ -68,6 +69,7 @@ export function AdminSidebar({
         pathname={pathname}
         fromConjunto={fromConjunto ?? null}
         isOrgOwner={isOrgOwner}
+        isSuperAdmin={isSuperAdmin}
       />
     )
   }
@@ -83,6 +85,7 @@ export function AdminSidebar({
       pathname={pathname}
       isAdmin={isAdmin}
       isOrgOwner={isOrgOwner}
+      isSuperAdmin={isSuperAdmin}
     />
   )
 }
@@ -96,11 +99,13 @@ function OrgLevelSidebar({
   pathname,
   fromConjunto,
   isOrgOwner,
+  isSuperAdmin,
 }: {
   orgName: string
   pathname: string
   fromConjunto: Doc<'conjuntos'> | null
   isOrgOwner: boolean
+  isSuperAdmin: boolean
 }) {
   return (
     <Sidebar>
@@ -123,6 +128,18 @@ function OrgLevelSidebar({
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              {isSuperAdmin ? (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    render={
+                      <Link to="/super-admin/conjuntos">
+                        <ArrowLeft />
+                        <span>Volver a super admin</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+              ) : null}
               {fromConjunto ? (
                 <SidebarMenuItem>
                   <SidebarMenuButton
@@ -188,11 +205,13 @@ function ConjuntoScopedSidebar({
   pathname,
   isAdmin,
   isOrgOwner,
+  isSuperAdmin,
 }: {
   conjunto: Doc<'conjuntos'>
   pathname: string
   isAdmin: boolean
   isOrgOwner: boolean
+  isSuperAdmin: boolean
 }) {
   const base = `/admin/c/${conjunto._id}`
 
@@ -224,6 +243,25 @@ function ConjuntoScopedSidebar({
         </div>
       </SidebarHeader>
       <SidebarContent>
+        {isSuperAdmin ? (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    render={
+                      <Link to="/super-admin/conjuntos">
+                        <ArrowLeft />
+                        <span>Volver a super admin</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
         <SidebarGroup>
           <SidebarGroupLabel>Resumen</SidebarGroupLabel>
           <SidebarGroupContent>
