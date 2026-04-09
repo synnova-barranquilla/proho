@@ -4,7 +4,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { convexQuery } from '@convex-dev/react-query'
 
 import { api } from '../../convex/_generated/api'
-import type { Doc, Id } from '../../convex/_generated/dataModel'
+import type { Doc } from '../../convex/_generated/dataModel'
 
 export type ConjuntoRole = 'ADMIN' | 'ASISTENTE' | 'VIGILANTE' | 'RESIDENTE'
 
@@ -84,13 +84,13 @@ const conjuntoRoute = getRouteApi('/_authenticated/admin/c/$conjuntoId')
  */
 export function useEffectiveConjuntoRole(): ConjuntoRole | null {
   const { convexUser } = authenticatedRoute.useLoaderData()
-  const { conjuntoId } = conjuntoRoute.useParams()
+  const { conjuntoId: slug } = conjuntoRoute.useParams()
 
   const { data } = useSuspenseQuery(
-    convexQuery(api.conjuntos.queries.getById, {
-      conjuntoId: conjuntoId as Id<'conjuntos'>,
-    }),
+    convexQuery(api.conjuntos.queries.getBySlug, { slug }),
   )
+
+  if (!data) return null
 
   return getEffectiveConjuntoRole(
     convexUser,

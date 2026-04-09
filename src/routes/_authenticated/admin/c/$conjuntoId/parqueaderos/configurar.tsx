@@ -24,7 +24,6 @@ import {
 import { NumberInput } from '#/components/ui/number-input'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { api } from '../../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute(
   '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar',
@@ -33,7 +32,7 @@ export const Route = createFileRoute(
 })
 
 function ConfigurarParqueaderosPage() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId } = Route.useRouteContext()
   const navigate = useNavigate()
   const isAdmin = useIsConjuntoAdmin()
 
@@ -70,7 +69,7 @@ function ConfigurarParqueaderosPage() {
     }
     try {
       const res = await bulkMut.mutateAsync({
-        conjuntoId: conjuntoId as Id<'conjuntos'>,
+        conjuntoId,
         residentes,
         visitantes,
         motos,

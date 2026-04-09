@@ -19,11 +19,11 @@ import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/admin/c/$conjuntoId/')({
-  loader: async ({ context: { queryClient }, params }) => {
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
       api.conjuntos.queries.getWithStats,
-      { conjuntoId: params.conjuntoId as Id<'conjuntos'> },
+      { conjuntoId },
     )
     return null
   },
@@ -31,12 +31,12 @@ export const Route = createFileRoute('/_authenticated/admin/c/$conjuntoId/')({
 })
 
 function ConjuntoDashboardPage() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId } = Route.useRouteContext()
 
   return (
     <div className="flex flex-col gap-6">
       <Suspense fallback={<DashboardSkeleton />}>
-        <Dashboard conjuntoId={conjuntoId as Id<'conjuntos'>} />
+        <Dashboard conjuntoId={conjuntoId} />
       </Suspense>
     </div>
   )

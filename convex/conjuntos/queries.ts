@@ -79,6 +79,44 @@ export const getById = query({
 })
 
 /**
+ * Obtiene un conjunto por slug (resuelto dentro de la organización del
+ * caller). Igual a `getById` pero usado por el segmento de rutas
+ * `c/$conjuntoId/*` cuando el parámetro de la URL es un slug human-readable
+ * en lugar de un Convex id.
+ *
+ * Retorna `null` cuando el slug no existe en la org del caller (en vez de
+ * lanzar) para que el loader del route pueda redirigir con un toast bonito
+ * en lugar de pintar una pantalla de error cruda.
+ */
+export const getBySlug = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx)
+
+    const conjunto = await ctx.db
+      .query('conjuntos')
+      .withIndex('by_organization_id_and_slug', (q) =>
+        q.eq('organizationId', user.organizationId).eq('slug', args.slug),
+      )
+      .unique()
+
+    if (!conjunto) return null
+
+    // Revalida permisos con la misma lógica que getById.
+    const { membership } = await requireConjuntoAccess(ctx, conjunto._id)
+
+    const config = await ctx.db
+      .query('conjuntoConfig')
+      .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', conjunto._id))
+      .unique()
+
+    return { conjunto, membership: membership ?? null, config }
+  },
+})
+
+/**
  * Counters simples para el dashboard stub (F4 Paso 10 / tarea 4.20).
  * Unidades, residentes activos, vehículos activos, parqueaderos totales
  * y parqueaderos inhabilitados.

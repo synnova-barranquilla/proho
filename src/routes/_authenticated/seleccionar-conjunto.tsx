@@ -30,7 +30,7 @@ export const Route = createFileRoute('/_authenticated/seleccionar-conjunto')({
     if (conjuntos.length === 1) {
       throw redirect({
         to: '/admin/c/$conjuntoId',
-        params: { conjuntoId: conjuntos[0]._id },
+        params: { conjuntoId: conjuntos[0].slug },
       })
     }
 
@@ -79,7 +79,7 @@ function ConjuntosGrid() {
           onClick={() =>
             navigate({
               to: '/admin/c/$conjuntoId',
-              params: { conjuntoId: c._id },
+              params: { conjuntoId: c.slug },
             })
           }
           className="group text-left"

@@ -26,16 +26,15 @@ import { Switch } from '#/components/ui/switch'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute(
   '/_authenticated/admin/c/$conjuntoId/configuracion',
 )({
-  loader: async ({ context: { queryClient }, params }) => {
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
       api.conjuntoConfig.queries.getByConjunto,
-      { conjuntoId: params.conjuntoId as Id<'conjuntos'> },
+      { conjuntoId },
     )
     return null
   },
@@ -43,7 +42,7 @@ export const Route = createFileRoute(
 })
 
 function ConfiguracionPage() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId } = Route.useRouteContext()
   const navigate = useNavigate()
   const isAdmin = useIsConjuntoAdmin()
 
@@ -61,7 +60,7 @@ function ConfiguracionPage() {
 
   const { data: config } = useSuspenseQuery(
     convexQuery(api.conjuntoConfig.queries.getByConjunto, {
-      conjuntoId: conjuntoId as Id<'conjuntos'>,
+      conjuntoId,
     }),
   )
 
@@ -98,7 +97,7 @@ function ConfiguracionPage() {
     e.preventDefault()
     try {
       await upsertMut.mutateAsync({
-        conjuntoId: conjuntoId as Id<'conjuntos'>,
+        conjuntoId,
         maxHorasVisitante,
         permitirSalidaMora,
         requiereFotoPlaca,

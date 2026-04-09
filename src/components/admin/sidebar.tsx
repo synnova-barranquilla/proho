@@ -129,7 +129,7 @@ function OrgLevelSidebar({
                     render={
                       <Link
                         to="/admin/c/$conjuntoId"
-                        params={{ conjuntoId: fromConjunto._id }}
+                        params={{ conjuntoId: fromConjunto.slug }}
                       >
                         <ArrowLeft />
                         <span className="truncate">
@@ -234,7 +234,7 @@ function ConjuntoScopedSidebar({
                   render={
                     <Link
                       to="/admin/c/$conjuntoId"
-                      params={{ conjuntoId: conjunto._id }}
+                      params={{ conjuntoId: conjunto.slug }}
                     >
                       <Home />
                       <span>Inicio</span>
@@ -256,7 +256,7 @@ function ConjuntoScopedSidebar({
                   render={
                     <Link
                       to="/admin/c/$conjuntoId/unidades"
-                      params={{ conjuntoId: conjunto._id }}
+                      params={{ conjuntoId: conjunto.slug }}
                     >
                       <SquareStack />
                       <span>Unidades</span>
@@ -270,7 +270,7 @@ function ConjuntoScopedSidebar({
                   render={
                     <Link
                       to="/admin/c/$conjuntoId/residentes"
-                      params={{ conjuntoId: conjunto._id }}
+                      params={{ conjuntoId: conjunto.slug }}
                     >
                       <UsersRound />
                       <span>Residentes</span>
@@ -284,7 +284,7 @@ function ConjuntoScopedSidebar({
                   render={
                     <Link
                       to="/admin/c/$conjuntoId/vehiculos"
-                      params={{ conjuntoId: conjunto._id }}
+                      params={{ conjuntoId: conjunto.slug }}
                     >
                       <Car />
                       <span>Vehículos</span>
@@ -298,7 +298,7 @@ function ConjuntoScopedSidebar({
                   render={
                     <Link
                       to="/admin/c/$conjuntoId/parqueaderos"
-                      params={{ conjuntoId: conjunto._id }}
+                      params={{ conjuntoId: conjunto.slug }}
                     >
                       <ParkingSquare />
                       <span>Parqueaderos</span>
@@ -323,7 +323,7 @@ function ConjuntoScopedSidebar({
                         render={
                           <Link
                             to="/admin/c/$conjuntoId/usuarios"
-                            params={{ conjuntoId: conjunto._id }}
+                            params={{ conjuntoId: conjunto.slug }}
                           >
                             <Users />
                             <span>Usuarios del conjunto</span>
@@ -337,7 +337,7 @@ function ConjuntoScopedSidebar({
                         render={
                           <Link
                             to="/admin/c/$conjuntoId/configuracion"
-                            params={{ conjuntoId: conjunto._id }}
+                            params={{ conjuntoId: conjunto.slug }}
                           >
                             <Settings />
                             <span>Configuración</span>

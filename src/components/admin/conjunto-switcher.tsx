@@ -61,7 +61,7 @@ export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
                 if (!isCurrent) {
                   navigate({
                     to: '/admin/c/$conjuntoId',
-                    params: { conjuntoId: c._id },
+                    params: { conjuntoId: c.slug },
                   })
                 }
               }}

@@ -15,34 +15,30 @@ import { toast } from 'sonner'
 import { AdminLayout } from '#/components/admin/layout'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
 
 /**
  * Layout base del segmento `/admin/c/$conjuntoId/*`.
  *
- * - `beforeLoad` (runs sequentially, blocks children until resolved):
- *   validates access to the conjunto via `conjuntos.queries.getById`
- *   (which internally applies `requireConjuntoAccess`). If the fetch
- *   throws any ConvexError (FORBIDDEN / CONJUNTO_NOT_FOUND /
- *   CONJUNTO_INACTIVE) we redirect to the selector and child routes
- *   never run their loaders — this prevents a revoked user from
- *   seeing "error" pages when they navigate to a nested URL they no
- *   longer have access to.
- * - The component additionally subscribes reactively to the same
- *   query via `useQuery`. When a running session loses access (owner
- *   revokes the membership in another tab, for example), Convex pushes
- *   an error via the subscription, we surface a toast and navigate
- *   gracefully to the selector.
+ * **Importante:** pese al nombre del parámetro (`conjuntoId`) el valor
+ * contenido en la URL es el **slug** human-readable del conjunto
+ * (`torres-de-la-alhambra`), NO el Convex id. El parámetro conserva el
+ * nombre `conjuntoId` por compatibilidad con el árbol de rutas existente.
+ *
+ * `beforeLoad` resuelve slug → conjunto real vía `conjuntos.queries.getBySlug`,
+ * y hace disponible el Convex id real a las rutas hijas a través del
+ * contexto de router (`context.conjuntoId`). Las hijas leen ese id real
+ * para todas sus queries de Convex (`getRouteApi(...).useRouteContext()`).
  */
 export const Route = createFileRoute('/_authenticated/admin/c/$conjuntoId')({
   beforeLoad: async ({ context: { queryClient }, params }) => {
-    const conjuntoId = params.conjuntoId as Id<'conjuntos'>
+    const slug = params.conjuntoId
 
+    let data
     try {
-      await prefetchAuthenticatedQuery(
+      data = await prefetchAuthenticatedQuery(
         queryClient,
-        api.conjuntos.queries.getById,
-        { conjuntoId },
+        api.conjuntos.queries.getBySlug,
+        { slug },
       )
     } catch (err) {
       if (err instanceof ConvexError) {
@@ -51,38 +47,33 @@ export const Route = createFileRoute('/_authenticated/admin/c/$conjuntoId')({
       throw err
     }
 
-    return { conjuntoId }
+    if (!data) {
+      throw redirect({ to: '/seleccionar-conjunto' })
+    }
+
+    return { conjuntoId: data.conjunto._id, conjuntoSlug: slug }
   },
   component: ConjuntoAdminRoute,
 })
 
 function ConjuntoAdminRoute() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId: slug } = Route.useParams()
   const navigate = useNavigate()
 
-  // Reactive subscription — same query key as the prefetch in beforeLoad,
-  // so initial render uses the cached data (no loading state), and any
-  // subsequent re-execution of the query by Convex (e.g. when the user's
-  // membership is revoked in another tab) will flow through here.
-  const query = useQuery(
-    convexQuery(api.conjuntos.queries.getById, {
-      conjuntoId: conjuntoId as Id<'conjuntos'>,
-    }),
-  )
+  // Reactive subscription using the slug-based query, so the parent
+  // re-renders when the user's access is revoked in another tab.
+  const query = useQuery(convexQuery(api.conjuntos.queries.getBySlug, { slug }))
 
   useEffect(() => {
-    if (query.error) {
+    if (query.error || query.data === null) {
       toast.error('Tu acceso a este conjunto fue revocado', {
         description:
           'Vuelve al selector para elegir otro conjunto al que tengas acceso.',
       })
       void navigate({ to: '/seleccionar-conjunto' })
     }
-  }, [query.error, navigate])
+  }, [query.error, query.data, navigate])
 
-  // The data exists because beforeLoad prefetched it successfully. If it
-  // is momentarily null (query error transition on reactive revoke) we
-  // render nothing — the effect above will redirect.
   if (!query.data) return null
 
   return (
