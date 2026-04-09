@@ -1,7 +1,12 @@
+import { useEffect } from 'react'
+
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
+import { convexQuery } from '@convex-dev/react-query'
 import { getAuth, getSignInUrl } from '@workos/authkit-tanstack-react-start'
 import { ConvexHttpClient } from 'convex/browser'
+import { toast } from 'sonner'
 
 import { api } from '../../convex/_generated/api'
 
@@ -78,5 +83,43 @@ export const Route = createFileRoute('/_authenticated')({
 })
 
 function AuthenticatedLayout() {
+  // Subscribe reactively to getCurrentContext so that if an admin
+  // deactivates this user (or their organization) mid-session, we
+  // detect it and force a clean logout with a toast — instead of
+  // leaving the user stuck on a page calling mutations that suddenly
+  // fail with FORBIDDEN.
+  //
+  // `useQuery` here (not `useSuspenseQuery`) because:
+  //   - The initial data is guaranteed (beforeLoad already fetched it
+  //     and threw redirect otherwise).
+  //   - We want tolerant error handling — suspending on error would
+  //     tear the route tree instead of letting the effect redirect.
+  const contextQuery = useQuery(
+    convexQuery(api.users.queries.getCurrentContext, {}),
+  )
+
+  useEffect(() => {
+    if (!contextQuery.data) return
+
+    const { user, organization } = contextQuery.data
+
+    if (!user.active) {
+      toast.error('Tu usuario fue desactivado', {
+        description: `Ya no tienes acceso a ${organization.name}. Cerrando sesión…`,
+      })
+      // Hard navigation to /logout — the logout route clears the WorkOS
+      // session cookie server-side and bounces back to /.
+      window.location.href = '/logout'
+      return
+    }
+
+    if (!organization.active) {
+      toast.error('Tu organización fue desactivada', {
+        description: `${organization.name} está inactiva. Cerrando sesión…`,
+      })
+      window.location.href = '/logout'
+    }
+  }, [contextQuery.data])
+
   return <Outlet />
 }
