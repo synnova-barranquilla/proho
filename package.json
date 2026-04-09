@@ -15,7 +15,8 @@
     "lint": "eslint",
     "format": "prettier --check .",
     "check": "prettier --write . && eslint --fix",
-    "bootstrap:super-admin": "tsx tools/scripts/convex/super_admin_bootstrap.ts",
+    "seed:initial-setup": "tsx tools/scripts/convex/seed_initial_setup.ts",
+    "seed:conjunto": "tsx tools/scripts/convex/seed_conjunto.ts",
     "prepare": "husky"
   },
   "dependencies": {

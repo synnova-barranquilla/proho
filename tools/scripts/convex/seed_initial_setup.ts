@@ -8,7 +8,7 @@
  * 3. Run this script with the required flags below.
  *
  * Usage:
- *   pnpm bootstrap:super-admin \
+ *   pnpm seed:initial-setup \
  *     --email admin@synnova.com.co \
  *     --first-name Admin \
  *     --last-name Synnova \
@@ -21,17 +21,17 @@ import { execSync } from 'node:child_process'
 import { parseArgs } from 'node:util'
 
 const HELP_TEXT = `
-Uso: pnpm bootstrap:super-admin --email <email> --first-name <nombre> [--last-name <apellido>] --workos-id <id> [--prod]
+Uso: pnpm seed:initial-setup --email <email> --first-name <nombre> [--last-name <apellido>] --workos-id <id> [--prod]
 
 Ejemplo (dev, default):
-  pnpm bootstrap:super-admin \\
+  pnpm seed:initial-setup \\
     --email admin@synnova.com.co \\
     --first-name Admin \\
     --last-name Synnova \\
     --workos-id user_01K7M4BH5CBKNN92DANSQBBMWD
 
 Ejemplo (production):
-  pnpm bootstrap:super-admin \\
+  pnpm seed:initial-setup \\
     --email admin@synnova.com.co \\
     --first-name Admin \\
     --last-name Synnova \\
@@ -75,10 +75,13 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-const payload: Record<string, string> = {
+const payload: Record<string, unknown> = {
   superAdminEmail: values.email as string,
   superAdminFirstName: values['first-name'] as string,
   superAdminWorkosId: values['workos-id'] as string,
+  // Seed del conjunto demo (Barranquilla) dentro de la org "Demo Conjunto"
+  // en la misma corrida. Idempotente por slug.
+  seedDemoConjunto: true,
 }
 if (values['last-name']) {
   payload.superAdminLastName = values['last-name'] as string
