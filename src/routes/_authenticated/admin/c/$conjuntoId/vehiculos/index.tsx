@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
+import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
@@ -48,6 +49,7 @@ type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
 
 function VehiculosPage() {
   const { conjuntoId } = Route.useParams()
+  const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<VehiculoRow | null>(null)
 
@@ -60,20 +62,23 @@ function VehiculosPage() {
             Vehículos registrados en el conjunto, asociados a una unidad.
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setDialogOpen(true)
-          }}
-        >
-          <Plus />
-          Nuevo vehículo
-        </Button>
+        {isAdmin ? (
+          <Button
+            onClick={() => {
+              setEditing(null)
+              setDialogOpen(true)
+            }}
+          >
+            <Plus />
+            Nuevo vehículo
+          </Button>
+        ) : null}
       </div>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <VehiculosTable
           conjuntoId={conjuntoId as Id<'conjuntos'>}
+          isAdmin={isAdmin}
           onEdit={(v) => {
             setEditing(v)
             setDialogOpen(true)
@@ -81,24 +86,28 @@ function VehiculosPage() {
         />
       </Suspense>
 
-      <VehiculoDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open)
-          if (!open) setEditing(null)
-        }}
-        conjuntoId={conjuntoId as Id<'conjuntos'>}
-        vehiculo={editing}
-      />
+      {isAdmin ? (
+        <VehiculoDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open)
+            if (!open) setEditing(null)
+          }}
+          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          vehiculo={editing}
+        />
+      ) : null}
     </div>
   )
 }
 
 function VehiculosTable({
   conjuntoId,
+  isAdmin,
   onEdit,
 }: {
   conjuntoId: Id<'conjuntos'>
+  isAdmin: boolean
   onEdit: (v: VehiculoRow) => void
 }) {
   const { data } = useSuspenseQuery(
@@ -108,7 +117,9 @@ function VehiculosTable({
   if (data.length === 0) {
     return (
       <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        No hay vehículos registrados. Crea el primero con "Nuevo vehículo".
+        {isAdmin
+          ? 'No hay vehículos registrados. Crea el primero con "Nuevo vehículo".'
+          : 'No hay vehículos registrados.'}
       </div>
     )
   }
@@ -122,7 +133,9 @@ function VehiculosTable({
           <TableHead>Unidad</TableHead>
           <TableHead>Propietario</TableHead>
           <TableHead>Estado</TableHead>
-          <TableHead className="text-right">Acciones</TableHead>
+          {isAdmin ? (
+            <TableHead className="text-right">Acciones</TableHead>
+          ) : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -145,15 +158,17 @@ function VehiculosTable({
                 <Badge variant="secondary">Inactivo</Badge>
               )}
             </TableCell>
-            <TableCell className="text-right">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(v as VehiculoRow)}
-              >
-                Editar
-              </Button>
-            </TableCell>
+            {isAdmin ? (
+              <TableCell className="text-right">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(v as VehiculoRow)}
+                >
+                  Editar
+                </Button>
+              </TableCell>
+            ) : null}
           </TableRow>
         ))}
       </TableBody>

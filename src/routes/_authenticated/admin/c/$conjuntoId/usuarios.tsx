@@ -1,7 +1,7 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
+import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
@@ -40,7 +41,20 @@ export const Route = createFileRoute(
 
 function UsuariosConjuntoPage() {
   const { conjuntoId } = Route.useParams()
+  const navigate = useNavigate()
+  const isAdmin = useIsConjuntoAdmin()
   const [inviteOpen, setInviteOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isAdmin) {
+      void navigate({
+        to: '/admin/c/$conjuntoId',
+        params: { conjuntoId },
+      })
+    }
+  }, [isAdmin, navigate, conjuntoId])
+
+  if (!isAdmin) return null
 
   return (
     <div className="flex flex-col gap-6">

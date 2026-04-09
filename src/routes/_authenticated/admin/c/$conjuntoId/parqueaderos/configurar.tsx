@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
@@ -22,6 +22,7 @@ import {
   FieldLabel,
 } from '#/components/ui/field'
 import { NumberInput } from '#/components/ui/number-input'
+import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../../convex/_generated/dataModel'
 
@@ -34,11 +35,27 @@ export const Route = createFileRoute(
 function ConfigurarParqueaderosPage() {
   const { conjuntoId } = Route.useParams()
   const navigate = useNavigate()
+  const isAdmin = useIsConjuntoAdmin()
+
+  // Client-side guard: non-admins should never reach this page. The
+  // backend mutation already rejects them, but we kick them out of the
+  // UI before they even see the form. Happens in an effect so we don't
+  // call navigate during render.
+  useEffect(() => {
+    if (!isAdmin) {
+      void navigate({
+        to: '/admin/c/$conjuntoId',
+        params: { conjuntoId },
+      })
+    }
+  }, [isAdmin, navigate, conjuntoId])
 
   const [residentes, setResidentes] = useState(0)
   const [visitantes, setVisitantes] = useState(0)
   const [motos, setMotos] = useState(0)
   const [discapacitados, setDiscapacitados] = useState(0)
+
+  if (!isAdmin) return null
 
   const bulkFn = useConvexMutation(api.parqueaderos.mutations.bulkGenerate)
   const bulkMut = useMutation({ mutationFn: bulkFn })

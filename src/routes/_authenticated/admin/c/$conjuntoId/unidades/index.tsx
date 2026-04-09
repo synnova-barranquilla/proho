@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
+import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
@@ -40,6 +41,7 @@ export const Route = createFileRoute(
 
 function UnidadesPage() {
   const { conjuntoId } = Route.useParams()
+  const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Doc<'unidades'> | null>(null)
 
@@ -52,20 +54,23 @@ function UnidadesPage() {
             Apartamentos, casas y locales agrupados por torre.
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setDialogOpen(true)
-          }}
-        >
-          <Plus />
-          Nueva unidad
-        </Button>
+        {isAdmin ? (
+          <Button
+            onClick={() => {
+              setEditing(null)
+              setDialogOpen(true)
+            }}
+          >
+            <Plus />
+            Nueva unidad
+          </Button>
+        ) : null}
       </div>
 
       <Suspense fallback={<TorresSkeleton />}>
         <TorresList
           conjuntoId={conjuntoId as Id<'conjuntos'>}
+          isAdmin={isAdmin}
           onEdit={(u) => {
             setEditing(u)
             setDialogOpen(true)
@@ -73,24 +78,28 @@ function UnidadesPage() {
         />
       </Suspense>
 
-      <UnidadDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open)
-          if (!open) setEditing(null)
-        }}
-        conjuntoId={conjuntoId as Id<'conjuntos'>}
-        unidad={editing}
-      />
+      {isAdmin ? (
+        <UnidadDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open)
+            if (!open) setEditing(null)
+          }}
+          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          unidad={editing}
+        />
+      ) : null}
     </div>
   )
 }
 
 function TorresList({
   conjuntoId,
+  isAdmin,
   onEdit,
 }: {
   conjuntoId: Id<'conjuntos'>
+  isAdmin: boolean
   onEdit: (u: Doc<'unidades'>) => void
 }) {
   const { data } = useSuspenseQuery(
@@ -120,7 +129,9 @@ function TorresList({
   if (data.total === 0) {
     return (
       <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        No hay unidades. Crea la primera con el botón "Nueva unidad".
+        {isAdmin
+          ? 'No hay unidades. Crea la primera con el botón "Nueva unidad".'
+          : 'No hay unidades en este conjunto.'}
       </div>
     )
   }
@@ -141,7 +152,9 @@ function TorresList({
                 <TableHead>Número</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Mora</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                {isAdmin ? (
+                  <TableHead className="text-right">Acciones</TableHead>
+                ) : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -162,24 +175,26 @@ function TorresList({
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleMora(u)}
-                      >
-                        {u.enMora ? 'Quitar mora' : 'Marcar mora'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onEdit(u)}
-                      >
-                        Editar
-                      </Button>
-                    </div>
-                  </TableCell>
+                  {isAdmin ? (
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleMora(u)}
+                        >
+                          {u.enMora ? 'Quitar mora' : 'Marcar mora'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onEdit(u)}
+                        >
+                          Editar
+                        </Button>
+                      </div>
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))}
             </TableBody>

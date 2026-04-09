@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
+import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
@@ -39,6 +40,7 @@ export const Route = createFileRoute(
 
 function ParqueaderosPage() {
   const { conjuntoId } = Route.useParams()
+  const isAdmin = useIsConjuntoAdmin()
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between">
@@ -51,24 +53,35 @@ function ParqueaderosPage() {
             módulo de parking en F5.
           </p>
         </div>
-        <Link
-          to="/admin/c/$conjuntoId/parqueaderos/configurar"
-          params={{ conjuntoId }}
-          className={buttonVariants()}
-        >
-          <Settings />
-          Configurar en bulk
-        </Link>
+        {isAdmin ? (
+          <Link
+            to="/admin/c/$conjuntoId/parqueaderos/configurar"
+            params={{ conjuntoId }}
+            className={buttonVariants()}
+          >
+            <Settings />
+            Configurar en bulk
+          </Link>
+        ) : null}
       </div>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
-        <ParqueaderosTable conjuntoId={conjuntoId as Id<'conjuntos'>} />
+        <ParqueaderosTable
+          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          isAdmin={isAdmin}
+        />
       </Suspense>
     </div>
   )
 }
 
-function ParqueaderosTable({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
+function ParqueaderosTable({
+  conjuntoId,
+  isAdmin,
+}: {
+  conjuntoId: Id<'conjuntos'>
+  isAdmin: boolean
+}) {
   const { data: parqs } = useSuspenseQuery(
     convexQuery(api.parqueaderos.queries.listByConjunto, { conjuntoId }),
   )
@@ -100,7 +113,9 @@ function ParqueaderosTable({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
   if (parqs.length === 0) {
     return (
       <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        No hay parqueaderos creados. Usa "Configurar en bulk" para generarlos.
+        {isAdmin
+          ? 'No hay parqueaderos creados. Usa "Configurar en bulk" para generarlos.'
+          : 'No hay parqueaderos configurados en este conjunto.'}
       </div>
     )
   }
@@ -112,7 +127,9 @@ function ParqueaderosTable({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
           <TableHead>Número</TableHead>
           <TableHead>Tipo</TableHead>
           <TableHead>Estado</TableHead>
-          <TableHead className="text-right">Acciones</TableHead>
+          {isAdmin ? (
+            <TableHead className="text-right">Acciones</TableHead>
+          ) : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -129,11 +146,17 @@ function ParqueaderosTable({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
                 <Badge variant="outline">Habilitado</Badge>
               )}
             </TableCell>
-            <TableCell className="text-right">
-              <Button variant="ghost" size="sm" onClick={() => handleToggle(p)}>
-                {p.inhabilitado ? 'Habilitar' : 'Inhabilitar'}
-              </Button>
-            </TableCell>
+            {isAdmin ? (
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleToggle(p)}
+                >
+                  {p.inhabilitado ? 'Habilitar' : 'Inhabilitar'}
+                </Button>
+              </TableCell>
+            ) : null}
           </TableRow>
         ))}
       </TableBody>

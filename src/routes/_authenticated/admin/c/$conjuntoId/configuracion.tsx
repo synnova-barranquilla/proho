@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
@@ -23,6 +23,7 @@ import {
 } from '#/components/ui/field'
 import { NumberInput } from '#/components/ui/number-input'
 import { Switch } from '#/components/ui/switch'
+import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
@@ -43,6 +44,21 @@ export const Route = createFileRoute(
 
 function ConfiguracionPage() {
   const { conjuntoId } = Route.useParams()
+  const navigate = useNavigate()
+  const isAdmin = useIsConjuntoAdmin()
+
+  // Client-side guard: only admins can see/edit conjunto config. The
+  // backend mutation rejects non-admins too, but we skip rendering the
+  // form entirely to avoid exposing sensitive configuration values.
+  useEffect(() => {
+    if (!isAdmin) {
+      void navigate({
+        to: '/admin/c/$conjuntoId',
+        params: { conjuntoId },
+      })
+    }
+  }, [isAdmin, navigate, conjuntoId])
+
   const { data: config } = useSuspenseQuery(
     convexQuery(api.conjuntoConfig.queries.getByConjunto, {
       conjuntoId: conjuntoId as Id<'conjuntos'>,
@@ -99,6 +115,8 @@ function ConfiguracionPage() {
       }
     }
   }
+
+  if (!isAdmin) return null
 
   return (
     <div className="mx-auto max-w-2xl">

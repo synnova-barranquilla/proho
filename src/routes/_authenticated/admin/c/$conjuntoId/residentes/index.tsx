@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
+import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
@@ -48,6 +49,7 @@ type ResidenteRow = Doc<'residentes'> & { unidad: Doc<'unidades'> | null }
 
 function ResidentesPage() {
   const { conjuntoId } = Route.useParams()
+  const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<ResidenteRow | null>(null)
 
@@ -60,20 +62,23 @@ function ResidentesPage() {
             Personas vinculadas a las unidades del conjunto.
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setDialogOpen(true)
-          }}
-        >
-          <Plus />
-          Nuevo residente
-        </Button>
+        {isAdmin ? (
+          <Button
+            onClick={() => {
+              setEditing(null)
+              setDialogOpen(true)
+            }}
+          >
+            <Plus />
+            Nuevo residente
+          </Button>
+        ) : null}
       </div>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <ResidentesTable
           conjuntoId={conjuntoId as Id<'conjuntos'>}
+          isAdmin={isAdmin}
           onEdit={(r) => {
             setEditing(r)
             setDialogOpen(true)
@@ -81,24 +86,28 @@ function ResidentesPage() {
         />
       </Suspense>
 
-      <ResidenteDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open)
-          if (!open) setEditing(null)
-        }}
-        conjuntoId={conjuntoId as Id<'conjuntos'>}
-        residente={editing}
-      />
+      {isAdmin ? (
+        <ResidenteDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open)
+            if (!open) setEditing(null)
+          }}
+          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          residente={editing}
+        />
+      ) : null}
     </div>
   )
 }
 
 function ResidentesTable({
   conjuntoId,
+  isAdmin,
   onEdit,
 }: {
   conjuntoId: Id<'conjuntos'>
+  isAdmin: boolean
   onEdit: (r: ResidenteRow) => void
 }) {
   const { data: residentes } = useSuspenseQuery(
@@ -108,7 +117,9 @@ function ResidentesTable({
   if (residentes.length === 0) {
     return (
       <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        No hay residentes. Crea el primero con el botón "Nuevo residente".
+        {isAdmin
+          ? 'No hay residentes. Crea el primero con el botón "Nuevo residente".'
+          : 'No hay residentes registrados.'}
       </div>
     )
   }
@@ -122,7 +133,9 @@ function ResidentesTable({
           <TableHead>Unidad</TableHead>
           <TableHead>Tipo</TableHead>
           <TableHead>Contacto</TableHead>
-          <TableHead className="text-right">Acciones</TableHead>
+          {isAdmin ? (
+            <TableHead className="text-right">Acciones</TableHead>
+          ) : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -145,15 +158,17 @@ function ResidentesTable({
             <TableCell className="text-xs text-muted-foreground">
               {r.telefono || r.email || '—'}
             </TableCell>
-            <TableCell className="text-right">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(r as ResidenteRow)}
-              >
-                Editar
-              </Button>
-            </TableCell>
+            {isAdmin ? (
+              <TableCell className="text-right">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(r as ResidenteRow)}
+                >
+                  Editar
+                </Button>
+              </TableCell>
+            ) : null}
           </TableRow>
         ))}
       </TableBody>
