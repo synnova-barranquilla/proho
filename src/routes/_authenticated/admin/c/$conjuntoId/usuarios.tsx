@@ -28,11 +28,11 @@ import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
 export const Route = createFileRoute(
   '/_authenticated/admin/c/$conjuntoId/usuarios',
 )({
-  loader: async ({ context: { queryClient }, params }) => {
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
       api.conjuntoMemberships.queries.listByConjunto,
-      { conjuntoId: params.conjuntoId as Id<'conjuntos'> },
+      { conjuntoId },
     )
     return null
   },
@@ -40,7 +40,7 @@ export const Route = createFileRoute(
 })
 
 function UsuariosConjuntoPage() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId } = Route.useRouteContext()
   const navigate = useNavigate()
   const isAdmin = useIsConjuntoAdmin()
   const [inviteOpen, setInviteOpen] = useState(false)
@@ -74,13 +74,13 @@ function UsuariosConjuntoPage() {
       </div>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
-        <MembershipsTable conjuntoId={conjuntoId as Id<'conjuntos'>} />
+        <MembershipsTable conjuntoId={conjuntoId} />
       </Suspense>
 
       <InviteConjuntoUserDialog
         open={inviteOpen}
         onOpenChange={setInviteOpen}
-        conjuntoId={conjuntoId as Id<'conjuntos'>}
+        conjuntoId={conjuntoId}
       />
     </div>
   )
@@ -135,6 +135,7 @@ function MembershipsTable({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-10 text-muted-foreground">#</TableHead>
           <TableHead>Usuario</TableHead>
           <TableHead>Rol</TableHead>
           <TableHead>Estado</TableHead>
@@ -142,8 +143,11 @@ function MembershipsTable({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {rows.map((m) => (
+        {rows.map((m, i) => (
           <TableRow key={m._id}>
+            <TableCell className="text-muted-foreground tabular-nums">
+              {i + 1}
+            </TableCell>
             <TableCell>
               {m.user ? (
                 <div className="flex flex-col">

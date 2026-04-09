@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
+import { NavigationProgressBar } from '../components/navigation-progress-bar'
 import { Toaster } from '../components/ui/sonner'
 import { TooltipProvider } from '../components/ui/tooltip'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
@@ -77,6 +78,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootLayout() {
   return (
     <TooltipProvider>
+      <NavigationProgressBar />
       <Outlet />
       <Toaster position="top-right" richColors />
       <TanStackDevtools

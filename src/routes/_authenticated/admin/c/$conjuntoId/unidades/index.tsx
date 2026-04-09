@@ -28,11 +28,11 @@ import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
 export const Route = createFileRoute(
   '/_authenticated/admin/c/$conjuntoId/unidades/',
 )({
-  loader: async ({ context: { queryClient }, params }) => {
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
       api.unidades.queries.listByConjunto,
-      { conjuntoId: params.conjuntoId as Id<'conjuntos'> },
+      { conjuntoId },
     )
     return null
   },
@@ -40,7 +40,7 @@ export const Route = createFileRoute(
 })
 
 function UnidadesPage() {
-  const { conjuntoId } = Route.useParams()
+  const { conjuntoId } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Doc<'unidades'> | null>(null)
@@ -69,7 +69,7 @@ function UnidadesPage() {
 
       <Suspense fallback={<TorresSkeleton />}>
         <TorresList
-          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          conjuntoId={conjuntoId}
           isAdmin={isAdmin}
           onEdit={(u) => {
             setEditing(u)
@@ -85,7 +85,7 @@ function UnidadesPage() {
             setDialogOpen(open)
             if (!open) setEditing(null)
           }}
-          conjuntoId={conjuntoId as Id<'conjuntos'>}
+          conjuntoId={conjuntoId}
           unidad={editing}
         />
       ) : null}
@@ -149,6 +149,7 @@ function TorresList({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10 text-muted-foreground">#</TableHead>
                 <TableHead>Número</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Mora</TableHead>
@@ -158,8 +159,11 @@ function TorresList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {t.unidades.map((u) => (
+              {t.unidades.map((u, i) => (
                 <TableRow key={u._id}>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {i + 1}
+                  </TableCell>
                   <TableCell className="font-medium">{u.numero}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">

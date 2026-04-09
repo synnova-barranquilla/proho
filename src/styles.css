@@ -132,3 +132,18 @@ body,
     color: var(--foreground);
   }
 }
+
+/* Navigation progress bar animation (see src/components/navigation-progress-bar.tsx).
+   Grows from 0 to ~80% during a pending navigation, then the bar fades out
+   (opacity handled by the component) when the router finishes loading. */
+@keyframes nav-progress {
+  0% {
+    transform: scaleX(0);
+  }
+  40% {
+    transform: scaleX(0.55);
+  }
+  100% {
+    transform: scaleX(0.9);
+  }
+}

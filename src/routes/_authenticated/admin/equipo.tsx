@@ -223,6 +223,7 @@ function AdminsTable({
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-10 text-muted-foreground">#</TableHead>
           <TableHead>Administrador</TableHead>
           <TableHead>Acceso</TableHead>
           <TableHead>Estado</TableHead>
@@ -230,10 +231,13 @@ function AdminsTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {admins.map((admin) => {
+        {admins.map((admin, i) => {
           const isOwner = admin.isOrgOwner === true
           return (
             <TableRow key={admin._id}>
+              <TableCell className="text-muted-foreground tabular-nums">
+                {i + 1}
+              </TableCell>
               <TableCell>
                 <div className="flex flex-col">
                   <span className="font-medium">
@@ -356,6 +360,7 @@ function PendingInvitationsTable() {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-10 text-muted-foreground">#</TableHead>
           <TableHead>Invitado</TableHead>
           <TableHead>Enviada</TableHead>
           <TableHead>Expira</TableHead>
@@ -363,7 +368,7 @@ function PendingInvitationsTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {invitations.map((inv) => {
+        {invitations.map((inv, i) => {
           const fullName = inv.lastName
             ? `${inv.firstName} ${inv.lastName}`
             : inv.firstName
@@ -372,6 +377,9 @@ function PendingInvitationsTable() {
           const expired = inv.expiresAt < Date.now()
           return (
             <TableRow key={inv._id}>
+              <TableCell className="text-muted-foreground tabular-nums">
+                {i + 1}
+              </TableCell>
               <TableCell>
                 <div className="flex flex-col">
                   <span className="font-medium">{fullName}</span>
