@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
+import { DocumentInput, PhoneInput } from '#/components/ui/formatted-input'
 import { Input } from '#/components/ui/input'
 import {
   Select,
@@ -195,9 +196,9 @@ export function ResidenteDialog({
                   </Field>
                   <Field className="col-span-2">
                     <FieldLabel>Número de documento</FieldLabel>
-                    <Input
+                    <DocumentInput
                       value={numeroDoc}
-                      onChange={(e) => setNumeroDoc(e.target.value)}
+                      onChange={setNumeroDoc}
                       required
                     />
                   </Field>
@@ -206,11 +207,7 @@ export function ResidenteDialog({
               <div className="grid grid-cols-2 gap-4">
                 <Field>
                   <FieldLabel>Teléfono</FieldLabel>
-                  <Input
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    placeholder="300 123 4567"
-                  />
+                  <PhoneInput value={telefono} onChange={setTelefono} />
                 </Field>
                 <Field>
                   <FieldLabel>Email</FieldLabel>

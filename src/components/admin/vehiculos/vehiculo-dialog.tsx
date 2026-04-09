@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
+import { PlacaInput } from '#/components/ui/formatted-input'
 import { Input } from '#/components/ui/input'
 import {
   Select,
@@ -144,12 +145,7 @@ export function VehiculoDialog({
               )}
               <Field>
                 <FieldLabel>Placa</FieldLabel>
-                <Input
-                  value={placa}
-                  onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-                  placeholder="ABC123"
-                  required
-                />
+                <PlacaInput value={placa} onChange={setPlaca} required />
               </Field>
               <Field>
                 <FieldLabel>Tipo</FieldLabel>
