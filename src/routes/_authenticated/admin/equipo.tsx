@@ -102,7 +102,11 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
 function EquipoPage() {
   const { fromConjunto } = Route.useLoaderData()
   const [inviteOpen, setInviteOpen] = useState(false)
-  const [manageAccessFor, setManageAccessFor] = useState<AdminRow | null>(null)
+  // Store only the id of the admin being edited. The dialog re-derives
+  // the live admin row from the `listAdminsByOrg` query on every render
+  // so Convex reactive updates flow through without stale local state.
+  const [manageAccessForId, setManageAccessForId] =
+    useState<Id<'users'> | null>(null)
 
   return (
     <AdminLayout conjunto={null} fromConjunto={fromConjunto}>
@@ -134,7 +138,7 @@ function EquipoPage() {
           <CardContent>
             <Suspense fallback={<AdminsTableSkeleton />}>
               <AdminsTable
-                onManageAccess={(admin) => setManageAccessFor(admin)}
+                onManageAccess={(adminId) => setManageAccessForId(adminId)}
               />
             </Suspense>
           </CardContent>
@@ -158,9 +162,9 @@ function EquipoPage() {
 
       <InviteOrgAdminDialog open={inviteOpen} onOpenChange={setInviteOpen} />
       <ManageAccessDialog
-        admin={manageAccessFor}
+        adminId={manageAccessForId}
         onOpenChange={(open) => {
-          if (!open) setManageAccessFor(null)
+          if (!open) setManageAccessForId(null)
         }}
       />
     </AdminLayout>
@@ -174,7 +178,7 @@ type AdminRow = Doc<'users'> & {
 function AdminsTable({
   onManageAccess,
 }: {
-  onManageAccess: (admin: AdminRow) => void
+  onManageAccess: (adminId: Id<'users'>) => void
 }) {
   const { data: admins } = useSuspenseQuery(
     convexQuery(api.users.queries.listAdminsByOrg, {}),
@@ -283,7 +287,7 @@ function AdminsTable({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onManageAccess(admin as AdminRow)}
+                      onClick={() => onManageAccess(admin._id)}
                     >
                       <Plus />
                       Accesos
