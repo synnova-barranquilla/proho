@@ -50,9 +50,19 @@ export const create = mutation({
       .unique()
 
     if (existing) {
+      if (!existing.active) {
+        // Reactivate a previously revoked membership instead of rejecting.
+        await ctx.db.patch(existing._id, {
+          active: true,
+          role: args.role,
+          assignedBy: caller._id,
+          assignedAt: Date.now(),
+        })
+        return { membershipId: existing._id }
+      }
       throwConvexError(
         ERROR_CODES.MEMBERSHIP_ALREADY_EXISTS,
-        'El usuario ya tiene una membership para este conjunto',
+        'El usuario ya tiene una membership activa para este conjunto',
       )
     }
 
