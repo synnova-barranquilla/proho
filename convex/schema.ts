@@ -4,8 +4,10 @@ import { conjuntoConfigFields } from './conjuntoConfig/validators'
 import { conjuntoMembershipFields } from './conjuntoMemberships/validators'
 import { conjuntoFields } from './conjuntos/validators'
 import { invitationFields } from './invitations/validators'
+import { novedadFields } from './novedades/validators'
 import { organizationFields } from './organizations/validators'
 import { parqueaderoFields } from './parqueaderos/validators'
+import { registroAccesoFields } from './registrosAcceso/validators'
 import { residenteFields } from './residentes/validators'
 import { unidadFields } from './unidades/validators'
 import { userFields } from './users/validators'
@@ -63,4 +65,14 @@ export default defineSchema({
   parqueaderos: defineTable(parqueaderoFields)
     .index('by_conjunto_id', ['conjuntoId'])
     .index('by_conjunto_id_and_tipo', ['conjuntoId', 'tipo']),
+
+  registrosAcceso: defineTable(registroAccesoFields)
+    .index('by_conjunto_id', ['conjuntoId'])
+    .index('by_conjunto_and_placa', ['conjuntoId', 'placaNormalizada'])
+    .index('by_conjunto_and_salida', ['conjuntoId', 'salidaEn'])
+    .index('by_conjunto_and_unidad', ['conjuntoId', 'unidadId']),
+
+  novedades: defineTable(novedadFields)
+    .index('by_conjunto_id', ['conjuntoId'])
+    .index('by_registro_acceso_id', ['registroAccesoId']),
 })

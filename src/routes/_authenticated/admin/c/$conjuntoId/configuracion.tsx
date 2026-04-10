@@ -64,29 +64,21 @@ function ConfiguracionPage() {
     }),
   )
 
-  const [maxHorasVisitante, setMaxHorasVisitante] = useState(
-    config?.maxHorasVisitante ?? 4,
+  const [reglaIngresoEnMora, setReglaIngresoEnMora] = useState(
+    config?.reglaIngresoEnMora ?? true,
   )
-  const [permitirSalidaMora, setPermitirSalidaMora] = useState(
-    config?.permitirSalidaMora ?? false,
+  const [reglaVehiculoDuplicado, setReglaVehiculoDuplicado] = useState(
+    config?.reglaVehiculoDuplicado ?? true,
   )
-  const [requiereFotoPlaca, setRequiereFotoPlaca] = useState(
-    config?.requiereFotoPlaca ?? true,
-  )
-  const [regVehResObligatorio, setRegVehResObligatorio] = useState(
-    config?.registroVehiculoResidenteObligatorio ?? true,
-  )
-  const [toleranciaMin, setToleranciaMin] = useState(
-    config?.toleranciaSalidaMinutos ?? 15,
+  const [reglaPermanenciaMaxDias, setReglaPermanenciaMaxDias] = useState(
+    config?.reglaPermanenciaMaxDias ?? 30,
   )
 
   useEffect(() => {
     if (config) {
-      setMaxHorasVisitante(config.maxHorasVisitante)
-      setPermitirSalidaMora(config.permitirSalidaMora)
-      setRequiereFotoPlaca(config.requiereFotoPlaca)
-      setRegVehResObligatorio(config.registroVehiculoResidenteObligatorio)
-      setToleranciaMin(config.toleranciaSalidaMinutos)
+      setReglaIngresoEnMora(config.reglaIngresoEnMora)
+      setReglaVehiculoDuplicado(config.reglaVehiculoDuplicado)
+      setReglaPermanenciaMaxDias(config.reglaPermanenciaMaxDias)
     }
   }, [config])
 
@@ -98,11 +90,9 @@ function ConfiguracionPage() {
     try {
       await upsertMut.mutateAsync({
         conjuntoId,
-        maxHorasVisitante,
-        permitirSalidaMora,
-        requiereFotoPlaca,
-        registroVehiculoResidenteObligatorio: regVehResObligatorio,
-        toleranciaSalidaMinutos: toleranciaMin,
+        reglaIngresoEnMora,
+        reglaVehiculoDuplicado,
+        reglaPermanenciaMaxDias,
       })
       toast.success('Configuración actualizada')
     } catch (err) {
@@ -124,103 +114,62 @@ function ConfiguracionPage() {
           Configuración del conjunto
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Reglas que el motor de parking leerá cuando esté activo.
+          Reglas de acceso vehicular. Cada regla puede activarse o desactivarse
+          independientemente.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Reglas de visitantes</CardTitle>
+            <CardTitle>Reglas de acceso vehicular</CardTitle>
             <CardDescription>
-              Control de tiempo y comportamiento para vehículos de visitantes.
+              Controlan qué validaciones aplica el sistema cuando un vehículo
+              residente intenta ingresar al conjunto.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
+              <Field orientation="horizontal">
+                <div className="flex-1">
+                  <FieldLabel>Ingreso en mora genera novedad</FieldLabel>
+                  <FieldDescription>
+                    Si la unidad del vehículo está en mora, el vigilante debe
+                    justificar el ingreso y se genera una novedad de auditoría.
+                  </FieldDescription>
+                </div>
+                <Switch
+                  checked={reglaIngresoEnMora}
+                  onCheckedChange={setReglaIngresoEnMora}
+                />
+              </Field>
+              <Field orientation="horizontal">
+                <div className="flex-1">
+                  <FieldLabel>Un vehículo por unidad dentro</FieldLabel>
+                  <FieldDescription>
+                    Solo un vehículo por unidad puede estar dentro del conjunto
+                    a la vez. Se permite una moto adicional con confirmación del
+                    vigilante.
+                  </FieldDescription>
+                </div>
+                <Switch
+                  checked={reglaVehiculoDuplicado}
+                  onCheckedChange={setReglaVehiculoDuplicado}
+                />
+              </Field>
               <Field>
-                <FieldLabel>Máximo horas por visita</FieldLabel>
+                <FieldLabel>Permanencia máxima (días)</FieldLabel>
                 <NumberInput
                   min={0}
-                  max={168}
-                  value={maxHorasVisitante}
-                  onChange={(v) => setMaxHorasVisitante(v ?? 0)}
+                  max={365}
+                  value={reglaPermanenciaMaxDias}
+                  onChange={(v) => setReglaPermanenciaMaxDias(v ?? 0)}
                 />
                 <FieldDescription>
-                  Máximo tiempo que un visitante puede permanecer en el
-                  conjunto.
+                  Máximo de días que un vehículo puede permanecer dentro. Si un
+                  vehículo de la unidad excede este límite, se genera novedad al
+                  próximo ingreso. Valor 0 desactiva esta regla.
                 </FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel>Tolerancia de salida (minutos)</FieldLabel>
-                <NumberInput
-                  min={0}
-                  max={240}
-                  value={toleranciaMin}
-                  onChange={(v) => setToleranciaMin(v ?? 0)}
-                />
-                <FieldDescription>
-                  Minutos de gracia antes de aplicar tiempo extra.
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Reglas de residentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <Field orientation="horizontal">
-                <div className="flex-1">
-                  <FieldLabel>Permitir salida de unidades en mora</FieldLabel>
-                  <FieldDescription>
-                    Si está apagado, el motor bloquea la salida de vehículos de
-                    unidades marcadas en mora.
-                  </FieldDescription>
-                </div>
-                <Switch
-                  checked={permitirSalidaMora}
-                  onCheckedChange={setPermitirSalidaMora}
-                />
-              </Field>
-              <Field orientation="horizontal">
-                <div className="flex-1">
-                  <FieldLabel>Registro obligatorio de vehículos</FieldLabel>
-                  <FieldDescription>
-                    Si está encendido, los vehículos de residentes deben estar
-                    pre-registrados para poder entrar.
-                  </FieldDescription>
-                </div>
-                <Switch
-                  checked={regVehResObligatorio}
-                  onCheckedChange={setRegVehResObligatorio}
-                />
-              </Field>
-            </FieldGroup>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Reglas de vigilancia</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <Field orientation="horizontal">
-                <div className="flex-1">
-                  <FieldLabel>Foto de placa obligatoria</FieldLabel>
-                  <FieldDescription>
-                    El vigilante debe capturar una foto de la placa en cada
-                    registro.
-                  </FieldDescription>
-                </div>
-                <Switch
-                  checked={requiereFotoPlaca}
-                  onCheckedChange={setRequiereFotoPlaca}
-                />
               </Field>
             </FieldGroup>
           </CardContent>

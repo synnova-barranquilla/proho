@@ -15,30 +15,22 @@ import { conjuntoConfigDefaults } from './validators'
 export const upsert = mutation({
   args: {
     conjuntoId: v.id('conjuntos'),
-    maxHorasVisitante: v.number(),
-    permitirSalidaMora: v.boolean(),
-    requiereFotoPlaca: v.boolean(),
-    registroVehiculoResidenteObligatorio: v.boolean(),
-    toleranciaSalidaMinutos: v.number(),
+    reglaIngresoEnMora: v.boolean(),
+    reglaVehiculoDuplicado: v.boolean(),
+    reglaPermanenciaMaxDias: v.number(),
   },
   handler: async (ctx, args) => {
     await requireConjuntoAccess(ctx, args.conjuntoId, {
       allowedRoles: ['ADMIN'],
     })
 
-    if (args.maxHorasVisitante < 0 || args.maxHorasVisitante > 168) {
-      throwConvexError(
-        ERROR_CODES.VALIDATION_ERROR,
-        'maxHorasVisitante debe estar entre 0 y 168',
-      )
-    }
     if (
-      args.toleranciaSalidaMinutos < 0 ||
-      args.toleranciaSalidaMinutos > 240
+      args.reglaPermanenciaMaxDias < 0 ||
+      args.reglaPermanenciaMaxDias > 365
     ) {
       throwConvexError(
         ERROR_CODES.VALIDATION_ERROR,
-        'toleranciaSalidaMinutos debe estar entre 0 y 240',
+        'reglaPermanenciaMaxDias debe estar entre 0 y 365',
       )
     }
 
@@ -48,12 +40,9 @@ export const upsert = mutation({
       .unique()
 
     const patch = {
-      maxHorasVisitante: args.maxHorasVisitante,
-      permitirSalidaMora: args.permitirSalidaMora,
-      requiereFotoPlaca: args.requiereFotoPlaca,
-      registroVehiculoResidenteObligatorio:
-        args.registroVehiculoResidenteObligatorio,
-      toleranciaSalidaMinutos: args.toleranciaSalidaMinutos,
+      reglaIngresoEnMora: args.reglaIngresoEnMora,
+      reglaVehiculoDuplicado: args.reglaVehiculoDuplicado,
+      reglaPermanenciaMaxDias: args.reglaPermanenciaMaxDias,
     }
 
     if (existing) {

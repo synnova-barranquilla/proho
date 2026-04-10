@@ -21,10 +21,10 @@ export type Milestone = {
 }
 
 export const currentFocus = {
-  phaseId: 'F5',
-  phaseName: 'Parqueaderos: Datos Offline-First',
+  phaseId: 'F6',
+  phaseName: 'Parqueaderos: Pantallas del Vigilante',
   done: 0,
-  total: 23,
+  total: 10,
 }
 export const lastUpdated = '10 de abril de 2026'
 
@@ -460,215 +460,137 @@ export const milestones: Milestone[] = [
     id: 'M3',
     name: 'Parking MVP',
     description:
-      'Vigilante opera en tablet (offline-first). Admin ve dashboards y auditoría. Listo para primer cliente real.',
+      'Vigilante opera en tablet (optimistic-first). Admin ve dashboards y auditoría. Listo para primer cliente real.',
     scope: 'mvp',
     phases: [
       {
         id: 'F5',
-        name: 'Parqueaderos: Datos Offline-First',
+        name: 'Parqueaderos: Datos Optimistic-First',
         tasks: [
           {
             id: '5.1',
-            name: 'Crear tabla registros_acceso en Convex',
-            status: 'pending',
+            name: 'Extraer normalizePlaca a lib compartida',
+            status: 'done',
           },
           {
             id: '5.2',
-            name: 'Crear tabla visitantes_acceso en Convex',
-            status: 'pending',
+            name: 'Agregar ERROR_CODES para F5',
+            status: 'done',
           },
           {
             id: '5.3',
-            name: 'Crear tabla novedades en Convex',
-            status: 'pending',
+            name: 'Actualizar conjuntoConfig con 3 reglas',
+            status: 'done',
           },
           {
             id: '5.4',
-            name: 'Instalar y configurar Dexie.js',
-            status: 'pending',
+            name: 'Crear tabla registrosAcceso',
+            status: 'done',
           },
           {
             id: '5.5',
-            name: 'Configurar PWA: manifest + service worker',
-            status: 'pending',
+            name: 'Crear tabla novedades',
+            status: 'done',
           },
           {
             id: '5.6',
-            name: 'Mirror Convex → IndexedDB: apartamentos y vehículos',
-            status: 'pending',
+            name: 'Motor de reglas evaluateRules()',
+            status: 'done',
           },
           {
             id: '5.7',
-            name: 'Mirror Convex → IndexedDB: regla_config y permisos',
-            status: 'pending',
+            name: 'Actualizar UI configuración del conjunto',
+            status: 'done',
           },
           {
             id: '5.8',
-            name: 'Mirror Convex → IndexedDB: registros y visitantes activos',
-            status: 'pending',
+            name: 'Queries: listActivos, listRecientes, findActivoByPlaca',
+            status: 'done',
           },
           {
             id: '5.9',
-            name: 'Arranque desde IndexedDB',
-            status: 'pending',
+            name: 'Queries de novedades',
+            status: 'done',
           },
-          { id: '5.10', name: 'SYNC_QUEUE en IndexedDB', status: 'pending' },
+          {
+            id: '5.10',
+            name: 'Mutation: registrarIngreso',
+            status: 'done',
+          },
           {
             id: '5.11',
-            name: 'Drain worker (FIFO, backoff, reintentos)',
-            status: 'pending',
+            name: 'Mutation: registrarSalida',
+            status: 'done',
           },
-          { id: '5.12', name: 'Lógica error_permanente', status: 'pending' },
+          {
+            id: '5.12',
+            name: 'Mutation: registrarVisitante',
+            status: 'done',
+          },
           {
             id: '5.13',
-            name: 'Reconciliación sync (server rechaza → notificar vigilante)',
-            status: 'pending',
+            name: 'Mutation: registrarResidenteNuevo',
+            status: 'done',
           },
           {
             id: '5.14',
-            name: 'Actualización optimista de cache local',
-            status: 'pending',
-          },
-          {
-            id: '5.15',
-            name: 'Indicador de conectividad',
-            status: 'pending',
-          },
-          {
-            id: '5.16',
-            name: 'Gracia de sesión 24h offline',
-            status: 'pending',
-          },
-          {
-            id: '5.17',
-            name: 'Mutation Convex: registrar ingreso',
-            status: 'pending',
-          },
-          {
-            id: '5.18',
-            name: 'Mutation Convex: registrar salida',
-            status: 'pending',
-          },
-          {
-            id: '5.19',
-            name: 'Mutation Convex: registrar visitante',
-            status: 'pending',
-          },
-          {
-            id: '5.20',
-            name: 'Mutation Convex: crear novedad',
-            status: 'pending',
-          },
-          {
-            id: '5.21',
-            name: 'Mutation Convex: registrar vehículo nuevo',
-            status: 'pending',
-          },
-          {
-            id: '5.22',
-            name: 'Tests: drain worker y sync',
-            status: 'pending',
-          },
-          {
-            id: '5.23',
-            name: 'Tests: mirror Convex → IndexedDB',
-            status: 'pending',
+            name: 'Tests del motor de reglas (20 escenarios)',
+            status: 'done',
           },
         ],
       },
       {
         id: 'F6',
-        name: 'Parqueaderos: Reglas y Pantallas',
+        name: 'Parqueaderos: Pantallas del Vigilante',
         tasks: [
           {
             id: '6.1',
-            name: 'Motor de reglas: Fase 1 bloqueantes (R1, R2, R3)',
-            status: 'pending',
-          },
-          {
-            id: '6.2',
-            name: 'Motor de reglas: Zona gris (ZG)',
-            status: 'pending',
-          },
-          {
-            id: '6.3',
-            name: 'Motor de reglas: Fase 2 candado (R4)',
-            status: 'pending',
-          },
-          {
-            id: '6.4',
-            name: 'Tests unitarios del motor de reglas',
-            status: 'pending',
-          },
-          { id: '6.5', name: 'Normalización de placa', status: 'pending' },
-          {
-            id: '6.6',
             name: 'Layout tablet-first para vigilantes',
             status: 'pending',
           },
           {
-            id: '6.7',
-            name: 'Pantalla principal de parqueadero',
+            id: '6.2',
+            name: 'Pantalla principal de control de acceso',
             status: 'pending',
           },
           {
-            id: '6.8',
-            name: 'Búsqueda por placa contra IndexedDB',
-            status: 'pending',
-          },
-          {
-            id: '6.9',
+            id: '6.3',
             name: 'Pantalla resultado: Permitido',
             status: 'pending',
           },
           {
-            id: '6.10',
-            name: 'Pantalla resultado: Rechazado',
+            id: '6.4',
+            name: 'Pantalla resultado: Reglas violadas',
             status: 'pending',
           },
           {
-            id: '6.11',
-            name: 'Pantalla resultado: Candado activo',
-            status: 'pending',
-          },
-          {
-            id: '6.12',
-            name: 'Pantalla resultado: Zona gris',
-            status: 'pending',
-          },
-          {
-            id: '6.13',
+            id: '6.5',
             name: 'Pantalla resultado: No identificado',
             status: 'pending',
           },
           {
-            id: '6.14',
+            id: '6.6',
             name: 'Pantalla registrar salida',
             status: 'pending',
           },
           {
-            id: '6.15',
-            name: 'Campo de observaciones al ingreso',
+            id: '6.7',
+            name: 'Flujo registro vehículo nuevo como residente',
             status: 'pending',
           },
           {
-            id: '6.16',
-            name: 'Chip y botón permiso registrar_vehiculos',
-            status: 'pending',
-          },
-          {
-            id: '6.17',
-            name: 'Flujo registro vehículo nuevo',
-            status: 'pending',
-          },
-          {
-            id: '6.18',
+            id: '6.8',
             name: 'Caso borde: vehículo ya está dentro',
             status: 'pending',
           },
           {
-            id: '6.19',
-            name: 'Caso borde: salida sin entrada registrada',
+            id: '6.9',
+            name: 'Novedades manuales del vigilante',
+            status: 'pending',
+          },
+          {
+            id: '6.10',
+            name: 'Adjuntar foto al ingreso (baja prioridad)',
             status: 'pending',
           },
         ],

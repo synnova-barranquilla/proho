@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
 > **Última actualización:** 10 de abril de 2026
-> **Total de tareas:** 199
-> **MVP (M1+M2+M3):** 141 tareas
-> **Completadas:** 78 (55.3%)
+> **Total de tareas:** 179
+> **MVP (M1+M2+M3):** 121 tareas
+> **Completadas:** 91 (75.2%)
 
 ---
 
@@ -141,57 +141,39 @@
 
 ## M3 — Parking MVP
 
-### Fase 5 — Parqueaderos: Datos Offline-First (0/23)
+### Fase 5 — Parqueaderos: Datos Optimistic-First (14/14) ✅
 
-| ID   | Tarea                                                      | Estado  |
-| ---- | ---------------------------------------------------------- | ------- |
-| 5.1  | Crear tabla registros_acceso en Convex                     | pending |
-| 5.2  | Crear tabla visitantes_acceso en Convex                    | pending |
-| 5.3  | Crear tabla novedades en Convex                            | pending |
-| 5.4  | Instalar y configurar Dexie.js                             | pending |
-| 5.5  | Configurar PWA: manifest + service worker                  | pending |
-| 5.6  | Mirror Convex → IndexedDB: apartamentos y vehículos        | pending |
-| 5.7  | Mirror Convex → IndexedDB: regla_config y permisos         | pending |
-| 5.8  | Mirror Convex → IndexedDB: registros y visitantes activos  | pending |
-| 5.9  | Arranque desde IndexedDB                                   | pending |
-| 5.10 | SYNC_QUEUE en IndexedDB                                    | pending |
-| 5.11 | Drain worker (FIFO, backoff, reintentos)                   | pending |
-| 5.12 | Lógica error_permanente                                    | pending |
-| 5.13 | Reconciliación sync (server rechaza → notificar vigilante) | pending |
-| 5.14 | Actualización optimista de cache local                     | pending |
-| 5.15 | Indicador de conectividad                                  | pending |
-| 5.16 | Gracia de sesión 24h offline                               | pending |
-| 5.17 | Mutation Convex: registrar ingreso                         | pending |
-| 5.18 | Mutation Convex: registrar salida                          | pending |
-| 5.19 | Mutation Convex: registrar visitante                       | pending |
-| 5.20 | Mutation Convex: crear novedad                             | pending |
-| 5.21 | Mutation Convex: registrar vehículo nuevo                  | pending |
-| 5.22 | Tests: drain worker y sync                                 | pending |
-| 5.23 | Tests: mirror Convex → IndexedDB                           | pending |
+| ID   | Tarea                                                  | Estado |
+| ---- | ------------------------------------------------------ | ------ |
+| 5.1  | Extraer normalizePlaca a lib compartida                | done   |
+| 5.2  | Agregar ERROR_CODES para F5                            | done   |
+| 5.3  | Actualizar conjuntoConfig con 3 reglas                 | done   |
+| 5.4  | Crear tabla registrosAcceso                            | done   |
+| 5.5  | Crear tabla novedades                                  | done   |
+| 5.6  | Motor de reglas evaluateRules()                        | done   |
+| 5.7  | Actualizar UI configuración del conjunto               | done   |
+| 5.8  | Queries: listActivos, listRecientes, findActivoByPlaca | done   |
+| 5.9  | Queries de novedades                                   | done   |
+| 5.10 | Mutation: registrarIngreso                             | done   |
+| 5.11 | Mutation: registrarSalida                              | done   |
+| 5.12 | Mutation: registrarVisitante                           | done   |
+| 5.13 | Mutation: registrarResidenteNuevo                      | done   |
+| 5.14 | Tests del motor de reglas (20 escenarios)              | done   |
 
-### Fase 6 — Parqueaderos: Reglas y Pantallas (0/19)
+### Fase 6 — Parqueaderos: Pantallas del Vigilante (0/10)
 
-| ID   | Tarea                                            | Estado  |
-| ---- | ------------------------------------------------ | ------- |
-| 6.1  | Motor de reglas: Fase 1 bloqueantes (R1, R2, R3) | pending |
-| 6.2  | Motor de reglas: Zona gris (ZG)                  | pending |
-| 6.3  | Motor de reglas: Fase 2 candado (R4)             | pending |
-| 6.4  | Tests unitarios del motor de reglas              | pending |
-| 6.5  | Normalización de placa                           | pending |
-| 6.6  | Layout tablet-first para vigilantes              | pending |
-| 6.7  | Pantalla principal de parqueadero                | pending |
-| 6.8  | Búsqueda por placa contra IndexedDB              | pending |
-| 6.9  | Pantalla resultado: Permitido                    | pending |
-| 6.10 | Pantalla resultado: Rechazado                    | pending |
-| 6.11 | Pantalla resultado: Candado activo               | pending |
-| 6.12 | Pantalla resultado: Zona gris                    | pending |
-| 6.13 | Pantalla resultado: No identificado              | pending |
-| 6.14 | Pantalla registrar salida                        | pending |
-| 6.15 | Campo de observaciones al ingreso                | pending |
-| 6.16 | Chip y botón permiso registrar_vehiculos         | pending |
-| 6.17 | Flujo registro vehículo nuevo                    | pending |
-| 6.18 | Caso borde: vehículo ya está dentro              | pending |
-| 6.19 | Caso borde: salida sin entrada registrada        | pending |
+| ID   | Tarea                                        | Estado  |
+| ---- | -------------------------------------------- | ------- |
+| 6.1  | Layout tablet-first para vigilantes          | pending |
+| 6.2  | Pantalla principal de control de acceso      | pending |
+| 6.3  | Pantalla resultado: Permitido                | pending |
+| 6.4  | Pantalla resultado: Reglas violadas          | pending |
+| 6.5  | Pantalla resultado: No identificado          | pending |
+| 6.6  | Pantalla registrar salida                    | pending |
+| 6.7  | Flujo registro vehículo nuevo como residente | pending |
+| 6.8  | Caso borde: vehículo ya está dentro          | pending |
+| 6.9  | Novedades manuales del vigilante             | pending |
+| 6.10 | Adjuntar foto al ingreso (baja prioridad)    | pending |
 
 ### Fase 7 — Parqueaderos: Dashboards y Auditoría (0/6)
 
@@ -315,7 +297,7 @@
 | -------------------- | ----------------- | ------- | ------ | -------- |
 | **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34     | 81%      |
 | **M2 — Admin Ready** | F3 + F4           | 43      | 43     | 100%     |
-| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 54      | 0      | 0%       |
-| **MVP TOTAL**        | F0–F8             | **139** | **77** | **55%**  |
+| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 36      | 14     | 39%      |
+| **MVP TOTAL**        | F0–F8             | **121** | **91** | **75%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **197** | **77** | **39%**  |
+| **TOTAL**            | F0–F14            | **179** | **91** | **51%**  |

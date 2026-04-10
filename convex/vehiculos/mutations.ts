@@ -3,11 +3,8 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { requireConjuntoAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
+import { normalizePlaca } from '../lib/placa'
 import { vehiculoTipos } from './validators'
-
-function normalizePlaca(placa: string): string {
-  return placa.trim().toUpperCase().replace(/\s+/g, '')
-}
 
 export const create = mutation({
   args: {

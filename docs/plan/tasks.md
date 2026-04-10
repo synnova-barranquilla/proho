@@ -150,63 +150,45 @@
 
 ---
 
-## Fase 5 — Parqueaderos: Capa de Datos Offline-First
+## Fase 5 — Parqueaderos: Capa de Datos Optimistic-First
 
-> La capa de datos se construye primero. Todo lo que viene después (pantallas, reglas) lee de IndexedDB y escribe a la SYNC_QUEUE. Nunca se accede a Convex directamente desde la UI del vigilante.
+> Arquitectura optimistic-first: Convex reactivo mantiene datos en memoria via subscripciones. Las búsquedas por placa son locales sobre datos suscritos. Las escrituras usan optimistic updates nativos de Convex. El motor de reglas corre en client (velocidad) y server (safety net).
 
-| ID   | Tarea                                                                                                                                                                                                                                              |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 5.1  | Crear tablas en Convex para operación de parqueaderos: `registros_acceso` (vehiculo_id, parqueadero_id, entrada_en, salida_en, decision_motor, decision_final, justificacion, observacion, vigilante_id, placa_raw) con schema validator e índices |
-| 5.2  | Crear tabla `visitantes_acceso` en Convex (placa, placa_normalizada, apartamento_destino_id, entrada_en, salida_en, observacion, vigilante_id) con schema validator                                                                                |
-| 5.3  | Crear tabla `novedades` en Convex (tipo, registro_acceso_id, conjunto_id, descripcion, accion_tomada, resuelta, vigilante_id) con schema validator e índices                                                                                       |
-| 5.4  | Instalar y configurar Dexie.js con esquema de tablas locales (apartamentos, vehiculos, registros_acceso, visitantes_acceso, novedades, regla_config, permisos_usuario)                                                                             |
-| 5.5  | Configurar PWA: manifest.json + service worker para cache de assets                                                                                                                                                                                |
-| 5.6  | Implementar mirror Convex → IndexedDB para apartamentos y vehículos                                                                                                                                                                                |
-| 5.7  | Implementar mirror Convex → IndexedDB para regla_config y permisos_usuario                                                                                                                                                                         |
-| 5.8  | Implementar mirror Convex → IndexedDB para registros_acceso activos y visitantes_acceso activos                                                                                                                                                    |
-| 5.9  | Implementar arranque desde IndexedDB: si hay datos cacheados, renderizar sin spinner; si vacío (primer uso), mostrar carga inicial                                                                                                                 |
-| 5.10 | Implementar SYNC_QUEUE en IndexedDB (id, timestamp_local, operación, payload, estado, intentos, convex_mutation)                                                                                                                                   |
-| 5.11 | Implementar drain worker: procesa cola FIFO, llama mutations de Convex, backoff exponencial, max 5 reintentos                                                                                                                                      |
-| 5.12 | Implementar lógica de error_permanente: marcar tras 5 fallos, crear novedad local para admin                                                                                                                                                       |
-| 5.13 | Implementar reconciliación: cuando mutation server-side rechaza (ej: cupo ya ocupado), actualizar cache local y notificar al vigilante                                                                                                             |
-| 5.14 | Implementar actualización optimista de cache local (escribir a IndexedDB inmediatamente al confirmar acción)                                                                                                                                       |
-| 5.15 | Implementar indicador de conectividad en header del vigilante (online / offline / sincronizando)                                                                                                                                                   |
-| 5.16 | Implementar gracia de sesión de 24 horas offline (token expirado opera localmente, renueva al reconectar)                                                                                                                                          |
-| 5.17 | Crear mutation de Convex: registrar ingreso vehicular (re-validación server-side de todas las reglas)                                                                                                                                              |
-| 5.18 | Crear mutation de Convex: registrar salida vehicular (calcular permanencia, liberar cupo)                                                                                                                                                          |
-| 5.19 | Crear mutation de Convex: registrar ingreso de visitante                                                                                                                                                                                           |
-| 5.20 | Crear mutation de Convex: crear novedad                                                                                                                                                                                                            |
-| 5.21 | Crear mutation de Convex: registrar vehículo nuevo                                                                                                                                                                                                 |
-| 5.22 | Escribir tests para drain worker (cola FIFO, backoff, error_permanente, reconciliación)                                                                                                                                                            |
-| 5.23 | Escribir tests para mirror Convex → IndexedDB (sync correcta, arranque desde cache)                                                                                                                                                                |
+| ID   | Tarea                                                                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 5.1  | Extraer `normalizePlaca` a `convex/lib/placa.ts` compartida                                                                                |
+| 5.2  | Agregar ERROR_CODES para F5 (REGISTRO_NOT_FOUND, REGISTRO_ALREADY_EXITED, VEHICULO_NOT_FOUND, UNIDAD_NOT_FOUND)                            |
+| 5.3  | Actualizar `conjuntoConfig`: reemplazar 5 campos viejos por 3 reglas (reglaIngresoEnMora, reglaVehiculoDuplicado, reglaPermanenciaMaxDias) |
+| 5.4  | Crear tabla `registrosAcceso` en Convex (tipo unificado: RESIDENTE/VISITANTE/VISITA_ADMIN) con validators e índices                        |
+| 5.5  | Crear tabla `novedades` en Convex (log inmutable de auditoría) con validators e índices                                                    |
+| 5.6  | Motor de reglas `evaluateRules()`: función pura compartida client/server (R1 mora, R2 duplicado, R3 permanencia)                           |
+| 5.7  | Actualizar UI de configuración del conjunto con los 3 toggles de reglas                                                                    |
+| 5.8  | Queries: `listActivos` (vehículos dentro), `listRecientes` (últimos 5), `findActivoByPlaca` (para salida)                                  |
+| 5.9  | Queries de novedades: `listByConjunto`, `listByRegistro`                                                                                   |
+| 5.10 | Mutation `registrarIngreso`: ingreso residente con evaluación server-side + novedades automáticas                                          |
+| 5.11 | Mutation `registrarSalida`: salida activa + soporte salida sin entrada                                                                     |
+| 5.12 | Mutation `registrarVisitante`: ingreso VISITANTE (con unidad) o VISITA_ADMIN (sin unidad), sin reglas                                      |
+| 5.13 | Mutation `registrarResidenteNuevo`: crear vehículo permanente + ingreso atómico con reglas                                                 |
+| 5.14 | Tests unitarios del motor de reglas (20 escenarios: R1, R2 carro/moto, R3, múltiples, visitantes exentos)                                  |
 
 ---
 
-## Fase 6 — Parqueaderos: Motor de Reglas y Pantallas
+## Fase 6 — Parqueaderos: Pantallas del Vigilante
 
-> Todas las pantallas leen de IndexedDB. Todas las escrituras pasan por la SYNC_QUEUE. El motor de reglas es una función pura que evalúa contra datos locales.
+> Pantallas tablet-first para el vigilante. Leen datos via subscripciones reactivas de Convex. Todas las escrituras usan las mutations de F5 con optimistic updates.
 
-| ID   | Tarea                                                                                                                                                                                              |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 6.1  | Implementar motor de reglas client-side: Fase 1 bloqueantes (R1 cupo ocupado mismo tipo, R2 vehículo inactivo, R3 no registrado)                                                                   |
-| 6.2  | Implementar motor de reglas client-side: Zona gris (ZG cupo ocupado tipo diferente)                                                                                                                |
-| 6.3  | Implementar motor de reglas client-side: Fase 2 (R4 plan candado con sobreposición justificada)                                                                                                    |
-| 6.4  | Escribir tests unitarios del motor de reglas (todos los escenarios de la tabla de verdad)                                                                                                          |
-| 6.5  | Implementar normalización de placa (mayúsculas, sin espacios/caracteres especiales, guardar placa_raw)                                                                                             |
-| 6.6  | Crear layout tablet-first para vigilantes (sin sidebar, botones grandes en zona del pulgar, indicador de conectividad)                                                                             |
-| 6.7  | Crear pantalla principal de parqueadero: lista de vehículos dentro del conjunto (filtro por torre, placa, tipo, permanencia), campo de placa grande, selector carro/moto, botones en zona inferior |
-| 6.8  | Implementar búsqueda de vehículo por placa normalizada contra IndexedDB                                                                                                                            |
-| 6.9  | Crear pantalla resultado: Permitido (fondo verde, apto torre+numero, cupos X/Y, confirmar/cancelar)                                                                                                |
-| 6.10 | Crear pantalla resultado: Rechazado (fondo rojo, motivo, placa del vehículo dentro, sin botón sobrepasar)                                                                                          |
-| 6.11 | Crear pantalla resultado: Candado activo (fondo ámbar, justificación obligatoria min 10 chars, botón deshabilitado sin texto)                                                                      |
-| 6.12 | Crear pantalla resultado: Zona gris (fondo morado, observación obligatoria, permitir/rechazar ambos generan novedad)                                                                               |
-| 6.13 | Crear pantalla resultado: No identificado (3 opciones: visitante con apto destino, registrar nuevo si permiso activo, rechazar con justificación)                                                  |
-| 6.14 | Crear pantalla registrar salida (placa, apto, permanencia calculada, confirmar salida / salida forzada con justificación)                                                                          |
-| 6.15 | Implementar campo de observaciones al ingreso                                                                                                                                                      |
-| 6.16 | Implementar chip ámbar "Registro activo" y botón "Registrar vehículo" cuando permiso registrar_vehiculos activo                                                                                    |
-| 6.17 | Crear flujo de registro de vehículo nuevo de residente (formulario: apto, tipo, placa → SYNC_QUEUE → mutation)                                                                                     |
-| 6.18 | Implementar caso de borde: vehículo ya está dentro (estado informativo, opción de registrar salida)                                                                                                |
-| 6.19 | Implementar caso de borde: salida sin entrada registrada (ofrecer salida forzada con observación)                                                                                                  |
+| ID   | Tarea                                                                                               |
+| ---- | --------------------------------------------------------------------------------------------------- |
+| 6.1  | Crear layout tablet-first para vigilantes (sin sidebar, botones grandes en zona del pulgar)         |
+| 6.2  | Pantalla principal de control de acceso: campo de placa, vehículos dentro, últimos 5 registros      |
+| 6.3  | Pantalla resultado: Permitido (fondo verde, unidad torre+número, confirmar/cancelar)                |
+| 6.4  | Pantalla resultado: Reglas violadas (muestra violaciones, campo justificación, permitir/rechazar)   |
+| 6.5  | Pantalla resultado: No identificado (3 opciones: visitante, visita admin, registrar como residente) |
+| 6.6  | Pantalla registrar salida (placa, unidad, permanencia calculada, confirmar)                         |
+| 6.7  | Flujo registro vehículo nuevo como residente (selector unidad, tipo vehículo, nombre propietario)   |
+| 6.8  | Caso borde: vehículo ya está dentro (estado informativo, opción de registrar salida)                |
+| 6.9  | Novedades manuales: el vigilante puede crear novedades con texto libre                              |
+| 6.10 | Adjuntar foto al ingreso (baja prioridad — captura vía Web Camera API)                              |
 
 ---
 
