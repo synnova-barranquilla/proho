@@ -32,7 +32,7 @@ export const Route = createFileRoute(
 })
 
 function ConfigurarParqueaderosPage() {
-  const { conjuntoId } = Route.useRouteContext()
+  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
   const navigate = useNavigate()
   const isAdmin = useIsConjuntoAdmin()
 
@@ -44,10 +44,10 @@ function ConfigurarParqueaderosPage() {
     if (!isAdmin) {
       void navigate({
         to: '/admin/c/$conjuntoId',
-        params: { conjuntoId },
+        params: { conjuntoId: conjuntoSlug },
       })
     }
-  }, [isAdmin, navigate, conjuntoId])
+  }, [isAdmin, navigate, conjuntoSlug])
 
   const [residentes, setResidentes] = useState(0)
   const [visitantes, setVisitantes] = useState(0)
@@ -78,7 +78,7 @@ function ConfigurarParqueaderosPage() {
       toast.success(`${res.created} parqueaderos creados`)
       navigate({
         to: '/admin/c/$conjuntoId/parqueaderos',
-        params: { conjuntoId },
+        params: { conjuntoId: conjuntoSlug },
       })
     } catch (err) {
       if (err instanceof ConvexError) {
@@ -144,7 +144,7 @@ function ConfigurarParqueaderosPage() {
                 onClick={() =>
                   navigate({
                     to: '/admin/c/$conjuntoId/parqueaderos',
-                    params: { conjuntoId },
+                    params: { conjuntoId: conjuntoSlug },
                   })
                 }
               >

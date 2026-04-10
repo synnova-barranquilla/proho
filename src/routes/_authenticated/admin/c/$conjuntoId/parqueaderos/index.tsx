@@ -33,7 +33,7 @@ export const Route = createFileRoute(
 })
 
 function ParqueaderosPage() {
-  const { conjuntoId } = Route.useRouteContext()
+  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   return (
     <div className="flex flex-col gap-6">
@@ -50,7 +50,7 @@ function ParqueaderosPage() {
         {isAdmin ? (
           <Link
             to="/admin/c/$conjuntoId/parqueaderos/configurar"
-            params={{ conjuntoId }}
+            params={{ conjuntoId: conjuntoSlug }}
             className={buttonVariants()}
           >
             <Settings />

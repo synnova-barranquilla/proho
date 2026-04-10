@@ -1,11 +1,13 @@
 import { Suspense, useMemo, useState } from 'react'
 
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import type { ColumnDef } from '@tanstack/react-table'
 
-import { convexQuery } from '@convex-dev/react-query'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import { ConvexError } from 'convex/values'
 import { UserPlus } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { InviteAdminDialog } from '#/components/super-admin/invite-admin-dialog'
 import { UsersTableSkeleton } from '#/components/super-admin/skeletons/users-table-skeleton'
@@ -13,6 +15,7 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { DataTable } from '#/components/ui/data-table'
 import { Input } from '#/components/ui/input'
+import { Label } from '#/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -20,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { Switch } from '#/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
@@ -57,10 +61,13 @@ export const Route = createFileRoute('/_authenticated/super-admin/usuarios')({
   component: UsuariosPage,
 })
 
+const authenticatedRoute = getRouteApi('/_authenticated')
+
 function UsuariosPage() {
   const [orgFilter, setOrgFilter] = useState<string>(ALL_ORGS_VALUE)
   const [search, setSearch] = useState('')
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [showInactive, setShowInactive] = useState(false)
 
   // Orgs for the filter dropdown (non-blocking client query, used by
   // multiple sections)
@@ -120,11 +127,27 @@ function UsuariosPage() {
       </div>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Activos
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            Usuarios
+          </h2>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="showInactive"
+              checked={showInactive}
+              onCheckedChange={setShowInactive}
+            />
+            <Label htmlFor="showInactive" className="text-xs">
+              Mostrar inactivos
+            </Label>
+          </div>
+        </div>
         <Suspense fallback={<UsersTableSkeleton />}>
-          <ActiveUsersTable orgFilter={orgFilter} search={search} />
+          <ActiveUsersTable
+            orgFilter={orgFilter}
+            search={search}
+            showInactive={showInactive}
+          />
         </Suspense>
       </section>
 
@@ -149,13 +172,37 @@ type ActiveUserWithOrg = Doc<'users'> & {
 function ActiveUsersTable({
   orgFilter,
   search,
+  showInactive,
 }: {
   orgFilter: string
   search: string
+  showInactive: boolean
 }) {
   const { data: users } = useSuspenseQuery(
-    convexQuery(api.users.queries.listAllWithOrg, {}),
+    convexQuery(api.users.queries.listAllWithOrg, {
+      includeInactive: showInactive,
+    }),
   )
+  const { convexUser } = authenticatedRoute.useLoaderData()
+
+  const setActiveFn = useConvexMutation(api.users.mutations.setUserActive)
+  const setActiveMut = useMutation({ mutationFn: setActiveFn })
+  const handleToggleActive = async (
+    userId: (typeof users)[0]['_id'],
+    active: boolean,
+  ) => {
+    try {
+      await setActiveMut.mutateAsync({ userId, active })
+      toast.success(active ? 'Usuario reactivado' : 'Usuario desactivado')
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error')
+      } else {
+        toast.error('Error inesperado')
+      }
+    }
+  }
 
   const filtered = useMemo(() => {
     return users.filter((u) => {
@@ -219,6 +266,55 @@ function ActiveUsersTable({
           {row.original.orgRole}
         </Badge>
       ),
+    },
+    ...(showInactive
+      ? [
+          {
+            id: 'estado',
+            header: 'Estado',
+            accessorFn: (u: ActiveUserWithOrg) =>
+              u.active ? 'Activo' : 'Inactivo',
+            cell: ({ row }: { row: { original: ActiveUserWithOrg } }) =>
+              row.original.active ? (
+                <Badge variant="outline" className="text-xs">
+                  Activo
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="text-xs">
+                  Inactivo
+                </Badge>
+              ),
+          } satisfies ColumnDef<ActiveUserWithOrg>,
+        ]
+      : []),
+    {
+      id: 'acciones',
+      header: () => <span className="sr-only">Acciones</span>,
+      enableSorting: false,
+      meta: { headClassName: 'text-right', cellClassName: 'text-right' },
+      cell: ({ row }) => {
+        const isSelf = row.original._id === convexUser._id
+        if (isSelf) return null
+        return row.original.active ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToggleActive(row.original._id, false)}
+            disabled={setActiveMut.isPending}
+          >
+            Desactivar
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToggleActive(row.original._id, true)}
+            disabled={setActiveMut.isPending}
+          >
+            Reactivar
+          </Button>
+        )
+      },
     },
   ]
 

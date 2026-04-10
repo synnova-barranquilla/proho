@@ -86,8 +86,10 @@ export const listAdminsByOrg = query({
  * Used by `/super-admin/usuarios` for the "Activos" table.
  */
 export const listAllWithOrg = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    includeInactive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
     await requireOrgRole(ctx, ['SUPER_ADMIN'])
 
     const [users, orgs] = await Promise.all([
@@ -97,7 +99,7 @@ export const listAllWithOrg = query({
 
     const orgMap = new Map(orgs.map((o) => [o._id, o]))
     return users
-      .filter((u) => u.active)
+      .filter((u) => (args.includeInactive ? true : u.active))
       .map((u) => ({
         ...u,
         organization: orgMap.get(u.organizationId) ?? null,

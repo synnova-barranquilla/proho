@@ -78,17 +78,17 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
       ),
     ])
 
-    // If a `from` conjunto id was passed, resolve it so the sidebar
+    // If a `from` conjunto slug was passed, resolve it so the sidebar
     // can render a back link with the conjunto's display name. If the
-    // fetch fails (invalid id, revoked access, etc.) we silently drop
+    // fetch fails (invalid slug, revoked access, etc.) we silently drop
     // the back link — the user can still use "Volver al selector".
     let fromConjunto: Doc<'conjuntos'> | null = null
     if (deps.from) {
       try {
-        const result = await client.query(api.conjuntos.queries.getById, {
-          conjuntoId: deps.from as Id<'conjuntos'>,
+        const result = await client.query(api.conjuntos.queries.getBySlug, {
+          slug: deps.from,
         })
-        fromConjunto = result.conjunto
+        fromConjunto = result?.conjunto ?? null
       } catch {
         fromConjunto = null
       }

@@ -213,7 +213,7 @@ function ConjuntoScopedSidebar({
   isOrgOwner: boolean
   isSuperAdmin: boolean
 }) {
-  const base = `/admin/c/${conjunto._id}`
+  const base = `/admin/c/${conjunto.slug}`
 
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(path + '/')
@@ -392,7 +392,7 @@ function ConjuntoScopedSidebar({
                       render={
                         <Link
                           to="/admin/equipo"
-                          search={{ from: conjunto._id }}
+                          search={{ from: conjunto.slug }}
                         >
                           <Shield />
                           <span>Equipo de la org</span>
