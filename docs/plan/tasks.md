@@ -75,7 +75,7 @@
 | 2.14 | Implementar CRUD de invitations (`create`, `revoke`, `getByEmail`, `listByOrganization`) con validaciones de rol                                                                 |
 | 2.15 | Implementar helpers de autorización en `convex/lib/auth.ts` (`getCurrentUser`, `requireUser`, `requireOrgRole`, `canInvite`)                                                     |
 | 2.16 | Implementar `handleLogin` en `convex/auth/mutations.ts` (coordinador del flujo: lookup + sync + invitation acceptance + discriminated union de resultado)                        |
-| 2.17 | Implementar seed `bootstrap` + script CLI (`tools/scripts/convex/super_admin_bootstrap.ts`) con flags `--email --name --workos-id`                                               |
+| 2.17 | Seed `seed:initial-setup` + script CLI (`tools/scripts/convex/seed_initial_setup.ts`) con flags `--email --name --workos-id --prod`                                              |
 | 2.18 | Crear 6 páginas de error (`/no-registrado`, `/invitacion-expirada`, `/invitacion-revocada`, `/cuenta-desactivada`, `/no-autorizado`, `/error-auth`) + componente `<ErrorPage />` |
 | 2.19 | Crear landing pública minimal + ruta `/login` + home con redirect por rol + helper `getDashboardPathForRole`                                                                     |
 
@@ -85,15 +85,15 @@
 
 > El Super Admin (equipo Synnova) gestiona las organizaciones y asigna administradores de conjunto.
 
-| ID  | Tarea                                                                                                         |
-| --- | ------------------------------------------------------------------------------------------------------------- |
-| 3.1 | Crear layout de Super Admin (sidebar: organizaciones, usuarios)                                               |
-| 3.2 | Crear vista de listado de organizaciones/tenants                                                              |
-| 3.3 | Crear flujo de onboarding de nuevo tenant (crea org + invita admin inicial usando `invitations.create` de F2) |
-| 3.4 | Implementar edición y desactivación de tenants                                                                |
-| 3.5 | Crear vista de listado de usuarios con filtro por organización y rol                                          |
-| 3.6 | Crear flujo de registro de admin de conjunto (usa `invitations.create` de F2 con `orgRole: ADMIN`)            |
-| 3.7 | Implementar toggle de módulos activos por tenant                                                              |
+| ID  | Tarea                                                                                                         | Estado |
+| --- | ------------------------------------------------------------------------------------------------------------- | ------ |
+| 3.1 | Crear layout de Super Admin (sidebar: organizaciones, usuarios, conjuntos)                                    | done   |
+| 3.2 | Crear vista de listado de organizaciones/tenants                                                              | done   |
+| 3.3 | Crear flujo de onboarding de nuevo tenant (crea org + invita admin inicial usando `invitations.create` de F2) | done   |
+| 3.4 | Implementar edición y desactivación de tenants                                                                | done   |
+| 3.5 | Crear vista de listado de usuarios con filtro por organización y rol + desactivar/reactivar                   | done   |
+| 3.6 | Crear flujo de registro de admin de conjunto (usa `invitations.create` de F2 con `orgRole: ADMIN`)            | done   |
+| 3.7 | Implementar toggle de módulos activos por tenant                                                              | done   |
 
 ---
 
@@ -107,35 +107,35 @@
 - **4.20** → reducida a stub de 4 counters. El dashboard rico con gráficos y actividad se hace post-parking.
 - **4.27 (nueva)** → Pantalla de equipo de la organización para que owners gestionen ADMINs no-owner y sus accesos por conjunto.
 
-| ID       | Tarea                                                                                                                         |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 4.1      | Crear layout de Admin de conjunto (sidebar: conjunto, unidades, residentes, vehículos, parqueaderos, configuración, usuarios) |
-| 4.2      | Crear tabla `conjuntos` en Convex                                                                                             |
-| 4.3      | Crear CRUD de conjuntos                                                                                                       |
-| 4.4      | Implementar selector de conjunto (ConjuntoSwitcher en header)                                                                 |
-| 4.5      | Crear tabla `unidades` en Convex (torre + número únicos por conjunto)                                                         |
-| 4.6      | Crear CRUD de unidades/apartamentos con vista por torre                                                                       |
-| 4.7      | Crear tabla `residentes` en Convex (sin userId — los residentes no son users en el MVP)                                       |
-| 4.8      | Crear CRUD de residentes con asociación a unidad                                                                              |
-| 4.9      | Crear tabla `vehiculos` en Convex (placa única por conjunto, asociación a unidad)                                             |
-| 4.10     | Crear CRUD de vehículos registrados con asociación a unidad                                                                   |
-| 4.11     | Crear tabla `parqueaderos` en Convex (sin campo `estado` — ocupado se deriva en F5)                                           |
-| 4.12     | Crear wizard bulk generate de parqueaderos (cantidades por tipo)                                                              |
-| 4.13     | ~~Crear tabla `regla_config`~~ → Reemplazada por `conjuntoConfig` tipada (row único por conjunto)                             |
-| 4.14     | Crear pantalla tipada de configuración del conjunto (`conjuntoConfig`)                                                        |
-| 4.15     | Implementar gestión de estado de mora (toggle por unidad)                                                                     |
-| ~~4.16~~ | ~~Crear tabla `permisos_usuario`~~ → **Diferida a F7**                                                                        |
-| ~~4.17~~ | ~~Implementar gestión de permisos granulares~~ → **Diferida a F7**                                                            |
-| 4.18     | Crear gestión de usuarios del conjunto (invita VIGILANTE/ASISTENTE vía invitations expandidas)                                |
-| 4.19     | Crear script de seed `seedConjuntoDemo` (2 torres × 20 aptos, 30 residentes, 25 vehículos, 62 parqueaderos)                   |
-| 4.20     | Crear dashboard stub con 4 counters simples (unidades, residentes, vehículos, parqueaderos)                                   |
-| 4.21     | Crear tabla `conjuntoMemberships` con auditoría (assignedBy, assignedAt, revokedAt, createdByOwner)                           |
-| 4.22     | Definir enum `conjuntoRoles` (ADMIN, ASISTENTE, VIGILANTE, RESIDENTE) + agregar `isOrgOwner` a users                          |
-| 4.23     | Implementar mutations de `conjuntoMemberships` (`create`, `updateRole`, `setActive`, `remove`)                                |
-| 4.24     | Expandir mutations de invitations con `conjuntoId` + `conjuntoRole` + propagación de `isOrgOwnerOnAccept`                     |
-| 4.25     | Implementar selector de conjunto post-login `/seleccionar-conjunto`                                                           |
-| 4.26     | Refactorizar loaders: URL segmentada `/admin/c/$conjuntoId/*`, layout con `requireConjuntoAccess`                             |
-| 4.27     | Pantalla `/admin/equipo` para owners: lista de ADMINs, invitar nuevos, matriz de accesos conjunto × admin                     |
+| ID       | Tarea                                                                                                                         | Estado   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------- | -------- |
+| 4.1      | Crear layout de Admin de conjunto (sidebar: conjunto, unidades, residentes, vehículos, parqueaderos, configuración, usuarios) | done     |
+| 4.2      | Crear tabla `conjuntos` en Convex                                                                                             | done     |
+| 4.3      | Crear CRUD de conjuntos + `CreateConjuntoDialog` con slug auto-derivado                                                       | done     |
+| 4.4      | Implementar selector de conjunto (ConjuntoSwitcher en header)                                                                 | done     |
+| 4.5      | Crear tabla `unidades` en Convex (torre + número únicos por conjunto)                                                         | done     |
+| 4.6      | Crear CRUD de unidades/apartamentos con vista por torre                                                                       | done     |
+| 4.7      | Crear tabla `residentes` en Convex (sin userId — los residentes no son users en el MVP)                                       | done     |
+| 4.8      | Crear CRUD de residentes con asociación a unidad                                                                              | done     |
+| 4.9      | Crear tabla `vehiculos` en Convex (placa única por conjunto, asociación a unidad)                                             | done     |
+| 4.10     | Crear CRUD de vehículos registrados con asociación a unidad                                                                   | done     |
+| 4.11     | Crear tabla `parqueaderos` en Convex (sin campo `estado` — ocupado se deriva en F5)                                           | done     |
+| 4.12     | Crear wizard bulk generate de parqueaderos (cantidades por tipo)                                                              | done     |
+| 4.13     | ~~Crear tabla `regla_config`~~ → Reemplazada por `conjuntoConfig` tipada (row único por conjunto)                             | done     |
+| 4.14     | Crear pantalla tipada de configuración del conjunto (`conjuntoConfig`)                                                        | done     |
+| 4.15     | Implementar gestión de estado de mora (toggle por unidad)                                                                     | done     |
+| ~~4.16~~ | ~~Crear tabla `permisos_usuario`~~ → **Diferida a F7**                                                                        | deferred |
+| ~~4.17~~ | ~~Implementar gestión de permisos granulares~~ → **Diferida a F7**                                                            | deferred |
+| 4.18     | Crear gestión de usuarios del conjunto (invita VIGILANTE/ASISTENTE vía invitations expandidas)                                | done     |
+| 4.19     | Seed unificado: `seed:initial-setup` + `seed:conjunto` interactivo, datos costeños (Barranquilla)                             | done     |
+| 4.20     | Crear dashboard stub con 4 counters simples (unidades, residentes, vehículos, parqueaderos)                                   | done     |
+| 4.21     | Crear tabla `conjuntoMemberships` con auditoría (assignedBy, assignedAt, revokedAt, createdByOwner)                           | done     |
+| 4.22     | Definir enum `conjuntoRoles` (ADMIN, ASISTENTE, VIGILANTE, RESIDENTE) + agregar `isOrgOwner` a users                          | done     |
+| 4.23     | Mutations de `conjuntoMemberships` (create con reactivación de inactivas, updateRole, setActive)                              | done     |
+| 4.24     | Expandir invitations con `conjuntoId` + `conjuntoRole` + `isOrgOwnerOnAccept` + `conjuntoIdsOnAccept`                         | done     |
+| 4.25     | Selector post-login `/seleccionar-conjunto` + CTA "Crear mi primer conjunto" para owners                                      | done     |
+| 4.26     | URL segmentada `/admin/c/$conjuntoSlug/*` + `requireConjuntoAccess` + `getBySlug` (global para super admin)                   | done     |
+| 4.27     | Pantalla `/admin/equipo` con queries scoped por org (super admin cross-org) + `ManageAccessDialog`                            | done     |
 
 ---
 

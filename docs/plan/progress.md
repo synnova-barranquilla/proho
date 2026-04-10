@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
-> **Última actualización:** 8 de abril de 2026
+> **Última actualización:** 10 de abril de 2026
 > **Total de tareas:** 187
 > **MVP (M1+M2+M3):** 129 tareas
-> **Completadas:** 41 (21.9%)
+> **Completadas:** 66 (51.2%)
 
 ---
 
@@ -92,39 +92,77 @@
 | 3.6 | Registro de admin de conjunto (usa invitations.create de F2) | done   |
 | 3.7 | Toggle de módulos por tenant                                 | done   |
 
-### Fase 4 — Admin: Conjunto Admin (25/25)
+### Fase 4 — Admin: Conjunto Admin (25/25) ✅
 
 > **Alcance ajustado:** 4.16 y 4.17 (permisos granulares) diferidas a F7. 4.20 reducida a stub de counters. 4.13 reemplazada por `conjuntoConfig` tipada. Tarea nueva 4.27 (pantalla de equipo de org para Caso B — empresas administradoras).
 
-| ID   | Tarea                                                           | Estado   |
-| ---- | --------------------------------------------------------------- | -------- |
-| 4.1  | Layout de Admin de conjunto (sidebar + header + switcher)       | done     |
-| 4.2  | Crear tabla conjuntos en Convex                                 | done     |
-| 4.3  | CRUD de conjuntos                                               | done     |
-| 4.4  | ConjuntoSwitcher en header                                      | done     |
-| 4.5  | Crear tabla unidades en Convex                                  | done     |
-| 4.6  | CRUD de unidades con vista por torre                            | done     |
-| 4.7  | Crear tabla residentes en Convex                                | done     |
-| 4.8  | CRUD de residentes                                              | done     |
-| 4.9  | Crear tabla vehiculos en Convex                                 | done     |
-| 4.10 | CRUD de vehículos                                               | done     |
-| 4.11 | Crear tabla parqueaderos en Convex (sin estado OCUPADO)         | done     |
-| 4.12 | Wizard bulk generate de parqueaderos                            | done     |
-| 4.13 | `conjuntoConfig` tipada (reemplaza regla_config EAV)            | done     |
-| 4.14 | Pantalla tipada de configuración del conjunto                   | done     |
-| 4.15 | Gestión de mora (toggle por unidad)                             | done     |
-| 4.16 | ~~Crear tabla permisos_usuario~~                                | deferred |
-| 4.17 | ~~Gestión de permisos granulares~~                              | deferred |
-| 4.18 | Invitar usuarios del conjunto (VIGILANTE/ASISTENTE)             | done     |
-| 4.19 | Script de seed `seedConjuntoDemo`                               | done     |
-| 4.20 | Dashboard stub con 4 counters                                   | done     |
-| 4.21 | Crear tabla conjuntoMemberships con auditoría                   | done     |
-| 4.22 | Definir `conjuntoRoles` + agregar `isOrgOwner` a users          | done     |
-| 4.23 | Mutations de conjuntoMemberships (CRUD)                         | done     |
-| 4.24 | Expandir invitations con conjuntoId/conjuntoRole + isOrgOwner   | done     |
-| 4.25 | Selector post-login `/seleccionar-conjunto`                     | done     |
-| 4.26 | URL segmentada `/admin/c/$conjuntoId/*` + requireConjuntoAccess | done     |
-| 4.27 | **[NUEVA]** Pantalla `/admin/equipo` (Caso B empresas admin.)   | done     |
+| ID   | Tarea                                                             | Estado   |
+| ---- | ----------------------------------------------------------------- | -------- |
+| 4.1  | Layout de Admin de conjunto (sidebar + header + switcher)         | done     |
+| 4.2  | Crear tabla conjuntos en Convex                                   | done     |
+| 4.3  | CRUD de conjuntos                                                 | done     |
+| 4.4  | ConjuntoSwitcher en header                                        | done     |
+| 4.5  | Crear tabla unidades en Convex                                    | done     |
+| 4.6  | CRUD de unidades con vista por torre                              | done     |
+| 4.7  | Crear tabla residentes en Convex                                  | done     |
+| 4.8  | CRUD de residentes                                                | done     |
+| 4.9  | Crear tabla vehiculos en Convex                                   | done     |
+| 4.10 | CRUD de vehículos                                                 | done     |
+| 4.11 | Crear tabla parqueaderos en Convex (sin estado OCUPADO)           | done     |
+| 4.12 | Wizard bulk generate de parqueaderos                              | done     |
+| 4.13 | `conjuntoConfig` tipada (reemplaza regla_config EAV)              | done     |
+| 4.14 | Pantalla tipada de configuración del conjunto                     | done     |
+| 4.15 | Gestión de mora (toggle por unidad)                               | done     |
+| 4.16 | ~~Crear tabla permisos_usuario~~                                  | deferred |
+| 4.17 | ~~Gestión de permisos granulares~~                                | deferred |
+| 4.18 | Invitar usuarios del conjunto (VIGILANTE/ASISTENTE)               | done     |
+| 4.19 | Script de seed `seedConjuntoDemo`                                 | done     |
+| 4.20 | Dashboard stub con 4 counters                                     | done     |
+| 4.21 | Crear tabla conjuntoMemberships con auditoría                     | done     |
+| 4.22 | Definir `conjuntoRoles` + agregar `isOrgOwner` a users            | done     |
+| 4.23 | Mutations de conjuntoMemberships (CRUD)                           | done     |
+| 4.24 | Expandir invitations con conjuntoId/conjuntoRole + isOrgOwner     | done     |
+| 4.25 | Selector post-login `/seleccionar-conjunto`                       | done     |
+| 4.26 | URL segmentada `/admin/c/$conjuntoSlug/*` + requireConjuntoAccess | done     |
+| 4.27 | **[NUEVA]** Pantalla `/admin/equipo` (Caso B empresas admin.)     | done     |
+
+### F4 Polish + Bug Fixes (completado 10 de abril de 2026)
+
+Trabajo adicional realizado después de completar las 25 tareas core de F4:
+
+**Polish UI (4 rondas):**
+
+- `cursor-pointer` en botones + `disabled:cursor-not-allowed`
+- `NavigationProgressBar` con debounce 150ms + `defaultPendingMs` en router
+- Columna `#` (row index) en todas las tablas (admin + super admin)
+- `PhoneInput` / `DocumentInput` / `PlacaInput` — formateo en vivo con storage canónico
+- URLs con slugs de conjunto en vez de Convex IDs (`/admin/c/altos-del-prado`)
+- `DataTable` genérico con TanStack Table + multi-sort (shift+click)
+
+**Super Admin enhancements:**
+
+- Panel `/super-admin/conjuntos` cross-org con DataTable y botón "Abrir"
+- Super admin puede entrar a cualquier conjunto de cualquier org como admin
+- Sidebar link "Volver a super admin" desde contexto de conjunto
+- Tabla de usuarios con columna Acciones (desactivar/reactivar) + toggle "Mostrar inactivos"
+- `InviteAdminDialog` con toggle owner + multi-select conjuntos
+- `/admin/equipo` scoped por org para super admin (queries aceptan `organizationId`)
+- `ManageAccessDialog` scoped por org para super admin
+
+**Seed & CLI:**
+
+- Rename `bootstrap:super-admin` → `seed:initial-setup` (un solo comando: orgs + super admin + conjunto demo)
+- `pnpm seed:conjunto` CLI interactivo (lista orgs, elige, siembra)
+- Residentes demo: 30 apellidos costeños (Barranquilla)
+- Placas demo: `SYH###` / `MTB###`
+
+**Bug Fixes:**
+
+- Falso toast "acceso revocado" → grace period 1.5s + filtro `UNAUTHENTICATED` + check `fetchStatus`
+- IDs de conjunto en URLs → slug (parqueaderos, sidebar, equipo `from` param)
+- `handleLogin` reactiva usuarios desactivados con invitación pendiente válida
+- `conjuntoMemberships.create` reactiva memberships inactivas en vez de rechazar
+- `CreateConjuntoDialog` con slug auto-derivado del nombre
 
 ---
 
@@ -303,8 +341,8 @@
 | Milestone            | Fases             | Total   | Done   | Progreso |
 | -------------------- | ----------------- | ------- | ------ | -------- |
 | **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34     | 81%      |
-| **M2 — Admin Ready** | F3 + F4           | 33      | 7      | 21%      |
+| **M2 — Admin Ready** | F3 + F4           | 32      | 32     | 100%     |
 | **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 54      | 0      | 0%       |
-| **MVP TOTAL**        | F0–F8             | **129** | **41** | **32%**  |
+| **MVP TOTAL**        | F0–F8             | **128** | **66** | **52%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **187** | **41** | **22%**  |
+| **TOTAL**            | F0–F14            | **186** | **66** | **35%**  |
