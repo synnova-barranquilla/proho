@@ -30,6 +30,8 @@ interface ManageAccessDialogProps {
    */
   adminId: Id<'users'> | null
   onOpenChange: (open: boolean) => void
+  /** SUPER_ADMIN can scope to another org's admins. */
+  organizationId?: Id<'organizations'>
 }
 
 /**
@@ -50,13 +52,19 @@ interface ManageAccessDialogProps {
 export function ManageAccessDialog({
   adminId,
   onOpenChange,
+  organizationId,
 }: ManageAccessDialogProps) {
   const open = adminId !== null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        {open ? <ManageAccessDialogBody adminId={adminId} /> : null}
+        {open ? (
+          <ManageAccessDialogBody
+            adminId={adminId}
+            organizationId={organizationId}
+          />
+        ) : null}
       </DialogContent>
     </Dialog>
   )
@@ -67,9 +75,15 @@ export function ManageAccessDialog({
  * when the dialog is actually open. Otherwise we'd be subscribing to
  * both queries on every page mount.
  */
-function ManageAccessDialogBody({ adminId }: { adminId: Id<'users'> }) {
+function ManageAccessDialogBody({
+  adminId,
+  organizationId,
+}: {
+  adminId: Id<'users'>
+  organizationId?: Id<'organizations'>
+}) {
   const { data: admins } = useSuspenseQuery(
-    convexQuery(api.users.queries.listAdminsByOrg, {}),
+    convexQuery(api.users.queries.listAdminsByOrg, { organizationId }),
   )
   const { data: conjuntos } = useSuspenseQuery(
     convexQuery(api.conjuntos.queries.listForCurrentUser, {}),

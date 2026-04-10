@@ -175,6 +175,7 @@ function EquipoPage() {
       <InviteOrgAdminDialog open={inviteOpen} onOpenChange={setInviteOpen} />
       <ManageAccessDialog
         adminId={manageAccessForId}
+        organizationId={scopedOrgId}
         onOpenChange={(open) => {
           if (!open) setManageAccessForId(null)
         }}
