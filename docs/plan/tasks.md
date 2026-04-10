@@ -85,15 +85,19 @@
 
 > El Super Admin (equipo Synnova) gestiona las organizaciones y asigna administradores de conjunto.
 
-| ID  | Tarea                                                                                                         | Estado |
-| --- | ------------------------------------------------------------------------------------------------------------- | ------ |
-| 3.1 | Crear layout de Super Admin (sidebar: organizaciones, usuarios, conjuntos)                                    | done   |
-| 3.2 | Crear vista de listado de organizaciones/tenants                                                              | done   |
-| 3.3 | Crear flujo de onboarding de nuevo tenant (crea org + invita admin inicial usando `invitations.create` de F2) | done   |
-| 3.4 | Implementar edición y desactivación de tenants                                                                | done   |
-| 3.5 | Crear vista de listado de usuarios con filtro por organización y rol + desactivar/reactivar                   | done   |
-| 3.6 | Crear flujo de registro de admin de conjunto (usa `invitations.create` de F2 con `orgRole: ADMIN`)            | done   |
-| 3.7 | Implementar toggle de módulos activos por tenant                                                              | done   |
+| ID   | Tarea                                                                                                                                                                                         | Estado |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 3.1  | Crear layout de Super Admin (sidebar: organizaciones, usuarios, conjuntos)                                                                                                                    | done   |
+| 3.2  | Crear vista de listado de organizaciones/tenants (DataTable multi-sort)                                                                                                                       | done   |
+| 3.3  | Crear flujo de onboarding de nuevo tenant (crea org + invita admin inicial usando `invitations.create` de F2)                                                                                 | done   |
+| 3.4  | Implementar edición y desactivación de tenants                                                                                                                                                | done   |
+| 3.5  | Crear vista de listado de usuarios con filtro por organización y rol (DataTable multi-sort)                                                                                                   | done   |
+| 3.6  | Crear flujo de registro de admin de conjunto (usa `invitations.create` de F2 con `orgRole: ADMIN`)                                                                                            | done   |
+| 3.7  | Implementar toggle de módulos activos por tenant                                                                                                                                              | done   |
+| 3.8  | Panel `/super-admin/conjuntos` cross-org con DataTable, botón "Abrir" para entrar como admin                                                                                                  | done   |
+| 3.9  | Desactivar/reactivar usuarios desde super-admin (columna Acciones + toggle "Mostrar inactivos")                                                                                               | done   |
+| 3.10 | Super admin cross-org: `getBySlug` global, `listAdminsByOrg`/`listPendingOrgAdminInvitations` con `organizationId` param, sidebar "Volver a super admin", `ManageAccessDialog` scoped por org | done   |
+| 3.11 | `InviteAdminDialog` con toggle owner + multi-select conjuntos (desde super-admin y detalle de org)                                                                                            | done   |
 
 ---
 
@@ -136,6 +140,13 @@
 | 4.25     | Selector post-login `/seleccionar-conjunto` + CTA "Crear mi primer conjunto" para owners                                      | done     |
 | 4.26     | URL segmentada `/admin/c/$conjuntoSlug/*` + `requireConjuntoAccess` + `getBySlug` (global para super admin)                   | done     |
 | 4.27     | Pantalla `/admin/equipo` con queries scoped por org (super admin cross-org) + `ManageAccessDialog`                            | done     |
+| 4.28     | Polish R1: `cursor-pointer` en botones, `NavigationProgressBar` con debounce 150ms, columna `#` en todas las tablas           | done     |
+| 4.29     | Polish R2: `PhoneInput`, `DocumentInput`, `PlacaInput` — formateo en vivo con storage canónico (`src/lib/formatters.ts`)      | done     |
+| 4.30     | Polish R3: `DataTable` genérico con TanStack Table multi-sort (`src/components/ui/data-table.tsx`), migrado a 3+ tablas       | done     |
+| 4.31     | `CreateConjuntoDialog` con slug auto-derivado + CTA "Crear mi primer conjunto" en `/seleccionar-conjunto` para owners         | done     |
+| 4.32     | Fix: falso toast "acceso revocado" → grace period 1.5s + filtro `UNAUTHENTICATED` + check `fetchStatus`                       | done     |
+| 4.33     | Fix: `handleLogin` reactiva usuarios desactivados cuando hay invitación pendiente válida                                      | done     |
+| 4.34     | Fix: `conjuntoMemberships.create` reactiva memberships inactivas en vez de rechazar con `MEMBERSHIP_ALREADY_EXISTS`           | done     |
 
 ---
 
@@ -346,8 +357,8 @@
 | 0         | Configuración del Proyecto           | 13      | M1        |
 | 1         | Arquitectura Multi-Tenant            | 10      | M1        |
 | 2         | Autenticación y Usuarios             | 19      | M1        |
-| 3         | Admin: Super Admin                   | 7       | M2        |
-| 4         | Admin: Conjunto Admin                | 26      | M2        |
+| 3         | Admin: Super Admin                   | 11      | M2        |
+| 4         | Admin: Conjunto Admin                | 34      | M2        |
 | 5         | Parqueaderos: Datos Offline-First    | 23      | M3        |
 | 6         | Parqueaderos: Reglas y Pantallas     | 19      | M3        |
 | 7         | Parqueaderos: Dashboards y Auditoría | 6       | M3        |
@@ -358,6 +369,6 @@
 | 12        | Notificaciones                       | 12      | M4        |
 | 13        | Dashboard Ejecutivo                  | 5       | M4        |
 | 14        | Testing Final y Deploy               | 10      | M3/M4     |
-| **Total** |                                      | **187** |           |
+| **Total** |                                      | **199** |           |
 
-> **MVP = M1 + M2 + M3 = Fases 0-8 + F14 (parcial) = 129 tareas**
+> **MVP = M1 + M2 + M3 = Fases 0-8 + F14 (parcial) = 141 tareas**

@@ -288,6 +288,26 @@ export const milestones: Milestone[] = [
             name: 'Toggle de módulos por tenant',
             status: 'done',
           },
+          {
+            id: '3.8',
+            name: 'Panel /super-admin/conjuntos cross-org',
+            status: 'done',
+          },
+          {
+            id: '3.9',
+            name: 'Desactivar/reactivar usuarios + mostrar inactivos',
+            status: 'done',
+          },
+          {
+            id: '3.10',
+            name: 'Super admin cross-org: queries scoped, sidebar, ManageAccess',
+            status: 'done',
+          },
+          {
+            id: '3.11',
+            name: 'InviteAdminDialog con toggle owner + conjuntos',
+            status: 'done',
+          },
         ],
       },
       {
@@ -395,6 +415,41 @@ export const milestones: Milestone[] = [
           {
             id: '4.27',
             name: 'Pantalla /admin/equipo (Caso B)',
+            status: 'done',
+          },
+          {
+            id: '4.28',
+            name: 'Polish R1: cursor-pointer, NavProgressBar, row indices',
+            status: 'done',
+          },
+          {
+            id: '4.29',
+            name: 'Polish R2: PhoneInput, DocumentInput, PlacaInput',
+            status: 'done',
+          },
+          {
+            id: '4.30',
+            name: 'Polish R3: DataTable con TanStack Table multi-sort',
+            status: 'done',
+          },
+          {
+            id: '4.31',
+            name: 'CreateConjuntoDialog + CTA para owners',
+            status: 'done',
+          },
+          {
+            id: '4.32',
+            name: 'Fix: falso toast revocación (grace period)',
+            status: 'done',
+          },
+          {
+            id: '4.33',
+            name: 'Fix: handleLogin reactiva con invitación pendiente',
+            status: 'done',
+          },
+          {
+            id: '4.34',
+            name: 'Fix: memberships.create reactiva inactivas',
             status: 'done',
           },
         ],

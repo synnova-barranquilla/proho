@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
 > **Última actualización:** 10 de abril de 2026
-> **Total de tareas:** 187
-> **MVP (M1+M2+M3):** 129 tareas
-> **Completadas:** 66 (51.2%)
+> **Total de tareas:** 199
+> **MVP (M1+M2+M3):** 141 tareas
+> **Completadas:** 78 (55.3%)
 
 ---
 
@@ -80,19 +80,23 @@
 
 ## M2 — Admin Ready
 
-### Fase 3 — Admin: Super Admin (7/7) ✅
+### Fase 3 — Admin: Super Admin (11/11) ✅
 
-| ID  | Tarea                                                        | Estado |
-| --- | ------------------------------------------------------------ | ------ |
-| 3.1 | Layout de Super Admin                                        | done   |
-| 3.2 | Listado de organizaciones/tenants                            | done   |
-| 3.3 | Onboarding de nuevo tenant (crea org + invita admin via F2)  | done   |
-| 3.4 | Edición y desactivación de tenants                           | done   |
-| 3.5 | Listado de usuarios (filtro por org y rol)                   | done   |
-| 3.6 | Registro de admin de conjunto (usa invitations.create de F2) | done   |
-| 3.7 | Toggle de módulos por tenant                                 | done   |
+| ID   | Tarea                                                                  | Estado |
+| ---- | ---------------------------------------------------------------------- | ------ |
+| 3.1  | Layout de Super Admin (sidebar: orgs, conjuntos, usuarios)             | done   |
+| 3.2  | Listado de organizaciones/tenants (DataTable multi-sort)               | done   |
+| 3.3  | Onboarding de nuevo tenant (crea org + invita admin via F2)            | done   |
+| 3.4  | Edición y desactivación de tenants                                     | done   |
+| 3.5  | Listado de usuarios (DataTable multi-sort, filtro por org y rol)       | done   |
+| 3.6  | Registro de admin de conjunto (usa invitations.create de F2)           | done   |
+| 3.7  | Toggle de módulos por tenant                                           | done   |
+| 3.8  | Panel `/super-admin/conjuntos` cross-org con DataTable + botón "Abrir" | done   |
+| 3.9  | Desactivar/reactivar usuarios + toggle "Mostrar inactivos"             | done   |
+| 3.10 | Super admin cross-org: queries scoped, sidebar back link, ManageAccess | done   |
+| 3.11 | InviteAdminDialog con toggle owner + multi-select conjuntos            | done   |
 
-### Fase 4 — Admin: Conjunto Admin (25/25) ✅
+### Fase 4 — Admin: Conjunto Admin (32/32) ✅
 
 > **Alcance ajustado:** 4.16 y 4.17 (permisos granulares) diferidas a F7. 4.20 reducida a stub de counters. 4.13 reemplazada por `conjuntoConfig` tipada. Tarea nueva 4.27 (pantalla de equipo de org para Caso B — empresas administradoras).
 
@@ -124,45 +128,14 @@
 | 4.24 | Expandir invitations con conjuntoId/conjuntoRole + isOrgOwner     | done     |
 | 4.25 | Selector post-login `/seleccionar-conjunto`                       | done     |
 | 4.26 | URL segmentada `/admin/c/$conjuntoSlug/*` + requireConjuntoAccess | done     |
-| 4.27 | **[NUEVA]** Pantalla `/admin/equipo` (Caso B empresas admin.)     | done     |
-
-### F4 Polish + Bug Fixes (completado 10 de abril de 2026)
-
-Trabajo adicional realizado después de completar las 25 tareas core de F4:
-
-**Polish UI (4 rondas):**
-
-- `cursor-pointer` en botones + `disabled:cursor-not-allowed`
-- `NavigationProgressBar` con debounce 150ms + `defaultPendingMs` en router
-- Columna `#` (row index) en todas las tablas (admin + super admin)
-- `PhoneInput` / `DocumentInput` / `PlacaInput` — formateo en vivo con storage canónico
-- URLs con slugs de conjunto en vez de Convex IDs (`/admin/c/altos-del-prado`)
-- `DataTable` genérico con TanStack Table + multi-sort (shift+click)
-
-**Super Admin enhancements:**
-
-- Panel `/super-admin/conjuntos` cross-org con DataTable y botón "Abrir"
-- Super admin puede entrar a cualquier conjunto de cualquier org como admin
-- Sidebar link "Volver a super admin" desde contexto de conjunto
-- Tabla de usuarios con columna Acciones (desactivar/reactivar) + toggle "Mostrar inactivos"
-- `InviteAdminDialog` con toggle owner + multi-select conjuntos
-- `/admin/equipo` scoped por org para super admin (queries aceptan `organizationId`)
-- `ManageAccessDialog` scoped por org para super admin
-
-**Seed & CLI:**
-
-- Rename `bootstrap:super-admin` → `seed:initial-setup` (un solo comando: orgs + super admin + conjunto demo)
-- `pnpm seed:conjunto` CLI interactivo (lista orgs, elige, siembra)
-- Residentes demo: 30 apellidos costeños (Barranquilla)
-- Placas demo: `SYH###` / `MTB###`
-
-**Bug Fixes:**
-
-- Falso toast "acceso revocado" → grace period 1.5s + filtro `UNAUTHENTICATED` + check `fetchStatus`
-- IDs de conjunto en URLs → slug (parqueaderos, sidebar, equipo `from` param)
-- `handleLogin` reactiva usuarios desactivados con invitación pendiente válida
-- `conjuntoMemberships.create` reactiva memberships inactivas en vez de rechazar
-- `CreateConjuntoDialog` con slug auto-derivado del nombre
+| 4.27 | Pantalla `/admin/equipo` (Caso B empresas admin.)                 | done     |
+| 4.28 | Polish R1: cursor-pointer, NavigationProgressBar, columna `#`     | done     |
+| 4.29 | Polish R2: PhoneInput, DocumentInput, PlacaInput formatters       | done     |
+| 4.30 | Polish R3: DataTable genérico con TanStack Table multi-sort       | done     |
+| 4.31 | CreateConjuntoDialog + CTA "Crear mi primer conjunto" para owners | done     |
+| 4.32 | Fix: falso toast "acceso revocado" (grace period + filtros)       | done     |
+| 4.33 | Fix: handleLogin reactiva usuarios con invitación pendiente       | done     |
+| 4.34 | Fix: memberships.create reactiva inactivas en vez de rechazar     | done     |
 
 ---
 
@@ -341,8 +314,8 @@ Trabajo adicional realizado después de completar las 25 tareas core de F4:
 | Milestone            | Fases             | Total   | Done   | Progreso |
 | -------------------- | ----------------- | ------- | ------ | -------- |
 | **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34     | 81%      |
-| **M2 — Admin Ready** | F3 + F4           | 32      | 32     | 100%     |
+| **M2 — Admin Ready** | F3 + F4           | 43      | 43     | 100%     |
 | **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 54      | 0      | 0%       |
-| **MVP TOTAL**        | F0–F8             | **128** | **66** | **52%**  |
+| **MVP TOTAL**        | F0–F8             | **139** | **77** | **55%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **186** | **66** | **35%**  |
+| **TOTAL**            | F0–F14            | **197** | **77** | **39%**  |
