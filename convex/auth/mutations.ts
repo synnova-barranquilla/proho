@@ -52,6 +52,78 @@ export const handleLogin = mutation({
       }
 
       if (!existing.active) {
+        // Before declaring the account deactivated, check if there's a
+        // pending invitation that should reactivate this user. This
+        // handles the flow: super-admin deactivates a user → later
+        // re-invites them → user logs in and should be reactivated
+        // with the new invitation's settings.
+        const reactivationInvitations = await ctx.db
+          .query('invitations')
+          .withIndex('by_email_and_status', (q) =>
+            q.eq('email', email).eq('status', 'PENDING'),
+          )
+          .collect()
+        reactivationInvitations.sort(
+          (a, b) => b._creationTime - a._creationTime,
+        )
+        const reactivationInv = reactivationInvitations.at(0)
+
+        if (reactivationInv && reactivationInv.expiresAt >= Date.now()) {
+          // Reactivate the existing user with the invitation's settings.
+          await ctx.db.patch(existing._id, {
+            active: true,
+            organizationId: reactivationInv.organizationId,
+            orgRole: reactivationInv.orgRole,
+            isOrgOwner: reactivationInv.isOrgOwnerOnAccept === true,
+            ...(firstName ? { firstName } : {}),
+            ...(lastName ? { lastName } : {}),
+          })
+
+          // Create conjunto memberships from the invitation (same logic
+          // as new-user acceptance below).
+          if (reactivationInv.conjuntoId && reactivationInv.conjuntoRole) {
+            await ctx.db.insert('conjuntoMemberships', {
+              userId: existing._id,
+              conjuntoId: reactivationInv.conjuntoId,
+              role: reactivationInv.conjuntoRole,
+              active: true,
+              assignedBy: reactivationInv.invitedBy,
+              assignedAt: Date.now(),
+              createdByOwner: false,
+            })
+          }
+          if (
+            reactivationInv.isOrgOwnerOnAccept !== true &&
+            reactivationInv.conjuntoIdsOnAccept &&
+            reactivationInv.conjuntoIdsOnAccept.length > 0
+          ) {
+            for (const conjuntoId of reactivationInv.conjuntoIdsOnAccept) {
+              await ctx.db.insert('conjuntoMemberships', {
+                userId: existing._id,
+                conjuntoId,
+                role: 'ADMIN',
+                active: true,
+                assignedBy: reactivationInv.invitedBy,
+                assignedAt: Date.now(),
+                createdByOwner: true,
+              })
+            }
+          }
+
+          await ctx.db.patch(reactivationInv._id, {
+            status: 'ACCEPTED',
+            acceptedAt: Date.now(),
+            acceptedUserId: existing._id,
+          })
+
+          return {
+            status: 'accepted' as const,
+            orgRole: reactivationInv.orgRole,
+            conjuntoId: reactivationInv.conjuntoId,
+            conjuntoRole: reactivationInv.conjuntoRole,
+          }
+        }
+
         return { status: 'cuenta_desactivada' as const }
       }
 

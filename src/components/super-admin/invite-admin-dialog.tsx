@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -7,6 +7,7 @@ import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
+import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
@@ -26,6 +27,7 @@ import {
   FieldLabel,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
+import { Label } from '#/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -34,6 +36,7 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
+import { Switch } from '#/components/ui/switch'
 import { isInternalOrgSlug } from '#/lib/organizations'
 import {
   inviteAdminSchema,
@@ -60,6 +63,11 @@ export function InviteAdminDialog({
   const mutationFn = useConvexMutation(api.invitations.mutations.create)
   const mutation = useMutation({ mutationFn })
 
+  const [makeOwner, setMakeOwner] = useState(false)
+  const [selectedConjuntoIds, setSelectedConjuntoIds] = useState<
+    Array<Id<'conjuntos'>>
+  >([])
+
   // Only fetch the orgs list if we need to show the picker.
   const orgsQuery = useQuery({
     ...convexQuery(api.organizations.queries.listAll, {
@@ -71,6 +79,12 @@ export function InviteAdminDialog({
   const invitableOrgs = (orgsQuery.data ?? []).filter(
     (o) => o.active && !isInternalOrgSlug(o.slug),
   )
+
+  // Conjuntos for the selected org (super admin sees all).
+  const conjuntosQuery = useQuery({
+    ...convexQuery(api.conjuntos.queries.listAllForSuperAdmin, {}),
+    enabled: open,
+  })
 
   const defaultValues: InviteAdminInput = {
     organizationId: initialOrgId ?? '',
@@ -93,9 +107,16 @@ export function InviteAdminDialog({
           firstName: value.firstName,
           lastName: value.lastName,
           orgRole: 'ADMIN',
+          isOrgOwnerOnAccept: makeOwner || undefined,
+          conjuntoIdsOnAccept:
+            !makeOwner && selectedConjuntoIds.length > 0
+              ? selectedConjuntoIds
+              : undefined,
         })
         toast.success('Invitación creada', {
-          description: `Se invitó a ${value.email} como ADMIN.`,
+          description: makeOwner
+            ? `Se invitó a ${value.email} como ADMIN owner.`
+            : `Se invitó a ${value.email} como ADMIN.`,
         })
         form.reset()
         onOpenChange(false)
@@ -119,6 +140,8 @@ export function InviteAdminDialog({
         firstName: '',
         lastName: undefined,
       })
+      setMakeOwner(false)
+      setSelectedConjuntoIds([])
     }
   }, [open, initialOrgId])
 
@@ -128,6 +151,13 @@ export function InviteAdminDialog({
       onOpenChange(next)
     },
     [form, onOpenChange],
+  )
+
+  // When initialOrgId is set the org is fixed; otherwise read from form state.
+  const currentOrgId =
+    initialOrgId ?? (form.state.values.organizationId || undefined)
+  const orgConjuntos = (conjuntosQuery.data ?? []).filter(
+    (c) => c.organizationId === currentOrgId && c.active,
   )
 
   const selectedOrg = initialOrgId
@@ -281,6 +311,55 @@ export function InviteAdminDialog({
                   )}
                 </form.Field>
               </div>
+
+              <div className="flex items-center gap-3 rounded-md border p-3">
+                <Switch
+                  id="makeOwner"
+                  checked={makeOwner}
+                  onCheckedChange={(checked) => {
+                    setMakeOwner(checked)
+                    if (checked) setSelectedConjuntoIds([])
+                  }}
+                />
+                <div className="flex flex-col gap-0.5">
+                  <Label htmlFor="makeOwner" className="text-sm font-medium">
+                    Es owner de la organización
+                  </Label>
+                  <span className="text-xs text-muted-foreground">
+                    Los owners ven todos los conjuntos automáticamente.
+                  </span>
+                </div>
+              </div>
+
+              {!makeOwner && orgConjuntos.length > 0 ? (
+                <Field>
+                  <FieldLabel>Conjuntos a asignar</FieldLabel>
+                  <FieldDescription>
+                    Selecciona los conjuntos a los que tendrá acceso.
+                  </FieldDescription>
+                  <div className="flex flex-wrap gap-1.5 rounded-md border p-2">
+                    {orgConjuntos.map((c) => {
+                      const selected = selectedConjuntoIds.includes(c._id)
+                      return (
+                        <Badge
+                          key={c._id}
+                          variant={selected ? 'default' : 'outline'}
+                          className="cursor-pointer select-none"
+                          onClick={() =>
+                            setSelectedConjuntoIds((prev) =>
+                              selected
+                                ? prev.filter((id) => id !== c._id)
+                                : [...prev, c._id],
+                            )
+                          }
+                        >
+                          {c.nombre}
+                        </Badge>
+                      )
+                    })}
+                  </div>
+                </Field>
+              ) : null}
             </FieldGroup>
           </DialogBody>
 
