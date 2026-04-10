@@ -44,18 +44,27 @@ export const getCurrentContext = query({
  * saltando el guard del loader).
  */
 export const listAdminsByOrg = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    // SUPER_ADMIN puede pasar una org distinta para ver el equipo de
+    // otra organización (ej. cuando navega desde /super-admin/conjuntos
+    // y luego va a /admin/equipo). ADMINs ignoran este campo y usan su
+    // propia org.
+    organizationId: v.optional(v.id('organizations')),
+  },
+  handler: async (ctx, args) => {
     const caller = await getCurrentUser(ctx)
     if (!caller) return []
-    // orgRole is narrowed to 'ADMIN' | 'SUPER_ADMIN' by the schema, so we
-    // only need to gate non-owners when they are ADMINs (SUPER_ADMIN passes).
     if (caller.orgRole === 'ADMIN' && caller.isOrgOwner !== true) return []
+
+    const orgId =
+      caller.orgRole === 'SUPER_ADMIN' && args.organizationId
+        ? args.organizationId
+        : caller.organizationId
 
     const admins = await ctx.db
       .query('users')
       .withIndex('by_organization_id_and_org_role', (q) =>
-        q.eq('organizationId', caller.organizationId).eq('orgRole', 'ADMIN'),
+        q.eq('organizationId', orgId).eq('orgRole', 'ADMIN'),
       )
       .collect()
 

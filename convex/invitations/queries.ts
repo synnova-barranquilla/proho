@@ -79,17 +79,23 @@ export const listAllPendingWithOrg = query({
  * junto a la tabla de administradores ya activos.
  */
 export const listPendingOrgAdminInvitations = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    organizationId: v.optional(v.id('organizations')),
+  },
+  handler: async (ctx, args) => {
     const caller = await getCurrentUser(ctx)
     if (!caller) return []
-    // Solo owners ven las invitaciones pendientes del equipo de la org.
     if (caller.orgRole === 'ADMIN' && caller.isOrgOwner !== true) return []
+
+    const orgId =
+      caller.orgRole === 'SUPER_ADMIN' && args.organizationId
+        ? args.organizationId
+        : caller.organizationId
 
     const pending = await ctx.db
       .query('invitations')
       .withIndex('by_organization_id_and_status', (q) =>
-        q.eq('organizationId', caller.organizationId).eq('status', 'PENDING'),
+        q.eq('organizationId', orgId).eq('status', 'PENDING'),
       )
       .collect()
 

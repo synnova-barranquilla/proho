@@ -56,32 +56,17 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
     const client = new ConvexHttpClient(CONVEX_URL)
     client.setAuth(auth.accessToken)
     const context = await client.query(api.users.queries.getCurrentContext, {})
-    if (!context || context.user.isOrgOwner !== true) {
+    // SUPER_ADMIN also passes through — they can view any org's team
+    // when navigating from /super-admin/conjuntos → equipo.
+    if (
+      !context ||
+      (context.user.orgRole !== 'SUPER_ADMIN' &&
+        context.user.isOrgOwner !== true)
+    ) {
       throw redirect({ to: '/seleccionar-conjunto' })
     }
 
-    await Promise.all([
-      prefetchAuthenticatedQuery(
-        queryClient,
-        api.users.queries.listAdminsByOrg,
-        {},
-      ),
-      prefetchAuthenticatedQuery(
-        queryClient,
-        api.conjuntos.queries.listForCurrentUser,
-        {},
-      ),
-      prefetchAuthenticatedQuery(
-        queryClient,
-        api.invitations.queries.listPendingOrgAdminInvitations,
-        {},
-      ),
-    ])
-
-    // If a `from` conjunto slug was passed, resolve it so the sidebar
-    // can render a back link with the conjunto's display name. If the
-    // fetch fails (invalid slug, revoked access, etc.) we silently drop
-    // the back link — the user can still use "Volver al selector".
+    // Resolve the fromConjunto FIRST so we know which org to scope to.
     let fromConjunto: Doc<'conjuntos'> | null = null
     if (deps.from) {
       try {
@@ -94,13 +79,39 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
       }
     }
 
-    return { fromConjunto }
+    // If a super admin navigated here from a conjunto in another org,
+    // scope the admins + invitations queries to that org. Without this
+    // the queries would use the super admin's own org (Synnova).
+    const scopedOrgId =
+      context.user.orgRole === 'SUPER_ADMIN' && fromConjunto
+        ? fromConjunto.organizationId
+        : undefined
+
+    await Promise.all([
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.users.queries.listAdminsByOrg,
+        { organizationId: scopedOrgId },
+      ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.conjuntos.queries.listForCurrentUser,
+        {},
+      ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.invitations.queries.listPendingOrgAdminInvitations,
+        { organizationId: scopedOrgId },
+      ),
+    ])
+
+    return { fromConjunto, scopedOrgId }
   },
   component: EquipoPage,
 })
 
 function EquipoPage() {
-  const { fromConjunto } = Route.useLoaderData()
+  const { fromConjunto, scopedOrgId } = Route.useLoaderData()
   const [inviteOpen, setInviteOpen] = useState(false)
   // Store only the id of the admin being edited. The dialog re-derives
   // the live admin row from the `listAdminsByOrg` query on every render
@@ -138,6 +149,7 @@ function EquipoPage() {
           <CardContent>
             <Suspense fallback={<AdminsTableSkeleton />}>
               <AdminsTable
+                organizationId={scopedOrgId}
                 onManageAccess={(adminId) => setManageAccessForId(adminId)}
               />
             </Suspense>
@@ -154,7 +166,7 @@ function EquipoPage() {
           </CardHeader>
           <CardContent>
             <Suspense fallback={<AdminsTableSkeleton />}>
-              <PendingInvitationsTable />
+              <PendingInvitationsTable organizationId={scopedOrgId} />
             </Suspense>
           </CardContent>
         </Card>
@@ -176,12 +188,16 @@ type AdminRow = Doc<'users'> & {
 }
 
 function AdminsTable({
+  organizationId,
   onManageAccess,
 }: {
+  organizationId?: Id<'organizations'>
   onManageAccess: (adminId: Id<'users'>) => void
 }) {
   const { data: admins } = useSuspenseQuery(
-    convexQuery(api.users.queries.listAdminsByOrg, {}),
+    convexQuery(api.users.queries.listAdminsByOrg, {
+      organizationId,
+    }),
   )
   const { data: conjuntos } = useSuspenseQuery(
     convexQuery(api.conjuntos.queries.listForCurrentUser, {}),
@@ -326,9 +342,15 @@ function AdminsTableSkeleton() {
   )
 }
 
-function PendingInvitationsTable() {
+function PendingInvitationsTable({
+  organizationId,
+}: {
+  organizationId?: Id<'organizations'>
+}) {
   const { data: invitations } = useSuspenseQuery(
-    convexQuery(api.invitations.queries.listPendingOrgAdminInvitations, {}),
+    convexQuery(api.invitations.queries.listPendingOrgAdminInvitations, {
+      organizationId,
+    }),
   )
 
   const revokeFn = useConvexMutation(api.invitations.mutations.revoke)
