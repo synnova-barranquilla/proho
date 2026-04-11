@@ -22,6 +22,7 @@ export const listActivos = query({
       .withIndex('by_conjunto_and_salida', (q) =>
         q.eq('conjuntoId', args.conjuntoId).eq('salidaEn', undefined),
       )
+      .filter((q) => q.eq(q.field('decisionFinal'), 'PERMITIDO'))
       .collect()
 
     const [vehiculos, unidades] = await Promise.all([
