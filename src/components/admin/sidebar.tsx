@@ -8,6 +8,7 @@ import {
   ParkingSquare,
   Settings,
   Shield,
+  ShieldCheck,
   SquareStack,
   Users,
   UsersRound,
@@ -340,6 +341,28 @@ function ConjuntoScopedSidebar({
                     >
                       <ParkingSquare />
                       <span>Parqueaderos</span>
+                    </Link>
+                  }
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Operación</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive(`${base}/control-acceso`)}
+                  render={
+                    <Link
+                      to="/admin/c/$conjuntoId/control-acceso"
+                      params={{ conjuntoId: conjunto.slug }}
+                    >
+                      <ShieldCheck />
+                      <span>Control de acceso</span>
                     </Link>
                   }
                 />

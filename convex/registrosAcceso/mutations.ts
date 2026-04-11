@@ -507,3 +507,30 @@ export const registrarRechazo = mutation({
     return { registroId }
   },
 })
+
+/**
+ * Actualizar la observación de un registro de acceso existente.
+ * Usado desde el toast "Agregar observación" post-ingreso.
+ */
+export const actualizarObservacion = mutation({
+  args: {
+    registroAccesoId: v.id('registrosAcceso'),
+    observacion: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const registro = await ctx.db.get(args.registroAccesoId)
+    if (!registro) {
+      throwConvexError(ERROR_CODES.REGISTRO_NOT_FOUND, 'Registro no encontrado')
+    }
+
+    await requireConjuntoAccess(ctx, registro.conjuntoId, {
+      allowedRoles: ['VIGILANTE', 'ADMIN'],
+    })
+
+    await ctx.db.patch(args.registroAccesoId, {
+      observacion: args.observacion.trim() || undefined,
+    })
+
+    return { success: true }
+  },
+})

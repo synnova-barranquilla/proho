@@ -8,40 +8,43 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import type { getRouter } from './router.tsx'
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProgressRouteImport } from './routes/progress'
-import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
-import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
-import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
-import { Route as LogoutRouteImport } from './routes/logout'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as InvitacionRevocadaRouteImport } from './routes/invitacion-revocada'
-import { Route as InvitacionExpiradaRouteImport } from './routes/invitacion-expirada'
-import { Route as ErrorAuthRouteImport } from './routes/error-auth'
-import { Route as CuentaDesactivadaRouteImport } from './routes/cuenta-desactivada'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedSeleccionarConjuntoRouteImport } from './routes/_authenticated/seleccionar-conjunto'
-import { Route as AuthenticatedVigilanteRouteRouteImport } from './routes/_authenticated/vigilante/route'
-import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
-import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedVigilanteIndexRouteImport } from './routes/_authenticated/vigilante/index'
-import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
-import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
-import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
-import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
-import { Route as AuthenticatedSuperAdminConjuntosRouteImport } from './routes/_authenticated/super-admin/conjuntos'
-import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
-import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from './routes/_authenticated/super-admin/organizaciones/$orgId'
-import { Route as AuthenticatedAdminCConjuntoIdRouteRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/route'
-import { Route as AuthenticatedAdminCConjuntoIdIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/index'
-import { Route as AuthenticatedAdminCConjuntoIdUsuariosRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/usuarios'
 import { Route as AuthenticatedAdminCConjuntoIdConfiguracionRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/configuracion'
-import { Route as AuthenticatedAdminCConjuntoIdVehiculosIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/vehiculos/index'
-import { Route as AuthenticatedAdminCConjuntoIdUnidadesIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/unidades/index'
-import { Route as AuthenticatedAdminCConjuntoIdResidentesIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/residentes/index'
-import { Route as AuthenticatedAdminCConjuntoIdParqueaderosIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/parqueaderos/index'
+import { Route as AuthenticatedAdminCConjuntoIdControlAccesoIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/control-acceso/index'
+import { Route as AuthenticatedAdminCConjuntoIdIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/index'
 import { Route as AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar'
+import { Route as AuthenticatedAdminCConjuntoIdParqueaderosIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/parqueaderos/index'
+import { Route as AuthenticatedAdminCConjuntoIdResidentesIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/residentes/index'
+import { Route as AuthenticatedAdminCConjuntoIdRouteRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/route'
+import { Route as AuthenticatedAdminCConjuntoIdUnidadesIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/unidades/index'
+import { Route as AuthenticatedAdminCConjuntoIdUsuariosRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/usuarios'
+import { Route as AuthenticatedAdminCConjuntoIdVehiculosIndexRouteImport } from './routes/_authenticated/admin/c/$conjuntoId/vehiculos/index'
+import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedSeleccionarConjuntoRouteImport } from './routes/_authenticated/seleccionar-conjunto'
+import { Route as AuthenticatedSuperAdminConjuntosRouteImport } from './routes/_authenticated/super-admin/conjuntos'
+import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
+import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from './routes/_authenticated/super-admin/organizaciones/$orgId'
+import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
+import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
+import { Route as AuthenticatedVigilanteIndexRouteImport } from './routes/_authenticated/vigilante/index'
+import { Route as AuthenticatedVigilanteRouteRouteImport } from './routes/_authenticated/vigilante/route'
+import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as CuentaDesactivadaRouteImport } from './routes/cuenta-desactivada'
+import { Route as ErrorAuthRouteImport } from './routes/error-auth'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as InvitacionExpiradaRouteImport } from './routes/invitacion-expirada'
+import { Route as InvitacionRevocadaRouteImport } from './routes/invitacion-revocada'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LogoutRouteImport } from './routes/logout'
+import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
+import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
+import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
+import { Route as ProgressRouteImport } from './routes/progress'
+import type { startInstance } from './start.ts'
 
 const ProgressRoute = ProgressRouteImport.update({
   id: '/progress',
@@ -219,6 +222,12 @@ const AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute =
     path: '/parqueaderos/',
     getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
   } as any)
+const AuthenticatedAdminCConjuntoIdControlAccesoIndexRoute =
+  AuthenticatedAdminCConjuntoIdControlAccesoIndexRouteImport.update({
+    id: '/control-acceso/',
+    path: '/control-acceso/',
+    getParentRoute: () => AuthenticatedAdminCConjuntoIdRouteRoute,
+  } as any)
 const AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute =
   AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRouteImport.update({
     id: '/parqueaderos/configurar',
@@ -255,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/admin/c/$conjuntoId/usuarios': typeof AuthenticatedAdminCConjuntoIdUsuariosRoute
   '/admin/c/$conjuntoId/': typeof AuthenticatedAdminCConjuntoIdIndexRoute
   '/admin/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute
+  '/admin/c/$conjuntoId/control-acceso/': typeof AuthenticatedAdminCConjuntoIdControlAccesoIndexRoute
   '/admin/c/$conjuntoId/parqueaderos/': typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute
   '/admin/c/$conjuntoId/residentes/': typeof AuthenticatedAdminCConjuntoIdResidentesIndexRoute
   '/admin/c/$conjuntoId/unidades/': typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRoute
@@ -285,6 +295,7 @@ export interface FileRoutesByTo {
   '/admin/c/$conjuntoId/usuarios': typeof AuthenticatedAdminCConjuntoIdUsuariosRoute
   '/admin/c/$conjuntoId': typeof AuthenticatedAdminCConjuntoIdIndexRoute
   '/admin/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute
+  '/admin/c/$conjuntoId/control-acceso': typeof AuthenticatedAdminCConjuntoIdControlAccesoIndexRoute
   '/admin/c/$conjuntoId/parqueaderos': typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute
   '/admin/c/$conjuntoId/residentes': typeof AuthenticatedAdminCConjuntoIdResidentesIndexRoute
   '/admin/c/$conjuntoId/unidades': typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRoute
@@ -321,6 +332,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/c/$conjuntoId/usuarios': typeof AuthenticatedAdminCConjuntoIdUsuariosRoute
   '/_authenticated/admin/c/$conjuntoId/': typeof AuthenticatedAdminCConjuntoIdIndexRoute
   '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute
+  '/_authenticated/admin/c/$conjuntoId/control-acceso/': typeof AuthenticatedAdminCConjuntoIdControlAccesoIndexRoute
   '/_authenticated/admin/c/$conjuntoId/parqueaderos/': typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute
   '/_authenticated/admin/c/$conjuntoId/residentes/': typeof AuthenticatedAdminCConjuntoIdResidentesIndexRoute
   '/_authenticated/admin/c/$conjuntoId/unidades/': typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRoute
@@ -357,6 +369,7 @@ export interface FileRouteTypes {
     | '/admin/c/$conjuntoId/usuarios'
     | '/admin/c/$conjuntoId/'
     | '/admin/c/$conjuntoId/parqueaderos/configurar'
+    | '/admin/c/$conjuntoId/control-acceso/'
     | '/admin/c/$conjuntoId/parqueaderos/'
     | '/admin/c/$conjuntoId/residentes/'
     | '/admin/c/$conjuntoId/unidades/'
@@ -387,6 +400,7 @@ export interface FileRouteTypes {
     | '/admin/c/$conjuntoId/usuarios'
     | '/admin/c/$conjuntoId'
     | '/admin/c/$conjuntoId/parqueaderos/configurar'
+    | '/admin/c/$conjuntoId/control-acceso'
     | '/admin/c/$conjuntoId/parqueaderos'
     | '/admin/c/$conjuntoId/residentes'
     | '/admin/c/$conjuntoId/unidades'
@@ -422,6 +436,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/c/$conjuntoId/usuarios'
     | '/_authenticated/admin/c/$conjuntoId/'
     | '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar'
+    | '/_authenticated/admin/c/$conjuntoId/control-acceso/'
     | '/_authenticated/admin/c/$conjuntoId/parqueaderos/'
     | '/_authenticated/admin/c/$conjuntoId/residentes/'
     | '/_authenticated/admin/c/$conjuntoId/unidades/'
@@ -670,6 +685,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRouteImport
       parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
     }
+    '/_authenticated/admin/c/$conjuntoId/control-acceso/': {
+      id: '/_authenticated/admin/c/$conjuntoId/control-acceso/'
+      path: '/control-acceso'
+      fullPath: '/admin/c/$conjuntoId/control-acceso/'
+      preLoaderRoute: typeof AuthenticatedAdminCConjuntoIdControlAccesoIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminCConjuntoIdRouteRoute
+    }
     '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar': {
       id: '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar'
       path: '/parqueaderos/configurar'
@@ -685,6 +707,7 @@ interface AuthenticatedAdminCConjuntoIdRouteRouteChildren {
   AuthenticatedAdminCConjuntoIdUsuariosRoute: typeof AuthenticatedAdminCConjuntoIdUsuariosRoute
   AuthenticatedAdminCConjuntoIdIndexRoute: typeof AuthenticatedAdminCConjuntoIdIndexRoute
   AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute: typeof AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute
+  AuthenticatedAdminCConjuntoIdControlAccesoIndexRoute: typeof AuthenticatedAdminCConjuntoIdControlAccesoIndexRoute
   AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute: typeof AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute
   AuthenticatedAdminCConjuntoIdResidentesIndexRoute: typeof AuthenticatedAdminCConjuntoIdResidentesIndexRoute
   AuthenticatedAdminCConjuntoIdUnidadesIndexRoute: typeof AuthenticatedAdminCConjuntoIdUnidadesIndexRoute
@@ -701,6 +724,8 @@ const AuthenticatedAdminCConjuntoIdRouteRouteChildren: AuthenticatedAdminCConjun
       AuthenticatedAdminCConjuntoIdIndexRoute,
     AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute:
       AuthenticatedAdminCConjuntoIdParqueaderosConfigurarRoute,
+    AuthenticatedAdminCConjuntoIdControlAccesoIndexRoute:
+      AuthenticatedAdminCConjuntoIdControlAccesoIndexRoute,
     AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute:
       AuthenticatedAdminCConjuntoIdParqueaderosIndexRoute,
     AuthenticatedAdminCConjuntoIdResidentesIndexRoute:
@@ -810,8 +835,6 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true

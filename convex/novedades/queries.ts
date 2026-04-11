@@ -21,8 +21,14 @@ export const listByConjunto = query({
       .order('desc')
       .collect()
 
-    // Enriquecer con datos del registro de acceso
-    const registroIds = [...new Set(novedades.map((n) => n.registroAccesoId))]
+    // Enriquecer con datos del registro de acceso (si existe)
+    const registroIds = [
+      ...new Set(
+        novedades
+          .map((n) => n.registroAccesoId)
+          .filter((id): id is NonNullable<typeof id> => id != null),
+      ),
+    ]
     const registros = await Promise.all(registroIds.map((id) => ctx.db.get(id)))
     const registroMap = new Map(
       registros.filter((r) => r != null).map((r) => [r._id, r]),
@@ -30,7 +36,9 @@ export const listByConjunto = query({
 
     return novedades.map((n) => ({
       ...n,
-      registro: registroMap.get(n.registroAccesoId) ?? null,
+      registro: n.registroAccesoId
+        ? (registroMap.get(n.registroAccesoId) ?? null)
+        : null,
     }))
   },
 })
