@@ -21,12 +21,12 @@ export type Milestone = {
 }
 
 export const currentFocus = {
-  phaseId: 'F6',
-  phaseName: 'Parqueaderos: Pantallas del Vigilante',
+  phaseId: 'F7',
+  phaseName: 'Parqueaderos: Dashboards y Auditoría',
   done: 0,
-  total: 10,
+  total: 6,
 }
-export const lastUpdated = '10 de abril de 2026'
+export const lastUpdated = '11 de abril de 2026'
 
 export const milestones: Milestone[] = [
   {
@@ -545,53 +545,48 @@ export const milestones: Milestone[] = [
         tasks: [
           {
             id: '6.1',
-            name: 'Layout tablet-first para vigilantes',
-            status: 'pending',
+            name: 'Sidebar Operación + ruta control-acceso',
+            status: 'done',
           },
           {
             id: '6.2',
-            name: 'Pantalla principal de control de acceso',
-            status: 'pending',
+            name: 'State machine + pantalla principal + tabla activos',
+            status: 'done',
           },
           {
             id: '6.3',
-            name: 'Pantalla resultado: Permitido',
-            status: 'pending',
+            name: 'Dialog: reglas violadas + justificación',
+            status: 'done',
           },
           {
             id: '6.4',
-            name: 'Pantalla resultado: Reglas violadas',
-            status: 'pending',
+            name: 'Dialog: salida vehicular',
+            status: 'done',
           },
           {
             id: '6.5',
-            name: 'Pantalla resultado: No identificado',
-            status: 'pending',
+            name: 'Dialog: vehículo ya está dentro',
+            status: 'done',
           },
           {
             id: '6.6',
-            name: 'Pantalla registrar salida',
-            status: 'pending',
+            name: 'Dialog: no identificado (3 opciones)',
+            status: 'done',
           },
           {
             id: '6.7',
-            name: 'Flujo registro vehículo nuevo como residente',
-            status: 'pending',
+            name: 'Sheet: registrar residente nuevo',
+            status: 'done',
           },
           {
             id: '6.8',
-            name: 'Caso borde: vehículo ya está dentro',
-            status: 'pending',
+            name: 'Backend: actualizarObservacion + novedades manual',
+            status: 'done',
           },
           {
             id: '6.9',
-            name: 'Novedades manuales del vigilante',
-            status: 'pending',
-          },
-          {
-            id: '6.10',
-            name: 'Adjuntar foto al ingreso (baja prioridad)',
-            status: 'pending',
+            name: 'FAB + Sheet: novedades manuales',
+            status: 'done',
           },
         ],
       },

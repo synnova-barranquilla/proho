@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
-> **Última actualización:** 10 de abril de 2026
-> **Total de tareas:** 179
-> **MVP (M1+M2+M3):** 121 tareas
-> **Completadas:** 91 (75.2%)
+> **Última actualización:** 11 de abril de 2026
+> **Total de tareas:** 178
+> **MVP (M1+M2+M3):** 120 tareas
+> **Completadas:** 100 (83.3%)
 
 ---
 
@@ -160,20 +160,19 @@
 | 5.13 | Mutation: registrarResidenteNuevo                      | done   |
 | 5.14 | Tests del motor de reglas (20 escenarios)              | done   |
 
-### Fase 6 — Parqueaderos: Pantallas del Vigilante (0/10)
+### Fase 6 — Parqueaderos: Pantallas del Vigilante (9/9) ✅
 
-| ID   | Tarea                                        | Estado  |
-| ---- | -------------------------------------------- | ------- |
-| 6.1  | Layout tablet-first para vigilantes          | pending |
-| 6.2  | Pantalla principal de control de acceso      | pending |
-| 6.3  | Pantalla resultado: Permitido                | pending |
-| 6.4  | Pantalla resultado: Reglas violadas          | pending |
-| 6.5  | Pantalla resultado: No identificado          | pending |
-| 6.6  | Pantalla registrar salida                    | pending |
-| 6.7  | Flujo registro vehículo nuevo como residente | pending |
-| 6.8  | Caso borde: vehículo ya está dentro          | pending |
-| 6.9  | Novedades manuales del vigilante             | pending |
-| 6.10 | Adjuntar foto al ingreso (baja prioridad)    | pending |
+| ID  | Tarea                                              | Estado |
+| --- | -------------------------------------------------- | ------ |
+| 6.1 | Sidebar "Operación" + ruta control-acceso          | done   |
+| 6.2 | State machine + pantalla principal + tabla activos | done   |
+| 6.3 | Dialog: reglas violadas + justificación            | done   |
+| 6.4 | Dialog: salida vehicular                           | done   |
+| 6.5 | Dialog: vehículo ya está dentro                    | done   |
+| 6.6 | Dialog: no identificado (3 opciones)               | done   |
+| 6.7 | Sheet: registrar residente nuevo                   | done   |
+| 6.8 | Backend: actualizarObservacion + novedades manual  | done   |
+| 6.9 | FAB + Sheet: novedades manuales                    | done   |
 
 ### Fase 7 — Parqueaderos: Dashboards y Auditoría (0/6)
 
@@ -293,11 +292,11 @@
 
 ## Resumen por Milestone
 
-| Milestone            | Fases             | Total   | Done   | Progreso |
-| -------------------- | ----------------- | ------- | ------ | -------- |
-| **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34     | 81%      |
-| **M2 — Admin Ready** | F3 + F4           | 43      | 43     | 100%     |
-| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 36      | 14     | 39%      |
-| **MVP TOTAL**        | F0–F8             | **121** | **91** | **75%**  |
-| **M4 — Post-MVP**    | F9–F14            | 58      | 0      | 0%       |
-| **TOTAL**            | F0–F14            | **179** | **91** | **51%**  |
+| Milestone            | Fases             | Total   | Done    | Progreso |
+| -------------------- | ----------------- | ------- | ------- | -------- |
+| **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34      | 81%      |
+| **M2 — Admin Ready** | F3 + F4           | 43      | 43      | 100%     |
+| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 35      | 23      | 66%      |
+| **MVP TOTAL**        | F0–F8             | **120** | **100** | **83%**  |
+| **M4 — Post-MVP**    | F9–F14            | 58      | 0       | 0%       |
+| **TOTAL**            | F0–F14            | **178** | **100** | **56%**  |

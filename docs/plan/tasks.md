@@ -175,20 +175,19 @@
 
 ## Fase 6 — Parqueaderos: Pantallas del Vigilante
 
-> Pantallas tablet-first para el vigilante. Leen datos via subscripciones reactivas de Convex. Todas las escrituras usan las mutations de F5 con optimistic updates.
+> Pantallas bajo `/admin/c/$conjuntoSlug/control-acceso`. State machine con `useReducer`. Resultados como dialogs sobre la página (tabla de activos visible). Auto-detección entrada/salida por placa. Combobox con autocomplete para búsqueda de vehículos.
 
-| ID   | Tarea                                                                                               |
-| ---- | --------------------------------------------------------------------------------------------------- |
-| 6.1  | Crear layout tablet-first para vigilantes (sin sidebar, botones grandes en zona del pulgar)         |
-| 6.2  | Pantalla principal de control de acceso: campo de placa, vehículos dentro, últimos 5 registros      |
-| 6.3  | Pantalla resultado: Permitido (fondo verde, unidad torre+número, confirmar/cancelar)                |
-| 6.4  | Pantalla resultado: Reglas violadas (muestra violaciones, campo justificación, permitir/rechazar)   |
-| 6.5  | Pantalla resultado: No identificado (3 opciones: visitante, visita admin, registrar como residente) |
-| 6.6  | Pantalla registrar salida (placa, unidad, permanencia calculada, confirmar)                         |
-| 6.7  | Flujo registro vehículo nuevo como residente (selector unidad, tipo vehículo, nombre propietario)   |
-| 6.8  | Caso borde: vehículo ya está dentro (estado informativo, opción de registrar salida)                |
-| 6.9  | Novedades manuales: el vigilante puede crear novedades con texto libre                              |
-| 6.10 | Adjuntar foto al ingreso (baja prioridad — captura vía Web Camera API)                              |
+| ID  | Tarea                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------------- |
+| 6.1 | Sidebar "Operación" + ruta control-acceso + page shell tablet-first                                  |
+| 6.2 | State machine (useReducer) + pantalla principal: PlacaSearchBar combobox + tabla activos (5 cols)    |
+| 6.3 | Dialog: reglas violadas (ámbar, violaciones + justificación + permitir/rechazar/cancelar)            |
+| 6.4 | Dialog: salida vehicular (azul, permanencia calculada, observación opcional)                         |
+| 6.5 | Dialog: vehículo ya está dentro (naranja, opción registrar salida)                                   |
+| 6.6 | Dialog: no identificado (3 opciones: visitante con SearchableSelect, visita admin un tap, residente) |
+| 6.7 | Sheet: registrar vehículo nuevo como residente (SearchableSelect unidad, tipo, propietario)          |
+| 6.8 | Backend: mutation actualizarObservacion + mutation crearManual novedad + tipo MANUAL en validators   |
+| 6.9 | FAB + Sheet: novedades manuales (descripción libre)                                                  |
 
 ---
 
