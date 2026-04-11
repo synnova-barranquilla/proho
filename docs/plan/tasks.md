@@ -198,16 +198,14 @@
 
 ## Fase 7 — Parqueaderos: Dashboards, Histórico y Auditoría
 
-> Vistas para administradores en escritorio con conexión confiable. Usan Convex queries directamente.
+> Tabs dentro de control-acceso (Dashboard, Histórico, Novedades, Auditoría). Solo visibles para ADMIN + SUPER_ADMIN. Vigilante solo ve tab Operación. Paginación client-side con PaginatedDataTable.
 
-| ID  | Tarea                                                                                                   |
-| --- | ------------------------------------------------------------------------------------------------------- |
-| 7.1 | Crear dashboard de disponibilidad (KPIs en tiempo real: disponibles por tipo, ocupados total)           |
-| 7.2 | Crear tabla de vehículos actualmente dentro con filtros por torre, placa, tipo, permanencia             |
-| 7.3 | Crear vista de monitoreo en vivo (últimos movimientos ingreso/salida en tiempo real)                    |
-| 7.4 | Crear vista de histórico con filtros por fecha, placa, tipo, decisión motor vs final                    |
-| 7.5 | Crear vista de novedades pendientes (filtrable por tipo, ordenada por antigüedad, marcar como resuelta) |
-| 7.6 | Crear vista de auditoría: registros donde decision_motor ≠ decision_final                               |
+| ID  | Tarea                                                                                                                   |
+| --- | ----------------------------------------------------------------------------------------------------------------------- |
+| 7.1 | Refactorizar control-acceso a 5 tabs + Dashboard con 5 KPIs (vehículos dentro, ingresos/salidas/novedades/rechazos hoy) |
+| 7.2 | Vista de histórico: tabla paginada con filtros (periodo Hoy/7d/30d/Todo, placa, tipo registro, decisión final)          |
+| 7.3 | Vista de novedades: tabla paginada con filtros (periodo, tipo de novedad)                                               |
+| 7.4 | Vista de auditoría: tabla paginada de overrides (decisionMotor no vacío + decisionFinal PERMITIDO), filtro periodo      |
 
 ---
 

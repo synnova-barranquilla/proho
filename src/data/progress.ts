@@ -21,8 +21,8 @@ export type Milestone = {
 }
 
 export const currentFocus = {
-  phaseId: 'F7',
-  phaseName: 'Parqueaderos: Dashboards y Auditoría',
+  phaseId: 'F8',
+  phaseName: 'Parqueaderos: Alertas y Crons',
   done: 0,
   total: 6,
 }
@@ -621,30 +621,24 @@ export const milestones: Milestone[] = [
         tasks: [
           {
             id: '7.1',
-            name: 'Dashboard de disponibilidad con KPIs',
-            status: 'pending',
+            name: 'Tabs + Dashboard con 5 KPIs',
+            status: 'done',
           },
           {
             id: '7.2',
-            name: 'Tabla de vehículos dentro con filtros',
-            status: 'pending',
+            name: 'Vista de histórico con filtros y paginación',
+            status: 'done',
           },
           {
             id: '7.3',
-            name: 'Vista de monitoreo en vivo',
-            status: 'pending',
+            name: 'Vista de novedades con filtros y paginación',
+            status: 'done',
           },
           {
             id: '7.4',
-            name: 'Vista de histórico con filtros',
-            status: 'pending',
+            name: 'Vista de auditoría con paginación',
+            status: 'done',
           },
-          {
-            id: '7.5',
-            name: 'Vista de novedades pendientes',
-            status: 'pending',
-          },
-          { id: '7.6', name: 'Vista de auditoría', status: 'pending' },
         ],
       },
       {

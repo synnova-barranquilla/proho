@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
 > **Última actualización:** 11 de abril de 2026
-> **Total de tareas:** 183
-> **MVP (M1+M2+M3):** 125 tareas
-> **Completadas:** 105 (84%)
+> **Total de tareas:** 181
+> **MVP (M1+M2+M3):** 123 tareas
+> **Completadas:** 111 (90.2%)
 
 ---
 
@@ -179,16 +179,14 @@
 | 6.13 | Fix: rechazos excluidos de la tabla de vehículos activos       | done   |
 | 6.14 | Fix: prevenir doble mutation en selección de combobox          | done   |
 
-### Fase 7 — Parqueaderos: Dashboards y Auditoría (0/6)
+### Fase 7 — Parqueaderos: Dashboards y Auditoría (4/4) ✅
 
-| ID  | Tarea                                 | Estado  |
-| --- | ------------------------------------- | ------- |
-| 7.1 | Dashboard de disponibilidad con KPIs  | pending |
-| 7.2 | Tabla de vehículos dentro con filtros | pending |
-| 7.3 | Vista de monitoreo en vivo            | pending |
-| 7.4 | Vista de histórico con filtros        | pending |
-| 7.5 | Vista de novedades pendientes         | pending |
-| 7.6 | Vista de auditoría                    | pending |
+| ID  | Tarea                                                                           | Estado |
+| --- | ------------------------------------------------------------------------------- | ------ |
+| 7.1 | Tabs + Dashboard con 5 KPIs (vehículos, ingresos, salidas, novedades, rechazos) | done   |
+| 7.2 | Vista de histórico con filtros (periodo, placa, tipo, decisión) y paginación    | done   |
+| 7.3 | Vista de novedades con filtros (periodo, tipo) y paginación                     | done   |
+| 7.4 | Vista de auditoría (overrides con justificación) y paginación                   | done   |
 
 ### Fase 8 — Parqueaderos: Alertas y Crons (0/6)
 
@@ -301,7 +299,7 @@
 | -------------------- | ----------------- | ------- | ------- | -------- |
 | **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34      | 81%      |
 | **M2 — Admin Ready** | F3 + F4           | 43      | 43      | 100%     |
-| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 40      | 28      | 70%      |
-| **MVP TOTAL**        | F0–F8             | **125** | **105** | **84%**  |
+| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 38      | 32      | 84%      |
+| **MVP TOTAL**        | F0–F8             | **123** | **109** | **89%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0       | 0%       |
-| **TOTAL**            | F0–F14            | **183** | **105** | **57%**  |
+| **TOTAL**            | F0–F14            | **181** | **109** | **60%**  |
