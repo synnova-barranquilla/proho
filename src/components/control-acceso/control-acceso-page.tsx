@@ -31,6 +31,10 @@ export function ControlAccesoPage({ conjuntoId }: ControlAccesoPageProps) {
     convexQuery(api.registrosAcceso.queries.listActivos, { conjuntoId }),
   )
 
+  const { data: vehiculos } = useSuspenseQuery(
+    convexQuery(api.vehiculos.queries.listByConjunto, { conjuntoId }),
+  )
+
   const registrarIngresoFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarIngreso,
   )
@@ -125,6 +129,7 @@ export function ControlAccesoPage({ conjuntoId }: ControlAccesoPageProps) {
         <PlacaSearchBar
           onSubmit={handlePlacaSubmit}
           isProcesando={state.screen === 'PROCESANDO'}
+          vehiculos={vehiculos}
         />
 
         <Card>

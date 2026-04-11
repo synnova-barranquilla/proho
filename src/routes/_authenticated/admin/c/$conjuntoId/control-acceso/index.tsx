@@ -8,11 +8,18 @@ export const Route = createFileRoute(
   '/_authenticated/admin/c/$conjuntoId/control-acceso/',
 )({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
-    await prefetchAuthenticatedQuery(
-      queryClient,
-      api.registrosAcceso.queries.listActivos,
-      { conjuntoId },
-    )
+    await Promise.all([
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.registrosAcceso.queries.listActivos,
+        { conjuntoId },
+      ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.vehiculos.queries.listByConjunto,
+        { conjuntoId },
+      ),
+    ])
     return null
   },
   component: ControlAccesoRoute,
