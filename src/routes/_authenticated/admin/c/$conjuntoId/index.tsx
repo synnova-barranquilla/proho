@@ -1,17 +1,21 @@
 import { Suspense } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { convexQuery } from '@convex-dev/react-query'
 import {
   AlertTriangle,
+  ArrowRight,
   Car,
+  LogIn,
   ParkingSquare,
+  ShieldCheck,
   SquareStack,
   UsersRound,
 } from 'lucide-react'
 
+import { buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Skeleton } from '#/components/ui/skeleton'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
@@ -20,11 +24,18 @@ import type { Id } from '../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/admin/c/$conjuntoId/')({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
-    await prefetchAuthenticatedQuery(
-      queryClient,
-      api.conjuntos.queries.getWithStats,
-      { conjuntoId },
-    )
+    await Promise.all([
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.conjuntos.queries.getWithStats,
+        { conjuntoId },
+      ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.registrosAcceso.queries.getDashboardStats,
+        { conjuntoId },
+      ),
+    ])
     return null
   },
   component: ConjuntoDashboardPage,
@@ -95,17 +106,66 @@ function Dashboard({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Próximos pasos</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          Este es un dashboard stub. Cuando el módulo de parking (F5–F8) esté
-          activo, aquí verás actividad reciente, alertas de visitantes próximos
-          a exceder el tiempo máximo, y métricas de ocupación.
-        </CardContent>
-      </Card>
+      <ParkingResumen conjuntoId={conjuntoId} conjuntoSlug={conjunto.slug} />
     </>
+  )
+}
+
+function ParkingResumen({
+  conjuntoId,
+  conjuntoSlug,
+}: {
+  conjuntoId: Id<'conjuntos'>
+  conjuntoSlug: string
+}) {
+  const { data: stats } = useSuspenseQuery(
+    convexQuery(api.registrosAcceso.queries.getDashboardStats, {
+      conjuntoId,
+    }),
+  )
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-base">Control de acceso</CardTitle>
+        </div>
+        <Link
+          to="/admin/c/$conjuntoId/control-acceso"
+          params={{ conjuntoId: conjuntoSlug }}
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+        >
+          Ver todo
+          <ArrowRight className="ml-1 h-4 w-4" />
+        </Link>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="flex items-center gap-2">
+            <Car className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="text-2xl font-semibold">{stats.vehiculosDentro}</p>
+              <p className="text-xs text-muted-foreground">dentro ahora</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <LogIn className="h-4 w-4 text-green-600" />
+            <div>
+              <p className="text-2xl font-semibold">{stats.ingresosHoy}</p>
+              <p className="text-xs text-muted-foreground">ingresos hoy</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <div>
+              <p className="text-2xl font-semibold">{stats.novedadesHoy}</p>
+              <p className="text-xs text-muted-foreground">novedades hoy</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
