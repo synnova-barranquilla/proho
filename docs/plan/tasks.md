@@ -177,17 +177,22 @@
 
 > Pantallas bajo `/admin/c/$conjuntoSlug/control-acceso`. State machine con `useReducer`. Resultados como dialogs sobre la página (tabla de activos visible). Auto-detección entrada/salida por placa. Combobox con autocomplete para búsqueda de vehículos.
 
-| ID  | Tarea                                                                                                |
-| --- | ---------------------------------------------------------------------------------------------------- |
-| 6.1 | Sidebar "Operación" + ruta control-acceso + page shell tablet-first                                  |
-| 6.2 | State machine (useReducer) + pantalla principal: PlacaSearchBar combobox + tabla activos (5 cols)    |
-| 6.3 | Dialog: reglas violadas (ámbar, violaciones + justificación + permitir/rechazar/cancelar)            |
-| 6.4 | Dialog: salida vehicular (azul, permanencia calculada, observación opcional)                         |
-| 6.5 | Dialog: vehículo ya está dentro (naranja, opción registrar salida)                                   |
-| 6.6 | Dialog: no identificado (3 opciones: visitante con SearchableSelect, visita admin un tap, residente) |
-| 6.7 | Sheet: registrar vehículo nuevo como residente (SearchableSelect unidad, tipo, propietario)          |
-| 6.8 | Backend: mutation actualizarObservacion + mutation crearManual novedad + tipo MANUAL en validators   |
-| 6.9 | FAB + Sheet: novedades manuales (descripción libre)                                                  |
+| ID   | Tarea                                                                                                |
+| ---- | ---------------------------------------------------------------------------------------------------- |
+| 6.1  | Sidebar "Operación" + ruta control-acceso + page shell tablet-first                                  |
+| 6.2  | State machine (useReducer) + pantalla principal: PlacaSearchBar combobox + tabla activos (5 cols)    |
+| 6.3  | Dialog: reglas violadas (ámbar, violaciones + justificación + permitir/rechazar/cancelar)            |
+| 6.4  | Dialog: salida vehicular (azul, permanencia calculada, observación opcional)                         |
+| 6.5  | Dialog: vehículo ya está dentro (naranja, opción registrar salida)                                   |
+| 6.6  | Dialog: no identificado (3 opciones: visitante con SearchableSelect, visita admin un tap, residente) |
+| 6.7  | Sheet: registrar vehículo nuevo como residente (SearchableSelect unidad, tipo, propietario)          |
+| 6.8  | Backend: mutation actualizarObservacion + mutation crearManual novedad + tipo MANUAL en validators   |
+| 6.9  | FAB + Sheet: novedades manuales (descripción libre)                                                  |
+| 6.10 | PlacaSearchBar → Combobox con autocomplete de vehículos registrados                                  |
+| 6.11 | Componente SearchableSelect reutilizable + reemplazo en todos los selects con datos de DB            |
+| 6.12 | Fix: editar vehículo permite cambiar unidad (mutation update + UI)                                   |
+| 6.13 | Fix: rechazos excluidos de tabla activos (filtro decisionFinal === PERMITIDO)                        |
+| 6.14 | Fix: prevenir doble mutation en selección de combobox (justSubmittedRef guard)                       |
 
 ---
 

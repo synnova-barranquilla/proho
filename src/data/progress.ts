@@ -588,6 +588,31 @@ export const milestones: Milestone[] = [
             name: 'FAB + Sheet: novedades manuales',
             status: 'done',
           },
+          {
+            id: '6.10',
+            name: 'PlacaSearchBar → Combobox con autocomplete',
+            status: 'done',
+          },
+          {
+            id: '6.11',
+            name: 'SearchableSelect reutilizable + reemplazo global',
+            status: 'done',
+          },
+          {
+            id: '6.12',
+            name: 'Fix: editar vehículo permite cambiar unidad',
+            status: 'done',
+          },
+          {
+            id: '6.13',
+            name: 'Fix: rechazos excluidos de tabla activos',
+            status: 'done',
+          },
+          {
+            id: '6.14',
+            name: 'Fix: prevenir doble mutation en combobox',
+            status: 'done',
+          },
         ],
       },
       {

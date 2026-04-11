@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
 > **Última actualización:** 11 de abril de 2026
-> **Total de tareas:** 178
-> **MVP (M1+M2+M3):** 120 tareas
-> **Completadas:** 100 (83.3%)
+> **Total de tareas:** 183
+> **MVP (M1+M2+M3):** 125 tareas
+> **Completadas:** 105 (84%)
 
 ---
 
@@ -160,19 +160,24 @@
 | 5.13 | Mutation: registrarResidenteNuevo                      | done   |
 | 5.14 | Tests del motor de reglas (20 escenarios)              | done   |
 
-### Fase 6 — Parqueaderos: Pantallas del Vigilante (9/9) ✅
+### Fase 6 — Parqueaderos: Pantallas del Vigilante (14/14) ✅
 
-| ID  | Tarea                                              | Estado |
-| --- | -------------------------------------------------- | ------ |
-| 6.1 | Sidebar "Operación" + ruta control-acceso          | done   |
-| 6.2 | State machine + pantalla principal + tabla activos | done   |
-| 6.3 | Dialog: reglas violadas + justificación            | done   |
-| 6.4 | Dialog: salida vehicular                           | done   |
-| 6.5 | Dialog: vehículo ya está dentro                    | done   |
-| 6.6 | Dialog: no identificado (3 opciones)               | done   |
-| 6.7 | Sheet: registrar residente nuevo                   | done   |
-| 6.8 | Backend: actualizarObservacion + novedades manual  | done   |
-| 6.9 | FAB + Sheet: novedades manuales                    | done   |
+| ID   | Tarea                                                          | Estado |
+| ---- | -------------------------------------------------------------- | ------ |
+| 6.1  | Sidebar "Operación" + ruta control-acceso                      | done   |
+| 6.2  | State machine + pantalla principal + tabla activos             | done   |
+| 6.3  | Dialog: reglas violadas + justificación                        | done   |
+| 6.4  | Dialog: salida vehicular                                       | done   |
+| 6.5  | Dialog: vehículo ya está dentro                                | done   |
+| 6.6  | Dialog: no identificado (3 opciones)                           | done   |
+| 6.7  | Sheet: registrar residente nuevo                               | done   |
+| 6.8  | Backend: actualizarObservacion + novedades manual              | done   |
+| 6.9  | FAB + Sheet: novedades manuales                                | done   |
+| 6.10 | PlacaSearchBar → Combobox con autocomplete de vehículos        | done   |
+| 6.11 | SearchableSelect reutilizable + reemplazo en todos los selects | done   |
+| 6.12 | Fix: editar vehículo permite cambiar unidad asignada           | done   |
+| 6.13 | Fix: rechazos excluidos de la tabla de vehículos activos       | done   |
+| 6.14 | Fix: prevenir doble mutation en selección de combobox          | done   |
 
 ### Fase 7 — Parqueaderos: Dashboards y Auditoría (0/6)
 
@@ -296,7 +301,7 @@
 | -------------------- | ----------------- | ------- | ------- | -------- |
 | **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34      | 81%      |
 | **M2 — Admin Ready** | F3 + F4           | 43      | 43      | 100%     |
-| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 35      | 23      | 66%      |
-| **MVP TOTAL**        | F0–F8             | **120** | **100** | **83%**  |
+| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 40      | 28      | 70%      |
+| **MVP TOTAL**        | F0–F8             | **125** | **105** | **84%**  |
 | **M4 — Post-MVP**    | F9–F14            | 58      | 0       | 0%       |
-| **TOTAL**            | F0–F14            | **178** | **100** | **56%**  |
+| **TOTAL**            | F0–F14            | **183** | **105** | **57%**  |
