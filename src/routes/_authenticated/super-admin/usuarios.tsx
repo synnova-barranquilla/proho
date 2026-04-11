@@ -16,13 +16,7 @@ import { Button } from '#/components/ui/button'
 import { DataTable } from '#/components/ui/data-table'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '#/components/ui/select'
+import { SearchableSelect } from '#/components/ui/searchable-select'
 import { Switch } from '#/components/ui/switch'
 import {
   Tooltip,
@@ -88,31 +82,20 @@ function UsuariosPage() {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Select
+          <SearchableSelect
             value={orgFilter}
-            onValueChange={(v) => setOrgFilter(v ?? ALL_ORGS_VALUE)}
-          >
-            <SelectTrigger className="w-full sm:w-[220px]">
-              <SelectValue placeholder="Organización">
-                {(value: string) => {
-                  if (value === ALL_ORGS_VALUE)
-                    return 'Todas las organizaciones'
-                  const org = orgsQuery.data.find((o) => o._id === value)
-                  return org ? org.name : null
-                }}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL_ORGS_VALUE}>
-                Todas las organizaciones
-              </SelectItem>
-              {orgsQuery.data.map((org) => (
-                <SelectItem key={org._id} value={org._id}>
-                  {org.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onValueChange={(v) => setOrgFilter(v || ALL_ORGS_VALUE)}
+            options={[
+              { value: ALL_ORGS_VALUE, label: 'Todas las organizaciones' },
+              ...orgsQuery.data.map((org) => ({
+                value: org._id,
+                label: org.name,
+              })),
+            ]}
+            placeholder="Organización"
+            searchPlaceholder="Buscar organización..."
+            className="w-full sm:w-[220px]"
+          />
           <Input
             placeholder="Buscar por email o nombre..."
             value={search}

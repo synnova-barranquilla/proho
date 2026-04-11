@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
-import { Input } from '#/components/ui/input'
+import { SearchableSelect } from '#/components/ui/searchable-select'
 import { Textarea } from '#/components/ui/textarea'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
@@ -41,7 +41,6 @@ export function NoEncontradoDialog({
   placaRaw,
 }: NoEncontradoDialogProps) {
   const [subScreen, setSubScreen] = useState<SubScreen>('OPTIONS')
-  const [unidadSearch, setUnidadSearch] = useState('')
   const [selectedUnidadId, setSelectedUnidadId] = useState<string>('')
   const [observacion, setObservacion] = useState('')
 
@@ -49,18 +48,10 @@ export function NoEncontradoDialog({
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
   )
   const unidades = unidadesData.torres.flatMap((t) => t.unidades)
-
-  const filteredUnidades = unidadSearch.trim()
-    ? unidades.filter((u) => {
-        const search = unidadSearch.toLowerCase()
-        const label = `t${u.torre} ${u.numero}`.toLowerCase()
-        return (
-          label.includes(search) ||
-          u.numero.toLowerCase().includes(search) ||
-          u.torre.toLowerCase().includes(search)
-        )
-      })
-    : unidades
+  const unidadOptions = unidades.map((u) => ({
+    value: u._id,
+    label: `Torre ${u.torre} — ${u.numero}`,
+  }))
 
   const registrarVisitanteFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarVisitante,
@@ -121,7 +112,6 @@ export function NoEncontradoDialog({
       onOpenChange={(o) => {
         if (!o) {
           setSubScreen('OPTIONS')
-          setUnidadSearch('')
           setSelectedUnidadId('')
           setObservacion('')
           onClose()
@@ -190,34 +180,13 @@ export function NoEncontradoDialog({
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium">Unidad de destino</label>
-                <Input
-                  value={unidadSearch}
-                  onChange={(e) => setUnidadSearch(e.target.value)}
-                  placeholder="Buscar por torre o número..."
-                  autoFocus
+                <SearchableSelect
+                  value={selectedUnidadId}
+                  onValueChange={setSelectedUnidadId}
+                  options={unidadOptions}
+                  placeholder="Selecciona una unidad"
+                  searchPlaceholder="Buscar por torre o número..."
                 />
-                <div className="max-h-40 overflow-y-auto rounded-md border">
-                  {filteredUnidades.length === 0 ? (
-                    <p className="p-3 text-center text-sm text-muted-foreground">
-                      Sin resultados
-                    </p>
-                  ) : (
-                    filteredUnidades.map((u) => (
-                      <button
-                        key={u._id}
-                        type="button"
-                        className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50 ${
-                          selectedUnidadId === u._id
-                            ? 'bg-primary/10 font-medium'
-                            : ''
-                        }`}
-                        onClick={() => setSelectedUnidadId(u._id)}
-                      >
-                        Torre {u.torre} — {u.numero}
-                      </button>
-                    ))
-                  )}
-                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -259,7 +228,6 @@ export function NoEncontradoDialog({
                 variant="outline"
                 onClick={() => {
                   setSubScreen('OPTIONS')
-                  setUnidadSearch('')
                   setSelectedUnidadId('')
                 }}
                 disabled={isPending}

@@ -10,6 +10,7 @@ import { Button } from '#/components/ui/button'
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { PlacaInput } from '#/components/ui/formatted-input'
 import { Input } from '#/components/ui/input'
+import { SearchableSelect } from '#/components/ui/searchable-select'
 import {
   Select,
   SelectContent,
@@ -53,7 +54,6 @@ export function RegistrarResidenteSheet({
   placa,
   placaRaw,
 }: RegistrarResidenteSheetProps) {
-  const [unidadSearch, setUnidadSearch] = useState('')
   const [selectedUnidadId, setSelectedUnidadId] = useState<string>('')
   const [tipo, setTipo] = useState<VehiculoTipo>('CARRO')
   const [propietario, setPropietario] = useState('')
@@ -66,17 +66,10 @@ export function RegistrarResidenteSheet({
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
   )
   const unidades = unidadesData.torres.flatMap((t) => t.unidades)
-
-  const filteredUnidades = unidadSearch.trim()
-    ? unidades.filter((u) => {
-        const search = unidadSearch.toLowerCase()
-        return (
-          u.numero.toLowerCase().includes(search) ||
-          u.torre.toLowerCase().includes(search) ||
-          `t${u.torre} ${u.numero}`.toLowerCase().includes(search)
-        )
-      })
-    : unidades
+  const unidadOptions = unidades.map((u) => ({
+    value: u._id,
+    label: `Torre ${u.torre} — ${u.numero}`,
+  }))
 
   const registrarFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarResidenteNuevo,
@@ -122,7 +115,6 @@ export function RegistrarResidenteSheet({
   }
 
   const handleClose = () => {
-    setUnidadSearch('')
     setSelectedUnidadId('')
     setTipo('CARRO')
     setPropietario('')
@@ -150,33 +142,13 @@ export function RegistrarResidenteSheet({
             </Field>
             <Field>
               <FieldLabel>Unidad</FieldLabel>
-              <Input
-                value={unidadSearch}
-                onChange={(e) => setUnidadSearch(e.target.value)}
-                placeholder="Buscar por torre o número..."
+              <SearchableSelect
+                value={selectedUnidadId}
+                onValueChange={setSelectedUnidadId}
+                options={unidadOptions}
+                placeholder="Selecciona una unidad"
+                searchPlaceholder="Buscar por torre o número..."
               />
-              <div className="max-h-32 overflow-y-auto rounded-md border">
-                {filteredUnidades.length === 0 ? (
-                  <p className="p-2 text-center text-sm text-muted-foreground">
-                    Sin resultados
-                  </p>
-                ) : (
-                  filteredUnidades.map((u) => (
-                    <button
-                      key={u._id}
-                      type="button"
-                      className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50 ${
-                        selectedUnidadId === u._id
-                          ? 'bg-primary/10 font-medium'
-                          : ''
-                      }`}
-                      onClick={() => setSelectedUnidadId(u._id)}
-                    >
-                      Torre {u.torre} — {u.numero}
-                    </button>
-                  ))
-                )}
-              </div>
             </Field>
             <Field>
               <FieldLabel>Tipo de vehículo</FieldLabel>

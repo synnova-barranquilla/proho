@@ -28,13 +28,7 @@ import {
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '#/components/ui/select'
+import { SearchableSelect } from '#/components/ui/searchable-select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { Switch } from '#/components/ui/switch'
 import { isInternalOrgSlug } from '#/lib/organizations'
@@ -200,28 +194,16 @@ export function InviteAdminDialog({
                       {orgsQuery.isLoading ? (
                         <Skeleton className="h-9 w-full" />
                       ) : (
-                        <Select
+                        <SearchableSelect
                           value={field.state.value}
-                          onValueChange={(v) => field.handleChange(v ?? '')}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona una organización">
-                              {(value: string) => {
-                                const org = invitableOrgs.find(
-                                  (o) => o._id === value,
-                                )
-                                return org ? org.name : null
-                              }}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {invitableOrgs.map((org) => (
-                              <SelectItem key={org._id} value={org._id}>
-                                {org.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          onValueChange={(v) => field.handleChange(v)}
+                          options={invitableOrgs.map((org) => ({
+                            value: org._id,
+                            label: org.name,
+                          }))}
+                          placeholder="Selecciona una organización"
+                          searchPlaceholder="Buscar organización..."
+                        />
                       )}
                       <FieldError
                         errors={

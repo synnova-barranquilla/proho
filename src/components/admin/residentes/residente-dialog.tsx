@@ -19,6 +19,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { DocumentInput, PhoneInput } from '#/components/ui/formatted-input'
 import { Input } from '#/components/ui/input'
+import { SearchableSelect } from '#/components/ui/searchable-select'
 import {
   Select,
   SelectContent,
@@ -74,6 +75,10 @@ export function ResidenteDialog({
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
   )
   const unidades = unidadesData.torres.flatMap((t) => t.unidades)
+  const unidadOptions = unidades.map((u) => ({
+    value: u._id,
+    label: `Torre ${u.torre} — ${u.numero}`,
+  }))
 
   const createFn = useConvexMutation(api.residentes.mutations.create)
   const updateFn = useConvexMutation(api.residentes.mutations.update)
@@ -133,31 +138,17 @@ export function ResidenteDialog({
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogBody>
             <FieldGroup>
-              {!isEdit && (
-                <Field>
-                  <FieldLabel>Unidad</FieldLabel>
-                  <Select
-                    value={unidadId}
-                    onValueChange={(v) => v && setUnidadId(v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona una unidad">
-                        {(value: string) => {
-                          const u = unidades.find((x) => x._id === value)
-                          return u ? `Torre ${u.torre} — ${u.numero}` : null
-                        }}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {unidades.map((u) => (
-                        <SelectItem key={u._id} value={u._id}>
-                          Torre {u.torre} — {u.numero}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              )}
+              <Field>
+                <FieldLabel>Unidad</FieldLabel>
+                <SearchableSelect
+                  value={unidadId}
+                  onValueChange={setUnidadId}
+                  options={unidadOptions}
+                  placeholder="Selecciona una unidad"
+                  searchPlaceholder="Buscar por torre o número..."
+                  disabled={isEdit}
+                />
+              </Field>
               <div className="grid grid-cols-2 gap-4">
                 <Field>
                   <FieldLabel>Nombres</FieldLabel>
