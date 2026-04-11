@@ -27,6 +27,7 @@ export function PlacaSearchBar({
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const justSubmittedRef = useRef(false)
 
   const placaNorm = useMemo(() => normalizePlaca(placa), [placa])
 
@@ -39,7 +40,8 @@ export function PlacaSearchBar({
 
   const handleSubmit = useCallback(() => {
     const trimmed = placa.trim()
-    if (trimmed.length >= 4) {
+    if (trimmed.length >= 4 && !justSubmittedRef.current) {
+      justSubmittedRef.current = true
       setShowDropdown(false)
       setSelectedIndex(-1)
       onSubmit(trimmed)
@@ -48,18 +50,20 @@ export function PlacaSearchBar({
 
   // Auto-submit when placa reaches 6 chars (valid Colombian format)
   useEffect(() => {
-    if (placa.length >= 6) {
+    if (placa.length >= 6 && !justSubmittedRef.current) {
       handleSubmit()
     }
   }, [placa, handleSubmit])
 
   const handleChange = (value: string) => {
+    justSubmittedRef.current = false
     setPlaca(value)
     setShowDropdown(true)
     setSelectedIndex(-1)
   }
 
   const handleSelect = (vehiculo: VehiculoRow) => {
+    justSubmittedRef.current = true
     setPlaca(vehiculo.placa)
     setShowDropdown(false)
     setSelectedIndex(-1)
@@ -89,6 +93,7 @@ export function PlacaSearchBar({
   }
 
   const handleClear = () => {
+    justSubmittedRef.current = false
     setPlaca('')
     setShowDropdown(false)
     setSelectedIndex(-1)
@@ -111,9 +116,11 @@ export function PlacaSearchBar({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Auto-focus on mount and after processing
+  // Auto-focus and reset after processing completes
   useEffect(() => {
     if (!isProcesando) {
+      justSubmittedRef.current = false
+      setPlaca('')
       inputRef.current?.focus()
     }
   }, [isProcesando])
