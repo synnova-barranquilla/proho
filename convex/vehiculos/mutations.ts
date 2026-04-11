@@ -57,6 +57,7 @@ export const create = mutation({
 export const update = mutation({
   args: {
     vehiculoId: v.id('vehiculos'),
+    unidadId: v.optional(v.id('unidades')),
     placa: v.string(),
     tipo: vehiculoTipos,
     propietarioNombre: v.optional(v.string()),
@@ -69,6 +70,14 @@ export const update = mutation({
     await requireConjuntoAccess(ctx, vehiculo.conjuntoId, {
       allowedRoles: ['ADMIN'],
     })
+
+    // Validate new unidad if changing
+    if (args.unidadId && args.unidadId !== vehiculo.unidadId) {
+      const unidad = await ctx.db.get(args.unidadId)
+      if (!unidad || unidad.conjuntoId !== vehiculo.conjuntoId) {
+        throwConvexError(ERROR_CODES.UNIDAD_NOT_FOUND, 'Unidad no encontrada')
+      }
+    }
 
     const placa = normalizePlaca(args.placa)
     if (!placa) {
@@ -91,6 +100,7 @@ export const update = mutation({
     }
 
     await ctx.db.patch(args.vehiculoId, {
+      ...(args.unidadId ? { unidadId: args.unidadId } : {}),
       placa,
       tipo: args.tipo,
       propietarioNombre: args.propietarioNombre?.trim() || undefined,

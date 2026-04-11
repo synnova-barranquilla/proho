@@ -83,6 +83,7 @@ export function VehiculoDialog({
       if (vehiculo !== null) {
         await updateMut.mutateAsync({
           vehiculoId: vehiculo._id,
+          unidadId: unidadId as Id<'unidades'>,
           placa,
           tipo,
           propietarioNombre: propietario || undefined,
@@ -131,7 +132,6 @@ export function VehiculoDialog({
                   options={unidadOptions}
                   placeholder="Selecciona una unidad"
                   searchPlaceholder="Buscar por torre o número..."
-                  disabled={isEdit}
                 />
               </Field>
               <Field>
