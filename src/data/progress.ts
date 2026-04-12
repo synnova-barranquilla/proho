@@ -872,49 +872,36 @@ export const milestones: Milestone[] = [
       },
       {
         id: 'F12',
-        name: 'Notificaciones',
+        name: 'Notificaciones WhatsApp',
         tasks: [
-          { id: '12.1', name: 'Crear cuenta Resend', status: 'pending' },
-          { id: '12.2', name: 'Crear cuenta UploadThing', status: 'pending' },
           {
-            id: '12.3',
-            name: 'Servicio envío emails en Convex',
-            status: 'pending',
-          },
-          { id: '12.4', name: 'Templates React Email', status: 'pending' },
-          {
-            id: '12.5',
-            name: 'Integrar emails en flujos',
-            status: 'pending',
-          },
-          {
-            id: '12.6',
+            id: '12.1',
             name: 'Configurar Meta Business WhatsApp',
             status: 'pending',
           },
           {
-            id: '12.7',
+            id: '12.2',
             name: 'Servicio envío WhatsApp en Convex',
             status: 'pending',
           },
-          { id: '12.8', name: 'Templates WhatsApp', status: 'pending' },
+          { id: '12.3', name: 'Templates WhatsApp', status: 'pending' },
           {
-            id: '12.9',
+            id: '12.4',
             name: 'Integrar WhatsApp en alertas',
             status: 'pending',
           },
           {
-            id: '12.10',
+            id: '12.5',
             name: 'Recepción mensajes entrantes',
             status: 'pending',
           },
           {
-            id: '12.11',
+            id: '12.6',
             name: 'Flujo conversacional asistido',
             status: 'pending',
           },
           {
-            id: '12.12',
+            id: '12.7',
             name: 'Preferencias de notificación',
             status: 'pending',
           },

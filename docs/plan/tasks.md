@@ -303,24 +303,19 @@
 
 ---
 
-## Fase 12 — Notificaciones
+## Fase 12 — Notificaciones WhatsApp
 
-> Post-MVP. Infraestructura de notificaciones + integración por módulo.
+> Post-MVP. Infraestructura de email ya implementada (ver sección Email). Templates de email para módulos futuros se definen dentro de cada módulo.
 
-| ID    | Tarea                                                                                         |
-| ----- | --------------------------------------------------------------------------------------------- |
-| 12.1  | Crear cuenta Resend, verificar dominio, obtener API key                                       |
-| 12.2  | Crear cuenta UploadThing, obtener API keys, instalar SDK                                      |
-| 12.3  | Implementar acción de Convex para envío de emails via Resend                                  |
-| 12.4  | Crear templates React Email: bienvenida, alerta parqueadero, incidente, reserva, recordatorio |
-| 12.5  | Integrar envío automático en flujos de parqueadero, incidentes, reservas                      |
-| 12.6  | Crear app en Meta Business, obtener token, configurar webhook WhatsApp                        |
-| 12.7  | Implementar acción de Convex para envío de mensajes WhatsApp via Meta API                     |
-| 12.8  | Crear templates de mensajes aprobados en Meta Business                                        |
-| 12.9  | Integrar WhatsApp en alertas de parqueadero e incidentes                                      |
-| 12.10 | Implementar recepción de mensajes entrantes vía webhook                                       |
-| 12.11 | Crear flujo conversacional asistido (menú de opciones, toque humano)                          |
-| 12.12 | Crear página de preferencias de notificación por usuario                                      |
+| ID   | Tarea                                                                     |
+| ---- | ------------------------------------------------------------------------- |
+| 12.1 | Crear app en Meta Business, obtener token, configurar webhook WhatsApp    |
+| 12.2 | Implementar acción de Convex para envío de mensajes WhatsApp via Meta API |
+| 12.3 | Crear templates de mensajes aprobados en Meta Business                    |
+| 12.4 | Integrar WhatsApp en alertas de parqueadero e incidentes                  |
+| 12.5 | Implementar recepción de mensajes entrantes vía webhook                   |
+| 12.6 | Crear flujo conversacional asistido (menú de opciones, toque humano)      |
+| 12.7 | Crear página de preferencias de notificación por usuario                  |
 
 ---
 

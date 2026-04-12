@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
 > **Última actualización:** 12 de abril de 2026
-> **Total de tareas:** 193
-> **MVP (M1+M2+M3+Email):** 135 tareas
-> **Completadas:** 121 (89.6%)
+> **Total de tareas:** 188
+> **MVP (M1+M2+M3+Email):** 135 tareas (121 activas, 14 diferidas)
+> **MVP activo:** 121/121 (100%)
 
 ---
 
@@ -270,22 +270,19 @@
 | 11.8 | Dashboard de tendencias         | pending |
 | 11.9 | Alerta novedades recurrentes    | pending |
 
-### Fase 12 — Notificaciones (0/12)
+### Fase 12 — Notificaciones WhatsApp (0/7)
 
-| ID    | Tarea                             | Estado  |
-| ----- | --------------------------------- | ------- |
-| 12.1  | Crear cuenta Resend               | pending |
-| 12.2  | Crear cuenta UploadThing          | pending |
-| 12.3  | Servicio envío emails en Convex   | pending |
-| 12.4  | Templates React Email             | pending |
-| 12.5  | Integrar emails en flujos         | pending |
-| 12.6  | Configurar Meta Business WhatsApp | pending |
-| 12.7  | Servicio envío WhatsApp en Convex | pending |
-| 12.8  | Templates WhatsApp                | pending |
-| 12.9  | Integrar WhatsApp en alertas      | pending |
-| 12.10 | Recepción mensajes entrantes      | pending |
-| 12.11 | Flujo conversacional asistido     | pending |
-| 12.12 | Preferencias de notificación      | pending |
+> Infraestructura de email ya implementada (ver sección Email). Templates para módulos futuros se definen dentro de cada módulo.
+
+| ID   | Tarea                             | Estado  |
+| ---- | --------------------------------- | ------- |
+| 12.1 | Configurar Meta Business WhatsApp | pending |
+| 12.2 | Servicio envío WhatsApp en Convex | pending |
+| 12.3 | Templates WhatsApp                | pending |
+| 12.4 | Integrar WhatsApp en alertas      | pending |
+| 12.5 | Recepción mensajes entrantes      | pending |
+| 12.6 | Flujo conversacional asistido     | pending |
+| 12.7 | Preferencias de notificación      | pending |
 
 ### Fase 13 — Dashboard Ejecutivo (0/5)
 
@@ -322,6 +319,7 @@
 | **M2 — Admin Ready** | F3 + F4            | 43      | 43      | 100%     |
 | **M3 — Parking MVP** | F5 + F6 + F7 + F8  | 40      | 34      | 85%      |
 | **Email**            | Resend integration | 10      | 10      | 100%     |
-| **MVP TOTAL**        | F0–F8 + Email      | **135** | **121** | **90%**  |
-| **M4 — Post-MVP**    | F9–F14             | 58      | 0       | 0%       |
-| **TOTAL**            | F0–F14 + Email     | **193** | **121** | **63%**  |
+| **MVP TOTAL**        | F0–F8 + Email      | **121** | **121** | **100%** |
+| **MVP diferidas**    | F1 + F8            | 14      | 0       | deferred |
+| **M4 — Post-MVP**    | F9–F14             | 53      | 0       | 0%       |
+| **TOTAL**            | F0–F14 + Email     | **188** | **121** | **64%**  |
