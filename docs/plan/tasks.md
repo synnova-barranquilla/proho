@@ -206,6 +206,8 @@
 | 7.2 | Vista de histórico: tabla paginada con filtros (periodo Hoy/7d/30d/Todo, placa, tipo registro, decisión final)          |
 | 7.3 | Vista de novedades: tabla paginada con filtros (periodo, tipo de novedad)                                               |
 | 7.4 | Vista de auditoría: tabla paginada de overrides (decisionMotor no vacío + decisionFinal PERMITIDO), filtro periodo      |
+| 7.5 | Fix: commit tipos generados Convex (api.d.ts) para CI typecheck                                                         |
+| 7.6 | Reemplazar stub parking en home conjunto con 3 KPIs reales + link a control-acceso                                      |
 
 ---
 

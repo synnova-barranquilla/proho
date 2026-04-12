@@ -639,6 +639,16 @@ export const milestones: Milestone[] = [
             name: 'Vista de auditoría con paginación',
             status: 'done',
           },
+          {
+            id: '7.5',
+            name: 'Fix: commit tipos generados Convex para CI',
+            status: 'done',
+          },
+          {
+            id: '7.6',
+            name: 'Home conjunto: KPIs reales + link control-acceso',
+            status: 'done',
+          },
         ],
       },
       {
