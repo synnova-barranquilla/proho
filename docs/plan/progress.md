@@ -1,9 +1,9 @@
 # Progreso del Proyecto — Synnova
 
-> **Última actualización:** 11 de abril de 2026
-> **Total de tareas:** 183
-> **MVP (M1+M2+M3):** 125 tareas
-> **Completadas:** 113 (90.4%)
+> **Última actualización:** 12 de abril de 2026
+> **Total de tareas:** 193
+> **MVP (M1+M2+M3+Email):** 135 tareas
+> **Completadas:** 121 (89.6%)
 
 ---
 
@@ -190,16 +190,35 @@
 | 7.5 | Fix: commit de tipos generados de Convex (api.d.ts) para CI                     | done   |
 | 7.6 | Reemplazar stub de parking en home del conjunto con KPIs reales + link          | done   |
 
-### Fase 8 — Parqueaderos: Alertas y Crons (0/6)
+### Fase 8 — Parqueaderos: Alertas y Crons (0/6, deferred)
 
-| ID  | Tarea                                     | Estado  |
-| --- | ----------------------------------------- | ------- |
-| 8.1 | Cron: tiempo excedido residentes (60 min) | pending |
-| 8.2 | Cron: tiempo excedido visitantes (60 min) | pending |
-| 8.3 | Cron: visitantes después 5pm              | pending |
-| 8.4 | Cron: vehículos >30 días permanencia      | pending |
-| 8.5 | Deduplicación de novedades de tiempo      | pending |
-| 8.6 | Check local permanencia excedida (UI)     | pending |
+> Diferido a revisión futura. R3 ya se evalúa al ingreso. Visitantes sin reglas. No bloqueante para MVP.
+
+| ID  | Tarea                                     | Estado   |
+| --- | ----------------------------------------- | -------- |
+| 8.1 | Cron: tiempo excedido residentes (60 min) | deferred |
+| 8.2 | Cron: tiempo excedido visitantes (60 min) | deferred |
+| 8.3 | Cron: visitantes después 5pm              | deferred |
+| 8.4 | Cron: vehículos >30 días permanencia      | deferred |
+| 8.5 | Deduplicación de novedades de tiempo      | deferred |
+| 8.6 | Check local permanencia excedida (UI)     | deferred |
+
+---
+
+## Email — Integración Resend (10/10) ✅
+
+| ID   | Tarea                                                      | Estado |
+| ---- | ---------------------------------------------------------- | ------ |
+| E.1  | Instalar dependencias + script email:dev                   | done   |
+| E.2  | Utilidad sendEmail (fetch a Resend API)                    | done   |
+| E.3  | Template layout compartido (logo + footer disclaimer)      | done   |
+| E.4  | Template invitación                                        | done   |
+| E.5  | Template resumen diario (5 KPIs + novedades)               | done   |
+| E.6  | Action sendInvitationEmail + trigger en invitations.create | done   |
+| E.7  | Queries helper para datos de invitación y resumen          | done   |
+| E.8  | Action sendDailySummary (itera conjuntos, envía a admins)  | done   |
+| E.9  | Cron diario 11:00 UTC (6am COT)                            | done   |
+| E.10 | Configurar RESEND_API_KEY en Convex                        | done   |
 
 ---
 
@@ -297,11 +316,12 @@
 
 ## Resumen por Milestone
 
-| Milestone            | Fases             | Total   | Done    | Progreso |
-| -------------------- | ----------------- | ------- | ------- | -------- |
-| **M1 — Foundation**  | F0 + F1 + F2      | 42      | 34      | 81%      |
-| **M2 — Admin Ready** | F3 + F4           | 43      | 43      | 100%     |
-| **M3 — Parking MVP** | F5 + F6 + F7 + F8 | 40      | 34      | 85%      |
-| **MVP TOTAL**        | F0–F8             | **125** | **111** | **89%**  |
-| **M4 — Post-MVP**    | F9–F14            | 58      | 0       | 0%       |
-| **TOTAL**            | F0–F14            | **183** | **111** | **61%**  |
+| Milestone            | Fases              | Total   | Done    | Progreso |
+| -------------------- | ------------------ | ------- | ------- | -------- |
+| **M1 — Foundation**  | F0 + F1 + F2       | 42      | 34      | 81%      |
+| **M2 — Admin Ready** | F3 + F4            | 43      | 43      | 100%     |
+| **M3 — Parking MVP** | F5 + F6 + F7 + F8  | 40      | 34      | 85%      |
+| **Email**            | Resend integration | 10      | 10      | 100%     |
+| **MVP TOTAL**        | F0–F8 + Email      | **135** | **121** | **90%**  |
+| **M4 — Post-MVP**    | F9–F14             | 58      | 0       | 0%       |
+| **TOTAL**            | F0–F14 + Email     | **193** | **121** | **63%**  |

@@ -211,18 +211,37 @@
 
 ---
 
-## Fase 8 — Parqueaderos: Alertas y Crons
+## Fase 8 — Parqueaderos: Alertas y Crons (deferred)
 
-> Jobs server-side en Convex, independientes del estado de la tablet.
+> Diferido a revisión futura. R3 ya se evalúa al ingreso. Visitantes sin reglas. No bloqueante para MVP.
 
-| ID  | Tarea                                                                                                                          |
-| --- | ------------------------------------------------------------------------------------------------------------------------------ |
-| 8.1 | Implementar cron de Convex: detectar vehículos residentes con tiempo excedido (cada 60 min) → crear novedad                    |
-| 8.2 | Implementar cron de Convex: detectar visitantes con tiempo excedido (cada 60 min) → crear novedad                              |
-| 8.3 | Implementar cron de Convex: detectar visitantes después de las 5pm → crear novedad                                             |
-| 8.4 | Implementar cron de Convex: detectar vehículos con >30 días de permanencia → crear novedad                                     |
-| 8.5 | Implementar deduplicación de novedades de tiempo: si ya existe novedad no resuelta del mismo vehículo, actualizar sin duplicar |
-| 8.6 | Implementar check local de permanencia excedida en UI del vigilante (marcar vehículos con alerta visual, cada 60 min)          |
+| ID  | Tarea                                                          |
+| --- | -------------------------------------------------------------- |
+| 8.1 | Cron: tiempo excedido residentes (60 min) → novedad            |
+| 8.2 | Cron: tiempo excedido visitantes (60 min) → novedad            |
+| 8.3 | Cron: visitantes después 5pm → novedad                         |
+| 8.4 | Cron: vehículos >30 días permanencia → novedad                 |
+| 8.5 | Deduplicación de novedades de tiempo                           |
+| 8.6 | Check local permanencia excedida (UI vigilante, alerta visual) |
+
+---
+
+## Email — Integración Resend + React Email
+
+> Sender: `Synnova <avisos@synnova.com.co>`. 2 templates: invitación + resumen diario. Cron 6am COT. Footer disclaimer no-reply.
+
+| ID   | Tarea                                                                |
+| ---- | -------------------------------------------------------------------- |
+| E.1  | Instalar resend + @react-email/components + react-email + script     |
+| E.2  | Utilidad sendEmail con fetch directo a Resend API                    |
+| E.3  | Template layout compartido (logo texto + footer disclaimer)          |
+| E.4  | Template invitación (nombre, conjunto, rol, botón login)             |
+| E.5  | Template resumen diario (5 KPIs + lista novedades + botón histórico) |
+| E.6  | Action sendInvitationEmail + trigger en invitations.create           |
+| E.7  | Queries helper (getInvitationData, getAllConjuntoSummaries)          |
+| E.8  | Action sendDailySummary (itera conjuntos activos, envía a admins)    |
+| E.9  | Cron diario 11:00 UTC (6am COT) en convex/crons.ts                   |
+| E.10 | Configurar RESEND_API_KEY en Convex env                              |
 
 ---
 

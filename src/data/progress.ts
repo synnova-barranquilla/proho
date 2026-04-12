@@ -21,12 +21,12 @@ export type Milestone = {
 }
 
 export const currentFocus = {
-  phaseId: 'F8',
-  phaseName: 'Parqueaderos: Alertas y Crons',
-  done: 0,
-  total: 6,
+  phaseId: 'MVP',
+  phaseName: 'MVP Completo — Revisión y deploy',
+  done: 121,
+  total: 135,
 }
-export const lastUpdated = '11 de abril de 2026'
+export const lastUpdated = '12 de abril de 2026'
 
 export const milestones: Milestone[] = [
   {
@@ -658,33 +658,74 @@ export const milestones: Milestone[] = [
           {
             id: '8.1',
             name: 'Cron: tiempo excedido residentes (60 min)',
-            status: 'pending',
+            status: 'deferred',
           },
           {
             id: '8.2',
             name: 'Cron: tiempo excedido visitantes (60 min)',
-            status: 'pending',
+            status: 'deferred',
           },
           {
             id: '8.3',
             name: 'Cron: visitantes después 5pm',
-            status: 'pending',
+            status: 'deferred',
           },
           {
             id: '8.4',
             name: 'Cron: vehículos >30 días permanencia',
-            status: 'pending',
+            status: 'deferred',
           },
           {
             id: '8.5',
             name: 'Deduplicación de novedades de tiempo',
-            status: 'pending',
+            status: 'deferred',
           },
           {
             id: '8.6',
             name: 'Check local permanencia excedida (UI)',
-            status: 'pending',
+            status: 'deferred',
           },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'Email',
+    name: 'Email — Resend',
+    description:
+      'Integración Resend + React Email: invitación y resumen diario.',
+    scope: 'mvp',
+    phases: [
+      {
+        id: 'Email',
+        name: 'Integración Resend',
+        tasks: [
+          {
+            id: 'E.1',
+            name: 'Instalar deps + script email:dev',
+            status: 'done',
+          },
+          {
+            id: 'E.2',
+            name: 'Utilidad sendEmail (fetch Resend API)',
+            status: 'done',
+          },
+          { id: 'E.3', name: 'Template layout compartido', status: 'done' },
+          { id: 'E.4', name: 'Template invitación', status: 'done' },
+          { id: 'E.5', name: 'Template resumen diario', status: 'done' },
+          {
+            id: 'E.6',
+            name: 'Action sendInvitationEmail + trigger',
+            status: 'done',
+          },
+          {
+            id: 'E.7',
+            name: 'Queries helper (invitación + resumen)',
+            status: 'done',
+          },
+          { id: 'E.8', name: 'Action sendDailySummary', status: 'done' },
+          { id: 'E.9', name: 'Cron diario 6am COT', status: 'done' },
+          { id: 'E.10', name: 'Configurar RESEND_API_KEY', status: 'done' },
         ],
       },
     ],
