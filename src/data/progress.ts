@@ -22,9 +22,9 @@ export type Milestone = {
 
 export const currentFocus = {
   phaseId: 'MVP',
-  phaseName: 'MVP Completo — Revisión y deploy',
-  done: 121,
-  total: 135,
+  phaseName: 'MVP Completo',
+  done: 0,
+  total: 0,
 }
 export const lastUpdated = '12 de abril de 2026'
 
@@ -1014,17 +1014,22 @@ export function getTotalStats() {
   const allTasks = milestones.flatMap((m) => m.phases.flatMap((p) => p.tasks))
   const total = allTasks.length
   const done = allTasks.filter((t) => t.status === 'done').length
+  const deferred = allTasks.filter((t) => t.status === 'deferred').length
   const mvpTasks = milestones
     .filter((m) => m.scope === 'mvp')
     .flatMap((m) => m.phases.flatMap((p) => p.tasks))
-  const mvpTotal = mvpTasks.length
-  const mvpDone = mvpTasks.filter((t) => t.status === 'done').length
+  const mvpActive = mvpTasks.filter((t) => t.status !== 'deferred')
+  const mvpDeferred = mvpTasks.filter((t) => t.status === 'deferred').length
+  const mvpTotal = mvpActive.length
+  const mvpDone = mvpActive.filter((t) => t.status === 'done').length
   return {
     total,
     done,
+    deferred,
     percent: Math.round((done / total) * 100),
     mvpTotal,
     mvpDone,
+    mvpDeferred,
     mvpPercent: mvpTotal > 0 ? Math.round((mvpDone / mvpTotal) * 100) : 0,
   }
 }

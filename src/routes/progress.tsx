@@ -217,35 +217,83 @@ function ProgressPage() {
         </div>
         <div className="rounded-xl border border-border/60 bg-card px-5 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Progreso MVP
+            MVP
           </p>
-          <p className="mt-1 font-mono text-2xl font-bold tabular-nums">
-            {totals.mvpPercent}
-            <span className="text-base font-normal text-muted-foreground">
-              %
-            </span>
-          </p>
-          <ProgressBar percent={totals.mvpPercent} className="mt-2" />
-          <p className="mt-1.5 text-xs tabular-nums text-muted-foreground">
-            {totals.mvpDone} de {totals.mvpTotal} tareas
-          </p>
+          {totals.mvpPercent === 100 ? (
+            <>
+              <div className="mt-2 flex items-center gap-2">
+                <CheckCircle2
+                  size={20}
+                  className="text-emerald-600 dark:text-emerald-400"
+                />
+                <p className="font-mono text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                  100%
+                </p>
+              </div>
+              <p className="mt-1.5 text-xs tabular-nums text-muted-foreground">
+                {totals.mvpDone} de {totals.mvpTotal} tareas activas completadas
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-1 font-mono text-2xl font-bold tabular-nums">
+                {totals.mvpPercent}
+                <span className="text-base font-normal text-muted-foreground">
+                  %
+                </span>
+              </p>
+              <ProgressBar percent={totals.mvpPercent} className="mt-2" />
+              <p className="mt-1.5 text-xs tabular-nums text-muted-foreground">
+                {totals.mvpDone} de {totals.mvpTotal} tareas
+              </p>
+            </>
+          )}
         </div>
         <div className="rounded-xl border border-border/60 bg-card px-5 py-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Enfoque Actual
-          </p>
-          <div className="mt-2 flex items-center gap-2">
-            <Target
-              size={18}
-              className="shrink-0 text-emerald-600 dark:text-emerald-400"
-            />
-            <p className="text-sm font-semibold leading-snug">
-              {currentFocus.phaseId} — {currentFocus.phaseName}
-            </p>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {currentFocus.done} de {currentFocus.total} tareas completadas
-          </p>
+          {totals.mvpPercent === 100 ? (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Estado
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <Target
+                  size={18}
+                  className="shrink-0 text-emerald-600 dark:text-emerald-400"
+                />
+                <p className="text-sm font-semibold leading-snug">
+                  MVP Completo
+                </p>
+              </div>
+              {totals.mvpDeferred > 0 && (
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                  <Clock size={12} />
+                  <span>
+                    {totals.mvpDeferred} tarea
+                    {totals.mvpDeferred > 1 ? 's' : ''} diferida
+                    {totals.mvpDeferred > 1 ? 's' : ''} a pre-producción
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Enfoque Actual
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <Target
+                  size={18}
+                  className="shrink-0 text-emerald-600 dark:text-emerald-400"
+                />
+                <p className="text-sm font-semibold leading-snug">
+                  {currentFocus.phaseId} — {currentFocus.phaseName}
+                </p>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {currentFocus.done} de {currentFocus.total} tareas completadas
+              </p>
+            </>
+          )}
         </div>
       </section>
 
