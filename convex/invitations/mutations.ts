@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 
+import { internal } from '../_generated/api'
 import type { Doc } from '../_generated/dataModel'
 import { mutation } from '../_generated/server'
 import { conjuntoRoles } from '../conjuntoMemberships/validators'
@@ -198,6 +199,13 @@ export const create = mutation({
       isOrgOwnerOnAccept: args.isOrgOwnerOnAccept,
       conjuntoIdsOnAccept: normalizedConjuntoIds,
     })
+
+    // Send invitation email
+    await ctx.scheduler.runAfter(
+      0,
+      internal.email.actions.sendInvitationEmail,
+      { invitationId },
+    )
 
     return { invitationId }
   },
