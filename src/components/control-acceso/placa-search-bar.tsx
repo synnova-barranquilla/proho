@@ -159,7 +159,7 @@ export function PlacaSearchBar({
       {hasSuggestions && (
         <div
           ref={dropdownRef}
-          className="absolute top-full z-50 mt-1 w-full rounded-md border bg-popover shadow-lg"
+          className="absolute bottom-full z-50 mb-1 w-full rounded-md border bg-popover shadow-lg"
         >
           {suggestions.map((veh, i) => {
             const Icon = veh.tipo === 'MOTO' ? Bike : Car
