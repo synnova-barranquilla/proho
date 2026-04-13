@@ -17,7 +17,6 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { SearchableSelect } from '#/components/ui/searchable-select'
-import { Textarea } from '#/components/ui/textarea'
 import { formatPlaca } from '#/lib/formatters'
 import { buildUnidadOptions } from '#/lib/unidad-search'
 import { api } from '../../../convex/_generated/api'
@@ -43,8 +42,6 @@ export function NoEncontradoDialog({
 }: NoEncontradoDialogProps) {
   const [subScreen, setSubScreen] = useState<SubScreen>('OPTIONS')
   const [selectedUnidadId, setSelectedUnidadId] = useState<string>('')
-  const [observacion, setObservacion] = useState('')
-
   const { data: unidadesData } = useSuspenseQuery(
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
   )
@@ -88,7 +85,6 @@ export function NoEncontradoDialog({
         placaRaw,
         tipo: 'VISITANTE',
         unidadId: selectedUnidadId as Id<'unidades'>,
-        observacion: observacion.trim() || undefined,
       })
       toast.success('Visitante registrado')
       onClose()
@@ -115,7 +111,6 @@ export function NoEncontradoDialog({
           if (!o) {
             setSubScreen('OPTIONS')
             setSelectedUnidadId('')
-            setObservacion('')
             onClose()
           }
         }}
@@ -190,18 +185,6 @@ export function NoEncontradoDialog({
                     options={unidadOptions}
                     placeholder="Selecciona una unidad"
                     searchPlaceholder="Buscar por torre o número..."
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">
-                    Observación (opcional)
-                  </label>
-                  <Textarea
-                    value={observacion}
-                    onChange={(e) => setObservacion(e.target.value)}
-                    placeholder="Nota sobre el visitante..."
-                    className="min-h-16"
                   />
                 </div>
               </div>

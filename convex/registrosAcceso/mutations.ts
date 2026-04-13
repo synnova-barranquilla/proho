@@ -57,7 +57,6 @@ export const registrarIngreso = mutation({
     placaRaw: v.string(),
     justificacion: v.optional(v.string()),
     novedad: v.optional(v.string()),
-    observacion: v.optional(v.string()),
     forzarPermitido: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -151,7 +150,6 @@ export const registrarIngreso = mutation({
       decisionFinal: 'PERMITIDO',
       justificacion: args.justificacion?.trim() || undefined,
       novedad: args.novedad?.trim() || undefined,
-      observacion: args.observacion?.trim() || undefined,
       vigilanteId: user._id,
     })
 
@@ -172,7 +170,6 @@ export const registrarSalida = mutation({
   args: {
     conjuntoId: v.id('conjuntos'),
     placaRaw: v.string(),
-    observacion: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { user } = await requireConjuntoAccess(ctx, args.conjuntoId, {
@@ -201,7 +198,6 @@ export const registrarSalida = mutation({
       // Salida normal
       await ctx.db.patch(activo._id, {
         salidaEn: ahora,
-        observacion: args.observacion?.trim() || activo.observacion,
       })
       return { registroId: activo._id, exitWithoutEntry: false }
     }
@@ -224,7 +220,6 @@ export const registrarSalida = mutation({
       salidaEn: ahora,
       decisionMotor: [],
       decisionFinal: 'PERMITIDO',
-      observacion: args.observacion?.trim() || undefined,
       vigilanteId: user._id,
     })
 
@@ -242,7 +237,6 @@ export const registrarVisitante = mutation({
     placaRaw: v.string(),
     tipo: v.union(v.literal('VISITANTE'), v.literal('VISITA_ADMIN')),
     unidadId: v.optional(v.id('unidades')),
-    observacion: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { user } = await requireConjuntoAccess(ctx, args.conjuntoId, {
@@ -279,7 +273,6 @@ export const registrarVisitante = mutation({
       entradaEn: Date.now(),
       decisionMotor: [],
       decisionFinal: 'PERMITIDO',
-      observacion: args.observacion?.trim() || undefined,
       vigilanteId: user._id,
     })
 
@@ -300,7 +293,6 @@ export const registrarResidenteNuevo = mutation({
     propietarioNombre: v.optional(v.string()),
     justificacion: v.optional(v.string()),
     novedad: v.optional(v.string()),
-    observacion: v.optional(v.string()),
     forzarPermitido: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -397,7 +389,6 @@ export const registrarResidenteNuevo = mutation({
       decisionFinal: 'PERMITIDO',
       justificacion: args.justificacion?.trim() || undefined,
       novedad: args.novedad?.trim() || undefined,
-      observacion: args.observacion?.trim() || undefined,
       vigilanteId: user._id,
     })
 
@@ -421,7 +412,6 @@ export const registrarRechazo = mutation({
     vehiculoId: v.optional(v.id('vehiculos')),
     unidadId: v.optional(v.id('unidades')),
     decisionMotor: v.array(v.string()),
-    observacion: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { user } = await requireConjuntoAccess(ctx, args.conjuntoId, {
@@ -439,37 +429,9 @@ export const registrarRechazo = mutation({
       unidadId: args.unidadId,
       decisionMotor: args.decisionMotor,
       decisionFinal: 'RECHAZADO',
-      observacion: args.observacion?.trim() || undefined,
       vigilanteId: user._id,
     })
 
     return { registroId }
-  },
-})
-
-/**
- * Actualizar la observación de un registro de acceso existente.
- * Usado desde el toast "Agregar observación" post-ingreso.
- */
-export const actualizarObservacion = mutation({
-  args: {
-    registroAccesoId: v.id('registrosAcceso'),
-    observacion: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const registro = await ctx.db.get(args.registroAccesoId)
-    if (!registro) {
-      throwConvexError(ERROR_CODES.REGISTRO_NOT_FOUND, 'Registro no encontrado')
-    }
-
-    await requireConjuntoAccess(ctx, registro.conjuntoId, {
-      allowedRoles: ['VIGILANTE', 'ADMIN'],
-    })
-
-    await ctx.db.patch(args.registroAccesoId, {
-      observacion: args.observacion.trim() || undefined,
-    })
-
-    return { success: true }
   },
 })

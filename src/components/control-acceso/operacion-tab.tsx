@@ -14,7 +14,6 @@ import type { Id } from '../../../convex/_generated/dataModel'
 import { normalizePlaca } from '../../../convex/lib/placa'
 import { NoEncontradoDialog } from './no-encontrado-dialog'
 import { PlacaSearchBar } from './placa-search-bar'
-import { SalidaDialog } from './salida-dialog'
 import type { RegistroActivo } from './types'
 import { useControlAcceso } from './use-control-acceso'
 import { RegistrosRecientesTable } from './vehiculos-activos-table'
@@ -226,23 +225,12 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         />
       )}
 
-      {state.screen === 'SALIDA' && (
-        <SalidaDialog
-          open
-          onClose={handleVolver}
-          conjuntoId={conjuntoId}
-          registro={state.registro}
-        />
-      )}
-
       {state.screen === 'YA_DENTRO' && (
         <YaDentroDialog
           open
           onClose={handleVolver}
+          conjuntoId={conjuntoId}
           registro={state.registro}
-          onRegistrarSalida={() =>
-            dispatch({ type: 'ELEGIR_SALIDA', registro: state.registro })
-          }
         />
       )}
 

@@ -32,7 +32,6 @@ export const registroAccesoFields = {
   decisionFinal: decisionFinalValues,
   justificacion: v.optional(v.string()),
   novedad: v.optional(v.string()),
-  observacion: v.optional(v.string()),
 
   // Auditoría
   vigilanteId: v.id('users'),

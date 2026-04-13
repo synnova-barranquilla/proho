@@ -43,11 +43,6 @@ export type ControlAccesoScreen =
       placa: string
       registro: RegistroActivo
     }
-  | {
-      screen: 'SALIDA'
-      placa: string
-      registro: RegistroActivo
-    }
 
 export type ControlAccesoAction =
   | { type: 'BUSCAR_PLACA'; placa: string }
@@ -65,5 +60,4 @@ export type ControlAccesoAction =
     }
   | { type: 'RESULTADO_NO_ENCONTRADO'; placaRaw: string }
   | { type: 'RESULTADO_YA_DENTRO'; registro: RegistroActivo }
-  | { type: 'ELEGIR_SALIDA'; registro: RegistroActivo }
   | { type: 'VOLVER_IDLE' }

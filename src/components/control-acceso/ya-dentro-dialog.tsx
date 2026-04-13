@@ -1,4 +1,9 @@
+import { useMutation } from '@tanstack/react-query'
+
+import { useConvexMutation } from '@convex-dev/react-query'
+import { ConvexError } from 'convex/values'
 import { AlertTriangle } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
 import {
@@ -10,6 +15,8 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { formatPlaca } from '#/lib/formatters'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
 import type { RegistroActivo } from './types'
 
 function formatTimeAgo(timestamp: number | undefined): string {
@@ -27,16 +34,39 @@ function formatTimeAgo(timestamp: number | undefined): string {
 interface YaDentroDialogProps {
   open: boolean
   onClose: () => void
+  conjuntoId: Id<'conjuntos'>
   registro: RegistroActivo
-  onRegistrarSalida: () => void
 }
 
 export function YaDentroDialog({
   open,
   onClose,
+  conjuntoId,
   registro,
-  onRegistrarSalida,
 }: YaDentroDialogProps) {
+  const registrarSalidaFn = useConvexMutation(
+    api.registrosAcceso.mutations.registrarSalida,
+  )
+  const registrarSalidaMut = useMutation({ mutationFn: registrarSalidaFn })
+
+  const handleSalida = async () => {
+    try {
+      await registrarSalidaMut.mutateAsync({
+        conjuntoId,
+        placaRaw: registro.placaNormalizada,
+      })
+      toast.success('Salida registrada')
+      onClose()
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error')
+      } else {
+        toast.error('Error inesperado')
+      }
+    }
+  }
+
   const unidad = registro.unidad
   const unidadLabel = unidad ? `T${unidad.torre} — ${unidad.numero}` : '—'
 
@@ -67,10 +97,21 @@ export function YaDentroDialog({
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={registrarSalidaMut.isPending}
+          >
             Volver
           </Button>
-          <Button onClick={onRegistrarSalida}>Registrar salida</Button>
+          <Button
+            onClick={handleSalida}
+            disabled={registrarSalidaMut.isPending}
+          >
+            {registrarSalidaMut.isPending
+              ? 'Registrando...'
+              : 'Registrar salida'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

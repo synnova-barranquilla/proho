@@ -42,13 +42,6 @@ function reducer(
         registro: action.registro,
       }
 
-    case 'ELEGIR_SALIDA':
-      return {
-        screen: 'SALIDA',
-        placa: action.registro.placaNormalizada,
-        registro: action.registro,
-      }
-
     case 'VOLVER_IDLE':
       return { screen: 'IDLE' }
 

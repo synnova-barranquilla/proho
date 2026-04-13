@@ -60,7 +60,6 @@ export function RegistrarResidenteSheet({
   const [selectedUnidadId, setSelectedUnidadId] = useState<string>('')
   const [tipo, setTipo] = useState<VehiculoTipo>('CARRO')
   const [propietario, setPropietario] = useState('')
-  const [observacion, setObservacion] = useState('')
   const [violations, setViolations] = useState<RuleViolation[]>([])
   const [justificacion, setJustificacion] = useState('')
   const [novedad, setNovedad] = useState('')
@@ -91,7 +90,6 @@ export function RegistrarResidenteSheet({
         unidadId: selectedUnidadId as Id<'unidades'>,
         vehiculoTipo: tipo,
         propietarioNombre: propietario.trim() || undefined,
-        observacion: observacion.trim() || undefined,
         ...(showViolations
           ? {
               forzarPermitido: true,
@@ -127,7 +125,6 @@ export function RegistrarResidenteSheet({
     setSelectedUnidadId('')
     setTipo('CARRO')
     setPropietario('')
-    setObservacion('')
     setViolations([])
     setJustificacion('')
     setNovedad('')
@@ -182,15 +179,6 @@ export function RegistrarResidenteSheet({
                 value={propietario}
                 onChange={(e) => setPropietario(e.target.value)}
                 placeholder="Nombre del propietario"
-              />
-            </Field>
-            <Field>
-              <FieldLabel>Observación (opcional)</FieldLabel>
-              <Textarea
-                value={observacion}
-                onChange={(e) => setObservacion(e.target.value)}
-                placeholder="Nota adicional..."
-                className="min-h-16"
               />
             </Field>
           </FieldGroup>
