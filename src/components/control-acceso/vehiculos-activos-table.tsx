@@ -4,7 +4,7 @@ import { Bike, Car, LogOut, type LucideIcon } from 'lucide-react'
 
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
-import { DataTable } from '#/components/ui/data-table'
+import { PaginatedDataTable } from '#/components/ui/paginated-data-table'
 import { formatPlaca } from '#/lib/formatters'
 import type { RegistroActivo } from './types'
 
@@ -133,9 +133,10 @@ export function VehiculosActivosTable({
   const columns = createColumns(onRegistrarSalida)
 
   return (
-    <DataTable
+    <PaginatedDataTable
       columns={columns}
       data={registros}
+      pageSize={5}
       emptyMessage="No hay vehículos dentro del conjunto."
     />
   )
