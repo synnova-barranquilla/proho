@@ -1,5 +1,7 @@
 import { getRouteApi } from '@tanstack/react-router'
 
+import { Moon, Sun } from 'lucide-react'
+
 import { Avatar, AvatarFallback } from '#/components/ui/avatar'
 import { Button } from '#/components/ui/button'
 import {
@@ -11,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '#/components/ui/dropdown-menu'
+import { useTheme } from '#/hooks/use-theme'
 import { getFullName, getInitials } from '#/lib/user'
 
 const authenticatedRoute = getRouteApi('/_authenticated')
@@ -20,6 +23,7 @@ export function AdminUserMenu() {
   const fullName = getFullName(convexUser)
   const initials = getInitials(convexUser)
   const isOwner = convexUser.isOrgOwner === true
+  const { mode, toggle } = useTheme()
 
   return (
     <DropdownMenu>
@@ -52,6 +56,14 @@ export function AdminUserMenu() {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={toggle}>
+          {mode === 'light' ? (
+            <Moon className="mr-2 h-4 w-4" />
+          ) : (
+            <Sun className="mr-2 h-4 w-4" />
+          )}
+          {mode === 'light' ? 'Modo oscuro' : 'Modo claro'}
+        </DropdownMenuItem>
         <DropdownMenuItem render={<a href="/logout" />}>
           Cerrar sesión
         </DropdownMenuItem>
