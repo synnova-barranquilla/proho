@@ -43,6 +43,7 @@ const VIOLATION_LABELS: Record<RuleViolation, string> = {
 interface RegistrarResidenteSheetProps {
   open: boolean
   onClose: () => void
+  onSuccess?: () => void
   conjuntoId: Id<'conjuntos'>
   placa: string
   placaRaw: string
@@ -51,6 +52,7 @@ interface RegistrarResidenteSheetProps {
 export function RegistrarResidenteSheet({
   open,
   onClose,
+  onSuccess,
   conjuntoId,
   placa,
   placaRaw,
@@ -101,7 +103,11 @@ export function RegistrarResidenteSheet({
       }
 
       toast.success('Vehículo registrado e ingreso permitido')
-      handleClose()
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        handleClose()
+      }
     } catch (err) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }

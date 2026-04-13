@@ -239,7 +239,8 @@ export function NoEncontradoDialog({
 
       <RegistrarResidenteSheet
         open={sheetOpen}
-        onClose={() => {
+        onClose={() => setSubScreen('OPTIONS')}
+        onSuccess={() => {
           setSubScreen('OPTIONS')
           onClose()
         }}
