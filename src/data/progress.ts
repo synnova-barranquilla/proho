@@ -26,7 +26,7 @@ export const currentFocus = {
   done: 0,
   total: 0,
 }
-export const lastUpdated = '12 de abril de 2026'
+export const lastUpdated = '13 de abril de 2026'
 
 export const milestones: Milestone[] = [
   {
@@ -346,12 +346,7 @@ export const milestones: Milestone[] = [
           { id: '4.10', name: 'CRUD de vehículos', status: 'done' },
           {
             id: '4.11',
-            name: 'Crear tabla parqueaderos en Convex',
-            status: 'done',
-          },
-          {
-            id: '4.12',
-            name: 'Wizard bulk generate de parqueaderos',
+            name: 'Capacidad de parqueaderos (carros/motos) en conjuntoConfig',
             status: 'done',
           },
           { id: '4.13', name: 'conjuntoConfig tipada', status: 'done' },
@@ -489,7 +484,7 @@ export const milestones: Milestone[] = [
           },
           {
             id: '5.5',
-            name: 'Crear tabla novedades',
+            name: 'Campo novedad opcional en registrosAcceso (reemplaza tabla novedades)',
             status: 'done',
           },
           {
@@ -509,7 +504,7 @@ export const milestones: Milestone[] = [
           },
           {
             id: '5.9',
-            name: 'Queries de novedades',
+            name: 'Novedad como campo en auditoría (sin tabla separada)',
             status: 'done',
           },
           {
@@ -560,7 +555,7 @@ export const milestones: Milestone[] = [
           },
           {
             id: '6.4',
-            name: 'Dialog: salida vehicular',
+            name: 'Salida directa desde ya-dentro-dialog (sin diálogo intermedio)',
             status: 'done',
           },
           {
@@ -580,12 +575,7 @@ export const milestones: Milestone[] = [
           },
           {
             id: '6.8',
-            name: 'Backend: actualizarObservacion + novedades manual',
-            status: 'done',
-          },
-          {
-            id: '6.9',
-            name: 'FAB + Sheet: novedades manuales',
+            name: 'Novedad opcional en violaciones (justificación + novedad)',
             status: 'done',
           },
           {
@@ -621,7 +611,7 @@ export const milestones: Milestone[] = [
         tasks: [
           {
             id: '7.1',
-            name: 'Tabs + Dashboard con 5 KPIs',
+            name: 'Tabs (Operación, Dashboard, Histórico, Auditoría) + Dashboard con occupancy cards + tabla residentes',
             status: 'done',
           },
           {
@@ -631,12 +621,7 @@ export const milestones: Milestone[] = [
           },
           {
             id: '7.3',
-            name: 'Vista de novedades con filtros y paginación',
-            status: 'done',
-          },
-          {
-            id: '7.4',
-            name: 'Vista de auditoría con paginación',
+            name: 'Vista de auditoría con columna de novedad',
             status: 'done',
           },
           {
@@ -726,6 +711,154 @@ export const milestones: Milestone[] = [
           { id: 'E.8', name: 'Action sendDailySummary', status: 'done' },
           { id: 'E.9', name: 'Cron diario 6am COT', status: 'done' },
           { id: 'E.10', name: 'Configurar RESEND_API_KEY', status: 'done' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'Polish',
+    name: 'Post-MVP Polish',
+    description:
+      'Ajustes de UX, simplificaciones de arquitectura, observabilidad y mejoras operativas.',
+    scope: 'mvp',
+    phases: [
+      {
+        id: 'P1',
+        name: 'Arquitectura y Roles',
+        tasks: [
+          {
+            id: 'P1.1',
+            name: 'Aplicar preset shadcn/ui (blue primary, Roboto, base-nova)',
+            status: 'done',
+          },
+          {
+            id: 'P1.2',
+            name: 'Default light mode + ?theme= query param',
+            status: 'done',
+          },
+          {
+            id: 'P1.3',
+            name: 'Theme toggle en user menu (admin + super-admin)',
+            status: 'done',
+          },
+          {
+            id: 'P1.4',
+            name: 'Agregar orgRole MEMBER para vigilantes/asistentes/residentes',
+            status: 'done',
+          },
+          {
+            id: 'P1.5',
+            name: 'Mover rutas /admin/c/ → /c/ (layout compartido ConjuntoLayout)',
+            status: 'done',
+          },
+          {
+            id: 'P1.6',
+            name: 'Renombrar $conjuntoId → $conjuntoSlug en rutas y params',
+            status: 'done',
+          },
+          {
+            id: 'P1.7',
+            name: 'Solo módulo parking visible en org create dialog',
+            status: 'done',
+          },
+          {
+            id: 'P1.8',
+            name: 'Fix: DropdownMenuLabel dentro de Group (Base UI #31)',
+            status: 'done',
+          },
+          {
+            id: 'P1.9',
+            name: 'Fix: restaurar DialogBody removido por preset',
+            status: 'done',
+          },
+        ],
+      },
+      {
+        id: 'P2',
+        name: 'Observabilidad',
+        tasks: [
+          {
+            id: 'P2.1',
+            name: 'Integrar Sentry (client + server + source maps)',
+            status: 'done',
+          },
+          {
+            id: 'P2.2',
+            name: 'Ruta /tunnel para proxy Sentry (bypass ad blockers)',
+            status: 'done',
+          },
+        ],
+      },
+      {
+        id: 'P3',
+        name: 'UX Control de Acceso',
+        tasks: [
+          {
+            id: 'P3.1',
+            name: 'Búsqueda de unidades por abreviatura (t1302, a101)',
+            status: 'done',
+          },
+          {
+            id: 'P3.2',
+            name: 'Fix: separar dialog + sheet en registro residente (no overlay)',
+            status: 'done',
+          },
+          {
+            id: 'P3.3',
+            name: 'Cancel → vuelve al dialog, success → cierra todo',
+            status: 'done',
+          },
+          {
+            id: 'P3.4',
+            name: 'Tablas colapsables: permanencia ≥30d, visitantes, recientes',
+            status: 'done',
+          },
+          {
+            id: 'P3.5',
+            name: 'Registros recientes (48h) con entrada/salida como filas separadas',
+            status: 'done',
+          },
+          {
+            id: 'P3.6',
+            name: 'Input de placa sticky al fondo + sugerencias hacia arriba',
+            status: 'done',
+          },
+          {
+            id: 'P3.7',
+            name: 'Stats de ocupación (carros X/Y, motos X/Y) sobre el input',
+            status: 'done',
+          },
+          {
+            id: 'P3.8',
+            name: 'Dashboard: 3 cards (carros/motos/visitantes) + tabla residentes por duración',
+            status: 'done',
+          },
+        ],
+      },
+      {
+        id: 'P4',
+        name: 'Simplificaciones',
+        tasks: [
+          {
+            id: 'P4.1',
+            name: 'Parqueaderos: reemplazar tabla individual por capacidad en config',
+            status: 'done',
+          },
+          {
+            id: 'P4.2',
+            name: 'Novedades: de tabla separada a campo en registroAcceso',
+            status: 'done',
+          },
+          {
+            id: 'P4.3',
+            name: 'Eliminar campo observacion + simplificar salida directa',
+            status: 'done',
+          },
+          {
+            id: 'P4.4',
+            name: 'Eliminar tab Novedades + FAB de novedad manual',
+            status: 'done',
+          },
         ],
       },
     ],

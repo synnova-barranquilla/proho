@@ -123,8 +123,7 @@
 | 4.8      | Crear CRUD de residentes con asociación a unidad                                                                              | done     |
 | 4.9      | Crear tabla `vehiculos` en Convex (placa única por conjunto, asociación a unidad)                                             | done     |
 | 4.10     | Crear CRUD de vehículos registrados con asociación a unidad                                                                   | done     |
-| 4.11     | Crear tabla `parqueaderos` en Convex (sin campo `estado` — ocupado se deriva en F5)                                           | done     |
-| 4.12     | Crear wizard bulk generate de parqueaderos (cantidades por tipo)                                                              | done     |
+| 4.11     | ~~Tabla parqueaderos~~ → Capacidad carros/motos en `conjuntoConfig` (simplificado en Polish)                                  | done     |
 | 4.13     | ~~Crear tabla `regla_config`~~ → Reemplazada por `conjuntoConfig` tipada (row único por conjunto)                             | done     |
 | 4.14     | Crear pantalla tipada de configuración del conjunto (`conjuntoConfig`)                                                        | done     |
 | 4.15     | Implementar gestión de estado de mora (toggle por unidad)                                                                     | done     |
@@ -138,7 +137,7 @@
 | 4.23     | Mutations de `conjuntoMemberships` (create con reactivación de inactivas, updateRole, setActive)                              | done     |
 | 4.24     | Expandir invitations con `conjuntoId` + `conjuntoRole` + `isOrgOwnerOnAccept` + `conjuntoIdsOnAccept`                         | done     |
 | 4.25     | Selector post-login `/seleccionar-conjunto` + CTA "Crear mi primer conjunto" para owners                                      | done     |
-| 4.26     | URL segmentada `/admin/c/$conjuntoSlug/*` + `requireConjuntoAccess` + `getBySlug` (global para super admin)                   | done     |
+| 4.26     | URL segmentada `/c/$conjuntoSlug/*` + `requireConjuntoAccess` + `getBySlug` (rutas movidas de /admin/c/ a /c/)                | done     |
 | 4.27     | Pantalla `/admin/equipo` con queries scoped por org (super admin cross-org) + `ManageAccessDialog`                            | done     |
 | 4.28     | Polish R1: `cursor-pointer` en botones, `NavigationProgressBar` con debounce 150ms, columna `#` en todas las tablas           | done     |
 | 4.29     | Polish R2: `PhoneInput`, `DocumentInput`, `PlacaInput` — formateo en vivo con storage canónico (`src/lib/formatters.ts`)      | done     |
@@ -160,7 +159,7 @@
 | 5.2  | Agregar ERROR_CODES para F5 (REGISTRO_NOT_FOUND, REGISTRO_ALREADY_EXITED, VEHICULO_NOT_FOUND, UNIDAD_NOT_FOUND)                            |
 | 5.3  | Actualizar `conjuntoConfig`: reemplazar 5 campos viejos por 3 reglas (reglaIngresoEnMora, reglaVehiculoDuplicado, reglaPermanenciaMaxDias) |
 | 5.4  | Crear tabla `registrosAcceso` en Convex (tipo unificado: RESIDENTE/VISITANTE/VISITA_ADMIN) con validators e índices                        |
-| 5.5  | Crear tabla `novedades` en Convex (log inmutable de auditoría) con validators e índices                                                    |
+| 5.5  | ~~Tabla novedades~~ → Campo `novedad` opcional en `registrosAcceso` (simplificado en Polish)                                               |
 | 5.6  | Motor de reglas `evaluateRules()`: función pura compartida client/server (R1 mora, R2 duplicado, R3 permanencia)                           |
 | 5.7  | Actualizar UI de configuración del conjunto con los 3 toggles de reglas                                                                    |
 | 5.8  | Queries: `listActivos` (vehículos dentro), `listRecientes` (últimos 5), `findActivoByPlaca` (para salida)                                  |
@@ -350,25 +349,75 @@
 
 ---
 
+## Post-MVP Polish (13 abril 2026)
+
+> Ajustes de UX, simplificaciones de arquitectura, observabilidad y mejoras operativas realizadas post-MVP.
+
+### P1 — Arquitectura y Roles
+
+| ID   | Tarea                                                              | Estado |
+| ---- | ------------------------------------------------------------------ | ------ |
+| P1.1 | Aplicar preset shadcn/ui (blue primary, Roboto, base-nova)         | done   |
+| P1.2 | Default light mode + `?theme=` query param override                | done   |
+| P1.3 | Theme toggle en user menu (admin + super-admin)                    | done   |
+| P1.4 | Agregar orgRole `MEMBER` para vigilantes/asistentes/residentes     | done   |
+| P1.5 | Mover rutas `/admin/c/` → `/c/` (layout compartido ConjuntoLayout) | done   |
+| P1.6 | Renombrar `$conjuntoId` → `$conjuntoSlug` en rutas y params        | done   |
+| P1.7 | Solo módulo parking visible en org create dialog                   | done   |
+| P1.8 | Fix: DropdownMenuLabel dentro de Group (Base UI error #31)         | done   |
+| P1.9 | Fix: restaurar DialogBody removido por preset shadcn               | done   |
+
+### P2 — Observabilidad
+
+| ID   | Tarea                                                    | Estado |
+| ---- | -------------------------------------------------------- | ------ |
+| P2.1 | Integrar Sentry (client + server + source maps + replay) | done   |
+| P2.2 | Ruta `/tunnel` para proxy Sentry (bypass ad blockers)    | done   |
+
+### P3 — UX Control de Acceso
+
+| ID   | Tarea                                                             | Estado |
+| ---- | ----------------------------------------------------------------- | ------ |
+| P3.1 | Búsqueda de unidades por abreviatura (t1302, a101, etc.)          | done   |
+| P3.2 | Fix: separar dialog + sheet en registro residente (sin overlay)   | done   |
+| P3.3 | Cancel → vuelve al dialog, success → cierra todo                  | done   |
+| P3.4 | Tablas colapsables: permanencia ≥30d, visitantes, recientes       | done   |
+| P3.5 | Registros recientes (48h) con entrada/salida como filas separadas | done   |
+| P3.6 | Input de placa sticky al fondo + sugerencias hacia arriba         | done   |
+| P3.7 | Stats de ocupación (carros X/Y, motos X/Y) sobre el input         | done   |
+| P3.8 | Dashboard: 3 cards occupancy + tabla residentes por duración      | done   |
+
+### P4 — Simplificaciones
+
+| ID   | Tarea                                                                     | Estado |
+| ---- | ------------------------------------------------------------------------- | ------ |
+| P4.1 | Parqueaderos: tabla individual → capacidad carros/motos en conjuntoConfig | done   |
+| P4.2 | Novedades: tabla separada → campo opcional en registroAcceso              | done   |
+| P4.3 | Eliminar campo observacion + salida directa (sin diálogo intermedio)      | done   |
+| P4.4 | Eliminar tab Novedades + FAB de novedad manual                            | done   |
+
+---
+
 ## Resumen
 
-| Fase      | Nombre                               | Tareas  | Milestone |
-| --------- | ------------------------------------ | ------- | --------- |
-| 0         | Configuración del Proyecto           | 13      | M1        |
-| 1         | Arquitectura Multi-Tenant            | 10      | M1        |
-| 2         | Autenticación y Usuarios             | 19      | M1        |
-| 3         | Admin: Super Admin                   | 11      | M2        |
-| 4         | Admin: Conjunto Admin                | 34      | M2        |
-| 5         | Parqueaderos: Datos Offline-First    | 23      | M3        |
-| 6         | Parqueaderos: Reglas y Pantallas     | 19      | M3        |
-| 7         | Parqueaderos: Dashboards y Auditoría | 6       | M3        |
-| 8         | Parqueaderos: Alertas y Crons        | 6       | M3        |
-| 9         | Reportes de Convivencia              | 13      | M4        |
-| 10        | Reserva de Zonas Sociales            | 9       | M4        |
-| 11        | Apertura y Cierre                    | 9       | M4        |
-| 12        | Notificaciones                       | 12      | M4        |
-| 13        | Dashboard Ejecutivo                  | 5       | M4        |
-| 14        | Testing Final y Deploy               | 10      | M3/M4     |
-| **Total** |                                      | **199** |           |
+| Fase   | Nombre                               | Tareas | Milestone |
+| ------ | ------------------------------------ | ------ | --------- |
+| 0      | Configuración del Proyecto           | 13     | M1        |
+| 1      | Arquitectura Multi-Tenant            | 10     | M1        |
+| 2      | Autenticación y Usuarios             | 19     | M1        |
+| 3      | Admin: Super Admin                   | 11     | M2        |
+| 4      | Admin: Conjunto Admin                | 33     | M2        |
+| 5      | Parqueaderos: Datos Offline-First    | 14     | M3        |
+| 6      | Parqueaderos: Reglas y Pantallas     | 12     | M3        |
+| 7      | Parqueaderos: Dashboards y Auditoría | 5      | M3        |
+| 8      | Parqueaderos: Alertas y Crons        | 6      | M3        |
+| Email  | Integración Resend                   | 10     | MVP       |
+| Polish | Post-MVP Polish                      | 23     | MVP       |
+| 9      | Reportes de Convivencia              | 13     | M4        |
+| 10     | Reserva de Zonas Sociales            | 9      | M4        |
+| 11     | Apertura y Cierre                    | 9      | M4        |
+| 12     | Notificaciones                       | 7      | M4        |
+| 13     | Dashboard Ejecutivo                  | 5      | M4        |
+| 14     | Testing Final y Deploy               | 10     | M3/M4     |
 
-> **MVP = M1 + M2 + M3 = Fases 0-8 + F14 (parcial) = 141 tareas**
+> **MVP = M1 + M2 + M3 + Email + Polish = todas las tareas activas completadas**
