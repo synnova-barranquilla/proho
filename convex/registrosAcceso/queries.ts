@@ -83,16 +83,48 @@ export const listRecientes = query({
     const vehiculoMap = new Map(vehiculos.map((veh) => [veh._id, veh]))
     const unidadMap = new Map(unidades.map((u) => [u._id, u]))
 
-    return registros
-      .map((r) => ({
-        ...r,
-        vehiculo: r.vehiculoId ? (vehiculoMap.get(r.vehiculoId) ?? null) : null,
-        unidad: r.unidadId ? (unidadMap.get(r.unidadId) ?? null) : null,
-      }))
-      .sort(
-        (a, b) =>
-          (b.salidaEn ?? b.entradaEn ?? 0) - (a.salidaEn ?? a.entradaEn ?? 0),
-      )
+    // Expand each registro into individual events (entrada + salida)
+    const eventos: Array<{
+      _id: string
+      evento: 'ENTRADA' | 'SALIDA'
+      eventoEn: number
+      placaNormalizada: string
+      tipo: string
+      vehiculo: (typeof vehiculos)[number] | null
+      unidad: (typeof unidades)[number] | null
+    }> = []
+
+    for (const r of registros) {
+      const vehiculo = r.vehiculoId
+        ? (vehiculoMap.get(r.vehiculoId) ?? null)
+        : null
+      const unidad = r.unidadId ? (unidadMap.get(r.unidadId) ?? null) : null
+      const base = {
+        placaNormalizada: r.placaNormalizada,
+        tipo: r.tipo,
+        vehiculo,
+        unidad,
+      }
+
+      if (r.entradaEn && r.entradaEn >= cutoff) {
+        eventos.push({
+          _id: `${r._id}-entrada`,
+          evento: 'ENTRADA',
+          eventoEn: r.entradaEn,
+          ...base,
+        })
+      }
+      if (r.salidaEn && r.salidaEn >= cutoff) {
+        eventos.push({
+          _id: `${r._id}-salida`,
+          evento: 'SALIDA',
+          eventoEn: r.salidaEn,
+          ...base,
+        })
+      }
+    }
+
+    return eventos.sort((a, b) => b.eventoEn - a.eventoEn)
   },
 })
 

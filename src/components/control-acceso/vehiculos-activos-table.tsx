@@ -5,10 +5,10 @@ import { Bike, Car, LogIn, LogOut, type LucideIcon } from 'lucide-react'
 import { Badge } from '#/components/ui/badge'
 import { PaginatedDataTable } from '#/components/ui/paginated-data-table'
 import { formatPlaca } from '#/lib/formatters'
-import type { RegistroActivo } from './types'
+import type { RegistroReciente } from './types'
 
 interface RegistrosRecientesTableProps {
-  registros: RegistroActivo[]
+  registros: RegistroReciente[]
 }
 
 const TIPO_VEHICULO_ICON: Record<string, LucideIcon> = {
@@ -32,8 +32,7 @@ const TIPO_REGISTRO_VARIANT: Record<
   VISITA_ADMIN: 'outline',
 }
 
-function formatHora(timestamp: number | undefined): string {
-  if (timestamp == null) return '—'
+function formatHora(timestamp: number): string {
   const date = new Date(timestamp)
   return date.toLocaleString('es-CO', {
     day: '2-digit',
@@ -44,7 +43,7 @@ function formatHora(timestamp: number | undefined): string {
   })
 }
 
-const columns: ColumnDef<RegistroActivo, unknown>[] = [
+const columns: ColumnDef<RegistroReciente, unknown>[] = [
   {
     accessorKey: 'placaNormalizada',
     header: 'Placa',
@@ -98,7 +97,7 @@ const columns: ColumnDef<RegistroActivo, unknown>[] = [
     header: 'Evento',
     enableSorting: false,
     cell: ({ row }) => {
-      const esSalida = row.original.salidaEn != null
+      const esSalida = row.original.evento === 'SALIDA'
       return (
         <span
           className={`flex items-center gap-1.5 text-sm ${esSalida ? 'text-amber-600' : 'text-green-600'}`}
@@ -116,14 +115,11 @@ const columns: ColumnDef<RegistroActivo, unknown>[] = [
   {
     id: 'hora',
     header: 'Hora',
-    cell: ({ row }) => {
-      const timestamp = row.original.salidaEn ?? row.original.entradaEn
-      return (
-        <span className="text-sm text-muted-foreground">
-          {formatHora(timestamp)}
-        </span>
-      )
-    },
+    cell: ({ row }) => (
+      <span className="text-sm text-muted-foreground">
+        {formatHora(row.original.eventoEn)}
+      </span>
+    ),
   },
 ]
 

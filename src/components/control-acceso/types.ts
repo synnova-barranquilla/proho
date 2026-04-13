@@ -8,6 +8,16 @@ export type RegistroActivo = Doc<'registrosAcceso'> & {
   unidad: Doc<'unidades'> | null
 }
 
+export interface RegistroReciente {
+  _id: string
+  evento: 'ENTRADA' | 'SALIDA'
+  eventoEn: number
+  placaNormalizada: string
+  tipo: string
+  vehiculo: Doc<'vehiculos'> | null
+  unidad: Doc<'unidades'> | null
+}
+
 // ─── State machine ─────────────────────────────────────────────────────
 
 export type ControlAccesoScreen =
