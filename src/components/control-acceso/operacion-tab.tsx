@@ -1,9 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
+import { ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
@@ -112,6 +113,8 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
     dispatch({ type: 'VOLVER_IDLE' })
   }, [dispatch])
 
+  const [tableOpen, setTableOpen] = useState(false)
+
   return (
     <>
       <div className="flex flex-col gap-6">
@@ -122,17 +125,27 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         />
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              Vehículos dentro ({activos.length})
-            </CardTitle>
+          <CardHeader
+            className="cursor-pointer select-none"
+            onClick={() => setTableOpen((o) => !o)}
+          >
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">
+                Vehículos dentro ({activos.length})
+              </CardTitle>
+              <ChevronDown
+                className={`h-4 w-4 text-muted-foreground transition-transform ${tableOpen ? 'rotate-180' : ''}`}
+              />
+            </div>
           </CardHeader>
-          <CardContent>
-            <VehiculosActivosTable
-              registros={activos}
-              onRegistrarSalida={handleRegistrarSalida}
-            />
-          </CardContent>
+          {tableOpen && (
+            <CardContent>
+              <VehiculosActivosTable
+                registros={activos}
+                onRegistrarSalida={handleRegistrarSalida}
+              />
+            </CardContent>
+          )}
         </Card>
       </div>
 
