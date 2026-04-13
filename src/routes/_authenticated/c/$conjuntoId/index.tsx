@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { convexQuery } from '@convex-dev/react-query'
 import {
@@ -23,22 +23,7 @@ import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/c/$conjuntoId/')({
-  loader: async ({ context: { queryClient, conjuntoId, conjuntoSlug } }) => {
-    // Vigilantes skip the dashboard and go directly to control-acceso.
-    // Check membership role (not just orgRole) to handle both MEMBER users
-    // and existing users not yet migrated from orgRole='ADMIN'.
-    const slugData = await prefetchAuthenticatedQuery(
-      queryClient,
-      api.conjuntos.queries.getBySlug,
-      { slug: conjuntoSlug },
-    )
-    if (slugData?.membership?.role === 'VIGILANTE') {
-      throw redirect({
-        to: '/c/$conjuntoId/control-acceso',
-        params: { conjuntoId: conjuntoSlug },
-      })
-    }
-
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
