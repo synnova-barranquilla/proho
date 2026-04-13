@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { buildUnidadOptions } from '#/lib/unidad-search'
 import { api } from '../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 
@@ -75,10 +76,7 @@ export function ResidenteDialog({
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
   )
   const unidades = unidadesData.torres.flatMap((t) => t.unidades)
-  const unidadOptions = unidades.map((u) => ({
-    value: u._id,
-    label: `Torre ${u.torre} — ${u.numero}`,
-  }))
+  const unidadOptions = buildUnidadOptions(unidades)
 
   const createFn = useConvexMutation(api.residentes.mutations.create)
   const updateFn = useConvexMutation(api.residentes.mutations.update)

@@ -26,6 +26,7 @@ import {
   SheetTitle,
 } from '#/components/ui/sheet'
 import { Textarea } from '#/components/ui/textarea'
+import { buildUnidadOptions } from '#/lib/unidad-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
@@ -66,10 +67,7 @@ export function RegistrarResidenteSheet({
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
   )
   const unidades = unidadesData.torres.flatMap((t) => t.unidades)
-  const unidadOptions = unidades.map((u) => ({
-    value: u._id,
-    label: `Torre ${u.torre} — ${u.numero}`,
-  }))
+  const unidadOptions = buildUnidadOptions(unidades)
 
   const registrarFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarResidenteNuevo,

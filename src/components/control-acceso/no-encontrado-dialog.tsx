@@ -19,6 +19,7 @@ import {
 import { SearchableSelect } from '#/components/ui/searchable-select'
 import { Textarea } from '#/components/ui/textarea'
 import { formatPlaca } from '#/lib/formatters'
+import { buildUnidadOptions } from '#/lib/unidad-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { RegistrarResidenteSheet } from './registrar-residente-sheet'
@@ -48,10 +49,7 @@ export function NoEncontradoDialog({
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
   )
   const unidades = unidadesData.torres.flatMap((t) => t.unidades)
-  const unidadOptions = unidades.map((u) => ({
-    value: u._id,
-    label: `Torre ${u.torre} — ${u.numero}`,
-  }))
+  const unidadOptions = buildUnidadOptions(unidades)
 
   const registrarVisitanteFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarVisitante,

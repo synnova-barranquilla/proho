@@ -9,6 +9,8 @@ export interface SearchableSelectOption {
   label: string
   /** Optional secondary text shown to the right */
   detail?: string
+  /** Additional strings to match against when filtering (matched with startsWith) */
+  searchAliases?: string[]
 }
 
 interface SearchableSelectProps {
@@ -45,7 +47,8 @@ export function SearchableSelect({
     return options.filter(
       (o) =>
         o.label.toLowerCase().includes(q) ||
-        o.detail?.toLowerCase().includes(q),
+        o.detail?.toLowerCase().includes(q) ||
+        o.searchAliases?.some((a) => a.startsWith(q)),
     )
   }, [search, options])
 
