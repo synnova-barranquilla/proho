@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
-import {
-  createFileRoute,
-  getRouteApi,
-  useNavigate,
-} from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
@@ -45,12 +41,11 @@ export const Route = createFileRoute(
   component: ConfiguracionPage,
 })
 
-const authenticatedRoute = getRouteApi('/_authenticated')
-
 function ConfiguracionPage() {
-  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
-  const { organization } = authenticatedRoute.useLoaderData()
-  const hasControlAcceso = organization.activeModules.includes('control_acceso')
+  const ctx = Route.useRouteContext()
+  const { conjuntoId, conjuntoSlug } = ctx
+  const activeModules = (ctx as any).activeModules as string[] | undefined
+  const hasControlAcceso = activeModules?.includes('control_acceso') ?? false
   const navigate = useNavigate()
   const isAdmin = useIsConjuntoAdmin()
 

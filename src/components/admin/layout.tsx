@@ -28,6 +28,7 @@ interface ConjuntoLayoutProps {
    * `conjunto` is not `null`.
    */
   fromConjunto?: Doc<'conjuntos'> | null
+  activeModules?: string[]
   children: React.ReactNode
 }
 
@@ -35,6 +36,7 @@ export function ConjuntoLayout({
   conjunto,
   membership,
   fromConjunto,
+  activeModules,
   children,
 }: ConjuntoLayoutProps) {
   return (
@@ -43,6 +45,7 @@ export function ConjuntoLayout({
         conjunto={conjunto}
         membership={membership ?? null}
         fromConjunto={fromConjunto}
+        activeModules={activeModules}
       />
       <SidebarInset>
         <ConjuntoHeader conjunto={conjunto} />

@@ -51,7 +51,11 @@ export const Route = createFileRoute('/_authenticated/c/$conjuntoSlug')({
       throw redirect({ to: '/seleccionar-conjunto' })
     }
 
-    return { conjuntoId: data.conjunto._id, conjuntoSlug: slug }
+    return {
+      conjuntoId: data.conjunto._id,
+      conjuntoSlug: slug,
+      activeModules: data.activeModules as string[],
+    }
   },
   component: ConjuntoAdminRoute,
 })
@@ -140,6 +144,7 @@ function ConjuntoAdminRoute() {
     <ConjuntoLayout
       conjunto={query.data.conjunto}
       membership={query.data.membership}
+      activeModules={query.data.activeModules}
     >
       <Outlet />
     </ConjuntoLayout>

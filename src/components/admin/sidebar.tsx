@@ -28,25 +28,10 @@ import { isConjuntoAdmin } from '#/lib/conjunto-role'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
 interface ConjuntoSidebarProps {
-  /**
-   * The currently active conjunto, or `null` for org-level admin routes
-   * like `/admin/equipo`. When `null` the sidebar renders a "back to
-   * selector" link and only shows items that do not require a conjunto
-   * context (Equipo de la org).
-   */
   conjunto: Doc<'conjuntos'> | null
-  /**
-   * The user's membership for `conjunto`, if any. `null` for owners,
-   * SUPER_ADMINs, or any org-level rendering. Used to derive the
-   * effective role which gates admin-only items.
-   */
   membership: Doc<'conjuntoMemberships'> | null
-  /**
-   * When rendering the org-level variant and the user navigated here
-   * from a specific conjunto, show a primary "Volver a <nombre>" link
-   * back to that conjunto. Ignored when `conjunto` is set.
-   */
   fromConjunto?: Doc<'conjuntos'> | null
+  activeModules?: string[]
 }
 
 const authenticatedRoute = getRouteApi('/_authenticated')
@@ -55,6 +40,7 @@ export function ConjuntoSidebar({
   conjunto,
   membership,
   fromConjunto,
+  activeModules = [],
 }: ConjuntoSidebarProps) {
   const location = useLocation()
   const pathname = location.pathname
@@ -78,7 +64,7 @@ export function ConjuntoSidebar({
   // to show. The backend already enforces these checks on every
   // mutation; this is front-end gating for UX clarity.
   const isAdmin = isConjuntoAdmin(convexUser, conjunto, membership)
-  const hasControlAcceso = organization.activeModules.includes('control_acceso')
+  const hasControlAcceso = activeModules.includes('control_acceso')
 
   return (
     <ConjuntoScopedSidebar

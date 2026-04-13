@@ -1,7 +1,7 @@
 import { Suspense, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, getRouteApi, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import {
@@ -61,12 +61,11 @@ export const Route = createFileRoute('/_authenticated/c/$conjuntoSlug/')({
   component: ConjuntoDashboardPage,
 })
 
-const authenticatedRoute = getRouteApi('/_authenticated')
-
 function ConjuntoDashboardPage() {
-  const { conjuntoId } = Route.useRouteContext()
-  const { organization } = authenticatedRoute.useLoaderData()
-  const hasControlAcceso = organization.activeModules.includes('control_acceso')
+  const ctx = Route.useRouteContext()
+  const conjuntoId = ctx.conjuntoId
+  const activeModules = (ctx as any).activeModules as string[] | undefined
+  const hasControlAcceso = activeModules?.includes('control_acceso') ?? false
 
   return (
     <div className="flex flex-col gap-6">

@@ -117,12 +117,20 @@ export const getBySlug = query({
     // Revalida permisos con la misma lógica que getById.
     const { membership } = await requireConjuntoAccess(ctx, conjunto._id)
 
-    const config = await ctx.db
-      .query('conjuntoConfig')
-      .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', conjunto._id))
-      .unique()
+    const [config, conjuntoOrg] = await Promise.all([
+      ctx.db
+        .query('conjuntoConfig')
+        .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', conjunto._id))
+        .unique(),
+      ctx.db.get(conjunto.organizationId),
+    ])
 
-    return { conjunto, membership: membership ?? null, config }
+    return {
+      conjunto,
+      membership: membership ?? null,
+      config,
+      activeModules: conjuntoOrg?.activeModules ?? [],
+    }
   },
 })
 

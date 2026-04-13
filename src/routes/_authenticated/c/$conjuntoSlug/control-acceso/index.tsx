@@ -8,9 +8,9 @@ export const Route = createFileRoute(
   '/_authenticated/c/$conjuntoSlug/control-acceso/',
 )({
   loader: async ({
-    context: { queryClient, conjuntoId, conjuntoSlug, organization },
+    context: { queryClient, conjuntoId, conjuntoSlug, activeModules },
   }) => {
-    if (!organization.activeModules.includes('control_acceso')) {
+    if (!(activeModules).includes('control_acceso')) {
       throw redirect({
         to: '/c/$conjuntoSlug',
         params: { conjuntoSlug },
