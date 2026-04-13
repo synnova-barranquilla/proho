@@ -60,7 +60,7 @@ export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
               onClick={() => {
                 if (!isCurrent) {
                   navigate({
-                    to: '/admin/c/$conjuntoId',
+                    to: '/c/$conjuntoId',
                     params: { conjuntoId: c.slug },
                   })
                 }

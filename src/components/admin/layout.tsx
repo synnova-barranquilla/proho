@@ -1,9 +1,9 @@
 import { SidebarInset, SidebarProvider } from '#/components/ui/sidebar'
 import type { Doc } from '../../../convex/_generated/dataModel'
-import { AdminHeader } from './header'
-import { AdminSidebar } from './sidebar'
+import { ConjuntoHeader } from './header'
+import { ConjuntoSidebar } from './sidebar'
 
-interface AdminLayoutProps {
+interface ConjuntoLayoutProps {
   /**
    * The currently selected conjunto, or `null` for organization-level admin
    * routes like `/admin/equipo` that are not scoped to a specific conjunto.
@@ -31,21 +31,21 @@ interface AdminLayoutProps {
   children: React.ReactNode
 }
 
-export function AdminLayout({
+export function ConjuntoLayout({
   conjunto,
   membership,
   fromConjunto,
   children,
-}: AdminLayoutProps) {
+}: ConjuntoLayoutProps) {
   return (
     <SidebarProvider>
-      <AdminSidebar
+      <ConjuntoSidebar
         conjunto={conjunto}
         membership={membership ?? null}
         fromConjunto={fromConjunto}
       />
       <SidebarInset>
-        <AdminHeader conjunto={conjunto} />
+        <ConjuntoHeader conjunto={conjunto} />
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>

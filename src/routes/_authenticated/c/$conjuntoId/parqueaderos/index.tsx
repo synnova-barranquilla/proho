@@ -15,11 +15,11 @@ import { DataTable } from '#/components/ui/data-table'
 import { Skeleton } from '#/components/ui/skeleton'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
-import { api } from '../../../../../../../convex/_generated/api'
-import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
+import { api } from '../../../../../../convex/_generated/api'
+import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute(
-  '/_authenticated/admin/c/$conjuntoId/parqueaderos/',
+  '/_authenticated/c/$conjuntoId/parqueaderos/',
 )({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
@@ -49,7 +49,7 @@ function ParqueaderosPage() {
         </div>
         {isAdmin ? (
           <Link
-            to="/admin/c/$conjuntoId/parqueaderos/configurar"
+            to="/c/$conjuntoId/parqueaderos/configurar"
             params={{ conjuntoId: conjuntoSlug }}
             className={buttonVariants()}
           >

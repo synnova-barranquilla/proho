@@ -13,7 +13,7 @@ import { z } from 'zod'
 
 import { InviteOrgAdminDialog } from '#/components/admin/equipo/invite-org-admin-dialog'
 import { ManageAccessDialog } from '#/components/admin/equipo/manage-access-dialog'
-import { AdminLayout } from '#/components/admin/layout'
+import { ConjuntoLayout } from '#/components/admin/layout'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
@@ -120,7 +120,7 @@ function EquipoPage() {
     useState<Id<'users'> | null>(null)
 
   return (
-    <AdminLayout conjunto={null} fromConjunto={fromConjunto}>
+    <ConjuntoLayout conjunto={null} fromConjunto={fromConjunto}>
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-start justify-between">
           <div>
@@ -180,7 +180,7 @@ function EquipoPage() {
           if (!open) setManageAccessForId(null)
         }}
       />
-    </AdminLayout>
+    </ConjuntoLayout>
   )
 }
 

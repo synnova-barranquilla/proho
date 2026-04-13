@@ -28,7 +28,7 @@ import {
 import { isConjuntoAdmin } from '#/lib/conjunto-role'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
-interface AdminSidebarProps {
+interface ConjuntoSidebarProps {
   /**
    * The currently active conjunto, or `null` for org-level admin routes
    * like `/admin/equipo`. When `null` the sidebar renders a "back to
@@ -52,11 +52,11 @@ interface AdminSidebarProps {
 
 const authenticatedRoute = getRouteApi('/_authenticated')
 
-export function AdminSidebar({
+export function ConjuntoSidebar({
   conjunto,
   membership,
   fromConjunto,
-}: AdminSidebarProps) {
+}: ConjuntoSidebarProps) {
   const location = useLocation()
   const pathname = location.pathname
   const { convexUser, organization } = authenticatedRoute.useLoaderData()
@@ -146,7 +146,7 @@ function OrgLevelSidebar({
                   <SidebarMenuButton
                     render={
                       <Link
-                        to="/admin/c/$conjuntoId"
+                        to="/c/$conjuntoId"
                         params={{ conjuntoId: fromConjunto.slug }}
                       >
                         <ArrowLeft />
@@ -198,7 +198,7 @@ function OrgLevelSidebar({
 }
 
 // ---------------------------------------------------------------------------
-// Conjunto-scoped sidebar (used by /admin/c/$conjuntoId/*)
+// Conjunto-scoped sidebar (used by /c/$conjuntoId/*)
 // ---------------------------------------------------------------------------
 
 function ConjuntoScopedSidebar({
@@ -214,7 +214,7 @@ function ConjuntoScopedSidebar({
   isOrgOwner: boolean
   isSuperAdmin: boolean
 }) {
-  const base = `/admin/c/${conjunto.slug}`
+  const base = `/c/${conjunto.slug}`
 
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(path + '/')
@@ -272,7 +272,7 @@ function ConjuntoScopedSidebar({
                   isActive={pathname === base}
                   render={
                     <Link
-                      to="/admin/c/$conjuntoId"
+                      to="/c/$conjuntoId"
                       params={{ conjuntoId: conjunto.slug }}
                     >
                       <Home />
@@ -294,7 +294,7 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/unidades`)}
                   render={
                     <Link
-                      to="/admin/c/$conjuntoId/unidades"
+                      to="/c/$conjuntoId/unidades"
                       params={{ conjuntoId: conjunto.slug }}
                     >
                       <SquareStack />
@@ -308,7 +308,7 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/residentes`)}
                   render={
                     <Link
-                      to="/admin/c/$conjuntoId/residentes"
+                      to="/c/$conjuntoId/residentes"
                       params={{ conjuntoId: conjunto.slug }}
                     >
                       <UsersRound />
@@ -322,7 +322,7 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/vehiculos`)}
                   render={
                     <Link
-                      to="/admin/c/$conjuntoId/vehiculos"
+                      to="/c/$conjuntoId/vehiculos"
                       params={{ conjuntoId: conjunto.slug }}
                     >
                       <Car />
@@ -336,7 +336,7 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/parqueaderos`)}
                   render={
                     <Link
-                      to="/admin/c/$conjuntoId/parqueaderos"
+                      to="/c/$conjuntoId/parqueaderos"
                       params={{ conjuntoId: conjunto.slug }}
                     >
                       <ParkingSquare />
@@ -358,7 +358,7 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/control-acceso`)}
                   render={
                     <Link
-                      to="/admin/c/$conjuntoId/control-acceso"
+                      to="/c/$conjuntoId/control-acceso"
                       params={{ conjuntoId: conjunto.slug }}
                     >
                       <ShieldCheck />
@@ -383,7 +383,7 @@ function ConjuntoScopedSidebar({
                         isActive={isActive(`${base}/usuarios`)}
                         render={
                           <Link
-                            to="/admin/c/$conjuntoId/usuarios"
+                            to="/c/$conjuntoId/usuarios"
                             params={{ conjuntoId: conjunto.slug }}
                           >
                             <Users />
@@ -397,7 +397,7 @@ function ConjuntoScopedSidebar({
                         isActive={isActive(`${base}/configuracion`)}
                         render={
                           <Link
-                            to="/admin/c/$conjuntoId/configuracion"
+                            to="/c/$conjuntoId/configuracion"
                             params={{ conjuntoId: conjunto.slug }}
                           >
                             <Settings />

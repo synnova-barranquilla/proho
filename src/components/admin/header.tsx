@@ -4,7 +4,7 @@ import type { Doc } from '../../../convex/_generated/dataModel'
 import { ConjuntoSwitcher } from './conjunto-switcher'
 import { AdminUserMenu } from './user-menu'
 
-interface AdminHeaderProps {
+interface ConjuntoHeaderProps {
   /**
    * The active conjunto, or `null` on organization-level admin routes
    * (e.g. `/admin/equipo`). When `null` the header hides the
@@ -13,7 +13,7 @@ interface AdminHeaderProps {
   conjunto: Doc<'conjuntos'> | null
 }
 
-export function AdminHeader({ conjunto }: AdminHeaderProps) {
+export function ConjuntoHeader({ conjunto }: ConjuntoHeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
       <SidebarTrigger className="-ml-1" />

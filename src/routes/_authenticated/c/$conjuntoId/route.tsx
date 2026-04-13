@@ -12,12 +12,12 @@ import { convexQuery } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
-import { AdminLayout } from '#/components/admin/layout'
+import { ConjuntoLayout } from '#/components/admin/layout'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
-import { api } from '../../../../../../convex/_generated/api'
+import { api } from '../../../../../convex/_generated/api'
 
 /**
- * Layout base del segmento `/admin/c/$conjuntoId/*`.
+ * Layout base del segmento `/c/$conjuntoId/*`.
  *
  * **Importante:** pese al nombre del parámetro (`conjuntoId`) el valor
  * contenido en la URL es el **slug** human-readable del conjunto
@@ -29,7 +29,7 @@ import { api } from '../../../../../../convex/_generated/api'
  * contexto de router (`context.conjuntoId`). Las hijas leen ese id real
  * para todas sus queries de Convex (`getRouteApi(...).useRouteContext()`).
  */
-export const Route = createFileRoute('/_authenticated/admin/c/$conjuntoId')({
+export const Route = createFileRoute('/_authenticated/c/$conjuntoId')({
   beforeLoad: async ({ context: { queryClient }, params }) => {
     const slug = params.conjuntoId
 
@@ -137,11 +137,11 @@ function ConjuntoAdminRoute() {
   if (!query.data) return null
 
   return (
-    <AdminLayout
+    <ConjuntoLayout
       conjunto={query.data.conjunto}
       membership={query.data.membership}
     >
       <Outlet />
-    </AdminLayout>
+    </ConjuntoLayout>
   )
 }

@@ -1,6 +1,10 @@
 import { v } from 'convex/values'
 
-export const orgRoles = v.union(v.literal('SUPER_ADMIN'), v.literal('ADMIN'))
+export const orgRoles = v.union(
+  v.literal('SUPER_ADMIN'),
+  v.literal('ADMIN'),
+  v.literal('MEMBER'),
+)
 
 export const userFields = {
   email: v.string(),

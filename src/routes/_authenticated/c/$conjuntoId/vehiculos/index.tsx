@@ -15,11 +15,11 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { formatPlaca } from '#/lib/formatters'
-import { api } from '../../../../../../../convex/_generated/api'
-import type { Doc, Id } from '../../../../../../../convex/_generated/dataModel'
+import { api } from '../../../../../../convex/_generated/api'
+import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute(
-  '/_authenticated/admin/c/$conjuntoId/vehiculos/',
+  '/_authenticated/c/$conjuntoId/vehiculos/',
 )({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await Promise.all([

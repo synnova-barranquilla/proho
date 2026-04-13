@@ -116,11 +116,18 @@ export const handleLogin = mutation({
             acceptedUserId: existing._id,
           })
 
+          let reactivationSlug: string | undefined
+          if (reactivationInv.conjuntoId) {
+            const c = await ctx.db.get(reactivationInv.conjuntoId)
+            reactivationSlug = c?.slug
+          }
+
           return {
             status: 'accepted' as const,
             orgRole: reactivationInv.orgRole,
             conjuntoId: reactivationInv.conjuntoId,
             conjuntoRole: reactivationInv.conjuntoRole,
+            conjuntoSlug: reactivationSlug,
           }
         }
 
@@ -133,9 +140,24 @@ export const handleLogin = mutation({
         return { status: 'organizacion_inactiva' as const }
       }
 
+      // For MEMBER users, resolve their conjunto slug for direct redirect
+      let conjuntoSlug: string | undefined
+      if (existing.orgRole === 'MEMBER') {
+        const membership = await ctx.db
+          .query('conjuntoMemberships')
+          .withIndex('by_user_id', (q) => q.eq('userId', existing._id))
+          .filter((q) => q.eq(q.field('active'), true))
+          .first()
+        if (membership) {
+          const conjunto = await ctx.db.get(membership.conjuntoId)
+          conjuntoSlug = conjunto?.slug
+        }
+      }
+
       return {
         status: 'existing' as const,
         orgRole: existing.orgRole,
+        conjuntoSlug,
       }
     }
 
@@ -244,11 +266,18 @@ export const handleLogin = mutation({
       acceptedUserId: userId,
     })
 
+    let acceptedSlug: string | undefined
+    if (invitation.conjuntoId) {
+      const c = await ctx.db.get(invitation.conjuntoId)
+      acceptedSlug = c?.slug
+    }
+
     return {
       status: 'accepted' as const,
       orgRole: invitation.orgRole,
       conjuntoId: invitation.conjuntoId,
       conjuntoRole: invitation.conjuntoRole,
+      conjuntoSlug: acceptedSlug,
     }
   },
 })

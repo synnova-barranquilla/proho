@@ -25,10 +25,10 @@ import { NumberInput } from '#/components/ui/number-input'
 import { Switch } from '#/components/ui/switch'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
-import { api } from '../../../../../../convex/_generated/api'
+import { api } from '../../../../../convex/_generated/api'
 
 export const Route = createFileRoute(
-  '/_authenticated/admin/c/$conjuntoId/configuracion',
+  '/_authenticated/c/$conjuntoId/configuracion',
 )({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
@@ -52,7 +52,7 @@ function ConfiguracionPage() {
   useEffect(() => {
     if (!isAdmin) {
       void navigate({
-        to: '/admin/c/$conjuntoId',
+        to: '/c/$conjuntoId',
         params: { conjuntoId },
       })
     }

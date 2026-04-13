@@ -115,7 +115,7 @@ function ConjuntosTable() {
       },
       cell: ({ row }) => (
         <Link
-          to="/admin/c/$conjuntoId"
+          to="/c/$conjuntoId"
           params={{ conjuntoId: row.original.slug }}
           className={buttonVariants({ variant: 'outline', size: 'sm' })}
         >

@@ -38,7 +38,7 @@ export const Route = createFileRoute('/_authenticated/seleccionar-conjunto')({
     // Si solo hay un conjunto accesible, redirect directo.
     if (conjuntos.length === 1) {
       throw redirect({
-        to: '/admin/c/$conjuntoId',
+        to: '/c/$conjuntoId',
         params: { conjuntoId: conjuntos[0].slug },
       })
     }
@@ -111,7 +111,7 @@ function ConjuntosGrid({
           type="button"
           onClick={() =>
             navigate({
-              to: '/admin/c/$conjuntoId',
+              to: '/c/$conjuntoId',
               params: { conjuntoId: c.slug },
             })
           }

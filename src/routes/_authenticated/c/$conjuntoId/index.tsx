@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 
 import { convexQuery } from '@convex-dev/react-query'
 import {
@@ -19,11 +19,29 @@ import { buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Skeleton } from '#/components/ui/skeleton'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
-import { api } from '../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
+import { api } from '../../../../../convex/_generated/api'
+import type { Id } from '../../../../../convex/_generated/dataModel'
 
-export const Route = createFileRoute('/_authenticated/admin/c/$conjuntoId/')({
-  loader: async ({ context: { queryClient, conjuntoId } }) => {
+export const Route = createFileRoute('/_authenticated/c/$conjuntoId/')({
+  loader: async ({
+    context: { queryClient, conjuntoId, conjuntoSlug, convexUser },
+  }) => {
+    // MEMBER users with VIGILANTE conjunto role → skip dashboard, go to control-acceso.
+    // The parent route already prefetched getBySlug which includes membership.
+    if (convexUser.orgRole === 'MEMBER') {
+      const data = await prefetchAuthenticatedQuery(
+        queryClient,
+        api.conjuntos.queries.getBySlug,
+        { slug: conjuntoSlug },
+      )
+      if (data?.membership?.role === 'VIGILANTE') {
+        throw redirect({
+          to: '/c/$conjuntoId/control-acceso',
+          params: { conjuntoId: conjuntoSlug },
+        })
+      }
+    }
+
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
@@ -132,7 +150,7 @@ function ParkingResumen({
           <CardTitle className="text-base">Control de acceso</CardTitle>
         </div>
         <Link
-          to="/admin/c/$conjuntoId/control-acceso"
+          to="/c/$conjuntoId/control-acceso"
           params={{ conjuntoId: conjuntoSlug }}
           className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >

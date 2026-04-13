@@ -23,10 +23,10 @@ import {
 } from '#/components/ui/field'
 import { NumberInput } from '#/components/ui/number-input'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
-import { api } from '../../../../../../../convex/_generated/api'
+import { api } from '../../../../../../convex/_generated/api'
 
 export const Route = createFileRoute(
-  '/_authenticated/admin/c/$conjuntoId/parqueaderos/configurar',
+  '/_authenticated/c/$conjuntoId/parqueaderos/configurar',
 )({
   component: ConfigurarParqueaderosPage,
 })
@@ -43,7 +43,7 @@ function ConfigurarParqueaderosPage() {
   useEffect(() => {
     if (!isAdmin) {
       void navigate({
-        to: '/admin/c/$conjuntoId',
+        to: '/c/$conjuntoId',
         params: { conjuntoId: conjuntoSlug },
       })
     }
@@ -77,7 +77,7 @@ function ConfigurarParqueaderosPage() {
       })
       toast.success(`${res.created} parqueaderos creados`)
       navigate({
-        to: '/admin/c/$conjuntoId/parqueaderos',
+        to: '/c/$conjuntoId/parqueaderos',
         params: { conjuntoId: conjuntoSlug },
       })
     } catch (err) {
@@ -143,7 +143,7 @@ function ConfigurarParqueaderosPage() {
                 variant="outline"
                 onClick={() =>
                   navigate({
-                    to: '/admin/c/$conjuntoId/parqueaderos',
+                    to: '/c/$conjuntoId/parqueaderos',
                     params: { conjuntoId: conjuntoSlug },
                   })
                 }

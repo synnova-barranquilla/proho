@@ -3,16 +3,18 @@
  * Used by the home route and any other place that needs to redirect
  * a user to their "home" based on role.
  *
- * F4: los ADMIN ya no van directo a `/admin` sino que pasan primero por
- * `/seleccionar-conjunto`, que decide (si hay 0/1/N conjuntos) a dónde mandarlos.
+ * - SUPER_ADMIN → /super-admin
+ * - ADMIN → /seleccionar-conjunto (decides based on 0/1/N conjuntos)
+ * - MEMBER with conjuntoSlug → /c/$slug (direct to their conjunto)
+ * - MEMBER without conjuntoSlug → /seleccionar-conjunto
  */
-type OrgRole = 'SUPER_ADMIN' | 'ADMIN'
+type OrgRole = 'SUPER_ADMIN' | 'ADMIN' | 'MEMBER'
 
-export function getDashboardPathForRole(orgRole: OrgRole): string {
-  switch (orgRole) {
-    case 'SUPER_ADMIN':
-      return '/super-admin'
-    case 'ADMIN':
-      return '/seleccionar-conjunto'
-  }
+export function getDashboardPathForRole(
+  orgRole: OrgRole,
+  conjuntoSlug?: string,
+): string {
+  if (orgRole === 'SUPER_ADMIN') return '/super-admin'
+  if (conjuntoSlug) return `/c/${conjuntoSlug}`
+  return '/seleccionar-conjunto'
 }

@@ -83,7 +83,7 @@ export const create = mutation({
       )
       callerId = user._id
       organizationId = conjunto.organizationId
-      orgRoleForInvitation = 'ADMIN'
+      orgRoleForInvitation = 'MEMBER'
     } else {
       // Modo A — org-scoped. Aceptado para:
       //  - SUPER_ADMIN: puede invitar ADMINs a cualquier org (onboarding, recuperación)

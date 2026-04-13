@@ -55,12 +55,16 @@ export const Route = createFileRoute('/_authenticated')({
     ) {
       throw redirect({ to: '/no-autorizado' })
     }
-    // /admin/* y /vigilante/* son accesibles para ADMIN y SUPER_ADMIN
-    // (los super admins pueden entrar a cualquier conjunto desde el panel
-    // super admin para debugging). Con el orgRole actual que sólo tiene
-    // esos dos valores, cualquier usuario autenticado con identidad válida
-    // puede pasar — no hay nada más que chequear aquí. Si agregamos un
-    // rol adicional (p.ej. VIGILANTE standalone) reintroducir un guard.
+    // /admin/* is for org-level admin pages (equipo). Only ADMIN and SUPER_ADMIN.
+    // /c/* is for conjunto-scoped pages — accessible to all roles (ADMIN, MEMBER).
+    // Conjunto-level access is enforced by requireConjuntoAccess in getBySlug.
+    if (
+      path.startsWith('/admin') &&
+      convexUser.orgRole !== 'ADMIN' &&
+      convexUser.orgRole !== 'SUPER_ADMIN'
+    ) {
+      throw redirect({ to: '/no-autorizado' })
+    }
 
     // Pass context through to the loader so it can return it as loader
     // data for child components to consume via getRouteApi().useLoaderData()

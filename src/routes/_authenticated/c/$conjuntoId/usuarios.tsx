@@ -22,12 +22,10 @@ import {
 } from '#/components/ui/table'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
-import { api } from '../../../../../../convex/_generated/api'
-import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
+import { api } from '../../../../../convex/_generated/api'
+import type { Doc, Id } from '../../../../../convex/_generated/dataModel'
 
-export const Route = createFileRoute(
-  '/_authenticated/admin/c/$conjuntoId/usuarios',
-)({
+export const Route = createFileRoute('/_authenticated/c/$conjuntoId/usuarios')({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
@@ -48,7 +46,7 @@ function UsuariosConjuntoPage() {
   useEffect(() => {
     if (!isAdmin) {
       void navigate({
-        to: '/admin/c/$conjuntoId',
+        to: '/c/$conjuntoId',
         params: { conjuntoId },
       })
     }

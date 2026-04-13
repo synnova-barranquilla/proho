@@ -70,7 +70,9 @@ export const Route = createFileRoute('/')({
         throw redirect({ to: '/organizacion-inactiva' })
       case 'existing':
       case 'accepted':
-        throw redirect({ to: getDashboardPathForRole(result.orgRole) })
+        throw redirect({
+          to: getDashboardPathForRole(result.orgRole, result.conjuntoSlug),
+        })
     }
   },
   component: HomePage,
