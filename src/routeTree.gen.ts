@@ -40,8 +40,14 @@ import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
 import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
 import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
 import { Route as ProgressRouteImport } from './routes/progress'
+import { Route as TunnelRouteImport } from './routes/tunnel'
 import type { startInstance } from './start.ts'
 
+const TunnelRoute = TunnelRouteImport.update({
+  id: '/tunnel',
+  path: '/tunnel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProgressRoute = ProgressRouteImport.update({
   id: '/progress',
   path: '/progress',
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/no-registrado': typeof NoRegistradoRoute
   '/organizacion-inactiva': typeof OrganizacionInactivaRoute
   '/progress': typeof ProgressRoute
+  '/tunnel': typeof TunnelRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/no-registrado': typeof NoRegistradoRoute
   '/organizacion-inactiva': typeof OrganizacionInactivaRoute
   '/progress': typeof ProgressRoute
+  '/tunnel': typeof TunnelRoute
   '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
   '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/no-registrado': typeof NoRegistradoRoute
   '/organizacion-inactiva': typeof OrganizacionInactivaRoute
   '/progress': typeof ProgressRoute
+  '/tunnel': typeof TunnelRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/_authenticated/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/no-registrado'
     | '/organizacion-inactiva'
     | '/progress'
+    | '/tunnel'
     | '/admin'
     | '/super-admin'
     | '/seleccionar-conjunto'
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/no-registrado'
     | '/organizacion-inactiva'
     | '/progress'
+    | '/tunnel'
     | '/seleccionar-conjunto'
     | '/admin/equipo'
     | '/super-admin/conjuntos'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/no-registrado'
     | '/organizacion-inactiva'
     | '/progress'
+    | '/tunnel'
     | '/_authenticated/admin'
     | '/_authenticated/super-admin'
     | '/_authenticated/seleccionar-conjunto'
@@ -406,11 +418,19 @@ export interface RootRouteChildren {
   NoRegistradoRoute: typeof NoRegistradoRoute
   OrganizacionInactivaRoute: typeof OrganizacionInactivaRoute
   ProgressRoute: typeof ProgressRoute
+  TunnelRoute: typeof TunnelRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tunnel': {
+      id: '/tunnel'
+      path: '/tunnel'
+      fullPath: '/tunnel'
+      preLoaderRoute: typeof TunnelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/progress': {
       id: '/progress'
       path: '/progress'
@@ -727,6 +747,7 @@ const rootRouteChildren: RootRouteChildren = {
   NoRegistradoRoute: NoRegistradoRoute,
   OrganizacionInactivaRoute: OrganizacionInactivaRoute,
   ProgressRoute: ProgressRoute,
+  TunnelRoute: TunnelRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
