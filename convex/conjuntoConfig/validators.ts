@@ -8,10 +8,15 @@ export const conjuntoConfigFields = {
   reglaVehiculoDuplicado: v.boolean(),
   // R3: Máximo de días que un vehículo puede permanecer dentro (0 = desactivada)
   reglaPermanenciaMaxDias: v.number(),
+  // Capacidad total de parqueaderos
+  parqueaderosCarros: v.number(),
+  parqueaderosMotos: v.number(),
 }
 
 export const conjuntoConfigDefaults = {
   reglaIngresoEnMora: true,
   reglaVehiculoDuplicado: true,
   reglaPermanenciaMaxDias: 30,
+  parqueaderosCarros: 0,
+  parqueaderosMotos: 0,
 }

@@ -6,7 +6,6 @@ import { conjuntoFields } from './conjuntos/validators'
 import { invitationFields } from './invitations/validators'
 import { novedadFields } from './novedades/validators'
 import { organizationFields } from './organizations/validators'
-import { parqueaderoFields } from './parqueaderos/validators'
 import { registroAccesoFields } from './registrosAcceso/validators'
 import { residenteFields } from './residentes/validators'
 import { unidadFields } from './unidades/validators'
@@ -61,10 +60,6 @@ export default defineSchema({
     .index('by_conjunto_id', ['conjuntoId'])
     .index('by_unidad_id', ['unidadId'])
     .index('by_conjunto_and_placa', ['conjuntoId', 'placa']),
-
-  parqueaderos: defineTable(parqueaderoFields)
-    .index('by_conjunto_id', ['conjuntoId'])
-    .index('by_conjunto_id_and_tipo', ['conjuntoId', 'tipo']),
 
   registrosAcceso: defineTable(registroAccesoFields)
     .index('by_conjunto_id', ['conjuntoId'])

@@ -5,7 +5,6 @@ import {
   Building2,
   Car,
   Home,
-  ParkingSquare,
   Settings,
   Shield,
   ShieldCheck,
@@ -146,8 +145,8 @@ function OrgLevelSidebar({
                   <SidebarMenuButton
                     render={
                       <Link
-                        to="/c/$conjuntoId"
-                        params={{ conjuntoId: fromConjunto.slug }}
+                        to="/c/$conjuntoSlug"
+                        params={{ conjuntoSlug: fromConjunto.slug }}
                       >
                         <ArrowLeft />
                         <span className="truncate">
@@ -198,7 +197,7 @@ function OrgLevelSidebar({
 }
 
 // ---------------------------------------------------------------------------
-// Conjunto-scoped sidebar (used by /c/$conjuntoId/*)
+// Conjunto-scoped sidebar (used by /c/$conjuntoSlug/*)
 // ---------------------------------------------------------------------------
 
 function ConjuntoScopedSidebar({
@@ -272,8 +271,8 @@ function ConjuntoScopedSidebar({
                   isActive={pathname === base}
                   render={
                     <Link
-                      to="/c/$conjuntoId"
-                      params={{ conjuntoId: conjunto.slug }}
+                      to="/c/$conjuntoSlug"
+                      params={{ conjuntoSlug: conjunto.slug }}
                     >
                       <Home />
                       <span>Inicio</span>
@@ -294,8 +293,8 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/unidades`)}
                   render={
                     <Link
-                      to="/c/$conjuntoId/unidades"
-                      params={{ conjuntoId: conjunto.slug }}
+                      to="/c/$conjuntoSlug/unidades"
+                      params={{ conjuntoSlug: conjunto.slug }}
                     >
                       <SquareStack />
                       <span>Unidades</span>
@@ -308,8 +307,8 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/residentes`)}
                   render={
                     <Link
-                      to="/c/$conjuntoId/residentes"
-                      params={{ conjuntoId: conjunto.slug }}
+                      to="/c/$conjuntoSlug/residentes"
+                      params={{ conjuntoSlug: conjunto.slug }}
                     >
                       <UsersRound />
                       <span>Residentes</span>
@@ -322,25 +321,11 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/vehiculos`)}
                   render={
                     <Link
-                      to="/c/$conjuntoId/vehiculos"
-                      params={{ conjuntoId: conjunto.slug }}
+                      to="/c/$conjuntoSlug/vehiculos"
+                      params={{ conjuntoSlug: conjunto.slug }}
                     >
                       <Car />
                       <span>Vehículos</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isActive(`${base}/parqueaderos`)}
-                  render={
-                    <Link
-                      to="/c/$conjuntoId/parqueaderos"
-                      params={{ conjuntoId: conjunto.slug }}
-                    >
-                      <ParkingSquare />
-                      <span>Parqueaderos</span>
                     </Link>
                   }
                 />
@@ -358,8 +343,8 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/control-acceso`)}
                   render={
                     <Link
-                      to="/c/$conjuntoId/control-acceso"
-                      params={{ conjuntoId: conjunto.slug }}
+                      to="/c/$conjuntoSlug/control-acceso"
+                      params={{ conjuntoSlug: conjunto.slug }}
                     >
                       <ShieldCheck />
                       <span>Control de acceso</span>
@@ -383,8 +368,8 @@ function ConjuntoScopedSidebar({
                         isActive={isActive(`${base}/usuarios`)}
                         render={
                           <Link
-                            to="/c/$conjuntoId/usuarios"
-                            params={{ conjuntoId: conjunto.slug }}
+                            to="/c/$conjuntoSlug/usuarios"
+                            params={{ conjuntoSlug: conjunto.slug }}
                           >
                             <Users />
                             <span>Usuarios del conjunto</span>
@@ -397,8 +382,8 @@ function ConjuntoScopedSidebar({
                         isActive={isActive(`${base}/configuracion`)}
                         render={
                           <Link
-                            to="/c/$conjuntoId/configuracion"
-                            params={{ conjuntoId: conjunto.slug }}
+                            to="/c/$conjuntoSlug/configuracion"
+                            params={{ conjuntoSlug: conjunto.slug }}
                           >
                             <Settings />
                             <span>Configuración</span>

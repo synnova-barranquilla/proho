@@ -1,28 +1,43 @@
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 
-import { convexQuery } from '@convex-dev/react-query'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import {
   AlertTriangle,
   ArrowRight,
   Car,
   LogIn,
   ParkingSquare,
+  Settings,
   ShieldCheck,
   SquareStack,
   UsersRound,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
-import { buttonVariants } from '#/components/ui/button'
+import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import {
+  Dialog,
+  DialogBody,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
+import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
+import { NumberInput } from '#/components/ui/number-input'
 import { Skeleton } from '#/components/ui/skeleton'
+import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 
-export const Route = createFileRoute('/_authenticated/c/$conjuntoId/')({
+export const Route = createFileRoute('/_authenticated/c/$conjuntoSlug/')({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await Promise.all([
       prefetchAuthenticatedQuery(
@@ -33,6 +48,11 @@ export const Route = createFileRoute('/_authenticated/c/$conjuntoId/')({
       prefetchAuthenticatedQuery(
         queryClient,
         api.registrosAcceso.queries.getDashboardStats,
+        { conjuntoId },
+      ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.conjuntoConfig.queries.getByConjunto,
         { conjuntoId },
       ),
     ])
@@ -94,20 +114,153 @@ function Dashboard({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
           value={stats.vehiculosActivos}
           sub="activos"
         />
-        <StatCard
-          icon={<ParkingSquare className="h-4 w-4" />}
-          label="Parqueaderos"
-          value={stats.parqueaderosTotales}
-          sub={
-            stats.parqueaderosInhabilitados > 0
-              ? `${stats.parqueaderosInhabilitados} inhabilitados`
-              : 'Todos habilitados'
-          }
+        <ParkingCard
+          conjuntoId={conjuntoId}
+          carros={stats.parqueaderosCarros}
+          motos={stats.parqueaderosMotos}
         />
       </div>
 
       <ParkingResumen conjuntoId={conjuntoId} conjuntoSlug={conjunto.slug} />
     </>
+  )
+}
+
+function ParkingCard({
+  conjuntoId,
+  carros,
+  motos,
+}: {
+  conjuntoId: Id<'conjuntos'>
+  carros: number
+  motos: number
+}) {
+  const isAdmin = useIsConjuntoAdmin()
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Parqueaderos
+          </CardTitle>
+          <div className="flex items-center gap-1">
+            {isAdmin ? (
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="rounded-md p-0.5 text-muted-foreground hover:text-foreground"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+            ) : (
+              <ParkingSquare className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-semibold">{carros}</span>
+            <span className="text-sm text-muted-foreground">carros</span>
+            <span className="mx-1 text-muted-foreground">/</span>
+            <span className="text-2xl font-semibold">{motos}</span>
+            <span className="text-sm text-muted-foreground">motos</span>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">capacidad total</p>
+        </CardContent>
+      </Card>
+
+      {isAdmin ? (
+        <ParkingSettingsDialog
+          open={open}
+          onOpenChange={setOpen}
+          conjuntoId={conjuntoId}
+          initialCarros={carros}
+          initialMotos={motos}
+        />
+      ) : null}
+    </>
+  )
+}
+
+function ParkingSettingsDialog({
+  open,
+  onOpenChange,
+  conjuntoId,
+  initialCarros,
+  initialMotos,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  conjuntoId: Id<'conjuntos'>
+  initialCarros: number
+  initialMotos: number
+}) {
+  const [carros, setCarros] = useState(initialCarros)
+  const [motos, setMotos] = useState(initialMotos)
+
+  const { data: config } = useSuspenseQuery(
+    convexQuery(api.conjuntoConfig.queries.getByConjunto, { conjuntoId }),
+  )
+
+  const mutationFn = useConvexMutation(api.conjuntoConfig.mutations.upsert)
+  const mutation = useMutation({ mutationFn })
+
+  const handleSave = async () => {
+    try {
+      await mutation.mutateAsync({
+        conjuntoId,
+        reglaIngresoEnMora: config?.reglaIngresoEnMora ?? true,
+        reglaVehiculoDuplicado: config?.reglaVehiculoDuplicado ?? true,
+        reglaPermanenciaMaxDias: config?.reglaPermanenciaMaxDias ?? 30,
+        parqueaderosCarros: carros,
+        parqueaderosMotos: motos,
+      })
+      toast.success('Capacidad de parqueaderos actualizada')
+      onOpenChange(false)
+    } catch {
+      toast.error('Error al actualizar')
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Capacidad de parqueaderos</DialogTitle>
+          <DialogDescription>
+            Define el total de espacios disponibles.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogBody>
+          <FieldGroup>
+            <Field>
+              <FieldLabel>Parqueaderos de carros</FieldLabel>
+              <NumberInput
+                value={carros}
+                onChange={(v) => setCarros(v ?? 0)}
+                min={0}
+              />
+            </Field>
+            <Field>
+              <FieldLabel>Parqueaderos de motos</FieldLabel>
+              <NumberInput
+                value={motos}
+                onChange={(v) => setMotos(v ?? 0)}
+                min={0}
+              />
+            </Field>
+          </FieldGroup>
+        </DialogBody>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+          <Button onClick={handleSave} disabled={mutation.isPending}>
+            {mutation.isPending ? 'Guardando...' : 'Guardar'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -132,8 +285,8 @@ function ParkingResumen({
           <CardTitle className="text-base">Control de acceso</CardTitle>
         </div>
         <Link
-          to="/c/$conjuntoId/control-acceso"
-          params={{ conjuntoId: conjuntoSlug }}
+          to="/c/$conjuntoSlug/control-acceso"
+          params={{ conjuntoSlug }}
           className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >
           Ver todo

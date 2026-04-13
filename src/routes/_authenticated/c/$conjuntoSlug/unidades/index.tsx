@@ -25,19 +25,19 @@ import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
 
-export const Route = createFileRoute('/_authenticated/c/$conjuntoId/unidades/')(
-  {
-    loader: async ({ context: { queryClient, conjuntoId } }) => {
-      await prefetchAuthenticatedQuery(
-        queryClient,
-        api.unidades.queries.listByConjunto,
-        { conjuntoId },
-      )
-      return null
-    },
-    component: UnidadesPage,
+export const Route = createFileRoute(
+  '/_authenticated/c/$conjuntoSlug/unidades/',
+)({
+  loader: async ({ context: { queryClient, conjuntoId } }) => {
+    await prefetchAuthenticatedQuery(
+      queryClient,
+      api.unidades.queries.listByConjunto,
+      { conjuntoId },
+    )
+    return null
   },
-)
+  component: UnidadesPage,
+})
 
 function UnidadesPage() {
   const { conjuntoId } = Route.useRouteContext()

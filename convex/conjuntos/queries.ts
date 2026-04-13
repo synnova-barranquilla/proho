@@ -174,7 +174,7 @@ export const getWithStats = query({
   handler: async (ctx, args) => {
     const { conjunto } = await requireConjuntoAccess(ctx, args.conjuntoId)
 
-    const [unidades, residentes, vehiculos, parqueaderos] = await Promise.all([
+    const [unidades, residentes, vehiculos, config] = await Promise.all([
       ctx.db
         .query('unidades')
         .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', conjunto._id))
@@ -188,9 +188,9 @@ export const getWithStats = query({
         .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', conjunto._id))
         .collect(),
       ctx.db
-        .query('parqueaderos')
+        .query('conjuntoConfig')
         .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', conjunto._id))
-        .collect(),
+        .unique(),
     ])
 
     return {
@@ -200,9 +200,8 @@ export const getWithStats = query({
         unidadesEnMora: unidades.filter((u) => u.enMora).length,
         residentesActivos: residentes.filter((r) => r.active).length,
         vehiculosActivos: vehiculos.filter((veh) => veh.active).length,
-        parqueaderosTotales: parqueaderos.length,
-        parqueaderosInhabilitados: parqueaderos.filter((p) => p.inhabilitado)
-          .length,
+        parqueaderosCarros: config?.parqueaderosCarros ?? 0,
+        parqueaderosMotos: config?.parqueaderosMotos ?? 0,
       },
     }
   },

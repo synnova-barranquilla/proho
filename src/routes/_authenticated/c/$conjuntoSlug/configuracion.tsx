@@ -28,7 +28,7 @@ import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$conjuntoId/configuracion',
+  '/_authenticated/c/$conjuntoSlug/configuracion',
 )({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
@@ -42,7 +42,7 @@ export const Route = createFileRoute(
 })
 
 function ConfiguracionPage() {
-  const { conjuntoId } = Route.useRouteContext()
+  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
   const navigate = useNavigate()
   const isAdmin = useIsConjuntoAdmin()
 
@@ -52,11 +52,11 @@ function ConfiguracionPage() {
   useEffect(() => {
     if (!isAdmin) {
       void navigate({
-        to: '/c/$conjuntoId',
-        params: { conjuntoId },
+        to: '/c/$conjuntoSlug',
+        params: { conjuntoSlug },
       })
     }
-  }, [isAdmin, navigate, conjuntoId])
+  }, [isAdmin, navigate, conjuntoSlug])
 
   const { data: config } = useSuspenseQuery(
     convexQuery(api.conjuntoConfig.queries.getByConjunto, {
@@ -73,12 +73,20 @@ function ConfiguracionPage() {
   const [reglaPermanenciaMaxDias, setReglaPermanenciaMaxDias] = useState(
     config?.reglaPermanenciaMaxDias ?? 30,
   )
+  const [parqueaderosCarros, setParqueaderosCarros] = useState(
+    config?.parqueaderosCarros ?? 0,
+  )
+  const [parqueaderosMotos, setParqueaderosMotos] = useState(
+    config?.parqueaderosMotos ?? 0,
+  )
 
   useEffect(() => {
     if (config) {
       setReglaIngresoEnMora(config.reglaIngresoEnMora)
       setReglaVehiculoDuplicado(config.reglaVehiculoDuplicado)
       setReglaPermanenciaMaxDias(config.reglaPermanenciaMaxDias)
+      setParqueaderosCarros(config.parqueaderosCarros)
+      setParqueaderosMotos(config.parqueaderosMotos)
     }
   }, [config])
 
@@ -93,6 +101,8 @@ function ConfiguracionPage() {
         reglaIngresoEnMora,
         reglaVehiculoDuplicado,
         reglaPermanenciaMaxDias,
+        parqueaderosCarros,
+        parqueaderosMotos,
       })
       toast.success('Configuración actualizada')
     } catch (err) {
@@ -170,6 +180,35 @@ function ConfiguracionPage() {
                   vehículo de la unidad excede este límite, se genera novedad al
                   próximo ingreso. Valor 0 desactiva esta regla.
                 </FieldDescription>
+              </Field>
+            </FieldGroup>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Parqueaderos</CardTitle>
+            <CardDescription>
+              Capacidad total de espacios de parqueadero del conjunto.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Parqueaderos de carros</FieldLabel>
+                <NumberInput
+                  min={0}
+                  value={parqueaderosCarros}
+                  onChange={(v) => setParqueaderosCarros(v ?? 0)}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Parqueaderos de motos</FieldLabel>
+                <NumberInput
+                  min={0}
+                  value={parqueaderosMotos}
+                  onChange={(v) => setParqueaderosMotos(v ?? 0)}
+                />
               </Field>
             </FieldGroup>
           </CardContent>

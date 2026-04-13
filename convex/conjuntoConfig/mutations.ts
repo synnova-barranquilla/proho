@@ -18,6 +18,8 @@ export const upsert = mutation({
     reglaIngresoEnMora: v.boolean(),
     reglaVehiculoDuplicado: v.boolean(),
     reglaPermanenciaMaxDias: v.number(),
+    parqueaderosCarros: v.number(),
+    parqueaderosMotos: v.number(),
   },
   handler: async (ctx, args) => {
     await requireConjuntoAccess(ctx, args.conjuntoId, {
@@ -43,6 +45,8 @@ export const upsert = mutation({
       reglaIngresoEnMora: args.reglaIngresoEnMora,
       reglaVehiculoDuplicado: args.reglaVehiculoDuplicado,
       reglaPermanenciaMaxDias: args.reglaPermanenciaMaxDias,
+      parqueaderosCarros: args.parqueaderosCarros,
+      parqueaderosMotos: args.parqueaderosMotos,
     }
 
     if (existing) {

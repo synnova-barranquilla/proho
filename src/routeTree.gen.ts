@@ -8,39 +8,39 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import type { getRouter } from './router.tsx'
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProgressRouteImport } from './routes/progress'
-import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
-import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
-import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
-import { Route as LogoutRouteImport } from './routes/logout'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as InvitacionRevocadaRouteImport } from './routes/invitacion-revocada'
-import { Route as InvitacionExpiradaRouteImport } from './routes/invitacion-expirada'
-import { Route as ErrorAuthRouteImport } from './routes/error-auth'
-import { Route as CuentaDesactivadaRouteImport } from './routes/cuenta-desactivada'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedSeleccionarConjuntoRouteImport } from './routes/_authenticated/seleccionar-conjunto'
-import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
-import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
-import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
-import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
-import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
-import { Route as AuthenticatedSuperAdminConjuntosRouteImport } from './routes/_authenticated/super-admin/conjuntos'
 import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
-import { Route as AuthenticatedCConjuntoIdRouteRouteImport } from './routes/_authenticated/c/$conjuntoId/route'
-import { Route as AuthenticatedCConjuntoIdIndexRouteImport } from './routes/_authenticated/c/$conjuntoId/index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedCConjuntoSlugConfiguracionRouteImport } from './routes/_authenticated/c/$conjuntoSlug/configuracion'
+import { Route as AuthenticatedCConjuntoSlugControlAccesoIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/control-acceso/index'
+import { Route as AuthenticatedCConjuntoSlugIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/index'
+import { Route as AuthenticatedCConjuntoSlugResidentesIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/residentes/index'
+import { Route as AuthenticatedCConjuntoSlugRouteRouteImport } from './routes/_authenticated/c/$conjuntoSlug/route'
+import { Route as AuthenticatedCConjuntoSlugUnidadesIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/unidades/index'
+import { Route as AuthenticatedCConjuntoSlugUsuariosRouteImport } from './routes/_authenticated/c/$conjuntoSlug/usuarios'
+import { Route as AuthenticatedCConjuntoSlugVehiculosIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/vehiculos/index'
+import { Route as AuthenticatedSeleccionarConjuntoRouteImport } from './routes/_authenticated/seleccionar-conjunto'
+import { Route as AuthenticatedSuperAdminConjuntosRouteImport } from './routes/_authenticated/super-admin/conjuntos'
+import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
 import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from './routes/_authenticated/super-admin/organizaciones/$orgId'
-import { Route as AuthenticatedCConjuntoIdUsuariosRouteImport } from './routes/_authenticated/c/$conjuntoId/usuarios'
-import { Route as AuthenticatedCConjuntoIdConfiguracionRouteImport } from './routes/_authenticated/c/$conjuntoId/configuracion'
-import { Route as AuthenticatedCConjuntoIdVehiculosIndexRouteImport } from './routes/_authenticated/c/$conjuntoId/vehiculos/index'
-import { Route as AuthenticatedCConjuntoIdUnidadesIndexRouteImport } from './routes/_authenticated/c/$conjuntoId/unidades/index'
-import { Route as AuthenticatedCConjuntoIdResidentesIndexRouteImport } from './routes/_authenticated/c/$conjuntoId/residentes/index'
-import { Route as AuthenticatedCConjuntoIdParqueaderosIndexRouteImport } from './routes/_authenticated/c/$conjuntoId/parqueaderos/index'
-import { Route as AuthenticatedCConjuntoIdControlAccesoIndexRouteImport } from './routes/_authenticated/c/$conjuntoId/control-acceso/index'
-import { Route as AuthenticatedCConjuntoIdParqueaderosConfigurarRouteImport } from './routes/_authenticated/c/$conjuntoId/parqueaderos/configurar'
+import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
+import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
+import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as CuentaDesactivadaRouteImport } from './routes/cuenta-desactivada'
+import { Route as ErrorAuthRouteImport } from './routes/error-auth'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as InvitacionExpiradaRouteImport } from './routes/invitacion-expirada'
+import { Route as InvitacionRevocadaRouteImport } from './routes/invitacion-revocada'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LogoutRouteImport } from './routes/logout'
+import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
+import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
+import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
+import { Route as ProgressRouteImport } from './routes/progress'
+import type { startInstance } from './start.ts'
 
 const ProgressRoute = ProgressRouteImport.update({
   id: '/progress',
@@ -152,17 +152,17 @@ const AuthenticatedAdminEquipoRoute =
     path: '/equipo',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const AuthenticatedCConjuntoIdRouteRoute =
-  AuthenticatedCConjuntoIdRouteRouteImport.update({
-    id: '/c/$conjuntoId',
-    path: '/c/$conjuntoId',
+const AuthenticatedCConjuntoSlugRouteRoute =
+  AuthenticatedCConjuntoSlugRouteRouteImport.update({
+    id: '/c/$conjuntoSlug',
+    path: '/c/$conjuntoSlug',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedCConjuntoIdIndexRoute =
-  AuthenticatedCConjuntoIdIndexRouteImport.update({
+const AuthenticatedCConjuntoSlugIndexRoute =
+  AuthenticatedCConjuntoSlugIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
+    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
   } as any)
 const AuthenticatedSuperAdminOrganizacionesOrgIdRoute =
   AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport.update({
@@ -170,53 +170,41 @@ const AuthenticatedSuperAdminOrganizacionesOrgIdRoute =
     path: '/organizaciones/$orgId',
     getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
   } as any)
-const AuthenticatedCConjuntoIdUsuariosRoute =
-  AuthenticatedCConjuntoIdUsuariosRouteImport.update({
+const AuthenticatedCConjuntoSlugUsuariosRoute =
+  AuthenticatedCConjuntoSlugUsuariosRouteImport.update({
     id: '/usuarios',
     path: '/usuarios',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
+    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoIdConfiguracionRoute =
-  AuthenticatedCConjuntoIdConfiguracionRouteImport.update({
+const AuthenticatedCConjuntoSlugConfiguracionRoute =
+  AuthenticatedCConjuntoSlugConfiguracionRouteImport.update({
     id: '/configuracion',
     path: '/configuracion',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
+    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoIdVehiculosIndexRoute =
-  AuthenticatedCConjuntoIdVehiculosIndexRouteImport.update({
+const AuthenticatedCConjuntoSlugVehiculosIndexRoute =
+  AuthenticatedCConjuntoSlugVehiculosIndexRouteImport.update({
     id: '/vehiculos/',
     path: '/vehiculos/',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
+    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoIdUnidadesIndexRoute =
-  AuthenticatedCConjuntoIdUnidadesIndexRouteImport.update({
+const AuthenticatedCConjuntoSlugUnidadesIndexRoute =
+  AuthenticatedCConjuntoSlugUnidadesIndexRouteImport.update({
     id: '/unidades/',
     path: '/unidades/',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
+    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoIdResidentesIndexRoute =
-  AuthenticatedCConjuntoIdResidentesIndexRouteImport.update({
+const AuthenticatedCConjuntoSlugResidentesIndexRoute =
+  AuthenticatedCConjuntoSlugResidentesIndexRouteImport.update({
     id: '/residentes/',
     path: '/residentes/',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
+    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoIdParqueaderosIndexRoute =
-  AuthenticatedCConjuntoIdParqueaderosIndexRouteImport.update({
-    id: '/parqueaderos/',
-    path: '/parqueaderos/',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
-  } as any)
-const AuthenticatedCConjuntoIdControlAccesoIndexRoute =
-  AuthenticatedCConjuntoIdControlAccesoIndexRouteImport.update({
+const AuthenticatedCConjuntoSlugControlAccesoIndexRoute =
+  AuthenticatedCConjuntoSlugControlAccesoIndexRouteImport.update({
     id: '/control-acceso/',
     path: '/control-acceso/',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
-  } as any)
-const AuthenticatedCConjuntoIdParqueaderosConfigurarRoute =
-  AuthenticatedCConjuntoIdParqueaderosConfigurarRouteImport.update({
-    id: '/parqueaderos/configurar',
-    path: '/parqueaderos/configurar',
-    getParentRoute: () => AuthenticatedCConjuntoIdRouteRoute,
+    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -234,23 +222,21 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
-  '/c/$conjuntoId': typeof AuthenticatedCConjuntoIdRouteRouteWithChildren
+  '/c/$conjuntoSlug': typeof AuthenticatedCConjuntoSlugRouteRouteWithChildren
   '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
   '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
-  '/c/$conjuntoId/configuracion': typeof AuthenticatedCConjuntoIdConfiguracionRoute
-  '/c/$conjuntoId/usuarios': typeof AuthenticatedCConjuntoIdUsuariosRoute
+  '/c/$conjuntoSlug/configuracion': typeof AuthenticatedCConjuntoSlugConfiguracionRoute
+  '/c/$conjuntoSlug/usuarios': typeof AuthenticatedCConjuntoSlugUsuariosRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
-  '/c/$conjuntoId/': typeof AuthenticatedCConjuntoIdIndexRoute
-  '/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedCConjuntoIdParqueaderosConfigurarRoute
-  '/c/$conjuntoId/control-acceso/': typeof AuthenticatedCConjuntoIdControlAccesoIndexRoute
-  '/c/$conjuntoId/parqueaderos/': typeof AuthenticatedCConjuntoIdParqueaderosIndexRoute
-  '/c/$conjuntoId/residentes/': typeof AuthenticatedCConjuntoIdResidentesIndexRoute
-  '/c/$conjuntoId/unidades/': typeof AuthenticatedCConjuntoIdUnidadesIndexRoute
-  '/c/$conjuntoId/vehiculos/': typeof AuthenticatedCConjuntoIdVehiculosIndexRoute
+  '/c/$conjuntoSlug/': typeof AuthenticatedCConjuntoSlugIndexRoute
+  '/c/$conjuntoSlug/control-acceso/': typeof AuthenticatedCConjuntoSlugControlAccesoIndexRoute
+  '/c/$conjuntoSlug/residentes/': typeof AuthenticatedCConjuntoSlugResidentesIndexRoute
+  '/c/$conjuntoSlug/unidades/': typeof AuthenticatedCConjuntoSlugUnidadesIndexRoute
+  '/c/$conjuntoSlug/vehiculos/': typeof AuthenticatedCConjuntoSlugVehiculosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -271,16 +257,14 @@ export interface FileRoutesByTo {
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/super-admin': typeof AuthenticatedSuperAdminIndexRoute
-  '/c/$conjuntoId/configuracion': typeof AuthenticatedCConjuntoIdConfiguracionRoute
-  '/c/$conjuntoId/usuarios': typeof AuthenticatedCConjuntoIdUsuariosRoute
+  '/c/$conjuntoSlug/configuracion': typeof AuthenticatedCConjuntoSlugConfiguracionRoute
+  '/c/$conjuntoSlug/usuarios': typeof AuthenticatedCConjuntoSlugUsuariosRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
-  '/c/$conjuntoId': typeof AuthenticatedCConjuntoIdIndexRoute
-  '/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedCConjuntoIdParqueaderosConfigurarRoute
-  '/c/$conjuntoId/control-acceso': typeof AuthenticatedCConjuntoIdControlAccesoIndexRoute
-  '/c/$conjuntoId/parqueaderos': typeof AuthenticatedCConjuntoIdParqueaderosIndexRoute
-  '/c/$conjuntoId/residentes': typeof AuthenticatedCConjuntoIdResidentesIndexRoute
-  '/c/$conjuntoId/unidades': typeof AuthenticatedCConjuntoIdUnidadesIndexRoute
-  '/c/$conjuntoId/vehiculos': typeof AuthenticatedCConjuntoIdVehiculosIndexRoute
+  '/c/$conjuntoSlug': typeof AuthenticatedCConjuntoSlugIndexRoute
+  '/c/$conjuntoSlug/control-acceso': typeof AuthenticatedCConjuntoSlugControlAccesoIndexRoute
+  '/c/$conjuntoSlug/residentes': typeof AuthenticatedCConjuntoSlugResidentesIndexRoute
+  '/c/$conjuntoSlug/unidades': typeof AuthenticatedCConjuntoSlugUnidadesIndexRoute
+  '/c/$conjuntoSlug/vehiculos': typeof AuthenticatedCConjuntoSlugVehiculosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -299,23 +283,21 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/_authenticated/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
-  '/_authenticated/c/$conjuntoId': typeof AuthenticatedCConjuntoIdRouteRouteWithChildren
+  '/_authenticated/c/$conjuntoSlug': typeof AuthenticatedCConjuntoSlugRouteRouteWithChildren
   '/_authenticated/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/_authenticated/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
   '/_authenticated/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
-  '/_authenticated/c/$conjuntoId/configuracion': typeof AuthenticatedCConjuntoIdConfiguracionRoute
-  '/_authenticated/c/$conjuntoId/usuarios': typeof AuthenticatedCConjuntoIdUsuariosRoute
+  '/_authenticated/c/$conjuntoSlug/configuracion': typeof AuthenticatedCConjuntoSlugConfiguracionRoute
+  '/_authenticated/c/$conjuntoSlug/usuarios': typeof AuthenticatedCConjuntoSlugUsuariosRoute
   '/_authenticated/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
-  '/_authenticated/c/$conjuntoId/': typeof AuthenticatedCConjuntoIdIndexRoute
-  '/_authenticated/c/$conjuntoId/parqueaderos/configurar': typeof AuthenticatedCConjuntoIdParqueaderosConfigurarRoute
-  '/_authenticated/c/$conjuntoId/control-acceso/': typeof AuthenticatedCConjuntoIdControlAccesoIndexRoute
-  '/_authenticated/c/$conjuntoId/parqueaderos/': typeof AuthenticatedCConjuntoIdParqueaderosIndexRoute
-  '/_authenticated/c/$conjuntoId/residentes/': typeof AuthenticatedCConjuntoIdResidentesIndexRoute
-  '/_authenticated/c/$conjuntoId/unidades/': typeof AuthenticatedCConjuntoIdUnidadesIndexRoute
-  '/_authenticated/c/$conjuntoId/vehiculos/': typeof AuthenticatedCConjuntoIdVehiculosIndexRoute
+  '/_authenticated/c/$conjuntoSlug/': typeof AuthenticatedCConjuntoSlugIndexRoute
+  '/_authenticated/c/$conjuntoSlug/control-acceso/': typeof AuthenticatedCConjuntoSlugControlAccesoIndexRoute
+  '/_authenticated/c/$conjuntoSlug/residentes/': typeof AuthenticatedCConjuntoSlugResidentesIndexRoute
+  '/_authenticated/c/$conjuntoSlug/unidades/': typeof AuthenticatedCConjuntoSlugUnidadesIndexRoute
+  '/_authenticated/c/$conjuntoSlug/vehiculos/': typeof AuthenticatedCConjuntoSlugVehiculosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -334,23 +316,21 @@ export interface FileRouteTypes {
     | '/admin'
     | '/super-admin'
     | '/seleccionar-conjunto'
-    | '/c/$conjuntoId'
+    | '/c/$conjuntoSlug'
     | '/admin/equipo'
     | '/super-admin/conjuntos'
     | '/super-admin/usuarios'
     | '/api/auth/callback'
     | '/admin/'
     | '/super-admin/'
-    | '/c/$conjuntoId/configuracion'
-    | '/c/$conjuntoId/usuarios'
+    | '/c/$conjuntoSlug/configuracion'
+    | '/c/$conjuntoSlug/usuarios'
     | '/super-admin/organizaciones/$orgId'
-    | '/c/$conjuntoId/'
-    | '/c/$conjuntoId/parqueaderos/configurar'
-    | '/c/$conjuntoId/control-acceso/'
-    | '/c/$conjuntoId/parqueaderos/'
-    | '/c/$conjuntoId/residentes/'
-    | '/c/$conjuntoId/unidades/'
-    | '/c/$conjuntoId/vehiculos/'
+    | '/c/$conjuntoSlug/'
+    | '/c/$conjuntoSlug/control-acceso/'
+    | '/c/$conjuntoSlug/residentes/'
+    | '/c/$conjuntoSlug/unidades/'
+    | '/c/$conjuntoSlug/vehiculos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -371,16 +351,14 @@ export interface FileRouteTypes {
     | '/api/auth/callback'
     | '/admin'
     | '/super-admin'
-    | '/c/$conjuntoId/configuracion'
-    | '/c/$conjuntoId/usuarios'
+    | '/c/$conjuntoSlug/configuracion'
+    | '/c/$conjuntoSlug/usuarios'
     | '/super-admin/organizaciones/$orgId'
-    | '/c/$conjuntoId'
-    | '/c/$conjuntoId/parqueaderos/configurar'
-    | '/c/$conjuntoId/control-acceso'
-    | '/c/$conjuntoId/parqueaderos'
-    | '/c/$conjuntoId/residentes'
-    | '/c/$conjuntoId/unidades'
-    | '/c/$conjuntoId/vehiculos'
+    | '/c/$conjuntoSlug'
+    | '/c/$conjuntoSlug/control-acceso'
+    | '/c/$conjuntoSlug/residentes'
+    | '/c/$conjuntoSlug/unidades'
+    | '/c/$conjuntoSlug/vehiculos'
   id:
     | '__root__'
     | '/'
@@ -398,23 +376,21 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/super-admin'
     | '/_authenticated/seleccionar-conjunto'
-    | '/_authenticated/c/$conjuntoId'
+    | '/_authenticated/c/$conjuntoSlug'
     | '/_authenticated/admin/equipo'
     | '/_authenticated/super-admin/conjuntos'
     | '/_authenticated/super-admin/usuarios'
     | '/api/auth/callback'
     | '/_authenticated/admin/'
     | '/_authenticated/super-admin/'
-    | '/_authenticated/c/$conjuntoId/configuracion'
-    | '/_authenticated/c/$conjuntoId/usuarios'
+    | '/_authenticated/c/$conjuntoSlug/configuracion'
+    | '/_authenticated/c/$conjuntoSlug/usuarios'
     | '/_authenticated/super-admin/organizaciones/$orgId'
-    | '/_authenticated/c/$conjuntoId/'
-    | '/_authenticated/c/$conjuntoId/parqueaderos/configurar'
-    | '/_authenticated/c/$conjuntoId/control-acceso/'
-    | '/_authenticated/c/$conjuntoId/parqueaderos/'
-    | '/_authenticated/c/$conjuntoId/residentes/'
-    | '/_authenticated/c/$conjuntoId/unidades/'
-    | '/_authenticated/c/$conjuntoId/vehiculos/'
+    | '/_authenticated/c/$conjuntoSlug/'
+    | '/_authenticated/c/$conjuntoSlug/control-acceso/'
+    | '/_authenticated/c/$conjuntoSlug/residentes/'
+    | '/_authenticated/c/$conjuntoSlug/unidades/'
+    | '/_authenticated/c/$conjuntoSlug/vehiculos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -582,19 +558,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEquipoRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/c/$conjuntoId': {
-      id: '/_authenticated/c/$conjuntoId'
-      path: '/c/$conjuntoId'
-      fullPath: '/c/$conjuntoId'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdRouteRouteImport
+    '/_authenticated/c/$conjuntoSlug': {
+      id: '/_authenticated/c/$conjuntoSlug'
+      path: '/c/$conjuntoSlug'
+      fullPath: '/c/$conjuntoSlug'
+      preLoaderRoute: typeof AuthenticatedCConjuntoSlugRouteRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/c/$conjuntoId/': {
-      id: '/_authenticated/c/$conjuntoId/'
+    '/_authenticated/c/$conjuntoSlug/': {
+      id: '/_authenticated/c/$conjuntoSlug/'
       path: '/'
-      fullPath: '/c/$conjuntoId/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
+      fullPath: '/c/$conjuntoSlug/'
+      preLoaderRoute: typeof AuthenticatedCConjuntoSlugIndexRouteImport
+      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
     }
     '/_authenticated/super-admin/organizaciones/$orgId': {
       id: '/_authenticated/super-admin/organizaciones/$orgId'
@@ -603,61 +579,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport
       parentRoute: typeof AuthenticatedSuperAdminRouteRoute
     }
-    '/_authenticated/c/$conjuntoId/usuarios': {
-      id: '/_authenticated/c/$conjuntoId/usuarios'
+    '/_authenticated/c/$conjuntoSlug/usuarios': {
+      id: '/_authenticated/c/$conjuntoSlug/usuarios'
       path: '/usuarios'
-      fullPath: '/c/$conjuntoId/usuarios'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdUsuariosRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
+      fullPath: '/c/$conjuntoSlug/usuarios'
+      preLoaderRoute: typeof AuthenticatedCConjuntoSlugUsuariosRouteImport
+      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoId/configuracion': {
-      id: '/_authenticated/c/$conjuntoId/configuracion'
+    '/_authenticated/c/$conjuntoSlug/configuracion': {
+      id: '/_authenticated/c/$conjuntoSlug/configuracion'
       path: '/configuracion'
-      fullPath: '/c/$conjuntoId/configuracion'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdConfiguracionRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
+      fullPath: '/c/$conjuntoSlug/configuracion'
+      preLoaderRoute: typeof AuthenticatedCConjuntoSlugConfiguracionRouteImport
+      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoId/vehiculos/': {
-      id: '/_authenticated/c/$conjuntoId/vehiculos/'
+    '/_authenticated/c/$conjuntoSlug/vehiculos/': {
+      id: '/_authenticated/c/$conjuntoSlug/vehiculos/'
       path: '/vehiculos'
-      fullPath: '/c/$conjuntoId/vehiculos/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdVehiculosIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
+      fullPath: '/c/$conjuntoSlug/vehiculos/'
+      preLoaderRoute: typeof AuthenticatedCConjuntoSlugVehiculosIndexRouteImport
+      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoId/unidades/': {
-      id: '/_authenticated/c/$conjuntoId/unidades/'
+    '/_authenticated/c/$conjuntoSlug/unidades/': {
+      id: '/_authenticated/c/$conjuntoSlug/unidades/'
       path: '/unidades'
-      fullPath: '/c/$conjuntoId/unidades/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdUnidadesIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
+      fullPath: '/c/$conjuntoSlug/unidades/'
+      preLoaderRoute: typeof AuthenticatedCConjuntoSlugUnidadesIndexRouteImport
+      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoId/residentes/': {
-      id: '/_authenticated/c/$conjuntoId/residentes/'
+    '/_authenticated/c/$conjuntoSlug/residentes/': {
+      id: '/_authenticated/c/$conjuntoSlug/residentes/'
       path: '/residentes'
-      fullPath: '/c/$conjuntoId/residentes/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdResidentesIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
+      fullPath: '/c/$conjuntoSlug/residentes/'
+      preLoaderRoute: typeof AuthenticatedCConjuntoSlugResidentesIndexRouteImport
+      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoId/parqueaderos/': {
-      id: '/_authenticated/c/$conjuntoId/parqueaderos/'
-      path: '/parqueaderos'
-      fullPath: '/c/$conjuntoId/parqueaderos/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdParqueaderosIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
-    }
-    '/_authenticated/c/$conjuntoId/control-acceso/': {
-      id: '/_authenticated/c/$conjuntoId/control-acceso/'
+    '/_authenticated/c/$conjuntoSlug/control-acceso/': {
+      id: '/_authenticated/c/$conjuntoSlug/control-acceso/'
       path: '/control-acceso'
-      fullPath: '/c/$conjuntoId/control-acceso/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdControlAccesoIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
-    }
-    '/_authenticated/c/$conjuntoId/parqueaderos/configurar': {
-      id: '/_authenticated/c/$conjuntoId/parqueaderos/configurar'
-      path: '/parqueaderos/configurar'
-      fullPath: '/c/$conjuntoId/parqueaderos/configurar'
-      preLoaderRoute: typeof AuthenticatedCConjuntoIdParqueaderosConfigurarRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoIdRouteRoute
+      fullPath: '/c/$conjuntoSlug/control-acceso/'
+      preLoaderRoute: typeof AuthenticatedCConjuntoSlugControlAccesoIndexRouteImport
+      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
     }
   }
 }
@@ -700,49 +662,43 @@ const AuthenticatedSuperAdminRouteRouteWithChildren =
     AuthenticatedSuperAdminRouteRouteChildren,
   )
 
-interface AuthenticatedCConjuntoIdRouteRouteChildren {
-  AuthenticatedCConjuntoIdConfiguracionRoute: typeof AuthenticatedCConjuntoIdConfiguracionRoute
-  AuthenticatedCConjuntoIdUsuariosRoute: typeof AuthenticatedCConjuntoIdUsuariosRoute
-  AuthenticatedCConjuntoIdIndexRoute: typeof AuthenticatedCConjuntoIdIndexRoute
-  AuthenticatedCConjuntoIdParqueaderosConfigurarRoute: typeof AuthenticatedCConjuntoIdParqueaderosConfigurarRoute
-  AuthenticatedCConjuntoIdControlAccesoIndexRoute: typeof AuthenticatedCConjuntoIdControlAccesoIndexRoute
-  AuthenticatedCConjuntoIdParqueaderosIndexRoute: typeof AuthenticatedCConjuntoIdParqueaderosIndexRoute
-  AuthenticatedCConjuntoIdResidentesIndexRoute: typeof AuthenticatedCConjuntoIdResidentesIndexRoute
-  AuthenticatedCConjuntoIdUnidadesIndexRoute: typeof AuthenticatedCConjuntoIdUnidadesIndexRoute
-  AuthenticatedCConjuntoIdVehiculosIndexRoute: typeof AuthenticatedCConjuntoIdVehiculosIndexRoute
+interface AuthenticatedCConjuntoSlugRouteRouteChildren {
+  AuthenticatedCConjuntoSlugConfiguracionRoute: typeof AuthenticatedCConjuntoSlugConfiguracionRoute
+  AuthenticatedCConjuntoSlugUsuariosRoute: typeof AuthenticatedCConjuntoSlugUsuariosRoute
+  AuthenticatedCConjuntoSlugIndexRoute: typeof AuthenticatedCConjuntoSlugIndexRoute
+  AuthenticatedCConjuntoSlugControlAccesoIndexRoute: typeof AuthenticatedCConjuntoSlugControlAccesoIndexRoute
+  AuthenticatedCConjuntoSlugResidentesIndexRoute: typeof AuthenticatedCConjuntoSlugResidentesIndexRoute
+  AuthenticatedCConjuntoSlugUnidadesIndexRoute: typeof AuthenticatedCConjuntoSlugUnidadesIndexRoute
+  AuthenticatedCConjuntoSlugVehiculosIndexRoute: typeof AuthenticatedCConjuntoSlugVehiculosIndexRoute
 }
 
-const AuthenticatedCConjuntoIdRouteRouteChildren: AuthenticatedCConjuntoIdRouteRouteChildren =
+const AuthenticatedCConjuntoSlugRouteRouteChildren: AuthenticatedCConjuntoSlugRouteRouteChildren =
   {
-    AuthenticatedCConjuntoIdConfiguracionRoute:
-      AuthenticatedCConjuntoIdConfiguracionRoute,
-    AuthenticatedCConjuntoIdUsuariosRoute:
-      AuthenticatedCConjuntoIdUsuariosRoute,
-    AuthenticatedCConjuntoIdIndexRoute: AuthenticatedCConjuntoIdIndexRoute,
-    AuthenticatedCConjuntoIdParqueaderosConfigurarRoute:
-      AuthenticatedCConjuntoIdParqueaderosConfigurarRoute,
-    AuthenticatedCConjuntoIdControlAccesoIndexRoute:
-      AuthenticatedCConjuntoIdControlAccesoIndexRoute,
-    AuthenticatedCConjuntoIdParqueaderosIndexRoute:
-      AuthenticatedCConjuntoIdParqueaderosIndexRoute,
-    AuthenticatedCConjuntoIdResidentesIndexRoute:
-      AuthenticatedCConjuntoIdResidentesIndexRoute,
-    AuthenticatedCConjuntoIdUnidadesIndexRoute:
-      AuthenticatedCConjuntoIdUnidadesIndexRoute,
-    AuthenticatedCConjuntoIdVehiculosIndexRoute:
-      AuthenticatedCConjuntoIdVehiculosIndexRoute,
+    AuthenticatedCConjuntoSlugConfiguracionRoute:
+      AuthenticatedCConjuntoSlugConfiguracionRoute,
+    AuthenticatedCConjuntoSlugUsuariosRoute:
+      AuthenticatedCConjuntoSlugUsuariosRoute,
+    AuthenticatedCConjuntoSlugIndexRoute: AuthenticatedCConjuntoSlugIndexRoute,
+    AuthenticatedCConjuntoSlugControlAccesoIndexRoute:
+      AuthenticatedCConjuntoSlugControlAccesoIndexRoute,
+    AuthenticatedCConjuntoSlugResidentesIndexRoute:
+      AuthenticatedCConjuntoSlugResidentesIndexRoute,
+    AuthenticatedCConjuntoSlugUnidadesIndexRoute:
+      AuthenticatedCConjuntoSlugUnidadesIndexRoute,
+    AuthenticatedCConjuntoSlugVehiculosIndexRoute:
+      AuthenticatedCConjuntoSlugVehiculosIndexRoute,
   }
 
-const AuthenticatedCConjuntoIdRouteRouteWithChildren =
-  AuthenticatedCConjuntoIdRouteRoute._addFileChildren(
-    AuthenticatedCConjuntoIdRouteRouteChildren,
+const AuthenticatedCConjuntoSlugRouteRouteWithChildren =
+  AuthenticatedCConjuntoSlugRouteRoute._addFileChildren(
+    AuthenticatedCConjuntoSlugRouteRouteChildren,
   )
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedSuperAdminRouteRoute: typeof AuthenticatedSuperAdminRouteRouteWithChildren
   AuthenticatedSeleccionarConjuntoRoute: typeof AuthenticatedSeleccionarConjuntoRoute
-  AuthenticatedCConjuntoIdRouteRoute: typeof AuthenticatedCConjuntoIdRouteRouteWithChildren
+  AuthenticatedCConjuntoSlugRouteRoute: typeof AuthenticatedCConjuntoSlugRouteRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -750,8 +706,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSuperAdminRouteRoute:
     AuthenticatedSuperAdminRouteRouteWithChildren,
   AuthenticatedSeleccionarConjuntoRoute: AuthenticatedSeleccionarConjuntoRoute,
-  AuthenticatedCConjuntoIdRouteRoute:
-    AuthenticatedCConjuntoIdRouteRouteWithChildren,
+  AuthenticatedCConjuntoSlugRouteRoute:
+    AuthenticatedCConjuntoSlugRouteRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -777,8 +733,6 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true

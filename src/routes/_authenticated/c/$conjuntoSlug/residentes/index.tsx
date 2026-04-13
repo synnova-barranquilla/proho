@@ -7,25 +7,25 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { convexQuery } from '@convex-dev/react-query'
 import { Plus } from 'lucide-react'
 
-import { VehiculoDialog } from '#/components/admin/vehiculos/vehiculo-dialog'
+import { ResidenteDialog } from '#/components/admin/residentes/residente-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { DataTable } from '#/components/ui/data-table'
 import { Skeleton } from '#/components/ui/skeleton'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
-import { formatPlaca } from '#/lib/formatters'
+import { formatDocument, formatPhone } from '#/lib/formatters'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$conjuntoId/vehiculos/',
+  '/_authenticated/c/$conjuntoSlug/residentes/',
 )({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
-        api.vehiculos.queries.listByConjunto,
+        api.residentes.queries.listByConjunto,
         { conjuntoId },
       ),
       prefetchAuthenticatedQuery(
@@ -36,24 +36,24 @@ export const Route = createFileRoute(
     ])
     return null
   },
-  component: VehiculosPage,
+  component: ResidentesPage,
 })
 
-type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
+type ResidenteRow = Doc<'residentes'> & { unidad: Doc<'unidades'> | null }
 
-function VehiculosPage() {
+function ResidentesPage() {
   const { conjuntoId } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<VehiculoRow | null>(null)
+  const [editing, setEditing] = useState<ResidenteRow | null>(null)
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Vehículos</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Residentes</h1>
           <p className="text-sm text-muted-foreground">
-            Vehículos registrados en el conjunto, asociados a una unidad.
+            Personas vinculadas a las unidades del conjunto.
           </p>
         </div>
         {isAdmin ? (
@@ -64,97 +64,104 @@ function VehiculosPage() {
             }}
           >
             <Plus />
-            Nuevo vehículo
+            Nuevo residente
           </Button>
         ) : null}
       </div>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
-        <VehiculosTable
+        <ResidentesTable
           conjuntoId={conjuntoId}
           isAdmin={isAdmin}
-          onEdit={(v) => {
-            setEditing(v)
+          onEdit={(r) => {
+            setEditing(r)
             setDialogOpen(true)
           }}
         />
       </Suspense>
 
       {isAdmin ? (
-        <VehiculoDialog
+        <ResidenteDialog
           open={dialogOpen}
           onOpenChange={(open) => {
             setDialogOpen(open)
             if (!open) setEditing(null)
           }}
           conjuntoId={conjuntoId}
-          vehiculo={editing}
+          residente={editing}
         />
       ) : null}
     </div>
   )
 }
 
-function VehiculosTable({
+function ResidentesTable({
   conjuntoId,
   isAdmin,
   onEdit,
 }: {
   conjuntoId: Id<'conjuntos'>
   isAdmin: boolean
-  onEdit: (v: VehiculoRow) => void
+  onEdit: (r: ResidenteRow) => void
 }) {
-  const { data } = useSuspenseQuery(
-    convexQuery(api.vehiculos.queries.listByConjunto, { conjuntoId }),
+  const { data: residentes } = useSuspenseQuery(
+    convexQuery(api.residentes.queries.listByConjunto, { conjuntoId }),
   )
 
-  const columns: ColumnDef<VehiculoRow>[] = [
+  const columns: ColumnDef<ResidenteRow>[] = [
     {
-      id: 'placa',
-      header: 'Placa',
-      accessorKey: 'placa',
+      id: 'nombre',
+      header: 'Nombre',
+      accessorFn: (r) => `${r.nombres} ${r.apellidos}`,
       cell: ({ row }) => (
-        <span className="font-mono font-medium">
-          {formatPlaca(row.original.placa)}
+        <span className="font-medium">
+          {row.original.nombres} {row.original.apellidos}
         </span>
       ),
     },
     {
-      id: 'tipo',
-      header: 'Tipo',
-      accessorKey: 'tipo',
-      cell: ({ row }) => <Badge variant="outline">{row.original.tipo}</Badge>,
+      id: 'documento',
+      header: 'Documento',
+      accessorFn: (r) => r.numeroDocumento,
+      cell: ({ row }) => (
+        <span className="text-xs">
+          {row.original.tipoDocumento}{' '}
+          {formatDocument(row.original.numeroDocumento)}
+        </span>
+      ),
     },
     {
       id: 'unidad',
       header: 'Unidad',
-      accessorFn: (v) =>
-        v.unidad ? `${v.unidad.torre}-${v.unidad.numero}` : '',
+      accessorFn: (r) =>
+        r.unidad ? `${r.unidad.torre}-${r.unidad.numero}` : '',
       cell: ({ row }) =>
         row.original.unidad
           ? `${row.original.unidad.torre}-${row.original.unidad.numero}`
           : '—',
     },
     {
-      id: 'propietario',
-      header: 'Propietario',
-      accessorFn: (v) => v.propietarioNombre ?? '',
+      id: 'tipo',
+      header: 'Tipo',
+      accessorKey: 'tipo',
       cell: ({ row }) => (
-        <span className="text-xs text-muted-foreground">
-          {row.original.propietarioNombre ?? '—'}
-        </span>
+        <Badge variant="outline" className="text-xs">
+          {row.original.tipo}
+        </Badge>
       ),
     },
     {
-      id: 'estado',
-      header: 'Estado',
-      accessorFn: (v) => (v.active ? 'Activo' : 'Inactivo'),
-      cell: ({ row }) =>
-        row.original.active ? (
-          <Badge variant="outline">Activo</Badge>
-        ) : (
-          <Badge variant="secondary">Inactivo</Badge>
-        ),
+      id: 'contacto',
+      header: 'Contacto',
+      accessorFn: (r) => r.telefono ?? r.email ?? '',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span className="text-xs text-muted-foreground">
+          {row.original.telefono
+            ? formatPhone(row.original.telefono)
+            : row.original.email || '—'}
+        </span>
+      ),
     },
     ...(isAdmin
       ? [
@@ -166,7 +173,7 @@ function VehiculosTable({
               headClassName: 'text-right',
               cellClassName: 'text-right',
             },
-            cell: ({ row }: { row: { original: VehiculoRow } }) => (
+            cell: ({ row }: { row: { original: ResidenteRow } }) => (
               <Button
                 variant="outline"
                 size="sm"
@@ -175,7 +182,7 @@ function VehiculosTable({
                 Editar
               </Button>
             ),
-          } satisfies ColumnDef<VehiculoRow>,
+          } satisfies ColumnDef<ResidenteRow>,
         ]
       : []),
   ]
@@ -183,11 +190,11 @@ function VehiculosTable({
   return (
     <DataTable
       columns={columns}
-      data={data as VehiculoRow[]}
+      data={residentes as ResidenteRow[]}
       emptyMessage={
         isAdmin
-          ? 'No hay vehículos registrados. Crea el primero con "Nuevo vehículo".'
-          : 'No hay vehículos registrados.'
+          ? 'No hay residentes. Crea el primero con el botón "Nuevo residente".'
+          : 'No hay residentes registrados.'
       }
     />
   )

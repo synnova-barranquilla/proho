@@ -301,26 +301,6 @@ async function seedConjuntoDemoInternal(
     })
   }
 
-  // 5. Parqueaderos (62 total)
-  const genParqs = async (
-    tipo: 'RESIDENTE' | 'VISITANTE' | 'MOTO' | 'DISCAPACITADO',
-    prefix: string,
-    cantidad: number,
-  ) => {
-    for (let i = 1; i <= cantidad; i++) {
-      await ctx.db.insert('parqueaderos', {
-        conjuntoId,
-        numero: `${prefix}-${String(i).padStart(3, '0')}`,
-        tipo,
-        inhabilitado: false,
-      })
-    }
-  }
-  await genParqs('RESIDENTE', 'R', 40)
-  await genParqs('VISITANTE', 'V', 10)
-  await genParqs('MOTO', 'M', 10)
-  await genParqs('DISCAPACITADO', 'D', 2)
-
   return {
     status: 'created' as const,
     conjuntoId,
@@ -329,7 +309,6 @@ async function seedConjuntoDemoInternal(
       unidades: unidadesCreadas.length,
       residentes: 30,
       vehiculos: 25,
-      parqueaderos: 62,
     },
   }
 }

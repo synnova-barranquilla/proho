@@ -25,7 +25,9 @@ import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../convex/_generated/dataModel'
 
-export const Route = createFileRoute('/_authenticated/c/$conjuntoId/usuarios')({
+export const Route = createFileRoute(
+  '/_authenticated/c/$conjuntoSlug/usuarios',
+)({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
@@ -38,7 +40,7 @@ export const Route = createFileRoute('/_authenticated/c/$conjuntoId/usuarios')({
 })
 
 function UsuariosConjuntoPage() {
-  const { conjuntoId } = Route.useRouteContext()
+  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
   const navigate = useNavigate()
   const isAdmin = useIsConjuntoAdmin()
   const [inviteOpen, setInviteOpen] = useState(false)
@@ -46,11 +48,11 @@ function UsuariosConjuntoPage() {
   useEffect(() => {
     if (!isAdmin) {
       void navigate({
-        to: '/c/$conjuntoId',
-        params: { conjuntoId },
+        to: '/c/$conjuntoSlug',
+        params: { conjuntoSlug },
       })
     }
-  }, [isAdmin, navigate, conjuntoId])
+  }, [isAdmin, navigate, conjuntoSlug])
 
   if (!isAdmin) return null
 

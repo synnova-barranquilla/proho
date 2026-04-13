@@ -115,8 +115,8 @@ function ConjuntosTable() {
       },
       cell: ({ row }) => (
         <Link
-          to="/c/$conjuntoId"
-          params={{ conjuntoId: row.original.slug }}
+          to="/c/$conjuntoSlug"
+          params={{ conjuntoSlug: row.original.slug }}
           className={buttonVariants({ variant: 'outline', size: 'sm' })}
         >
           <ExternalLink />

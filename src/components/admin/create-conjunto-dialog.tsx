@@ -77,8 +77,8 @@ export function CreateConjuntoDialog({
       toast.success('Conjunto creado')
       onOpenChange(false)
       void navigate({
-        to: '/c/$conjuntoId',
-        params: { conjuntoId: slug },
+        to: '/c/$conjuntoSlug',
+        params: { conjuntoSlug: slug },
       })
     } catch (err) {
       if (err instanceof ConvexError) {

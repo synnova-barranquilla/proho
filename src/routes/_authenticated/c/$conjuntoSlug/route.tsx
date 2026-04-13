@@ -17,7 +17,7 @@ import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 
 /**
- * Layout base del segmento `/c/$conjuntoId/*`.
+ * Layout base del segmento `/c/$conjuntoSlug/*`.
  *
  * **Importante:** pese al nombre del parámetro (`conjuntoId`) el valor
  * contenido en la URL es el **slug** human-readable del conjunto
@@ -29,9 +29,9 @@ import { api } from '../../../../../convex/_generated/api'
  * contexto de router (`context.conjuntoId`). Las hijas leen ese id real
  * para todas sus queries de Convex (`getRouteApi(...).useRouteContext()`).
  */
-export const Route = createFileRoute('/_authenticated/c/$conjuntoId')({
+export const Route = createFileRoute('/_authenticated/c/$conjuntoSlug')({
   beforeLoad: async ({ context: { queryClient }, params }) => {
-    const slug = params.conjuntoId
+    const slug = params.conjuntoSlug
 
     let data
     try {
@@ -71,7 +71,7 @@ function isRevokeError(error: unknown): boolean {
 }
 
 function ConjuntoAdminRoute() {
-  const { conjuntoId: slug } = Route.useParams()
+  const { conjuntoSlug: slug } = Route.useParams()
   const navigate = useNavigate()
 
   // Reactive subscription — same query key as the prefetch in beforeLoad,

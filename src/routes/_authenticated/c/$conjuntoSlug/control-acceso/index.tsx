@@ -5,7 +5,7 @@ import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$conjuntoId/control-acceso/',
+  '/_authenticated/c/$conjuntoSlug/control-acceso/',
 )({
   loader: async ({ context: { queryClient, conjuntoId } }) => {
     await Promise.all([

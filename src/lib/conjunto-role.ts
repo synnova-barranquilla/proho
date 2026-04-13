@@ -67,11 +67,11 @@ export function isConjuntoAdmin(
 }
 
 // ---------------------------------------------------------------------------
-// React hook — use inside any route under /c/$conjuntoId/*
+// React hook — use inside any route under /c/$conjuntoSlug/*
 // ---------------------------------------------------------------------------
 
 const authenticatedRoute = getRouteApi('/_authenticated')
-const conjuntoRoute = getRouteApi('/_authenticated/c/$conjuntoId')
+const conjuntoRoute = getRouteApi('/_authenticated/c/$conjuntoSlug')
 
 /**
  * Hook that returns the current user's effective role in the active
@@ -80,11 +80,11 @@ const conjuntoRoute = getRouteApi('/_authenticated/c/$conjuntoId')
  * parent route already prefetched. Zero extra network hits.
  *
  * Must be called inside a component rendered under
- * `/c/$conjuntoId/*`.
+ * `/c/$conjuntoSlug/*`.
  */
 export function useEffectiveConjuntoRole(): ConjuntoRole | null {
   const { convexUser } = authenticatedRoute.useLoaderData()
-  const { conjuntoId: slug } = conjuntoRoute.useParams()
+  const { conjuntoSlug: slug } = conjuntoRoute.useParams()
 
   const { data } = useSuspenseQuery(
     convexQuery(api.conjuntos.queries.getBySlug, { slug }),
