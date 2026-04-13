@@ -113,7 +113,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
   const [tableOpen, setTableOpen] = useState(false)
 
   return (
-    <>
+    <div className="flex flex-1 flex-col">
       <div className="flex flex-col gap-6">
         <Card>
           <CardHeader
@@ -188,6 +188,6 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
           placaRaw={state.placaRaw}
         />
       )}
-    </>
+    </div>
   )
 }

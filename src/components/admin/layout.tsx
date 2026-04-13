@@ -46,7 +46,7 @@ export function ConjuntoLayout({
       />
       <SidebarInset>
         <ConjuntoHeader conjunto={conjunto} />
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <main className="flex flex-1 flex-col p-4 sm:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

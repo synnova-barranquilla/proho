@@ -37,7 +37,7 @@ export function ControlAccesoPage({ conjuntoId }: ControlAccesoPageProps) {
   const visibleTabs = TABS.filter((t) => !t.adminOnly || isAdmin)
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">
           Control de acceso
