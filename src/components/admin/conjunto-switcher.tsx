@@ -8,6 +8,7 @@ import { Button } from '#/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -50,7 +51,9 @@ export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
         ) : null}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[260px]">
-        <DropdownMenuLabel>Cambiar de conjunto</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Cambiar de conjunto</DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         {list.map((c) => {
           const isCurrent = c._id === current._id

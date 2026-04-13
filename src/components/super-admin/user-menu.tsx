@@ -5,6 +5,7 @@ import { Button } from '#/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -37,17 +38,19 @@ export function UserMenu() {
         <span className="hidden text-sm font-medium sm:inline">{fullName}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium">{fullName}</span>
-          <span className="text-xs text-muted-foreground truncate">
-            {convexUser.email}
-          </span>
-          {isOwner ? (
-            <span className="mt-1 inline-flex w-fit rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
-              Owner
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex flex-col gap-0.5">
+            <span className="text-sm font-medium">{fullName}</span>
+            <span className="text-xs text-muted-foreground truncate">
+              {convexUser.email}
             </span>
-          ) : null}
-        </DropdownMenuLabel>
+            {isOwner ? (
+              <span className="mt-1 inline-flex w-fit rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+                Owner
+              </span>
+            ) : null}
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<a href="/logout" />}>
           Cerrar sesión
