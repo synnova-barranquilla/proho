@@ -193,24 +193,24 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
 
               <form.Field name="activeModules">
                 {(field) => {
-                  const isActive = field.state.value.includes('parking')
+                  const isActive = field.state.value.includes('control_acceso')
                   return (
                     <Field>
                       <FieldLabel>Módulos activos</FieldLabel>
                       <div className="flex items-start justify-between gap-4 rounded-md border p-3">
                         <div className="flex-1 space-y-0.5">
                           <Label className="text-sm font-medium">
-                            {MODULE_LABELS.parking}
+                            {MODULE_LABELS.control_acceso}
                           </Label>
                           <p className="text-xs text-muted-foreground">
-                            {MODULE_DESCRIPTIONS.parking}
+                            {MODULE_DESCRIPTIONS.control_acceso}
                           </p>
                         </div>
                         <Switch
                           checked={isActive}
                           onCheckedChange={(checked) => {
                             field.handleChange(
-                              checked === true ? ['parking'] : [],
+                              checked === true ? ['control_acceso'] : [],
                             )
                           }}
                         />

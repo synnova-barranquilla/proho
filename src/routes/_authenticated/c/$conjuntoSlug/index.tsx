@@ -1,7 +1,7 @@
 import { Suspense, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi, Link } from '@tanstack/react-router'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import {
@@ -61,19 +61,32 @@ export const Route = createFileRoute('/_authenticated/c/$conjuntoSlug/')({
   component: ConjuntoDashboardPage,
 })
 
+const authenticatedRoute = getRouteApi('/_authenticated')
+
 function ConjuntoDashboardPage() {
   const { conjuntoId } = Route.useRouteContext()
+  const { organization } = authenticatedRoute.useLoaderData()
+  const hasControlAcceso = organization.activeModules.includes('control_acceso')
 
   return (
     <div className="flex flex-col gap-6">
       <Suspense fallback={<DashboardSkeleton />}>
-        <Dashboard conjuntoId={conjuntoId} />
+        <Dashboard
+          conjuntoId={conjuntoId}
+          hasControlAcceso={hasControlAcceso}
+        />
       </Suspense>
     </div>
   )
 }
 
-function Dashboard({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
+function Dashboard({
+  conjuntoId,
+  hasControlAcceso,
+}: {
+  conjuntoId: Id<'conjuntos'>
+  hasControlAcceso: boolean
+}) {
   const { data } = useSuspenseQuery(
     convexQuery(api.conjuntos.queries.getWithStats, { conjuntoId }),
   )
@@ -114,14 +127,18 @@ function Dashboard({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
           value={stats.vehiculosActivos}
           sub="activos"
         />
-        <ParkingCard
-          conjuntoId={conjuntoId}
-          carros={stats.parqueaderosCarros}
-          motos={stats.parqueaderosMotos}
-        />
+        {hasControlAcceso && (
+          <ParkingCard
+            conjuntoId={conjuntoId}
+            carros={stats.parqueaderosCarros}
+            motos={stats.parqueaderosMotos}
+          />
+        )}
       </div>
 
-      <ParkingResumen conjuntoId={conjuntoId} conjuntoSlug={conjunto.slug} />
+      {hasControlAcceso && (
+        <ParkingResumen conjuntoId={conjuntoId} conjuntoSlug={conjunto.slug} />
+      )}
     </>
   )
 }

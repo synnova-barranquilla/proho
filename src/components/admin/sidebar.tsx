@@ -78,6 +78,7 @@ export function ConjuntoSidebar({
   // to show. The backend already enforces these checks on every
   // mutation; this is front-end gating for UX clarity.
   const isAdmin = isConjuntoAdmin(convexUser, conjunto, membership)
+  const hasControlAcceso = organization.activeModules.includes('control_acceso')
 
   return (
     <ConjuntoScopedSidebar
@@ -86,6 +87,7 @@ export function ConjuntoSidebar({
       isAdmin={isAdmin}
       isOrgOwner={isOrgOwner}
       isSuperAdmin={isSuperAdmin}
+      hasControlAcceso={hasControlAcceso}
     />
   )
 }
@@ -206,12 +208,14 @@ function ConjuntoScopedSidebar({
   isAdmin,
   isOrgOwner,
   isSuperAdmin,
+  hasControlAcceso,
 }: {
   conjunto: Doc<'conjuntos'>
   pathname: string
   isAdmin: boolean
   isOrgOwner: boolean
   isSuperAdmin: boolean
+  hasControlAcceso: boolean
 }) {
   const base = `/c/${conjunto.slug}`
 
@@ -334,27 +338,29 @@ function ConjuntoScopedSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Operación</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isActive(`${base}/control-acceso`)}
-                  render={
-                    <Link
-                      to="/c/$conjuntoSlug/control-acceso"
-                      params={{ conjuntoSlug: conjunto.slug }}
-                    >
-                      <ShieldCheck />
-                      <span>Control de acceso</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {hasControlAcceso ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Operación</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={isActive(`${base}/control-acceso`)}
+                    render={
+                      <Link
+                        to="/c/$conjuntoSlug/control-acceso"
+                        params={{ conjuntoSlug: conjunto.slug }}
+                      >
+                        <ShieldCheck />
+                        <span>Control de acceso</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
 
         {showGestionGroup ? (
           <SidebarGroup>

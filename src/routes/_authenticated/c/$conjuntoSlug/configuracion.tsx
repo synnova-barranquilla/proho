@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  getRouteApi,
+  useNavigate,
+} from '@tanstack/react-router'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
@@ -41,8 +45,12 @@ export const Route = createFileRoute(
   component: ConfiguracionPage,
 })
 
+const authenticatedRoute = getRouteApi('/_authenticated')
+
 function ConfiguracionPage() {
   const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
+  const { organization } = authenticatedRoute.useLoaderData()
+  const hasControlAcceso = organization.activeModules.includes('control_acceso')
   const navigate = useNavigate()
   const isAdmin = useIsConjuntoAdmin()
 
@@ -130,89 +138,94 @@ function ConfiguracionPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Reglas de acceso vehicular</CardTitle>
-            <CardDescription>
-              Controlan qué validaciones aplica el sistema cuando un vehículo
-              residente intenta ingresar al conjunto.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <Field orientation="horizontal">
-                <div className="flex-1">
-                  <FieldLabel>Ingreso en mora genera novedad</FieldLabel>
+        {hasControlAcceso && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Reglas de acceso vehicular</CardTitle>
+              <CardDescription>
+                Controlan qué validaciones aplica el sistema cuando un vehículo
+                residente intenta ingresar al conjunto.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field orientation="horizontal">
+                  <div className="flex-1">
+                    <FieldLabel>Ingreso en mora genera novedad</FieldLabel>
+                    <FieldDescription>
+                      Si la unidad del vehículo está en mora, el vigilante debe
+                      justificar el ingreso y se genera una novedad de
+                      auditoría.
+                    </FieldDescription>
+                  </div>
+                  <Switch
+                    checked={reglaIngresoEnMora}
+                    onCheckedChange={setReglaIngresoEnMora}
+                  />
+                </Field>
+                <Field orientation="horizontal">
+                  <div className="flex-1">
+                    <FieldLabel>Un vehículo por unidad dentro</FieldLabel>
+                    <FieldDescription>
+                      Solo un vehículo por unidad puede estar dentro del
+                      conjunto a la vez. Se permite una moto adicional con
+                      confirmación del vigilante.
+                    </FieldDescription>
+                  </div>
+                  <Switch
+                    checked={reglaVehiculoDuplicado}
+                    onCheckedChange={setReglaVehiculoDuplicado}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Permanencia máxima (días)</FieldLabel>
+                  <NumberInput
+                    min={0}
+                    max={365}
+                    value={reglaPermanenciaMaxDias}
+                    onChange={(v) => setReglaPermanenciaMaxDias(v ?? 0)}
+                  />
                   <FieldDescription>
-                    Si la unidad del vehículo está en mora, el vigilante debe
-                    justificar el ingreso y se genera una novedad de auditoría.
+                    Máximo de días que un vehículo puede permanecer dentro. Si
+                    un vehículo de la unidad excede este límite, se genera
+                    novedad al próximo ingreso. Valor 0 desactiva esta regla.
                   </FieldDescription>
-                </div>
-                <Switch
-                  checked={reglaIngresoEnMora}
-                  onCheckedChange={setReglaIngresoEnMora}
-                />
-              </Field>
-              <Field orientation="horizontal">
-                <div className="flex-1">
-                  <FieldLabel>Un vehículo por unidad dentro</FieldLabel>
-                  <FieldDescription>
-                    Solo un vehículo por unidad puede estar dentro del conjunto
-                    a la vez. Se permite una moto adicional con confirmación del
-                    vigilante.
-                  </FieldDescription>
-                </div>
-                <Switch
-                  checked={reglaVehiculoDuplicado}
-                  onCheckedChange={setReglaVehiculoDuplicado}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Permanencia máxima (días)</FieldLabel>
-                <NumberInput
-                  min={0}
-                  max={365}
-                  value={reglaPermanenciaMaxDias}
-                  onChange={(v) => setReglaPermanenciaMaxDias(v ?? 0)}
-                />
-                <FieldDescription>
-                  Máximo de días que un vehículo puede permanecer dentro. Si un
-                  vehículo de la unidad excede este límite, se genera novedad al
-                  próximo ingreso. Valor 0 desactiva esta regla.
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-          </CardContent>
-        </Card>
+                </Field>
+              </FieldGroup>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Parqueaderos</CardTitle>
-            <CardDescription>
-              Capacidad total de espacios de parqueadero del conjunto.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <Field>
-                <FieldLabel>Parqueaderos de carros</FieldLabel>
-                <NumberInput
-                  min={0}
-                  value={parqueaderosCarros}
-                  onChange={(v) => setParqueaderosCarros(v ?? 0)}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Parqueaderos de motos</FieldLabel>
-                <NumberInput
-                  min={0}
-                  value={parqueaderosMotos}
-                  onChange={(v) => setParqueaderosMotos(v ?? 0)}
-                />
-              </Field>
-            </FieldGroup>
-          </CardContent>
-        </Card>
+        {hasControlAcceso && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Parqueaderos</CardTitle>
+              <CardDescription>
+                Capacidad total de espacios de parqueadero del conjunto.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel>Parqueaderos de carros</FieldLabel>
+                  <NumberInput
+                    min={0}
+                    value={parqueaderosCarros}
+                    onChange={(v) => setParqueaderosCarros(v ?? 0)}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Parqueaderos de motos</FieldLabel>
+                  <NumberInput
+                    min={0}
+                    value={parqueaderosMotos}
+                    onChange={(v) => setParqueaderosMotos(v ?? 0)}
+                  />
+                </Field>
+              </FieldGroup>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex justify-end">
           <Button type="submit" disabled={upsertMut.isPending}>

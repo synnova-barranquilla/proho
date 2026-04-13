@@ -17,13 +17,15 @@ import { Label } from '#/components/ui/label'
 import { Switch } from '#/components/ui/switch'
 import {
   MODULE_DESCRIPTIONS,
-  MODULE_KEYS,
   MODULE_LABELS,
   type ModuleKey,
 } from '#/lib/modules'
 import { isInternalOrgSlug } from '#/lib/organizations'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
+
+/** Only show modules that are currently developed */
+const VISIBLE_MODULES: ModuleKey[] = ['control_acceso']
 
 interface OrgDetailModulesCardProps {
   org: Doc<'organizations'>
@@ -78,7 +80,7 @@ export function OrgDetailModulesCard({ org }: OrgDetailModulesCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {MODULE_KEYS.map((moduleKey) => {
+        {VISIBLE_MODULES.map((moduleKey) => {
           const isActive = org.activeModules.includes(moduleKey)
           const isPending = pendingKey === moduleKey
           return (
