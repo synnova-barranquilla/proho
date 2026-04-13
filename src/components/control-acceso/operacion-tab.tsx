@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
@@ -7,6 +7,7 @@ import { ConvexError } from 'convex/values'
 import { Bike, Car, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -124,31 +125,67 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
     dispatch({ type: 'VOLVER_IDLE' })
   }, [dispatch])
 
-  const [tableOpen, setTableOpen] = useState(false)
+  const [visitantesOpen, setVisitantesOpen] = useState(false)
+  const [permanenciaOpen, setPermanenciaOpen] = useState(false)
+  const [recientesOpen, setRecientesOpen] = useState(false)
+
+  const visitantesDentro = activos.filter(
+    (r) => r.tipo === 'VISITANTE' || r.tipo === 'VISITA_ADMIN',
+  )
+
+  const PERMANENCIA_MS = 30 * 24 * 60 * 60 * 1000
+  const permanenciaExcedida = activos.filter(
+    (r) => r.entradaEn != null && Date.now() - r.entradaEn >= PERMANENCIA_MS,
+  )
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-col gap-6">
-        <Card>
-          <CardHeader
-            className="cursor-pointer select-none"
-            onClick={() => setTableOpen((o) => !o)}
-          >
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">
-                Registros recientes ({recientes.length})
-              </CardTitle>
-              <ChevronDown
-                className={`h-4 w-4 text-muted-foreground transition-transform ${tableOpen ? 'rotate-180' : ''}`}
-              />
-            </div>
-          </CardHeader>
-          {tableOpen && (
-            <CardContent>
-              <RegistrosRecientesTable registros={recientes} />
-            </CardContent>
-          )}
-        </Card>
+      <div className="flex flex-col gap-4">
+        <CollapsibleTable
+          title={`Visitantes dentro (${visitantesDentro.length})`}
+          open={visitantesOpen}
+          onToggle={() => setVisitantesOpen((o) => !o)}
+          badge={visitantesDentro.length > 0 ? 'secondary' : undefined}
+        >
+          <RegistrosRecientesTable
+            registros={visitantesDentro.map((r) => ({
+              _id: `${r._id}-entrada`,
+              evento: 'ENTRADA' as const,
+              eventoEn: r.entradaEn ?? r._creationTime,
+              placaNormalizada: r.placaNormalizada,
+              tipo: r.tipo,
+              vehiculo: r.vehiculo,
+              unidad: r.unidad,
+            }))}
+          />
+        </CollapsibleTable>
+
+        <CollapsibleTable
+          title={`Permanencia ≥ 30d (${permanenciaExcedida.length})`}
+          open={permanenciaOpen}
+          onToggle={() => setPermanenciaOpen((o) => !o)}
+          badge={permanenciaExcedida.length > 0 ? 'destructive' : undefined}
+        >
+          <RegistrosRecientesTable
+            registros={permanenciaExcedida.map((r) => ({
+              _id: `${r._id}-entrada`,
+              evento: 'ENTRADA' as const,
+              eventoEn: r.entradaEn ?? r._creationTime,
+              placaNormalizada: r.placaNormalizada,
+              tipo: r.tipo,
+              vehiculo: r.vehiculo,
+              unidad: r.unidad,
+            }))}
+          />
+        </CollapsibleTable>
+
+        <CollapsibleTable
+          title={`Registros recientes (${recientes.length})`}
+          open={recientesOpen}
+          onToggle={() => setRecientesOpen((o) => !o)}
+        >
+          <RegistrosRecientesTable registros={recientes} />
+        </CollapsibleTable>
       </div>
 
       <div className="sticky bottom-0 z-10 -mx-4 mt-auto border-t bg-background px-4 py-3 sm:-mx-6 sm:px-6">
@@ -219,5 +256,40 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         />
       )}
     </div>
+  )
+}
+
+function CollapsibleTable({
+  title,
+  open,
+  onToggle,
+  badge,
+  children,
+}: {
+  title: string
+  open: boolean
+  onToggle: () => void
+  badge?: 'default' | 'secondary' | 'destructive'
+  children: ReactNode
+}) {
+  return (
+    <Card>
+      <CardHeader className="cursor-pointer select-none" onClick={onToggle}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">{title}</CardTitle>
+            {badge && (
+              <Badge variant={badge} className="text-xs">
+                !
+              </Badge>
+            )}
+          </div>
+          <ChevronDown
+            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+          />
+        </div>
+      </CardHeader>
+      {open && <CardContent>{children}</CardContent>}
+    </Card>
   )
 }
