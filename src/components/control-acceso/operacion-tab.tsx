@@ -135,20 +135,23 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
 
   const PERMANENCIA_MS = 30 * 24 * 60 * 60 * 1000
   const permanenciaExcedida = activos.filter(
-    (r) => r.entradaEn != null && Date.now() - r.entradaEn >= PERMANENCIA_MS,
+    (r) =>
+      r.tipo === 'RESIDENTE' &&
+      r.entradaEn != null &&
+      Date.now() - r.entradaEn >= PERMANENCIA_MS,
   )
 
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex flex-col gap-4">
         <CollapsibleTable
-          title={`Visitantes dentro (${visitantesDentro.length})`}
-          open={visitantesOpen}
-          onToggle={() => setVisitantesOpen((o) => !o)}
-          badge={visitantesDentro.length > 0 ? 'secondary' : undefined}
+          title={`Permanencia ≥ 30d (${permanenciaExcedida.length})`}
+          open={permanenciaOpen}
+          onToggle={() => setPermanenciaOpen((o) => !o)}
+          badge={permanenciaExcedida.length > 0 ? 'destructive' : undefined}
         >
           <RegistrosRecientesTable
-            registros={visitantesDentro.map((r) => ({
+            registros={permanenciaExcedida.map((r) => ({
               _id: `${r._id}-entrada`,
               evento: 'ENTRADA' as const,
               eventoEn: r.entradaEn ?? r._creationTime,
@@ -161,13 +164,13 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         </CollapsibleTable>
 
         <CollapsibleTable
-          title={`Permanencia ≥ 30d (${permanenciaExcedida.length})`}
-          open={permanenciaOpen}
-          onToggle={() => setPermanenciaOpen((o) => !o)}
-          badge={permanenciaExcedida.length > 0 ? 'destructive' : undefined}
+          title={`Visitantes dentro (${visitantesDentro.length})`}
+          open={visitantesOpen}
+          onToggle={() => setVisitantesOpen((o) => !o)}
+          badge={visitantesDentro.length > 0 ? 'secondary' : undefined}
         >
           <RegistrosRecientesTable
-            registros={permanenciaExcedida.map((r) => ({
+            registros={visitantesDentro.map((r) => ({
               _id: `${r._id}-entrada`,
               evento: 'ENTRADA' as const,
               eventoEn: r.entradaEn ?? r._creationTime,
