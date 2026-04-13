@@ -23,23 +23,20 @@ import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/c/$conjuntoId/')({
-  loader: async ({
-    context: { queryClient, conjuntoId, conjuntoSlug, convexUser },
-  }) => {
-    // MEMBER users with VIGILANTE conjunto role → skip dashboard, go to control-acceso.
-    // The parent route already prefetched getBySlug which includes membership.
-    if (convexUser.orgRole === 'MEMBER') {
-      const data = await prefetchAuthenticatedQuery(
-        queryClient,
-        api.conjuntos.queries.getBySlug,
-        { slug: conjuntoSlug },
-      )
-      if (data?.membership?.role === 'VIGILANTE') {
-        throw redirect({
-          to: '/c/$conjuntoId/control-acceso',
-          params: { conjuntoId: conjuntoSlug },
-        })
-      }
+  loader: async ({ context: { queryClient, conjuntoId, conjuntoSlug } }) => {
+    // Vigilantes skip the dashboard and go directly to control-acceso.
+    // Check membership role (not just orgRole) to handle both MEMBER users
+    // and existing users not yet migrated from orgRole='ADMIN'.
+    const slugData = await prefetchAuthenticatedQuery(
+      queryClient,
+      api.conjuntos.queries.getBySlug,
+      { slug: conjuntoSlug },
+    )
+    if (slugData?.membership?.role === 'VIGILANTE') {
+      throw redirect({
+        to: '/c/$conjuntoId/control-acceso',
+        params: { conjuntoId: conjuntoSlug },
+      })
     }
 
     await Promise.all([

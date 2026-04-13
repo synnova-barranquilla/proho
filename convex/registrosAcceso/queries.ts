@@ -169,9 +169,7 @@ export const getDashboardStats = query({
     conjuntoId: v.id('conjuntos'),
   },
   handler: async (ctx, args) => {
-    await requireConjuntoAccess(ctx, args.conjuntoId, {
-      allowedRoles: ['ADMIN'],
-    })
+    await requireConjuntoAccess(ctx, args.conjuntoId)
 
     // Start of today (UTC)
     const now = new Date()
