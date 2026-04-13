@@ -71,7 +71,6 @@ export const sendDailySummary = internalAction({
       if (
         summary.stats.ingresosAyer === 0 &&
         summary.stats.salidasAyer === 0 &&
-        summary.stats.novedadesAyer === 0 &&
         summary.stats.rechazosAyer === 0
       ) {
         continue
@@ -84,10 +83,8 @@ export const sendDailySummary = internalAction({
           vehiculosDentro: summary.stats.vehiculosDentro,
           ingresosAyer: summary.stats.ingresosAyer,
           salidasAyer: summary.stats.salidasAyer,
-          novedadesAyer: summary.stats.novedadesAyer,
           rechazosAyer: summary.stats.rechazosAyer,
-          novedades: summary.novedades,
-          historicoUrl: `${siteUrl}/admin/c/${summary.conjuntoSlug}/control-acceso`,
+          historicoUrl: `${siteUrl}/c/${summary.conjuntoSlug}/control-acceso`,
         }),
       )
 

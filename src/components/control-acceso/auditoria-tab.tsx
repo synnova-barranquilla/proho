@@ -106,6 +106,14 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
       <span className="text-sm">{row.original.justificacion ?? '—'}</span>
     ),
   },
+  {
+    id: 'novedad',
+    header: 'Novedad',
+    enableSorting: false,
+    cell: ({ row }) => (
+      <span className="text-sm">{(row.original as any).novedad ?? '—'}</span>
+    ),
+  },
 ]
 
 interface AuditoriaTabProps {

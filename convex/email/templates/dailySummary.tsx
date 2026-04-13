@@ -1,11 +1,6 @@
-import { Button, Hr, Text } from '@react-email/components'
+import { Button, Text } from '@react-email/components'
 
 import { EmailLayout } from './layout'
-
-interface NovedadItem {
-  hora: string
-  descripcion: string
-}
 
 interface DailySummaryEmailProps {
   nombreConjunto: string
@@ -13,9 +8,7 @@ interface DailySummaryEmailProps {
   vehiculosDentro: number
   ingresosAyer: number
   salidasAyer: number
-  novedadesAyer: number
   rechazosAyer: number
-  novedades: NovedadItem[]
   historicoUrl: string
 }
 
@@ -25,14 +18,8 @@ export function DailySummaryEmail({
   vehiculosDentro = 12,
   ingresosAyer = 47,
   salidasAyer = 43,
-  novedadesAyer = 3,
   rechazosAyer = 1,
-  novedades = [
-    { hora: '08:15', descripcion: 'Ingreso en mora (ABC-123, T1-301)' },
-    { hora: '14:30', descripcion: 'Vehículo duplicado (DEF-456, T2-102)' },
-    { hora: '19:45', descripcion: 'Novedad manual: "Barrera dañada"' },
-  ],
-  historicoUrl = 'https://app.synnova.com.co/admin/c/ejemplo/control-acceso',
+  historicoUrl = 'https://app.synnova.com.co/c/ejemplo/control-acceso',
 }: DailySummaryEmailProps) {
   return (
     <EmailLayout preview={`Resumen de ayer — ${nombreConjunto}`}>
@@ -47,29 +34,12 @@ export function DailySummaryEmail({
           <StatRow label="Ingresos" value={ingresosAyer} />
           <StatRow label="Salidas" value={salidasAyer} />
           <StatRow
-            label="Novedades"
-            value={novedadesAyer}
-            highlight={novedadesAyer > 0}
-          />
-          <StatRow
             label="Rechazos"
             value={rechazosAyer}
             highlight={rechazosAyer > 0}
           />
         </tbody>
       </table>
-
-      {novedades.length > 0 && (
-        <>
-          <Hr style={hr} />
-          <Text style={sectionTitle}>Novedades del día</Text>
-          {novedades.map((n, i) => (
-            <Text key={i} style={novedadRow}>
-              <span style={novedadHora}>{n.hora}</span> — {n.descripcion}
-            </Text>
-          ))}
-        </>
-      )}
 
       <Button style={button} href={historicoUrl}>
         Ver histórico completo
@@ -132,33 +102,6 @@ const statValue = {
   color: '#1a1a1a',
   textAlign: 'right' as const,
   padding: '6px 0',
-  fontVariantNumeric: 'tabular-nums' as const,
-}
-
-const hr = {
-  borderColor: '#e6ebf1',
-  margin: '16px 0',
-}
-
-const sectionTitle = {
-  fontSize: '14px',
-  fontWeight: '600' as const,
-  color: '#1a1a1a',
-  padding: '0 24px',
-  margin: '0 0 8px',
-}
-
-const novedadRow = {
-  fontSize: '13px',
-  lineHeight: '20px',
-  color: '#525f7f',
-  padding: '0 24px',
-  margin: '0 0 4px',
-}
-
-const novedadHora = {
-  fontWeight: '600' as const,
-  color: '#1a1a1a',
   fontVariantNumeric: 'tabular-nums' as const,
 }
 

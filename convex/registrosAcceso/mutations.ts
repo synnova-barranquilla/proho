@@ -5,30 +5,11 @@ import { mutation, type MutationCtx } from '../_generated/server'
 import { requireConjuntoAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { normalizePlaca } from '../lib/placa'
-import {
-  evaluateRules,
-  type RuleViolation,
-  type VehiculoAdentro,
-} from '../lib/rulesEngine'
+import { evaluateRules, type VehiculoAdentro } from '../lib/rulesEngine'
 import { vehiculoTipos } from '../vehiculos/validators'
 import { registroAccesoTipos } from './validators'
 
 // ─── Helpers ───────────────────────────────────────────────────────────
-
-const NOVEDAD_DESCRIPTIONS: Record<RuleViolation, string> = {
-  MORA: 'Ingreso de vehículo de unidad en mora',
-  VEHICULO_DUPLICADO: 'Ingreso de segundo vehículo de la misma unidad',
-  MOTO_ADICIONAL: 'Ingreso de moto adicional (ya hay un vehículo dentro)',
-  PERMANENCIA_EXCEDIDA:
-    'Ingreso con vehículo de la unidad que excede permanencia máxima',
-}
-
-const VIOLATION_TO_NOVEDAD: Record<RuleViolation, string> = {
-  MORA: 'INGRESO_EN_MORA',
-  VEHICULO_DUPLICADO: 'VEHICULO_DUPLICADO',
-  MOTO_ADICIONAL: 'MOTO_ADICIONAL',
-  PERMANENCIA_EXCEDIDA: 'PERMANENCIA_EXCEDIDA',
-}
 
 async function getVehiculosUnidadAdentro(
   ctx: MutationCtx,
@@ -58,30 +39,6 @@ async function getVehiculosUnidadAdentro(
   return result
 }
 
-async function createNovedades(
-  ctx: MutationCtx,
-  violations: RuleViolation[],
-  conjuntoId: Id<'conjuntos'>,
-  registroAccesoId: Id<'registrosAcceso'>,
-  vigilanteId: Id<'users'>,
-) {
-  const ahora = Date.now()
-  for (const violation of violations) {
-    await ctx.db.insert('novedades', {
-      conjuntoId,
-      tipo: VIOLATION_TO_NOVEDAD[violation] as
-        | 'INGRESO_EN_MORA'
-        | 'VEHICULO_DUPLICADO'
-        | 'MOTO_ADICIONAL'
-        | 'PERMANENCIA_EXCEDIDA',
-      registroAccesoId,
-      descripcion: NOVEDAD_DESCRIPTIONS[violation],
-      vigilanteId,
-      creadoEn: ahora,
-    })
-  }
-}
-
 // ─── Mutations ─────────────────────────────────────────────────────────
 
 /**
@@ -99,6 +56,7 @@ export const registrarIngreso = mutation({
     conjuntoId: v.id('conjuntos'),
     placaRaw: v.string(),
     justificacion: v.optional(v.string()),
+    novedad: v.optional(v.string()),
     observacion: v.optional(v.string()),
     forzarPermitido: v.optional(v.boolean()),
   },
@@ -192,20 +150,10 @@ export const registrarIngreso = mutation({
       decisionMotor: ruleResult.violations,
       decisionFinal: 'PERMITIDO',
       justificacion: args.justificacion?.trim() || undefined,
+      novedad: args.novedad?.trim() || undefined,
       observacion: args.observacion?.trim() || undefined,
       vigilanteId: user._id,
     })
-
-    // Crear novedades si hubo violaciones
-    if (ruleResult.violations.length > 0) {
-      await createNovedades(
-        ctx,
-        ruleResult.violations,
-        args.conjuntoId,
-        registroId,
-        user._id,
-      )
-    }
 
     return {
       found: true as const,
@@ -351,6 +299,7 @@ export const registrarResidenteNuevo = mutation({
     vehiculoTipo: vehiculoTipos,
     propietarioNombre: v.optional(v.string()),
     justificacion: v.optional(v.string()),
+    novedad: v.optional(v.string()),
     observacion: v.optional(v.string()),
     forzarPermitido: v.optional(v.boolean()),
   },
@@ -447,20 +396,10 @@ export const registrarResidenteNuevo = mutation({
       decisionMotor: ruleResult.violations,
       decisionFinal: 'PERMITIDO',
       justificacion: args.justificacion?.trim() || undefined,
+      novedad: args.novedad?.trim() || undefined,
       observacion: args.observacion?.trim() || undefined,
       vigilanteId: user._id,
     })
-
-    // Crear novedades
-    if (ruleResult.violations.length > 0) {
-      await createNovedades(
-        ctx,
-        ruleResult.violations,
-        args.conjuntoId,
-        registroId,
-        user._id,
-      )
-    }
 
     return {
       vehiculoId,

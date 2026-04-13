@@ -244,21 +244,10 @@ export const getDashboardStats = query({
       (r) => r.decisionFinal === 'RECHAZADO',
     ).length
 
-    // Novedades today
-    const novedades = await ctx.db
-      .query('novedades')
-      .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', args.conjuntoId))
-      .collect()
-
-    const novedadesHoy = novedades.filter(
-      (n) => n.creadoEn >= startOfDay,
-    ).length
-
     return {
       vehiculosDentro,
       ingresosHoy,
       salidasHoy,
-      novedadesHoy,
       rechazosHoy,
     }
   },

@@ -63,6 +63,7 @@ export function RegistrarResidenteSheet({
   const [observacion, setObservacion] = useState('')
   const [violations, setViolations] = useState<RuleViolation[]>([])
   const [justificacion, setJustificacion] = useState('')
+  const [novedad, setNovedad] = useState('')
   const [showViolations, setShowViolations] = useState(false)
 
   const { data: unidadesData } = useSuspenseQuery(
@@ -92,7 +93,11 @@ export function RegistrarResidenteSheet({
         propietarioNombre: propietario.trim() || undefined,
         observacion: observacion.trim() || undefined,
         ...(showViolations
-          ? { forzarPermitido: true, justificacion: justificacion.trim() }
+          ? {
+              forzarPermitido: true,
+              justificacion: justificacion.trim(),
+              novedad: novedad.trim() || undefined,
+            }
           : {}),
       })
 
@@ -125,6 +130,7 @@ export function RegistrarResidenteSheet({
     setObservacion('')
     setViolations([])
     setJustificacion('')
+    setNovedad('')
     setShowViolations(false)
     onClose()
   }
@@ -207,6 +213,15 @@ export function RegistrarResidenteSheet({
                   placeholder="Explique por qué se permite el ingreso..."
                   className="min-h-20"
                   required
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Novedad (opcional)</FieldLabel>
+                <Textarea
+                  value={novedad}
+                  onChange={(e) => setNovedad(e.target.value)}
+                  placeholder="Observaciones adicionales del vigilante..."
+                  className="min-h-16"
                 />
               </Field>
             </div>

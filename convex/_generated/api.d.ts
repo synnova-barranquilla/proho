@@ -40,9 +40,6 @@ import type * as lib_organizations from '../lib/organizations.js'
 import type * as lib_placa from '../lib/placa.js'
 import type * as lib_rulesEngine from '../lib/rulesEngine.js'
 import type * as migrations_fixUserNames from '../migrations/fixUserNames.js'
-import type * as novedades_mutations from '../novedades/mutations.js'
-import type * as novedades_queries from '../novedades/queries.js'
-import type * as novedades_validators from '../novedades/validators.js'
 import type * as organizations_mutations from '../organizations/mutations.js'
 import type * as organizations_queries from '../organizations/queries.js'
 import type * as organizations_validators from '../organizations/validators.js'
@@ -90,9 +87,6 @@ declare const fullApi: ApiFromModules<{
   'lib/placa': typeof lib_placa
   'lib/rulesEngine': typeof lib_rulesEngine
   'migrations/fixUserNames': typeof migrations_fixUserNames
-  'novedades/mutations': typeof novedades_mutations
-  'novedades/queries': typeof novedades_queries
-  'novedades/validators': typeof novedades_validators
   'organizations/mutations': typeof organizations_mutations
   'organizations/queries': typeof organizations_queries
   'organizations/validators': typeof organizations_validators

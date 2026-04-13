@@ -7,10 +7,9 @@ import type { Id } from '../../../convex/_generated/dataModel'
 import { AuditoriaTab } from './auditoria-tab'
 import { DashboardTab } from './dashboard-tab'
 import { HistoricoTab } from './historico-tab'
-import { NovedadesTab } from './novedades-tab'
 import { OperacionTab } from './operacion-tab'
 
-type Tab = 'operacion' | 'dashboard' | 'historico' | 'novedades' | 'auditoria'
+type Tab = 'operacion' | 'dashboard' | 'historico' | 'auditoria'
 
 interface TabDef {
   id: Tab
@@ -22,7 +21,6 @@ const TABS: TabDef[] = [
   { id: 'operacion', label: 'Operación', adminOnly: false },
   { id: 'dashboard', label: 'Dashboard', adminOnly: true },
   { id: 'historico', label: 'Histórico', adminOnly: true },
-  { id: 'novedades', label: 'Novedades', adminOnly: true },
   { id: 'auditoria', label: 'Auditoría', adminOnly: true },
 ]
 
@@ -71,7 +69,6 @@ export function ControlAccesoPage({ conjuntoId }: ControlAccesoPageProps) {
         {activeTab === 'operacion' && <OperacionTab conjuntoId={conjuntoId} />}
         {activeTab === 'dashboard' && <DashboardTab conjuntoId={conjuntoId} />}
         {activeTab === 'historico' && <HistoricoTab conjuntoId={conjuntoId} />}
-        {activeTab === 'novedades' && <NovedadesTab conjuntoId={conjuntoId} />}
         {activeTab === 'auditoria' && <AuditoriaTab conjuntoId={conjuntoId} />}
       </Suspense>
     </div>

@@ -48,10 +48,8 @@ export const getAllConjuntoSummaries = internalQuery({
         vehiculosDentro: number
         ingresosAyer: number
         salidasAyer: number
-        novedadesAyer: number
         rechazosAyer: number
       }
-      novedades: Array<{ hora: string; descripcion: string }>
       adminEmails: string[]
     }> = []
 
@@ -101,16 +99,6 @@ export const getAllConjuntoSummaries = internalQuery({
           (r) => r.decisionFinal === 'RECHAZADO',
         ).length
 
-        // Novedades
-        const novedadesAll = await ctx.db
-          .query('novedades')
-          .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', conjunto._id))
-          .collect()
-
-        const novedadesAyer = novedadesAll.filter(
-          (n) => n.creadoEn >= startOfYesterday && n.creadoEn < startOfToday,
-        )
-
         // Admin emails
         const memberships = await ctx.db
           .query('conjuntoMemberships')
@@ -156,17 +144,8 @@ export const getAllConjuntoSummaries = internalQuery({
             vehiculosDentro,
             ingresosAyer,
             salidasAyer,
-            novedadesAyer: novedadesAyer.length,
             rechazosAyer,
           },
-          novedades: novedadesAyer.map((n) => ({
-            hora: new Date(n.creadoEn).toLocaleTimeString('es-CO', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            }),
-            descripcion: n.descripcion,
-          })),
           adminEmails,
         })
       }

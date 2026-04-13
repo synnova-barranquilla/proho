@@ -312,8 +312,8 @@ function ParkingResumen({
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <div>
-              <p className="text-2xl font-semibold">{stats.novedadesHoy}</p>
-              <p className="text-xs text-muted-foreground">novedades hoy</p>
+              <p className="text-2xl font-semibold">{stats.rechazosHoy}</p>
+              <p className="text-xs text-muted-foreground">rechazos hoy</p>
             </div>
           </div>
         </div>

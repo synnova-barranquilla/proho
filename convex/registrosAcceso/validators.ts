@@ -31,6 +31,7 @@ export const registroAccesoFields = {
   decisionMotor: v.array(v.string()),
   decisionFinal: decisionFinalValues,
   justificacion: v.optional(v.string()),
+  novedad: v.optional(v.string()),
   observacion: v.optional(v.string()),
 
   // Auditoría

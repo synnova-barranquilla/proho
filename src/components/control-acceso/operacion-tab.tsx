@@ -13,7 +13,6 @@ import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { normalizePlaca } from '../../../convex/lib/placa'
 import { NoEncontradoDialog } from './no-encontrado-dialog'
-import { NovedadesFab } from './novedades-fab'
 import { PlacaSearchBar } from './placa-search-bar'
 import { SalidaDialog } from './salida-dialog'
 import type { RegistroActivo } from './types'
@@ -214,8 +213,6 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
           vehiculos={vehiculos}
         />
       </div>
-
-      <NovedadesFab conjuntoId={conjuntoId} />
 
       {state.screen === 'VIOLACIONES' && (
         <ViolacionesDialog

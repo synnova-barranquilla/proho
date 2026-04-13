@@ -4,7 +4,6 @@ import { conjuntoConfigFields } from './conjuntoConfig/validators'
 import { conjuntoMembershipFields } from './conjuntoMemberships/validators'
 import { conjuntoFields } from './conjuntos/validators'
 import { invitationFields } from './invitations/validators'
-import { novedadFields } from './novedades/validators'
 import { organizationFields } from './organizations/validators'
 import { registroAccesoFields } from './registrosAcceso/validators'
 import { residenteFields } from './residentes/validators'
@@ -66,8 +65,4 @@ export default defineSchema({
     .index('by_conjunto_and_placa', ['conjuntoId', 'placaNormalizada'])
     .index('by_conjunto_and_salida', ['conjuntoId', 'salidaEn'])
     .index('by_conjunto_and_unidad', ['conjuntoId', 'unidadId']),
-
-  novedades: defineTable(novedadFields)
-    .index('by_conjunto_id', ['conjuntoId'])
-    .index('by_registro_acceso_id', ['registroAccesoId']),
 })

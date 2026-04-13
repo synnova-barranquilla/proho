@@ -49,6 +49,7 @@ export function ViolacionesDialog({
   unidadInfo,
 }: ViolacionesDialogProps) {
   const [justificacion, setJustificacion] = useState('')
+  const [novedad, setNovedad] = useState('')
 
   const registrarIngresoFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarIngreso,
@@ -70,6 +71,7 @@ export function ViolacionesDialog({
         placaRaw,
         forzarPermitido: true,
         justificacion,
+        novedad: novedad.trim() || undefined,
       })
       toast.success('Ingreso registrado con justificación')
       onClose()
@@ -140,6 +142,16 @@ export function ViolacionesDialog({
                 onChange={(e) => setJustificacion(e.target.value)}
                 placeholder="Explique por qué se permite el ingreso..."
                 className="min-h-20"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">Novedad (opcional)</label>
+              <Textarea
+                value={novedad}
+                onChange={(e) => setNovedad(e.target.value)}
+                placeholder="Observaciones adicionales del vigilante..."
+                className="min-h-16"
               />
             </div>
           </div>
