@@ -6,10 +6,11 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "concurrently -n vite,convex -c blue,yellow \"vite dev --port 3000\" \"convex dev\"",
-    "dev:frontend": "vite dev --port 3000",
+    "dev": "concurrently -n vite,convex -c blue,yellow \"NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port 3000\" \"convex dev\"",
+    "dev:frontend": "NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port 3000",
     "dev:convex": "convex dev",
-    "build": "vite build",
+    "build": "vite build && cp instrument.server.mjs .output/server",
+    "start": "node --import ./.output/server/instrument.server.mjs .output/server/index.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint",
@@ -26,6 +27,7 @@
     "@fontsource-variable/roboto": "^5.2.10",
     "@phosphor-icons/react": "^2.1.10",
     "@react-email/components": "^1.0.12",
+    "@sentry/tanstackstart-react": "^10.48.0",
     "@t3-oss/env-core": "^0.13.10",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",

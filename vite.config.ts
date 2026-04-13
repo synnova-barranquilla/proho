@@ -1,6 +1,7 @@
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 
+import { sentryTanstackStart } from '@sentry/tanstackstart-react/vite'
 import tailwindcss from '@tailwindcss/vite'
 import viteReact from '@vitejs/plugin-react'
 import { nitro } from 'nitro/vite'
@@ -13,6 +14,11 @@ const config = defineConfig({
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
     tanstackStart(),
+    sentryTanstackStart({
+      org: 'synnova',
+      project: 'synnova',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
     nitro({ preset: 'vercel' }),
     viteReact({
       babel: {
