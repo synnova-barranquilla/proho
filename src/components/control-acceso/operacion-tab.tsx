@@ -143,7 +143,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 pb-6">
         <CollapsibleTable
           title={`Permanencia ≥ 30d (${permanenciaExcedida.length})`}
           open={permanenciaOpen}
