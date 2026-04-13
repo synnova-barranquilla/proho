@@ -104,149 +104,149 @@ export function NoEncontradoDialog({
 
   const isPending = registrarVisitanteMut.isPending
 
+  const dialogOpen = open && subScreen !== 'RESIDENTE'
+  const sheetOpen = open && subScreen === 'RESIDENTE'
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) {
+    <>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setSubScreen('OPTIONS')
+            setSelectedUnidadId('')
+            setObservacion('')
+            onClose()
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-blue-600">
+              <CircleHelp className="h-6 w-6" />
+              <DialogTitle>Vehículo no registrado</DialogTitle>
+            </div>
+            <p className="mt-1 font-mono text-lg font-medium">
+              {formatPlaca(placa)}
+            </p>
+          </DialogHeader>
+          <DialogBody>
+            {subScreen === 'OPTIONS' && (
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
+                  onClick={() => setSubScreen('VISITANTE')}
+                >
+                  <UserRound className="h-6 w-6 shrink-0 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Visitante</p>
+                    <p className="text-sm text-muted-foreground">
+                      Visita a una unidad específica
+                    </p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
+                  onClick={handleVisitaAdmin}
+                  disabled={isPending}
+                >
+                  <Building2 className="h-6 w-6 shrink-0 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Visita administrativa</p>
+                    <p className="text-sm text-muted-foreground">
+                      Proveedor, domicilio, etc.
+                    </p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
+                  onClick={() => setSubScreen('RESIDENTE')}
+                >
+                  <Car className="h-6 w-6 shrink-0 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Registrar como residente</p>
+                    <p className="text-sm text-muted-foreground">
+                      Agregar vehículo permanente a una unidad
+                    </p>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {subScreen === 'VISITANTE' && (
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium">
+                    Unidad de destino
+                  </label>
+                  <SearchableSelect
+                    value={selectedUnidadId}
+                    onValueChange={setSelectedUnidadId}
+                    options={unidadOptions}
+                    placeholder="Selecciona una unidad"
+                    searchPlaceholder="Buscar por torre o número..."
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium">
+                    Observación (opcional)
+                  </label>
+                  <Textarea
+                    value={observacion}
+                    onChange={(e) => setObservacion(e.target.value)}
+                    placeholder="Nota sobre el visitante..."
+                    className="min-h-16"
+                  />
+                </div>
+              </div>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            {subScreen === 'OPTIONS' && (
+              <Button variant="outline" onClick={onClose}>
+                Cancelar
+              </Button>
+            )}
+            {subScreen === 'VISITANTE' && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSubScreen('OPTIONS')
+                    setSelectedUnidadId('')
+                  }}
+                  disabled={isPending}
+                >
+                  Atrás
+                </Button>
+                <Button
+                  onClick={handleVisitante}
+                  disabled={isPending || !selectedUnidadId}
+                >
+                  {isPending ? 'Registrando...' : 'Confirmar visitante'}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <RegistrarResidenteSheet
+        open={sheetOpen}
+        onClose={() => {
           setSubScreen('OPTIONS')
-          setSelectedUnidadId('')
-          setObservacion('')
           onClose()
-        }
-      }}
-    >
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="flex items-center gap-2 text-blue-600">
-            <CircleHelp className="h-6 w-6" />
-            <DialogTitle>Vehículo no registrado</DialogTitle>
-          </div>
-          <p className="mt-1 font-mono text-lg font-medium">
-            {formatPlaca(placa)}
-          </p>
-        </DialogHeader>
-        <DialogBody>
-          {subScreen === 'OPTIONS' && (
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
-                onClick={() => setSubScreen('VISITANTE')}
-              >
-                <UserRound className="h-6 w-6 shrink-0 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">Visitante</p>
-                  <p className="text-sm text-muted-foreground">
-                    Visita a una unidad específica
-                  </p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
-                onClick={handleVisitaAdmin}
-                disabled={isPending}
-              >
-                <Building2 className="h-6 w-6 shrink-0 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">Visita administrativa</p>
-                  <p className="text-sm text-muted-foreground">
-                    Proveedor, domicilio, etc.
-                  </p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
-                onClick={() => setSubScreen('RESIDENTE')}
-              >
-                <Car className="h-6 w-6 shrink-0 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">Registrar como residente</p>
-                  <p className="text-sm text-muted-foreground">
-                    Agregar vehículo permanente a una unidad
-                  </p>
-                </div>
-              </button>
-            </div>
-          )}
-
-          {subScreen === 'VISITANTE' && (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">Unidad de destino</label>
-                <SearchableSelect
-                  value={selectedUnidadId}
-                  onValueChange={setSelectedUnidadId}
-                  options={unidadOptions}
-                  placeholder="Selecciona una unidad"
-                  searchPlaceholder="Buscar por torre o número..."
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">
-                  Observación (opcional)
-                </label>
-                <Textarea
-                  value={observacion}
-                  onChange={(e) => setObservacion(e.target.value)}
-                  placeholder="Nota sobre el visitante..."
-                  className="min-h-16"
-                />
-              </div>
-            </div>
-          )}
-
-          {subScreen === 'RESIDENTE' && (
-            <RegistrarResidenteSheet
-              open
-              onClose={() => {
-                setSubScreen('OPTIONS')
-                onClose()
-              }}
-              conjuntoId={conjuntoId}
-              placa={placa}
-              placaRaw={placaRaw}
-            />
-          )}
-        </DialogBody>
-        <DialogFooter>
-          {subScreen === 'OPTIONS' && (
-            <Button variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-          )}
-          {subScreen === 'VISITANTE' && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSubScreen('OPTIONS')
-                  setSelectedUnidadId('')
-                }}
-                disabled={isPending}
-              >
-                Atrás
-              </Button>
-              <Button
-                onClick={handleVisitante}
-                disabled={isPending || !selectedUnidadId}
-              >
-                {isPending ? 'Registrando...' : 'Confirmar visitante'}
-              </Button>
-            </>
-          )}
-          {subScreen === 'RESIDENTE' && (
-            <Button variant="outline" onClick={() => setSubScreen('OPTIONS')}>
-              Atrás
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        }}
+        conjuntoId={conjuntoId}
+        placa={placa}
+        placaRaw={placaRaw}
+      />
+    </>
   )
 }
