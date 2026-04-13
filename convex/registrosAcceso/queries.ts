@@ -49,6 +49,7 @@ export const listActivos = query({
 
 /**
  * Registros de las últimas 48 horas (entradas y salidas).
+ * Ordenados por timestamp del evento más reciente (salida si existe, sino entrada).
  */
 export const listRecientes = query({
   args: {
@@ -82,11 +83,16 @@ export const listRecientes = query({
     const vehiculoMap = new Map(vehiculos.map((veh) => [veh._id, veh]))
     const unidadMap = new Map(unidades.map((u) => [u._id, u]))
 
-    return registros.map((r) => ({
-      ...r,
-      vehiculo: r.vehiculoId ? (vehiculoMap.get(r.vehiculoId) ?? null) : null,
-      unidad: r.unidadId ? (unidadMap.get(r.unidadId) ?? null) : null,
-    }))
+    return registros
+      .map((r) => ({
+        ...r,
+        vehiculo: r.vehiculoId ? (vehiculoMap.get(r.vehiculoId) ?? null) : null,
+        unidad: r.unidadId ? (unidadMap.get(r.unidadId) ?? null) : null,
+      }))
+      .sort(
+        (a, b) =>
+          (b.salidaEn ?? b.entradaEn ?? 0) - (a.salidaEn ?? a.entradaEn ?? 0),
+      )
   },
 })
 

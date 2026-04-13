@@ -32,12 +32,8 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
     convexQuery(api.registrosAcceso.queries.listActivos, { conjuntoId }),
   )
 
-  const { data: recientesRaw } = useSuspenseQuery(
+  const { data: recientes } = useSuspenseQuery(
     convexQuery(api.registrosAcceso.queries.listRecientes, { conjuntoId }),
-  )
-  const recientes = [...recientesRaw].sort(
-    (a, b) =>
-      (b.salidaEn ?? b.entradaEn ?? 0) - (a.salidaEn ?? a.entradaEn ?? 0),
   )
 
   const { data: vehiculos } = useSuspenseQuery(
