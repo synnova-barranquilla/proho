@@ -17,7 +17,7 @@ import { PlacaSearchBar } from './placa-search-bar'
 import { SalidaDialog } from './salida-dialog'
 import type { RegistroActivo } from './types'
 import { useControlAcceso } from './use-control-acceso'
-import { VehiculosActivosTable } from './vehiculos-activos-table'
+import { RegistrosRecientesTable } from './vehiculos-activos-table'
 import { ViolacionesDialog } from './violaciones-dialog'
 import { YaDentroDialog } from './ya-dentro-dialog'
 
@@ -30,6 +30,10 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
 
   const { data: activos } = useSuspenseQuery(
     convexQuery(api.registrosAcceso.queries.listActivos, { conjuntoId }),
+  )
+
+  const { data: recientes } = useSuspenseQuery(
+    convexQuery(api.registrosAcceso.queries.listRecientes, { conjuntoId }),
   )
 
   const { data: vehiculos } = useSuspenseQuery(
@@ -102,13 +106,6 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
     [activos, conjuntoId, dispatch, registrarIngresoMut],
   )
 
-  const handleRegistrarSalida = useCallback(
-    (registro: RegistroActivo) => {
-      dispatch({ type: 'ELEGIR_SALIDA', registro })
-    },
-    [dispatch],
-  )
-
   const handleVolver = useCallback(() => {
     dispatch({ type: 'VOLVER_IDLE' })
   }, [dispatch])
@@ -131,7 +128,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
           >
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">
-                Vehículos dentro ({activos.length})
+                Registros recientes ({recientes.length})
               </CardTitle>
               <ChevronDown
                 className={`h-4 w-4 text-muted-foreground transition-transform ${tableOpen ? 'rotate-180' : ''}`}
@@ -140,10 +137,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
           </CardHeader>
           {tableOpen && (
             <CardContent>
-              <VehiculosActivosTable
-                registros={activos}
-                onRegistrarSalida={handleRegistrarSalida}
-              />
+              <RegistrosRecientesTable registros={recientes} />
             </CardContent>
           )}
         </Card>

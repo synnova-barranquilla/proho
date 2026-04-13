@@ -1,16 +1,14 @@
 import type { ColumnDef } from '@tanstack/react-table'
 
-import { Bike, Car, LogOut, type LucideIcon } from 'lucide-react'
+import { Bike, Car, LogIn, LogOut, type LucideIcon } from 'lucide-react'
 
 import { Badge } from '#/components/ui/badge'
-import { Button } from '#/components/ui/button'
 import { PaginatedDataTable } from '#/components/ui/paginated-data-table'
 import { formatPlaca } from '#/lib/formatters'
 import type { RegistroActivo } from './types'
 
-interface VehiculosActivosTableProps {
+interface RegistrosRecientesTableProps {
   registros: RegistroActivo[]
-  onRegistrarSalida: (registro: RegistroActivo) => void
 }
 
 const TIPO_VEHICULO_ICON: Record<string, LucideIcon> = {
@@ -34,110 +32,110 @@ const TIPO_REGISTRO_VARIANT: Record<
   VISITA_ADMIN: 'outline',
 }
 
-function formatTimeAgo(timestamp: number | undefined): string {
+function formatHora(timestamp: number | undefined): string {
   if (timestamp == null) return '—'
-  const diff = Date.now() - timestamp
-  const mins = Math.floor(diff / 60_000)
-  if (mins < 1) return 'ahora'
-  if (mins < 60) return `hace ${mins}m`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `hace ${hours}h ${mins % 60}m`
-  const days = Math.floor(hours / 24)
-  return `hace ${days}d`
+  const date = new Date(timestamp)
+  return date.toLocaleString('es-CO', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
 }
 
-function createColumns(
-  onRegistrarSalida: (registro: RegistroActivo) => void,
-): ColumnDef<RegistroActivo, unknown>[] {
-  return [
-    {
-      accessorKey: 'placaNormalizada',
-      header: 'Placa',
-      cell: ({ row }) => (
-        <span className="font-mono text-base font-medium">
-          {formatPlaca(row.original.placaNormalizada)}
-        </span>
-      ),
-    },
-    {
-      id: 'tipoVehiculo',
-      header: 'Vehículo',
-      enableSorting: false,
-      cell: ({ row }) => {
-        const tipo = row.original.vehiculo?.tipo ?? 'CARRO'
-        const Icon = TIPO_VEHICULO_ICON[tipo] ?? Car
-        return (
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <Icon className="h-4 w-4" />
-            <span className="text-sm">
-              {tipo === 'MOTO' ? 'Moto' : tipo === 'OTRO' ? 'Otro' : 'Carro'}
-            </span>
-          </span>
-        )
-      },
-    },
-    {
-      accessorKey: 'tipo',
-      header: 'Registro',
-      cell: ({ row }) => (
-        <Badge variant={TIPO_REGISTRO_VARIANT[row.original.tipo] ?? 'default'}>
-          {TIPO_REGISTRO_LABEL[row.original.tipo] ?? row.original.tipo}
-        </Badge>
-      ),
-    },
-    {
-      id: 'unidad',
-      header: 'Unidad',
-      cell: ({ row }) => {
-        const u = row.original.unidad
-        if (!u) return <span className="text-muted-foreground">—</span>
-        return (
+const columns: ColumnDef<RegistroActivo, unknown>[] = [
+  {
+    accessorKey: 'placaNormalizada',
+    header: 'Placa',
+    cell: ({ row }) => (
+      <span className="font-mono text-base font-medium">
+        {formatPlaca(row.original.placaNormalizada)}
+      </span>
+    ),
+  },
+  {
+    id: 'tipoVehiculo',
+    header: 'Vehículo',
+    enableSorting: false,
+    cell: ({ row }) => {
+      const tipo = row.original.vehiculo?.tipo ?? 'CARRO'
+      const Icon = TIPO_VEHICULO_ICON[tipo] ?? Car
+      return (
+        <span className="flex items-center gap-1.5 text-muted-foreground">
+          <Icon className="h-4 w-4" />
           <span className="text-sm">
-            T{u.torre} — {u.numero}
+            {tipo === 'MOTO' ? 'Moto' : tipo === 'OTRO' ? 'Otro' : 'Carro'}
           </span>
-        )
-      },
-    },
-    {
-      id: 'entrada',
-      header: 'Entrada',
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {formatTimeAgo(row.original.entradaEn)}
         </span>
-      ),
+      )
     },
-    {
-      id: 'acciones',
-      header: '',
-      enableSorting: false,
-      cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-10 w-10"
-          onClick={() => onRegistrarSalida(row.original)}
-          title="Registrar salida"
+  },
+  {
+    accessorKey: 'tipo',
+    header: 'Registro',
+    cell: ({ row }) => (
+      <Badge variant={TIPO_REGISTRO_VARIANT[row.original.tipo] ?? 'default'}>
+        {TIPO_REGISTRO_LABEL[row.original.tipo] ?? row.original.tipo}
+      </Badge>
+    ),
+  },
+  {
+    id: 'unidad',
+    header: 'Unidad',
+    cell: ({ row }) => {
+      const u = row.original.unidad
+      if (!u) return <span className="text-muted-foreground">—</span>
+      return (
+        <span className="text-sm">
+          T{u.torre} — {u.numero}
+        </span>
+      )
+    },
+  },
+  {
+    id: 'evento',
+    header: 'Evento',
+    enableSorting: false,
+    cell: ({ row }) => {
+      const esSalida = row.original.salidaEn != null
+      return (
+        <span
+          className={`flex items-center gap-1.5 text-sm ${esSalida ? 'text-amber-600' : 'text-green-600'}`}
         >
-          <LogOut className="h-4 w-4" />
-        </Button>
-      ),
+          {esSalida ? (
+            <LogOut className="h-3.5 w-3.5" />
+          ) : (
+            <LogIn className="h-3.5 w-3.5" />
+          )}
+          {esSalida ? 'Salida' : 'Entrada'}
+        </span>
+      )
     },
-  ]
-}
+  },
+  {
+    id: 'hora',
+    header: 'Hora',
+    cell: ({ row }) => {
+      const timestamp = row.original.salidaEn ?? row.original.entradaEn
+      return (
+        <span className="text-sm text-muted-foreground">
+          {formatHora(timestamp)}
+        </span>
+      )
+    },
+  },
+]
 
-export function VehiculosActivosTable({
+export function RegistrosRecientesTable({
   registros,
-  onRegistrarSalida,
-}: VehiculosActivosTableProps) {
-  const columns = createColumns(onRegistrarSalida)
-
+}: RegistrosRecientesTableProps) {
   return (
     <PaginatedDataTable
       columns={columns}
       data={registros}
       pageSize={5}
-      emptyMessage="No hay vehículos dentro del conjunto."
+      emptyMessage="Sin registros en las últimas 48 horas."
     />
   )
 }

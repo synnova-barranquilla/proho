@@ -48,7 +48,7 @@ export const listActivos = query({
 })
 
 /**
- * Últimos 5 registros del conjunto (cualquier estado).
+ * Registros de las últimas 48 horas (entradas y salidas).
  */
 export const listRecientes = query({
   args: {
@@ -59,11 +59,14 @@ export const listRecientes = query({
       allowedRoles: ['ADMIN', 'VIGILANTE'],
     })
 
+    const cutoff = Date.now() - 48 * 60 * 60 * 1000
+
     const registros = await ctx.db
       .query('registrosAcceso')
       .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', args.conjuntoId))
       .order('desc')
-      .take(5)
+      .filter((q) => q.gte(q.field('_creationTime'), cutoff))
+      .collect()
 
     const [vehiculos, unidades] = await Promise.all([
       ctx.db
