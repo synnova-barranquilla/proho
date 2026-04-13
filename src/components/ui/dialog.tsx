@@ -80,6 +80,16 @@ function DialogContent({
   )
 }
 
+function DialogBody({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn('flex-1 overflow-y-auto p-4', className)}
+      {...props}
+    />
+  )
+}
+
 function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -148,6 +158,7 @@ function DialogDescription({
 
 export {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
