@@ -29,7 +29,7 @@ import {
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Switch } from '#/components/ui/switch'
-import { MODULE_DESCRIPTIONS, MODULE_KEYS, MODULE_LABELS } from '#/lib/modules'
+import { MODULE_DESCRIPTIONS, MODULE_LABELS } from '#/lib/modules'
 import {
   onboardTenantSchema,
   type OnboardTenantInput,
@@ -192,45 +192,32 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
               </form.Field>
 
               <form.Field name="activeModules">
-                {(field) => (
-                  <Field>
-                    <FieldLabel>Módulos activos</FieldLabel>
-                    <FieldDescription>
-                      Elige qué módulos estarán disponibles para esta
-                      organización. Puedes cambiarlos después.
-                    </FieldDescription>
-                    <div className="space-y-3 rounded-md border p-3">
-                      {MODULE_KEYS.map((moduleKey) => {
-                        const isActive = field.state.value.includes(moduleKey)
-                        return (
-                          <div
-                            key={moduleKey}
-                            className="flex items-start justify-between gap-4"
-                          >
-                            <div className="flex-1 space-y-0.5">
-                              <Label className="text-sm font-medium">
-                                {MODULE_LABELS[moduleKey]}
-                              </Label>
-                              <p className="text-xs text-muted-foreground">
-                                {MODULE_DESCRIPTIONS[moduleKey]}
-                              </p>
-                            </div>
-                            <Switch
-                              checked={isActive}
-                              onCheckedChange={(checked) => {
-                                const next = checked === true
-                                const current = new Set(field.state.value)
-                                if (next) current.add(moduleKey)
-                                else current.delete(moduleKey)
-                                field.handleChange(Array.from(current))
-                              }}
-                            />
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </Field>
-                )}
+                {(field) => {
+                  const isActive = field.state.value.includes('parking')
+                  return (
+                    <Field>
+                      <FieldLabel>Módulos activos</FieldLabel>
+                      <div className="flex items-start justify-between gap-4 rounded-md border p-3">
+                        <div className="flex-1 space-y-0.5">
+                          <Label className="text-sm font-medium">
+                            {MODULE_LABELS.parking}
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            {MODULE_DESCRIPTIONS.parking}
+                          </p>
+                        </div>
+                        <Switch
+                          checked={isActive}
+                          onCheckedChange={(checked) => {
+                            field.handleChange(
+                              checked === true ? ['parking'] : [],
+                            )
+                          }}
+                        />
+                      </div>
+                    </Field>
+                  )
+                }}
               </form.Field>
             </FieldGroup>
 
