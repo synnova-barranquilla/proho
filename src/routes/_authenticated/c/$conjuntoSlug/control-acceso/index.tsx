@@ -24,6 +24,11 @@ export const Route = createFileRoute(
         api.vehiculos.queries.listByConjunto,
         { conjuntoId },
       ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.conjuntoConfig.queries.getByConjunto,
+        { conjuntoId },
+      ),
     ])
     return null
   },

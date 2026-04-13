@@ -4,7 +4,7 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
-import { ChevronDown } from 'lucide-react'
+import { Bike, Car, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
@@ -39,6 +39,20 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
   const { data: vehiculos } = useSuspenseQuery(
     convexQuery(api.vehiculos.queries.listByConjunto, { conjuntoId }),
   )
+
+  const { data: config } = useSuspenseQuery(
+    convexQuery(api.conjuntoConfig.queries.getByConjunto, { conjuntoId }),
+  )
+
+  const carrosDentro = activos.filter(
+    (r) =>
+      r.vehiculo?.tipo === 'CARRO' ||
+      r.vehiculo?.tipo === 'OTRO' ||
+      !r.vehiculo,
+  ).length
+  const motosDentro = activos.filter((r) => r.vehiculo?.tipo === 'MOTO').length
+  const carrosCapacidad = config?.parqueaderosCarros ?? 0
+  const motosCapacidad = config?.parqueaderosMotos ?? 0
 
   const registrarIngresoFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarIngreso,
@@ -137,7 +151,23 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         </Card>
       </div>
 
-      <div className="sticky bottom-0 z-10 -mx-4 mt-auto border-t bg-background px-4 py-4 sm:-mx-6 sm:px-6">
+      <div className="sticky bottom-0 z-10 -mx-4 mt-auto border-t bg-background px-4 py-3 sm:-mx-6 sm:px-6">
+        <div className="mb-3 grid grid-cols-2 gap-3">
+          <div className="flex items-center gap-2 rounded-md border px-3 py-2">
+            <Car className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium tabular-nums">
+              {carrosDentro}/{carrosCapacidad}
+            </span>
+            <span className="text-xs text-muted-foreground">carros</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-md border px-3 py-2">
+            <Bike className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium tabular-nums">
+              {motosDentro}/{motosCapacidad}
+            </span>
+            <span className="text-xs text-muted-foreground">motos</span>
+          </div>
+        </div>
         <PlacaSearchBar
           onSubmit={handlePlacaSubmit}
           isProcesando={state.screen === 'PROCESANDO'}
