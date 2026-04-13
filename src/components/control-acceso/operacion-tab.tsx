@@ -114,7 +114,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
 
   return (
     <>
-      <div className="flex min-h-[calc(100dvh-8rem)] flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <Card>
           <CardHeader
             className="cursor-pointer select-none"
@@ -135,14 +135,14 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
             </CardContent>
           )}
         </Card>
+      </div>
 
-        <div className="mt-auto">
-          <PlacaSearchBar
-            onSubmit={handlePlacaSubmit}
-            isProcesando={state.screen === 'PROCESANDO'}
-            vehiculos={vehiculos}
-          />
-        </div>
+      <div className="sticky bottom-0 z-10 -mx-4 mt-auto border-t bg-background px-4 py-4 sm:-mx-6 sm:px-6">
+        <PlacaSearchBar
+          onSubmit={handlePlacaSubmit}
+          isProcesando={state.screen === 'PROCESANDO'}
+          vehiculos={vehiculos}
+        />
       </div>
 
       <NovedadesFab conjuntoId={conjuntoId} />
