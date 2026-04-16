@@ -37,10 +37,6 @@ export const registroAccesoFields = {
   decisionMotor: v.array(v.string()),
   decisionFinal: decisionFinalValues,
   justificacion: v.optional(v.string()),
-  // `novedad` queda durante la migración; la UI lee/escribe `observaciones`.
-  // Será removido en el Deploy 2 después de correr
-  // `migrations/renameNovedadToObservaciones:run`.
-  novedad: v.optional(v.string()),
   observaciones: v.optional(v.string()),
 
   // Auditoría
