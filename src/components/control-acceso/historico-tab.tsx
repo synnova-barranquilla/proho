@@ -221,6 +221,7 @@ export function HistoricoTab({ conjuntoId }: HistoricoTabProps) {
         data={filtered}
         pageSize={20}
         emptyMessage="No hay registros para el periodo seleccionado."
+        className="max-h-[calc(100dvh-20rem)]"
       />
     </div>
   )

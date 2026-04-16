@@ -34,6 +34,7 @@ interface PaginatedDataTableProps<T> {
   data: T[]
   pageSize?: number
   emptyMessage?: string
+  className?: string
 }
 
 export function PaginatedDataTable<T>({
@@ -41,6 +42,7 @@ export function PaginatedDataTable<T>({
   data,
   pageSize = 20,
   emptyMessage = 'Sin resultados.',
+  className,
 }: PaginatedDataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -62,84 +64,89 @@ export function PaginatedDataTable<T>({
   const pageIndex = table.getState().pagination.pageIndex
 
   return (
-    <div className="flex flex-col gap-4">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((hg) => (
-            <TableRow key={hg.id}>
-              <TableHead className="w-10 text-muted-foreground">#</TableHead>
-              {hg.headers.map((header) => {
-                const canSort = header.column.getCanSort()
-                const sortDir = header.column.getIsSorted()
-                return (
-                  <TableHead
-                    key={header.id}
-                    className={header.column.columnDef.meta?.headClassName}
-                  >
-                    {header.isPlaceholder ? null : canSort ? (
-                      <button
-                        type="button"
-                        onClick={header.column.getToggleSortingHandler()}
-                        className={cn(
-                          'inline-flex items-center gap-1 font-medium',
-                          'hover:text-foreground',
-                        )}
-                      >
-                        {flexRender(
+    <div className={cn('flex flex-col gap-4', className)}>
+      <div className="min-h-0 flex-1 overflow-auto">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                <TableHead className="w-10 text-muted-foreground">#</TableHead>
+                {hg.headers.map((header) => {
+                  const canSort = header.column.getCanSort()
+                  const sortDir = header.column.getIsSorted()
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={header.column.columnDef.meta?.headClassName}
+                    >
+                      {header.isPlaceholder ? null : canSort ? (
+                        <button
+                          type="button"
+                          onClick={header.column.getToggleSortingHandler()}
+                          className={cn(
+                            'inline-flex items-center gap-1 font-medium',
+                            'hover:text-foreground',
+                          )}
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                          {sortDir === 'asc' ? (
+                            <ArrowUp className="h-3 w-3" />
+                          ) : sortDir === 'desc' ? (
+                            <ArrowDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronsUpDown className="h-3 w-3 opacity-40" />
+                          )}
+                        </button>
+                      ) : (
+                        flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
-                        )}
-                        {sortDir === 'asc' ? (
-                          <ArrowUp className="h-3 w-3" />
-                        ) : sortDir === 'desc' ? (
-                          <ArrowDown className="h-3 w-3" />
-                        ) : (
-                          <ChevronsUpDown className="h-3 w-3 opacity-40" />
-                        )}
-                      </button>
-                    ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
-                    )}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length + 1}
-                className="py-8 text-center text-sm text-muted-foreground"
-              >
-                {emptyMessage}
-              </TableCell>
-            </TableRow>
-          ) : (
-            table.getRowModel().rows.map((row, i) => (
-              <TableRow key={row.id}>
-                <TableCell className="text-muted-foreground tabular-nums">
-                  {pageIndex * pageSize + i + 1}
-                </TableCell>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={cell.column.columnDef.meta?.cellClassName}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                        )
+                      )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length + 1}
+                  className="py-8 text-center text-sm text-muted-foreground"
+                >
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            ) : (
+              table.getRowModel().rows.map((row, i) => (
+                <TableRow key={row.id}>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {pageIndex * pageSize + i + 1}
+                  </TableCell>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={cell.column.columnDef.meta?.cellClassName}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-      <div className="flex items-center justify-between px-2">
+      <div className="flex shrink-0 items-center justify-between px-2">
         <p className="text-sm text-muted-foreground">
           Página {pageIndex + 1} de {Math.max(pageCount, 1)} ({data.length}{' '}
           registros)
