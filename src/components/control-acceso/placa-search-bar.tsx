@@ -7,7 +7,7 @@ import { Button } from '#/components/ui/button'
 import { PlacaInput } from '#/components/ui/formatted-input'
 import { formatPlaca } from '#/lib/formatters'
 import type { Doc } from '../../../convex/_generated/dataModel'
-import { normalizePlaca } from '../../../convex/lib/placa'
+import { isPlacaValida, normalizePlaca } from '../../../convex/lib/placa'
 
 type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
 
@@ -40,7 +40,7 @@ export function PlacaSearchBar({
 
   const handleSubmit = useCallback(() => {
     const trimmed = placa.trim()
-    if (trimmed.length >= 4 && !justSubmittedRef.current) {
+    if (isPlacaValida(normalizePlaca(trimmed)) && !justSubmittedRef.current) {
       justSubmittedRef.current = true
       setShowDropdown(false)
       setSelectedIndex(-1)
@@ -48,12 +48,12 @@ export function PlacaSearchBar({
     }
   }, [placa, onSubmit])
 
-  // Auto-submit when placa reaches 6 chars (valid Colombian format)
+  // Auto-submit when placa reaches a valid Colombian format (6 chars)
   useEffect(() => {
-    if (placa.length >= 6 && !justSubmittedRef.current) {
+    if (isPlacaValida(placaNorm) && !justSubmittedRef.current) {
       handleSubmit()
     }
-  }, [placa, handleSubmit])
+  }, [placaNorm, handleSubmit])
 
   const handleChange = (value: string) => {
     justSubmittedRef.current = false

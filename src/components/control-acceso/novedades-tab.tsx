@@ -36,6 +36,8 @@ const VIOLATION_LABELS: Record<RuleViolation, string> = {
   VEHICULO_DUPLICADO: 'Duplicado',
   MOTO_ADICIONAL: 'Moto adicional',
   PERMANENCIA_EXCEDIDA: 'Permanencia',
+  SOBRECUPO_CARROS: 'Sobrecupo carros',
+  SOBRECUPO_MOTOS: 'Sobrecupo motos',
 }
 
 function formatDateTime(ts: number | undefined): string {
@@ -107,20 +109,20 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     ),
   },
   {
-    id: 'novedad',
-    header: 'Novedad',
+    id: 'observaciones',
+    header: 'Observaciones',
     enableSorting: false,
     cell: ({ row }) => (
-      <span className="text-sm">{(row.original as any).novedad ?? '—'}</span>
+      <span className="text-sm">{row.original.observaciones ?? '—'}</span>
     ),
   },
 ]
 
-interface AuditoriaTabProps {
+interface NovedadesTabProps {
   conjuntoId: Id<'conjuntos'>
 }
 
-export function AuditoriaTab({ conjuntoId }: AuditoriaTabProps) {
+export function NovedadesTab({ conjuntoId }: NovedadesTabProps) {
   const [periodo, setPeriodo] = useState('7d')
 
   const periodoMs = PERIODO_OPTIONS.find((p) => p.value === periodo)?.ms ?? 0
@@ -157,8 +159,8 @@ export function AuditoriaTab({ conjuntoId }: AuditoriaTabProps) {
           </SelectContent>
         </Select>
         <p className="flex items-center text-sm text-muted-foreground">
-          {overrides.length} override{overrides.length !== 1 ? 's' : ''}{' '}
-          encontrado{overrides.length !== 1 ? 's' : ''}
+          {overrides.length} novedad{overrides.length !== 1 ? 'es' : ''}{' '}
+          encontrada{overrides.length !== 1 ? 's' : ''}
         </p>
       </div>
 
@@ -166,7 +168,7 @@ export function AuditoriaTab({ conjuntoId }: AuditoriaTabProps) {
         columns={columns}
         data={overrides}
         pageSize={20}
-        emptyMessage="No hay overrides para el periodo seleccionado."
+        emptyMessage="No hay novedades para el periodo seleccionado."
       />
     </div>
   )

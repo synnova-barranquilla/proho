@@ -18,6 +18,7 @@ export const upsert = mutation({
     reglaIngresoEnMora: v.boolean(),
     reglaVehiculoDuplicado: v.boolean(),
     reglaPermanenciaMaxDias: v.number(),
+    reglaIngresoEnSobrecupo: v.boolean(),
     parqueaderosCarros: v.number(),
     parqueaderosMotos: v.number(),
   },
@@ -45,6 +46,7 @@ export const upsert = mutation({
       reglaIngresoEnMora: args.reglaIngresoEnMora,
       reglaVehiculoDuplicado: args.reglaVehiculoDuplicado,
       reglaPermanenciaMaxDias: args.reglaPermanenciaMaxDias,
+      reglaIngresoEnSobrecupo: args.reglaIngresoEnSobrecupo,
       parqueaderosCarros: args.parqueaderosCarros,
       parqueaderosMotos: args.parqueaderosMotos,
     }

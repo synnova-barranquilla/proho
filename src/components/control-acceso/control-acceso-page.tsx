@@ -4,12 +4,12 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
 import { cn } from '#/lib/utils'
 import type { Id } from '../../../convex/_generated/dataModel'
-import { AuditoriaTab } from './auditoria-tab'
 import { DashboardTab } from './dashboard-tab'
 import { HistoricoTab } from './historico-tab'
+import { NovedadesTab } from './novedades-tab'
 import { OperacionTab } from './operacion-tab'
 
-type Tab = 'operacion' | 'dashboard' | 'historico' | 'auditoria'
+type Tab = 'operacion' | 'dashboard' | 'historico' | 'novedades'
 
 interface TabDef {
   id: Tab
@@ -19,9 +19,9 @@ interface TabDef {
 
 const TABS: TabDef[] = [
   { id: 'operacion', label: 'Operación', adminOnly: false },
-  { id: 'dashboard', label: 'Dashboard', adminOnly: true },
+  { id: 'dashboard', label: 'Dashboard', adminOnly: false },
   { id: 'historico', label: 'Histórico', adminOnly: true },
-  { id: 'auditoria', label: 'Auditoría', adminOnly: true },
+  { id: 'novedades', label: 'Novedades', adminOnly: true },
 ]
 
 interface ControlAccesoPageProps {
@@ -46,7 +46,7 @@ export function ControlAccesoPage({ conjuntoId }: ControlAccesoPageProps) {
       </div>
 
       {visibleTabs.length > 1 && (
-        <div className="mb-6 flex gap-1 rounded-lg border bg-muted/50 p-1">
+        <div className="flex gap-1 rounded-t-lg border border-b-0 bg-muted/60 p-1">
           {visibleTabs.map((tab) => (
             <button
               key={tab.id}
@@ -65,12 +65,27 @@ export function ControlAccesoPage({ conjuntoId }: ControlAccesoPageProps) {
         </div>
       )}
 
-      <Suspense fallback={<TabSkeleton />}>
-        {activeTab === 'operacion' && <OperacionTab conjuntoId={conjuntoId} />}
-        {activeTab === 'dashboard' && <DashboardTab conjuntoId={conjuntoId} />}
-        {activeTab === 'historico' && <HistoricoTab conjuntoId={conjuntoId} />}
-        {activeTab === 'auditoria' && <AuditoriaTab conjuntoId={conjuntoId} />}
-      </Suspense>
+      <div
+        className={cn(
+          'flex flex-1 flex-col bg-muted/30 p-4 sm:p-6',
+          visibleTabs.length > 1 ? 'rounded-b-lg border' : 'rounded-lg border',
+        )}
+      >
+        <Suspense fallback={<TabSkeleton />}>
+          {activeTab === 'operacion' && (
+            <OperacionTab conjuntoId={conjuntoId} />
+          )}
+          {activeTab === 'dashboard' && (
+            <DashboardTab conjuntoId={conjuntoId} />
+          )}
+          {activeTab === 'historico' && (
+            <HistoricoTab conjuntoId={conjuntoId} />
+          )}
+          {activeTab === 'novedades' && (
+            <NovedadesTab conjuntoId={conjuntoId} />
+          )}
+        </Suspense>
+      </div>
     </div>
   )
 }

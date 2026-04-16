@@ -27,6 +27,8 @@ const VIOLATION_LABELS: Record<RuleViolation, string> = {
   VEHICULO_DUPLICADO: 'Ya hay un vehículo de esta unidad dentro',
   MOTO_ADICIONAL: 'Ya hay un vehículo dentro y se agrega una moto',
   PERMANENCIA_EXCEDIDA: 'Un vehículo de la unidad supera la permanencia máxima',
+  SOBRECUPO_CARROS: 'Sobrecupo de parqueadero de carros',
+  SOBRECUPO_MOTOS: 'Sobrecupo de parqueadero de motos',
 }
 
 interface ViolacionesDialogProps {
@@ -49,7 +51,7 @@ export function ViolacionesDialog({
   unidadInfo,
 }: ViolacionesDialogProps) {
   const [justificacion, setJustificacion] = useState('')
-  const [novedad, setNovedad] = useState('')
+  const [observaciones, setObservaciones] = useState('')
 
   const registrarIngresoFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarIngreso,
@@ -71,7 +73,7 @@ export function ViolacionesDialog({
         placaRaw,
         forzarPermitido: true,
         justificacion,
-        novedad: novedad.trim() || undefined,
+        observaciones: observaciones.trim() || undefined,
       })
       toast.success('Ingreso registrado con justificación')
       onClose()
@@ -146,10 +148,12 @@ export function ViolacionesDialog({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Novedad (opcional)</label>
+              <label className="text-sm font-medium">
+                Observaciones (opcional)
+              </label>
               <Textarea
-                value={novedad}
-                onChange={(e) => setNovedad(e.target.value)}
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
                 placeholder="Observaciones adicionales del vigilante..."
                 className="min-h-16"
               />

@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { requireConjuntoAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { normalizePlaca } from '../lib/placa'
+import { isPlacaValida, normalizePlaca } from '../lib/placa'
 import { vehiculoTipos } from './validators'
 
 export const create = mutation({
@@ -25,6 +25,12 @@ export const create = mutation({
     const placa = normalizePlaca(args.placa)
     if (!placa) {
       throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Placa obligatoria')
+    }
+    if (!isPlacaValida(placa)) {
+      throwConvexError(
+        ERROR_CODES.VALIDATION_ERROR,
+        'Formato de placa inválido',
+      )
     }
 
     // Placa única por conjunto
@@ -82,6 +88,12 @@ export const update = mutation({
     const placa = normalizePlaca(args.placa)
     if (!placa) {
       throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Placa obligatoria')
+    }
+    if (!isPlacaValida(placa)) {
+      throwConvexError(
+        ERROR_CODES.VALIDATION_ERROR,
+        'Formato de placa inválido',
+      )
     }
 
     if (placa !== vehiculo.placa) {

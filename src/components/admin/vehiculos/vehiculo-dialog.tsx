@@ -53,6 +53,7 @@ export function VehiculoDialog({
   const [placa, setPlaca] = useState('')
   const [tipo, setTipo] = useState<VehiculoTipo>('CARRO')
   const [propietario, setPropietario] = useState('')
+  const [placaValid, setPlacaValid] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -134,7 +135,12 @@ export function VehiculoDialog({
               </Field>
               <Field>
                 <FieldLabel>Placa</FieldLabel>
-                <PlacaInput value={placa} onChange={setPlaca} required />
+                <PlacaInput
+                  value={placa}
+                  onChange={setPlaca}
+                  onValidChange={setPlacaValid}
+                  required
+                />
               </Field>
               <Field>
                 <FieldLabel>Tipo</FieldLabel>
@@ -164,7 +170,7 @@ export function VehiculoDialog({
           </DialogBody>
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancelar</Button>} />
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending || !placaValid}>
               {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
             </Button>
           </DialogFooter>

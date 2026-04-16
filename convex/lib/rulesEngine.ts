@@ -17,6 +17,12 @@ export interface RuleConfig {
   reglaIngresoEnMora: boolean
   reglaVehiculoDuplicado: boolean
   reglaPermanenciaMaxDias: number
+  reglaIngresoEnSobrecupo: boolean
+}
+
+export interface OcupacionSnapshot {
+  carros: number
+  motos: number
 }
 
 export interface RuleInput {
@@ -28,6 +34,10 @@ export interface RuleInput {
   unidadEnMora?: boolean
   /** Vehículos de la misma unidad actualmente dentro del conjunto */
   vehiculosUnidadAdentro: VehiculoAdentro[]
+  /** Ocupación actual del conjunto completo (para sobrecupo) */
+  ocupacion: OcupacionSnapshot
+  /** Capacidad configurada del conjunto (0 = ilimitado) */
+  capacidad: OcupacionSnapshot
   /** Configuración de reglas del conjunto */
   config: RuleConfig
   /** Timestamp actual (para cálculo de permanencia) */
@@ -39,6 +49,8 @@ export type RuleViolation =
   | 'VEHICULO_DUPLICADO'
   | 'MOTO_ADICIONAL'
   | 'PERMANENCIA_EXCEDIDA'
+  | 'SOBRECUPO_CARROS'
+  | 'SOBRECUPO_MOTOS'
 
 export interface RuleResult {
   violations: RuleViolation[]
@@ -50,9 +62,26 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000
 export function evaluateRules(input: RuleInput): RuleResult {
   const violations: RuleViolation[] = []
 
-  // Las reglas solo aplican a residentes
+  // R4: Sobrecupo — aplica a RESIDENTE y VISITANTE. VISITA_ADMIN queda exento.
+  if (
+    input.config.reglaIngresoEnSobrecupo &&
+    input.vehiculoTipo &&
+    (input.tipo === 'RESIDENTE' || input.tipo === 'VISITANTE')
+  ) {
+    const esCarro = input.vehiculoTipo !== 'MOTO'
+    const ocupacion = esCarro ? input.ocupacion.carros : input.ocupacion.motos
+    const capacidad = esCarro ? input.capacidad.carros : input.capacidad.motos
+    if (capacidad > 0 && ocupacion >= capacidad) {
+      violations.push(esCarro ? 'SOBRECUPO_CARROS' : 'SOBRECUPO_MOTOS')
+    }
+  }
+
+  // Las reglas de residente solo aplican a residentes
   if (input.tipo !== 'RESIDENTE') {
-    return { violations, requiresJustificacion: false }
+    return {
+      violations,
+      requiresJustificacion: violations.length > 0,
+    }
   }
 
   // R1: Ingreso en mora

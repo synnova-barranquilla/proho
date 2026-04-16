@@ -11,12 +11,14 @@ const ALL_RULES_ON: RuleConfig = {
   reglaIngresoEnMora: true,
   reglaVehiculoDuplicado: true,
   reglaPermanenciaMaxDias: 30,
+  reglaIngresoEnSobrecupo: true,
 }
 
 const ALL_RULES_OFF: RuleConfig = {
   reglaIngresoEnMora: false,
   reglaVehiculoDuplicado: false,
   reglaPermanenciaMaxDias: 0,
+  reglaIngresoEnSobrecupo: false,
 }
 
 const NOW = Date.now()
@@ -28,6 +30,8 @@ function makeInput(overrides: Partial<RuleInput> = {}): RuleInput {
     vehiculoTipo: 'CARRO',
     unidadEnMora: false,
     vehiculosUnidadAdentro: [],
+    ocupacion: { carros: 0, motos: 0 },
+    capacidad: { carros: 0, motos: 0 },
     config: ALL_RULES_ON,
     ahora: NOW,
     ...overrides,
@@ -270,5 +274,89 @@ describe('evaluateRules', () => {
     )
     expect(result.violations).toEqual([])
     expect(result.requiresJustificacion).toBe(false)
+  })
+
+  // ─── R4: Sobrecupo ──────────────────────────────────────────────────
+
+  it('R4: carro residente + cap carros lleno → SOBRECUPO_CARROS', () => {
+    const result = evaluateRules(
+      makeInput({
+        vehiculoTipo: 'CARRO',
+        ocupacion: { carros: 5, motos: 0 },
+        capacidad: { carros: 5, motos: 10 },
+      }),
+    )
+    expect(result.violations).toContain('SOBRECUPO_CARROS')
+    expect(result.requiresJustificacion).toBe(true)
+  })
+
+  it('R4: moto residente + cap motos lleno → SOBRECUPO_MOTOS', () => {
+    const result = evaluateRules(
+      makeInput({
+        vehiculoTipo: 'MOTO',
+        ocupacion: { carros: 0, motos: 3 },
+        capacidad: { carros: 10, motos: 3 },
+      }),
+    )
+    expect(result.violations).toContain('SOBRECUPO_MOTOS')
+  })
+
+  it('R4: VISITANTE también sujeto a sobrecupo', () => {
+    const result = evaluateRules(
+      makeInput({
+        tipo: 'VISITANTE',
+        vehiculoTipo: 'CARRO',
+        ocupacion: { carros: 5, motos: 0 },
+        capacidad: { carros: 5, motos: 10 },
+      }),
+    )
+    expect(result.violations).toContain('SOBRECUPO_CARROS')
+  })
+
+  it('R4: VISITA_ADMIN exento de sobrecupo', () => {
+    const result = evaluateRules(
+      makeInput({
+        tipo: 'VISITA_ADMIN',
+        vehiculoTipo: 'CARRO',
+        ocupacion: { carros: 5, motos: 0 },
+        capacidad: { carros: 5, motos: 10 },
+      }),
+    )
+    expect(result.violations).not.toContain('SOBRECUPO_CARROS')
+    expect(result.violations).toEqual([])
+  })
+
+  it('R4: capacidad=0 se trata como ilimitada', () => {
+    const result = evaluateRules(
+      makeInput({
+        vehiculoTipo: 'CARRO',
+        ocupacion: { carros: 100, motos: 0 },
+        capacidad: { carros: 0, motos: 0 },
+      }),
+    )
+    expect(result.violations).not.toContain('SOBRECUPO_CARROS')
+  })
+
+  it('R4: regla desactivada → sin sobrecupo aunque esté lleno', () => {
+    const result = evaluateRules(
+      makeInput({
+        vehiculoTipo: 'CARRO',
+        ocupacion: { carros: 5, motos: 0 },
+        capacidad: { carros: 5, motos: 10 },
+        config: { ...ALL_RULES_ON, reglaIngresoEnSobrecupo: false },
+      }),
+    )
+    expect(result.violations).not.toContain('SOBRECUPO_CARROS')
+  })
+
+  it('R4: ocupación bajo la capacidad → sin sobrecupo', () => {
+    const result = evaluateRules(
+      makeInput({
+        vehiculoTipo: 'CARRO',
+        ocupacion: { carros: 4, motos: 0 },
+        capacidad: { carros: 5, motos: 10 },
+      }),
+    )
+    expect(result.violations).not.toContain('SOBRECUPO_CARROS')
   })
 })

@@ -43,15 +43,16 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
     convexQuery(api.conjuntoConfig.queries.getByConjunto, { conjuntoId }),
   )
 
-  const carrosDentro = activos.filter(
-    (r) =>
-      r.vehiculo?.tipo === 'CARRO' ||
-      r.vehiculo?.tipo === 'OTRO' ||
-      !r.vehiculo,
+  const carrosDentro = activos.filter((r) => {
+    const tipo = r.vehiculo?.tipo ?? r.vehiculoTipoVisitante ?? 'CARRO'
+    return tipo !== 'MOTO'
+  }).length
+  const motosDentro = activos.filter(
+    (r) => (r.vehiculo?.tipo ?? r.vehiculoTipoVisitante) === 'MOTO',
   ).length
-  const motosDentro = activos.filter((r) => r.vehiculo?.tipo === 'MOTO').length
   const carrosCapacidad = config?.parqueaderosCarros ?? 0
   const motosCapacidad = config?.parqueaderosMotos ?? 0
+  const permanenciaDias = config?.reglaPermanenciaMaxDias ?? 0
 
   const registrarIngresoFn = useConvexMutation(
     api.registrosAcceso.mutations.registrarIngreso,
@@ -95,15 +96,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         }
 
         if ('registroId' in result) {
-          toast.success('Ingreso registrado', {
-            action: {
-              label: 'Agregar observación',
-              onClick: () => {
-                // TODO: open observation dialog for result.registroId
-              },
-            },
-            duration: 3000,
-          })
+          toast.success('Ingreso registrado', { duration: 3000 })
           dispatch({ type: 'VOLVER_IDLE' })
         }
       } catch (err) {
@@ -131,41 +124,46 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
     (r) => r.tipo === 'VISITANTE' || r.tipo === 'VISITA_ADMIN',
   )
 
-  const PERMANENCIA_MS = 30 * 24 * 60 * 60 * 1000
-  const permanenciaExcedida = activos.filter(
-    (r) =>
-      r.tipo === 'RESIDENTE' &&
-      r.entradaEn != null &&
-      Date.now() - r.entradaEn >= PERMANENCIA_MS,
-  )
+  const permanenciaMs = permanenciaDias * 24 * 60 * 60 * 1000
+  const permanenciaExcedida =
+    permanenciaDias > 0
+      ? activos.filter(
+          (r) =>
+            r.tipo === 'RESIDENTE' &&
+            r.entradaEn != null &&
+            Date.now() - r.entradaEn >= permanenciaMs,
+        )
+      : []
 
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex flex-col gap-4 pb-6">
-        <CollapsibleTable
-          title={`Permanencia ≥ 30d (${permanenciaExcedida.length})`}
-          open={permanenciaOpen}
-          onToggle={() => setPermanenciaOpen((o) => !o)}
-          badge={permanenciaExcedida.length > 0 ? 'destructive' : undefined}
-        >
-          <RegistrosRecientesTable
-            registros={permanenciaExcedida.map((r) => ({
-              _id: `${r._id}-entrada`,
-              evento: 'ENTRADA' as const,
-              eventoEn: r.entradaEn ?? r._creationTime,
-              placaNormalizada: r.placaNormalizada,
-              tipo: r.tipo,
-              vehiculo: r.vehiculo,
-              unidad: r.unidad,
-            }))}
-          />
-        </CollapsibleTable>
+        {permanenciaDias > 0 && (
+          <CollapsibleTable
+            title={`Permanencia ≥ ${permanenciaDias}d (${permanenciaExcedida.length})`}
+            open={permanenciaOpen}
+            onToggle={() => setPermanenciaOpen((o) => !o)}
+            badge={permanenciaExcedida.length > 0 ? 'destructive' : undefined}
+          >
+            <RegistrosRecientesTable
+              registros={permanenciaExcedida.map((r) => ({
+                _id: `${r._id}-entrada`,
+                evento: 'ENTRADA' as const,
+                eventoEn: r.entradaEn ?? r._creationTime,
+                placaNormalizada: r.placaNormalizada,
+                tipo: r.tipo,
+                vehiculo: r.vehiculo,
+                unidad: r.unidad,
+              }))}
+            />
+          </CollapsibleTable>
+        )}
 
         <CollapsibleTable
           title={`Visitantes dentro (${visitantesDentro.length})`}
           open={visitantesOpen}
           onToggle={() => setVisitantesOpen((o) => !o)}
-          badge={visitantesDentro.length > 0 ? 'secondary' : undefined}
+          badge={visitantesDentro.length > 0 ? 'warning' : undefined}
         >
           <RegistrosRecientesTable
             registros={visitantesDentro.map((r) => ({
@@ -257,23 +255,50 @@ function CollapsibleTable({
   title: string
   open: boolean
   onToggle: () => void
-  badge?: 'default' | 'secondary' | 'destructive'
+  badge?: 'default' | 'secondary' | 'destructive' | 'warning'
   children: ReactNode
 }) {
+  const cardClass =
+    badge === 'destructive'
+      ? 'border-destructive/50 bg-destructive/10'
+      : badge === 'warning'
+        ? 'border-yellow-500/60 bg-yellow-50 dark:bg-yellow-950/30'
+        : undefined
+  const titleClass =
+    badge === 'destructive'
+      ? 'text-destructive'
+      : badge === 'warning'
+        ? 'text-yellow-800 dark:text-yellow-300'
+        : undefined
+  const chevronClass =
+    badge === 'destructive'
+      ? 'text-destructive'
+      : badge === 'warning'
+        ? 'text-yellow-700 dark:text-yellow-300'
+        : 'text-muted-foreground'
   return (
-    <Card>
+    <Card className={cardClass}>
       <CardHeader className="cursor-pointer select-none" onClick={onToggle}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-base">{title}</CardTitle>
+            <CardTitle className={`text-base ${titleClass ?? ''}`}>
+              {title}
+            </CardTitle>
             {badge && (
-              <Badge variant={badge} className="text-xs">
+              <Badge
+                variant={badge === 'warning' ? 'outline' : badge}
+                className={
+                  badge === 'warning'
+                    ? 'border-yellow-500/60 bg-yellow-100 text-xs text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200'
+                    : 'text-xs'
+                }
+              >
                 !
               </Badge>
             )}
           </div>
           <ChevronDown
-            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 transition-transform ${chevronClass} ${open ? 'rotate-180' : ''}`}
           />
         </div>
       </CardHeader>

@@ -45,7 +45,10 @@ const columns: ColumnDef<RegistroActivo, unknown>[] = [
     header: 'Vehículo',
     enableSorting: false,
     cell: ({ row }) => {
-      const tipo = row.original.vehiculo?.tipo ?? 'CARRO'
+      const tipo =
+        row.original.vehiculo?.tipo ??
+        row.original.vehiculoTipoVisitante ??
+        'CARRO'
       const Icon = tipo === 'MOTO' ? Bike : Car
       return (
         <span className="flex items-center gap-1.5 text-muted-foreground">
@@ -86,15 +89,14 @@ export function DashboardTab({ conjuntoId }: DashboardTabProps) {
     convexQuery(api.registrosAcceso.queries.listActivos, { conjuntoId }),
   )
 
-  const carrosDentro = activos.filter(
-    (r: RegistroActivo) =>
-      r.vehiculo?.tipo === 'CARRO' ||
-      r.vehiculo?.tipo === 'OTRO' ||
-      (!r.vehiculo && r.tipo === 'RESIDENTE'),
-  ).length
+  const carrosDentro = activos.filter((r: RegistroActivo) => {
+    const tipo = r.vehiculo?.tipo ?? r.vehiculoTipoVisitante ?? 'CARRO'
+    return tipo !== 'MOTO'
+  }).length
 
   const motosDentro = activos.filter(
-    (r: RegistroActivo) => r.vehiculo?.tipo === 'MOTO',
+    (r: RegistroActivo) =>
+      (r.vehiculo?.tipo ?? r.vehiculoTipoVisitante) === 'MOTO',
   ).length
 
   const visitantesDentro = activos.filter(

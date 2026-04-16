@@ -8,7 +8,11 @@ export const conjuntoConfigFields = {
   reglaVehiculoDuplicado: v.boolean(),
   // R3: Máximo de días que un vehículo puede permanecer dentro (0 = desactivada)
   reglaPermanenciaMaxDias: v.number(),
-  // Capacidad total de parqueaderos
+  // R4: Si true, genera novedad cuando ingresa un vehículo estando el
+  // parqueadero lleno. Aplica a residentes y visitantes. Las visitas
+  // administrativas quedan exentas.
+  reglaIngresoEnSobrecupo: v.boolean(),
+  // Capacidad total de parqueaderos (0 = ilimitado / regla inactiva por tipo)
   parqueaderosCarros: v.number(),
   parqueaderosMotos: v.number(),
 }
@@ -17,6 +21,7 @@ export const conjuntoConfigDefaults = {
   reglaIngresoEnMora: true,
   reglaVehiculoDuplicado: true,
   reglaPermanenciaMaxDias: 30,
+  reglaIngresoEnSobrecupo: true,
   parqueaderosCarros: 0,
   parqueaderosMotos: 0,
 }

@@ -27,11 +27,21 @@ export const registroAccesoFields = {
   entradaEn: v.optional(v.number()),
   salidaEn: v.optional(v.number()),
 
+  // Tipo de vehículo cuando no hay vehiculoId (visitante/visita_admin).
+  // Para residentes se deriva de vehiculo.tipo.
+  vehiculoTipoVisitante: v.optional(
+    v.union(v.literal('CARRO'), v.literal('MOTO'), v.literal('OTRO')),
+  ),
+
   // Decisión del motor de reglas
   decisionMotor: v.array(v.string()),
   decisionFinal: decisionFinalValues,
   justificacion: v.optional(v.string()),
+  // `novedad` queda durante la migración; la UI lee/escribe `observaciones`.
+  // Será removido en el Deploy 2 después de correr
+  // `migrations/renameNovedadToObservaciones:run`.
   novedad: v.optional(v.string()),
+  observaciones: v.optional(v.string()),
 
   // Auditoría
   vigilanteId: v.id('users'),

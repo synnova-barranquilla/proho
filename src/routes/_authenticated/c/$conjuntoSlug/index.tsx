@@ -230,6 +230,7 @@ function ParkingSettingsDialog({
         reglaIngresoEnMora: config?.reglaIngresoEnMora ?? true,
         reglaVehiculoDuplicado: config?.reglaVehiculoDuplicado ?? true,
         reglaPermanenciaMaxDias: config?.reglaPermanenciaMaxDias ?? 30,
+        reglaIngresoEnSobrecupo: config?.reglaIngresoEnSobrecupo ?? true,
         parqueaderosCarros: carros,
         parqueaderosMotos: motos,
       })

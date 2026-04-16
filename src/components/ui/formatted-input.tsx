@@ -9,6 +9,7 @@ import {
   parsePhone,
   parsePlaca,
 } from '#/lib/formatters'
+import { isPlacaValida } from '../../../convex/lib/placa'
 
 /**
  * Wrappers around <Input> that auto-format Colombian domain fields as the
@@ -54,11 +55,37 @@ export function DocumentInput({ value, onChange, ...rest }: BaseProps) {
   )
 }
 
-export function PlacaInput({ value, onChange, ...rest }: BaseProps) {
+type PlacaInputProps = BaseProps & {
+  /**
+   * Callback disparado cuando cambia la validez del formato de placa.
+   * - `true` cuando la placa normalizada matchea formato carro o moto particular.
+   * - `false` en todo otro caso (vacía, parcial, o 6 chars sin match).
+   *
+   * Los consumidores lo usan para deshabilitar botones de submit.
+   */
+  onValidChange?: (valid: boolean) => void
+}
+
+export function PlacaInput({
+  value,
+  onChange,
+  onValidChange,
+  ...rest
+}: PlacaInputProps) {
+  const valid = isPlacaValida(value)
+  // Solo mostrar estado inválido cuando el usuario terminó de tipear (6 chars).
+  // Evita marcar en rojo mientras todavía están escribiendo.
+  const showInvalid = value.length === 6 && !valid
+
+  React.useEffect(() => {
+    onValidChange?.(valid)
+  }, [valid, onValidChange])
+
   return (
     <Input
       {...rest}
       autoCapitalize="characters"
+      aria-invalid={showInvalid || rest['aria-invalid']}
       value={formatPlaca(value)}
       onChange={(e) => onChange(parsePlaca(e.target.value))}
       placeholder={rest.placeholder ?? 'ABC-123'}

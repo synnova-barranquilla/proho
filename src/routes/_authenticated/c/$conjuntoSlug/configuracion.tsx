@@ -76,6 +76,9 @@ function ConfiguracionPage() {
   const [reglaPermanenciaMaxDias, setReglaPermanenciaMaxDias] = useState(
     config?.reglaPermanenciaMaxDias ?? 30,
   )
+  const [reglaIngresoEnSobrecupo, setReglaIngresoEnSobrecupo] = useState(
+    config?.reglaIngresoEnSobrecupo ?? true,
+  )
   const [parqueaderosCarros, setParqueaderosCarros] = useState(
     config?.parqueaderosCarros ?? 0,
   )
@@ -88,6 +91,7 @@ function ConfiguracionPage() {
       setReglaIngresoEnMora(config.reglaIngresoEnMora)
       setReglaVehiculoDuplicado(config.reglaVehiculoDuplicado)
       setReglaPermanenciaMaxDias(config.reglaPermanenciaMaxDias)
+      setReglaIngresoEnSobrecupo(config.reglaIngresoEnSobrecupo)
       setParqueaderosCarros(config.parqueaderosCarros)
       setParqueaderosMotos(config.parqueaderosMotos)
     }
@@ -104,6 +108,7 @@ function ConfiguracionPage() {
         reglaIngresoEnMora,
         reglaVehiculoDuplicado,
         reglaPermanenciaMaxDias,
+        reglaIngresoEnSobrecupo,
         parqueaderosCarros,
         parqueaderosMotos,
       })
@@ -149,8 +154,7 @@ function ConfiguracionPage() {
                     <FieldLabel>Ingreso en mora genera novedad</FieldLabel>
                     <FieldDescription>
                       Si la unidad del vehículo está en mora, el vigilante debe
-                      justificar el ingreso y se genera una novedad de
-                      auditoría.
+                      justificar el ingreso y se genera una novedad.
                     </FieldDescription>
                   </div>
                   <Switch
@@ -170,6 +174,21 @@ function ConfiguracionPage() {
                   <Switch
                     checked={reglaVehiculoDuplicado}
                     onCheckedChange={setReglaVehiculoDuplicado}
+                  />
+                </Field>
+                <Field orientation="horizontal">
+                  <div className="flex-1">
+                    <FieldLabel>Sobrecupo genera novedad</FieldLabel>
+                    <FieldDescription>
+                      Si los parqueaderos están llenos, el vigilante debe
+                      justificar el ingreso y se genera una novedad. Aplica a
+                      residentes y visitantes; las visitas administrativas
+                      quedan exentas.
+                    </FieldDescription>
+                  </div>
+                  <Switch
+                    checked={reglaIngresoEnSobrecupo}
+                    onCheckedChange={setReglaIngresoEnSobrecupo}
                   />
                 </Field>
                 <Field>
