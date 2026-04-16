@@ -260,9 +260,9 @@ function CollapsibleTable({
 }) {
   const cardClass =
     badge === 'destructive'
-      ? 'border-destructive/50 bg-destructive/10'
+      ? 'border-destructive/50 bg-destructive/10 [&_tr]:border-destructive/25'
       : badge === 'warning'
-        ? 'border-yellow-500/60 bg-yellow-50 dark:bg-yellow-950/30'
+        ? 'border-yellow-500/60 bg-yellow-50 dark:bg-yellow-950/30 [&_tr]:border-yellow-500/25'
         : undefined
   const titleClass =
     badge === 'destructive'
