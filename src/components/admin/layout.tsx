@@ -1,4 +1,12 @@
-import { SidebarInset, SidebarProvider } from '#/components/ui/sidebar'
+import { useEffect } from 'react'
+
+import { useLocation } from '@tanstack/react-router'
+
+import {
+  SidebarInset,
+  SidebarProvider,
+  useSidebar,
+} from '#/components/ui/sidebar'
 import type { Doc } from '../../../convex/_generated/dataModel'
 import { ConjuntoHeader } from './header'
 import { ConjuntoSidebar } from './sidebar'
@@ -41,6 +49,7 @@ export function ConjuntoLayout({
 }: ConjuntoLayoutProps) {
   return (
     <SidebarProvider>
+      <MobileAutoClose />
       <ConjuntoSidebar
         conjunto={conjunto}
         membership={membership ?? null}
@@ -53,4 +62,15 @@ export function ConjuntoLayout({
       </SidebarInset>
     </SidebarProvider>
   )
+}
+
+function MobileAutoClose() {
+  const pathname = useLocation({ select: (l) => l.pathname })
+  const { setOpenMobile, isMobile } = useSidebar()
+
+  useEffect(() => {
+    if (isMobile) setOpenMobile(false)
+  }, [pathname, isMobile, setOpenMobile])
+
+  return null
 }
