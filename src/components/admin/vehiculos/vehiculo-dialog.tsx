@@ -20,18 +20,15 @@ import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { PlacaInput } from '#/components/ui/formatted-input'
 import { Input } from '#/components/ui/input'
 import { SearchableSelect } from '#/components/ui/searchable-select'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '#/components/ui/select'
 import { buildUnidadOptions } from '#/lib/unidad-search'
 import { api } from '../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
+import { detectPlacaTipo, isPlacaValida } from '../../../../convex/lib/placa'
+import {
+  TipoVehiculoCards,
+  type TipoVehiculoSelectable,
+} from '../../control-acceso/tipo-vehiculo-cards'
 
-type VehiculoTipo = 'CARRO' | 'MOTO' | 'OTRO'
 type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
 
 interface VehiculoDialogProps {
@@ -51,18 +48,27 @@ export function VehiculoDialog({
 
   const [unidadId, setUnidadId] = useState<string>('')
   const [placa, setPlaca] = useState('')
-  const [tipo, setTipo] = useState<VehiculoTipo>('CARRO')
+  const [tipo, setTipo] = useState<TipoVehiculoSelectable>('CARRO')
   const [propietario, setPropietario] = useState('')
-  const [placaValid, setPlacaValid] = useState(false)
+
+  const placaValida = isPlacaValida(placa)
+  const showPlacaError = placa.length === 6 && !placaValida
 
   useEffect(() => {
     if (open) {
       setUnidadId(vehiculo?.unidadId ?? '')
       setPlaca(vehiculo?.placa ?? '')
-      setTipo((vehiculo?.tipo ?? 'CARRO') as VehiculoTipo)
+      const vehiculoTipo = vehiculo?.tipo ?? 'CARRO'
+      setTipo(vehiculoTipo === 'MOTO' ? 'MOTO' : 'CARRO')
       setPropietario(vehiculo?.propietarioNombre ?? '')
     }
   }, [open, vehiculo])
+
+  // Auto-switch tipo cuando la placa matchea un formato específico
+  useEffect(() => {
+    const detected = detectPlacaTipo(placa)
+    if (detected) setTipo(detected)
+  }, [placa])
 
   const { data: unidadesData } = useSuspenseQuery(
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
@@ -134,29 +140,17 @@ export function VehiculoDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel>Placa</FieldLabel>
-                <PlacaInput
-                  value={placa}
-                  onChange={setPlaca}
-                  onValidChange={setPlacaValid}
-                  required
-                />
+                <FieldLabel>Tipo de vehículo</FieldLabel>
+                <TipoVehiculoCards value={tipo} onValueChange={setTipo} />
               </Field>
               <Field>
-                <FieldLabel>Tipo</FieldLabel>
-                <Select
-                  value={tipo}
-                  onValueChange={(v) => v && setTipo(v as VehiculoTipo)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CARRO">Carro</SelectItem>
-                    <SelectItem value="MOTO">Moto</SelectItem>
-                    <SelectItem value="OTRO">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
+                <FieldLabel>Placa</FieldLabel>
+                <PlacaInput value={placa} onChange={setPlaca} required />
+                {showPlacaError && (
+                  <p className="text-sm text-destructive">
+                    Formato inválido — Carro: ABC-123 / Moto: ABC-12D
+                  </p>
+                )}
               </Field>
               <Field>
                 <FieldLabel>Propietario (opcional)</FieldLabel>
@@ -170,7 +164,7 @@ export function VehiculoDialog({
           </DialogBody>
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancelar</Button>} />
-            <Button type="submit" disabled={isPending || !placaValid}>
+            <Button type="submit" disabled={isPending || !placaValida}>
               {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
             </Button>
           </DialogFooter>
