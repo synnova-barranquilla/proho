@@ -31,6 +31,15 @@ export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
   const list = conjuntos ?? []
   const hasMultiple = list.length > 1
 
+  if (!hasMultiple) {
+    return (
+      <div className="flex max-w-[220px] items-center gap-2 rounded-md border px-3 py-1.5">
+        <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="truncate text-sm font-medium">{current.nombre}</span>
+      </div>
+    )
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -46,9 +55,7 @@ export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
           <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="truncate text-sm font-medium">{current.nombre}</span>
         </div>
-        {hasMultiple ? (
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-        ) : null}
+        <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[260px]">
         <DropdownMenuGroup>
@@ -85,11 +92,6 @@ export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
             </DropdownMenuItem>
           )
         })}
-        {list.length === 0 ? (
-          <div className="px-2 py-1.5 text-xs text-muted-foreground">
-            Sin conjuntos accesibles.
-          </div>
-        ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
   )
