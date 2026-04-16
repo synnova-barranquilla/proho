@@ -23,7 +23,10 @@ import { formatPlaca } from '#/lib/formatters'
 import { buildUnidadOptions } from '#/lib/unidad-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-import { detectPlacaTipo, isPlacaValida } from '../../../convex/lib/placa'
+import {
+  detectPlacaTipo,
+  isPlacaValidaParaTipo,
+} from '../../../convex/lib/placa'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
 import { RegistrarResidenteSheet } from './registrar-residente-sheet'
 import {
@@ -79,7 +82,7 @@ export function NoEncontradoDialog({
     if (detected) setTipo(detected)
   }, [placa])
 
-  const placaValida = isPlacaValida(placa)
+  const placaValida = placa.length === 6 && isPlacaValidaParaTipo(placa, tipo)
 
   const { data: unidadesData } = useSuspenseQuery(
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),

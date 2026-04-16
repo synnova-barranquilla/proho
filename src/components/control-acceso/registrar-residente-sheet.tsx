@@ -22,7 +22,10 @@ import { Textarea } from '#/components/ui/textarea'
 import { buildUnidadOptions } from '#/lib/unidad-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-import { detectPlacaTipo, isPlacaValida } from '../../../convex/lib/placa'
+import {
+  detectPlacaTipo,
+  isPlacaValidaParaTipo,
+} from '../../../convex/lib/placa'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
 import {
   TipoVehiculoCards,
@@ -74,7 +77,8 @@ export function RegistrarResidenteSheet({
     if (detected) setTipo(detected)
   }, [placa])
 
-  const placaValida = isPlacaValida(placa)
+  const placaValida = placa.length === 6 && isPlacaValidaParaTipo(placa, tipo)
+  const showPlacaError = placa.length === 6 && !placaValida
 
   const { data: unidadesData } = useSuspenseQuery(
     convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
@@ -186,7 +190,17 @@ export function RegistrarResidenteSheet({
           <FieldGroup>
             <Field>
               <FieldLabel>Placa</FieldLabel>
-              <PlacaInput value={placa} onChange={() => {}} disabled />
+              <PlacaInput
+                value={placa}
+                onChange={() => {}}
+                aria-invalid={showPlacaError}
+                disabled
+              />
+              {showPlacaError && (
+                <p className="text-sm text-destructive">
+                  Formato inválido — Carro: ABC-123 / Moto: ABC-12D
+                </p>
+              )}
             </Field>
             <Field>
               <FieldLabel>Unidad</FieldLabel>

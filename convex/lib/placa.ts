@@ -21,3 +21,10 @@ export function detectPlacaTipo(placa: string): PlacaTipo | null {
 export function isPlacaValida(placa: string): boolean {
   return detectPlacaTipo(placa) !== null
 }
+
+export function isPlacaValidaParaTipo(
+  placa: string,
+  tipo: 'CARRO' | 'MOTO',
+): boolean {
+  return detectPlacaTipo(placa) === tipo
+}

@@ -23,7 +23,10 @@ import { SearchableSelect } from '#/components/ui/searchable-select'
 import { buildUnidadOptions } from '#/lib/unidad-search'
 import { api } from '../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
-import { detectPlacaTipo, isPlacaValida } from '../../../../convex/lib/placa'
+import {
+  detectPlacaTipo,
+  isPlacaValidaParaTipo,
+} from '../../../../convex/lib/placa'
 import {
   TipoVehiculoCards,
   type TipoVehiculoSelectable,
@@ -51,7 +54,7 @@ export function VehiculoDialog({
   const [tipo, setTipo] = useState<TipoVehiculoSelectable>('CARRO')
   const [propietario, setPropietario] = useState('')
 
-  const placaValida = isPlacaValida(placa)
+  const placaValida = placa.length === 6 && isPlacaValidaParaTipo(placa, tipo)
   const showPlacaError = placa.length === 6 && !placaValida
 
   useEffect(() => {
@@ -145,7 +148,12 @@ export function VehiculoDialog({
               </Field>
               <Field>
                 <FieldLabel>Placa</FieldLabel>
-                <PlacaInput value={placa} onChange={setPlaca} required />
+                <PlacaInput
+                  value={placa}
+                  onChange={setPlaca}
+                  aria-invalid={showPlacaError}
+                  required
+                />
                 {showPlacaError && (
                   <p className="text-sm text-destructive">
                     Formato inválido — Carro: ABC-123 / Moto: ABC-12D
