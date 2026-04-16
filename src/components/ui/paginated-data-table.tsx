@@ -124,7 +124,7 @@ export function PaginatedDataTable<T>({
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row, i) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="even:bg-muted/50">
                   <TableCell className="text-muted-foreground tabular-nums">
                     {pageIndex * pageSize + i + 1}
                   </TableCell>
