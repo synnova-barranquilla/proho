@@ -126,6 +126,7 @@ export function PlacaSearchBar({
   }, [isProcesando])
 
   const hasSuggestions = showDropdown && suggestions.length > 0
+  const showFormatError = placaNorm.length === 6 && !isPlacaValida(placaNorm)
 
   return (
     <div className="relative">
@@ -140,6 +141,11 @@ export function PlacaSearchBar({
         className="h-14 text-center font-mono text-2xl tracking-wider"
         autoFocus
       />
+      {showFormatError && (
+        <p className="mt-1.5 text-center text-sm text-destructive">
+          Formato inválido — Carro: ABC-123 / Moto: ABC-12D
+        </p>
+      )}
       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">
         {isProcesando ? (
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
