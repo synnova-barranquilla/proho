@@ -1,12 +1,17 @@
 import { Suspense, useState } from 'react'
 
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import type { ColumnDef } from '@tanstack/react-table'
 
-import { convexQuery } from '@convex-dev/react-query'
-import { Plus } from 'lucide-react'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import { Plus, Upload } from 'lucide-react'
 
+import {
+  BulkImportDialog,
+  type ImportResult,
+  type ValidatedRow,
+} from '#/components/admin/bulk-import-dialog'
 import { VehiculoDialog } from '#/components/admin/vehiculos/vehiculo-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
@@ -17,6 +22,11 @@ import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
+import {
+  detectPlacaTipo,
+  isPlacaValida,
+  normalizePlaca,
+} from '../../../../../../convex/lib/placa'
 
 export const Route = createFileRoute(
   '/_authenticated/c/$conjuntoSlug/vehiculos/',
@@ -41,11 +51,73 @@ export const Route = createFileRoute(
 
 type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
 
+type VehiculoImportRow = {
+  torre: string
+  numero: string
+  placa: string
+  tipo: 'CARRO' | 'MOTO' | 'OTRO'
+  propietarioNombre?: string
+}
+
+const VALID_VEHICULO_TIPOS = new Set(['CARRO', 'MOTO', 'OTRO'])
+
 function VehiculosPage() {
   const { conjuntoId } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [editing, setEditing] = useState<VehiculoRow | null>(null)
+
+  const bulkImportFn = useConvexMutation(api.vehiculos.mutations.bulkImport)
+  const bulkImportMut = useMutation({ mutationFn: bulkImportFn })
+
+  const validateVehiculoRow = (
+    row: Record<string, string>,
+    rowIndex: number,
+  ): ValidatedRow<VehiculoImportRow> => {
+    const torre = (row['torre'] || '').trim().toUpperCase()
+    const numero = (row['numero'] || '').trim()
+    const placaRaw = (row['placa'] || '').trim()
+    const tipoRaw = (row['tipo'] || '').trim().toUpperCase()
+    const propietarioNombre =
+      (row['propietarioNombre'] || '').trim() || undefined
+    const raw = row
+
+    if (!torre || !numero) {
+      return { rowIndex, valid: false, error: 'Torre y número requeridos', raw }
+    }
+    if (!placaRaw) {
+      return { rowIndex, valid: false, error: 'Placa requerida', raw }
+    }
+    const placa = normalizePlaca(placaRaw)
+    if (!isPlacaValida(placa)) {
+      return {
+        rowIndex,
+        valid: false,
+        error: `Placa inválida: ${placaRaw}`,
+        raw,
+      }
+    }
+
+    const detectedTipo = detectPlacaTipo(placa)
+    const tipo =
+      tipoRaw && VALID_VEHICULO_TIPOS.has(tipoRaw)
+        ? (tipoRaw as 'CARRO' | 'MOTO' | 'OTRO')
+        : (detectedTipo ?? 'CARRO')
+
+    return {
+      rowIndex,
+      valid: true,
+      data: { torre, numero, placa, tipo, propietarioNombre },
+      raw,
+    }
+  }
+
+  const handleVehiculoImport = async (
+    rows: VehiculoImportRow[],
+  ): Promise<ImportResult> => {
+    return await bulkImportMut.mutateAsync({ conjuntoId, rows })
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -57,15 +129,21 @@ function VehiculosPage() {
           </p>
         </div>
         {isAdmin ? (
-          <Button
-            onClick={() => {
-              setEditing(null)
-              setDialogOpen(true)
-            }}
-          >
-            <Plus />
-            Nuevo vehículo
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload />
+              Importar CSV
+            </Button>
+            <Button
+              onClick={() => {
+                setEditing(null)
+                setDialogOpen(true)
+              }}
+            >
+              <Plus />
+              Nuevo vehículo
+            </Button>
+          </div>
         ) : null}
       </div>
 
@@ -81,15 +159,31 @@ function VehiculosPage() {
       </Suspense>
 
       {isAdmin ? (
-        <VehiculoDialog
-          open={dialogOpen}
-          onOpenChange={(open) => {
-            setDialogOpen(open)
-            if (!open) setEditing(null)
-          }}
-          conjuntoId={conjuntoId}
-          vehiculo={editing}
-        />
+        <>
+          <VehiculoDialog
+            open={dialogOpen}
+            onOpenChange={(open) => {
+              setDialogOpen(open)
+              if (!open) setEditing(null)
+            }}
+            conjuntoId={conjuntoId}
+            vehiculo={editing}
+          />
+          <BulkImportDialog
+            open={importOpen}
+            onOpenChange={setImportOpen}
+            title="Importar vehículos"
+            expectedColumns={[
+              'torre',
+              'numero',
+              'placa',
+              'tipo',
+              'propietarioNombre',
+            ]}
+            validateRow={validateVehiculoRow}
+            onImport={handleVehiculoImport}
+          />
+        </>
       ) : null}
     </div>
   )

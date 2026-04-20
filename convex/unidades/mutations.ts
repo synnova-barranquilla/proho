@@ -123,6 +123,67 @@ export const setMora = mutation({
   },
 })
 
+export const bulkImport = mutation({
+  args: {
+    conjuntoId: v.id('conjuntos'),
+    rows: v.array(
+      v.object({
+        torre: v.string(),
+        numero: v.string(),
+        tipo: unidadTipos,
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    await requireConjuntoAccess(ctx, args.conjuntoId, {
+      allowedRoles: ['ADMIN'],
+    })
+
+    let created = 0
+    let updated = 0
+    const errors: Array<{ row: number; message: string }> = []
+
+    for (let i = 0; i < args.rows.length; i++) {
+      const row = args.rows[i]
+      const torre = row.torre.trim().toUpperCase()
+      const numero = row.numero.trim()
+
+      if (!torre || !numero) {
+        errors.push({ row: i + 1, message: 'Torre y número son obligatorios' })
+        continue
+      }
+
+      const existing = await ctx.db
+        .query('unidades')
+        .withIndex('by_conjunto_and_torre_and_numero', (q) =>
+          q
+            .eq('conjuntoId', args.conjuntoId)
+            .eq('torre', torre)
+            .eq('numero', numero),
+        )
+        .unique()
+
+      if (existing) {
+        if (existing.tipo !== row.tipo) {
+          await ctx.db.patch(existing._id, { tipo: row.tipo })
+        }
+        updated++
+      } else {
+        await ctx.db.insert('unidades', {
+          conjuntoId: args.conjuntoId,
+          torre,
+          numero,
+          tipo: row.tipo,
+          enMora: false,
+        })
+        created++
+      }
+    }
+
+    return { created, updated, errors, total: args.rows.length }
+  },
+})
+
 export const remove = mutation({
   args: {
     unidadId: v.id('unidades'),

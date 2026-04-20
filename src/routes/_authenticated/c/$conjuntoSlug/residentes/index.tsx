@@ -1,7 +1,7 @@
 import { Suspense, useState } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Navigate } from '@tanstack/react-router'
 import type { ColumnDef } from '@tanstack/react-table'
 
 import { convexQuery } from '@convex-dev/react-query'
@@ -42,10 +42,14 @@ export const Route = createFileRoute(
 type ResidenteRow = Doc<'residentes'> & { unidad: Doc<'unidades'> | null }
 
 function ResidentesPage() {
-  const { conjuntoId } = Route.useRouteContext()
+  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<ResidenteRow | null>(null)
+
+  if (!isAdmin) {
+    return <Navigate to="/c/$conjuntoSlug" params={{ conjuntoSlug }} />
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,17 +60,15 @@ function ResidentesPage() {
             Personas vinculadas a las unidades del conjunto.
           </p>
         </div>
-        {isAdmin ? (
-          <Button
-            onClick={() => {
-              setEditing(null)
-              setDialogOpen(true)
-            }}
-          >
-            <Plus />
-            Nuevo residente
-          </Button>
-        ) : null}
+        <Button
+          onClick={() => {
+            setEditing(null)
+            setDialogOpen(true)
+          }}
+        >
+          <Plus />
+          Nuevo residente
+        </Button>
       </div>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
@@ -80,17 +82,15 @@ function ResidentesPage() {
         />
       </Suspense>
 
-      {isAdmin ? (
-        <ResidenteDialog
-          open={dialogOpen}
-          onOpenChange={(open) => {
-            setDialogOpen(open)
-            if (!open) setEditing(null)
-          }}
-          conjuntoId={conjuntoId}
-          residente={editing}
-        />
-      ) : null}
+      <ResidenteDialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open)
+          if (!open) setEditing(null)
+        }}
+        conjuntoId={conjuntoId}
+        residente={editing}
+      />
     </div>
   )
 }

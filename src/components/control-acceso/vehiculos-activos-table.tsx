@@ -4,11 +4,12 @@ import { Bike, Car, LogIn, LogOut, type LucideIcon } from 'lucide-react'
 
 import { Badge } from '#/components/ui/badge'
 import { PaginatedDataTable } from '#/components/ui/paginated-data-table'
-import { formatPlaca } from '#/lib/formatters'
+import { formatDuracion, formatPlaca } from '#/lib/formatters'
 import type { RegistroReciente } from './types'
 
 interface RegistrosRecientesTableProps {
   registros: RegistroReciente[]
+  variant?: 'recientes' | 'activos'
 }
 
 const TIPO_VEHICULO_ICON: Record<string, LucideIcon> = {
@@ -43,7 +44,7 @@ function formatHora(timestamp: number): string {
   })
 }
 
-const columns: ColumnDef<RegistroReciente, unknown>[] = [
+const sharedColumns: ColumnDef<RegistroReciente, unknown>[] = [
   {
     accessorKey: 'placaNormalizada',
     header: 'Placa',
@@ -58,7 +59,10 @@ const columns: ColumnDef<RegistroReciente, unknown>[] = [
     header: 'Vehículo',
     enableSorting: false,
     cell: ({ row }) => {
-      const tipo = row.original.vehiculo?.tipo ?? 'CARRO'
+      const tipo =
+        row.original.vehiculoTipoVisitante ??
+        row.original.vehiculo?.tipo ??
+        'CARRO'
       const Icon = TIPO_VEHICULO_ICON[tipo] ?? Car
       return (
         <span className="flex items-center gap-1.5 text-muted-foreground">
@@ -92,6 +96,32 @@ const columns: ColumnDef<RegistroReciente, unknown>[] = [
       )
     },
   },
+]
+
+const activosColumns: ColumnDef<RegistroReciente, unknown>[] = [
+  ...sharedColumns,
+  {
+    id: 'duracion',
+    header: 'Duración',
+    cell: ({ row }) => (
+      <span className="text-sm tabular-nums text-muted-foreground">
+        {formatDuracion(row.original.entradaEn)}
+      </span>
+    ),
+  },
+  {
+    id: 'ingreso',
+    header: 'Ingreso',
+    cell: ({ row }) => (
+      <span className="text-sm text-muted-foreground">
+        {formatHora(row.original.eventoEn)}
+      </span>
+    ),
+  },
+]
+
+const recientesColumns: ColumnDef<RegistroReciente, unknown>[] = [
+  ...sharedColumns,
   {
     id: 'evento',
     header: 'Evento',
@@ -125,13 +155,18 @@ const columns: ColumnDef<RegistroReciente, unknown>[] = [
 
 export function RegistrosRecientesTable({
   registros,
+  variant = 'recientes',
 }: RegistrosRecientesTableProps) {
   return (
     <PaginatedDataTable
-      columns={columns}
+      columns={variant === 'activos' ? activosColumns : recientesColumns}
       data={registros}
       pageSize={5}
-      emptyMessage="Sin registros en las últimas 48 horas."
+      emptyMessage={
+        variant === 'recientes'
+          ? 'Sin registros en las últimas 24 horas.'
+          : 'Sin registros.'
+      }
     />
   )
 }

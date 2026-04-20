@@ -8,26 +8,13 @@ import { Bike, Car, UserRound } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { PaginatedDataTable } from '#/components/ui/paginated-data-table'
-import { formatPlaca } from '#/lib/formatters'
+import { formatDuracion, formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { RegistroActivo } from './types'
 
 interface DashboardTabProps {
   conjuntoId: Id<'conjuntos'>
-}
-
-function formatDuracion(entradaEn: number | undefined): string {
-  if (entradaEn == null) return '—'
-  const diff = Date.now() - entradaEn
-  const mins = Math.floor(diff / 60_000)
-  if (mins < 1) return '< 1m'
-  if (mins < 60) return `${mins}m`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ${mins % 60}m`
-  const days = Math.floor(hours / 24)
-  const remainHours = hours % 24
-  return `${days}d ${remainHours}h`
 }
 
 const columns: ColumnDef<RegistroActivo, unknown>[] = [

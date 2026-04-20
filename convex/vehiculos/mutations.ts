@@ -121,6 +121,94 @@ export const update = mutation({
   },
 })
 
+export const bulkImport = mutation({
+  args: {
+    conjuntoId: v.id('conjuntos'),
+    rows: v.array(
+      v.object({
+        torre: v.string(),
+        numero: v.string(),
+        placa: v.string(),
+        tipo: vehiculoTipos,
+        propietarioNombre: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    await requireConjuntoAccess(ctx, args.conjuntoId, {
+      allowedRoles: ['ADMIN'],
+    })
+
+    let created = 0
+    let updated = 0
+    const errors: Array<{ row: number; message: string }> = []
+
+    for (let i = 0; i < args.rows.length; i++) {
+      const row = args.rows[i]
+      const torre = row.torre.trim().toUpperCase()
+      const numero = row.numero.trim()
+      const placa = normalizePlaca(row.placa)
+
+      if (!torre || !numero) {
+        errors.push({ row: i + 1, message: 'Torre y número son obligatorios' })
+        continue
+      }
+      if (!placa || !isPlacaValida(placa)) {
+        errors.push({ row: i + 1, message: `Placa inválida: ${row.placa}` })
+        continue
+      }
+
+      const unidad = await ctx.db
+        .query('unidades')
+        .withIndex('by_conjunto_and_torre_and_numero', (q) =>
+          q
+            .eq('conjuntoId', args.conjuntoId)
+            .eq('torre', torre)
+            .eq('numero', numero),
+        )
+        .unique()
+
+      if (!unidad) {
+        errors.push({
+          row: i + 1,
+          message: `Unidad ${torre}-${numero} no encontrada`,
+        })
+        continue
+      }
+
+      const existing = await ctx.db
+        .query('vehiculos')
+        .withIndex('by_conjunto_and_placa', (q) =>
+          q.eq('conjuntoId', args.conjuntoId).eq('placa', placa),
+        )
+        .unique()
+
+      const propietarioNombre = row.propietarioNombre?.trim() || undefined
+
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          unidadId: unidad._id,
+          tipo: row.tipo,
+          propietarioNombre,
+        })
+        updated++
+      } else {
+        await ctx.db.insert('vehiculos', {
+          conjuntoId: args.conjuntoId,
+          unidadId: unidad._id,
+          placa,
+          tipo: row.tipo,
+          propietarioNombre,
+          active: true,
+        })
+        created++
+      }
+    }
+
+    return { created, updated, errors, total: args.rows.length }
+  },
+})
+
 export const setActive = mutation({
   args: {
     vehiculoId: v.id('vehiculos'),

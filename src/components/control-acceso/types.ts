@@ -12,8 +12,10 @@ export interface RegistroReciente {
   _id: string
   evento: 'ENTRADA' | 'SALIDA'
   eventoEn: number
+  entradaEn?: number
   placaNormalizada: string
   tipo: string
+  vehiculoTipoVisitante?: 'CARRO' | 'MOTO' | 'OTRO'
   vehiculo: Doc<'vehiculos'> | null
   unidad: Doc<'unidades'> | null
 }

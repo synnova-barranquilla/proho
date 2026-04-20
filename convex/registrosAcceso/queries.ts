@@ -60,7 +60,7 @@ export const listRecientes = query({
       allowedRoles: ['ADMIN', 'VIGILANTE'],
     })
 
-    const cutoff = Date.now() - 48 * 60 * 60 * 1000
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000
 
     const registros = await ctx.db
       .query('registrosAcceso')
@@ -102,6 +102,8 @@ export const listRecientes = query({
       const base = {
         placaNormalizada: r.placaNormalizada,
         tipo: r.tipo,
+        vehiculoTipoVisitante: r.vehiculoTipoVisitante,
+        entradaEn: r.entradaEn,
         vehiculo,
         unidad,
       }

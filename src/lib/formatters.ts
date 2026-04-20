@@ -54,3 +54,18 @@ export function formatPlaca(raw: string): string {
   if (p.length <= 3) return p
   return `${p.slice(0, 3)}-${p.slice(3)}`
 }
+
+// --- Duracion ---------------------------------------------------------------
+
+export function formatDuracion(entradaEn: number | undefined): string {
+  if (entradaEn == null) return '—'
+  const diff = Date.now() - entradaEn
+  const mins = Math.floor(diff / 60_000)
+  if (mins < 1) return '< 1m'
+  if (mins < 60) return `${mins}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ${mins % 60}m`
+  const days = Math.floor(hours / 24)
+  const remainHours = hours % 24
+  return `${days}d ${remainHours}h`
+}

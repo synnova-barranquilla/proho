@@ -1,13 +1,18 @@
 import { Suspense, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Navigate } from '@tanstack/react-router'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
-import { Plus } from 'lucide-react'
+import { Plus, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 
+import {
+  BulkImportDialog,
+  type ImportResult,
+  type ValidatedRow,
+} from '#/components/admin/bulk-import-dialog'
 import { UnidadDialog } from '#/components/admin/unidades/unidad-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
@@ -40,10 +45,62 @@ export const Route = createFileRoute(
 })
 
 function UnidadesPage() {
-  const { conjuntoId } = Route.useRouteContext()
+  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
   const isAdmin = useIsConjuntoAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [editing, setEditing] = useState<Doc<'unidades'> | null>(null)
+
+  const bulkImportFn = useConvexMutation(api.unidades.mutations.bulkImport)
+  const bulkImportMut = useMutation({ mutationFn: bulkImportFn })
+
+  if (!isAdmin) {
+    return <Navigate to="/c/$conjuntoSlug" params={{ conjuntoSlug }} />
+  }
+
+  const VALID_TIPOS = new Set(['APARTAMENTO', 'CASA', 'LOCAL'])
+
+  const validateUnidadRow = (
+    row: Record<string, string>,
+    rowIndex: number,
+  ): ValidatedRow<{
+    torre: string
+    numero: string
+    tipo: 'APARTAMENTO' | 'CASA' | 'LOCAL'
+  }> => {
+    const torre = (row['torre'] || '').trim().toUpperCase()
+    const numero = (row['numero'] || '').trim()
+    const tipoRaw = (row['tipo'] || 'APARTAMENTO').trim().toUpperCase()
+    const raw = row
+
+    if (!torre || !numero) {
+      return { rowIndex, valid: false, error: 'Torre y número requeridos', raw }
+    }
+    if (!VALID_TIPOS.has(tipoRaw)) {
+      return { rowIndex, valid: false, error: `Tipo inválido: ${tipoRaw}`, raw }
+    }
+
+    return {
+      rowIndex,
+      valid: true,
+      data: {
+        torre,
+        numero,
+        tipo: tipoRaw as 'APARTAMENTO' | 'CASA' | 'LOCAL',
+      },
+      raw,
+    }
+  }
+
+  const handleUnidadImport = async (
+    rows: Array<{
+      torre: string
+      numero: string
+      tipo: 'APARTAMENTO' | 'CASA' | 'LOCAL'
+    }>,
+  ): Promise<ImportResult> => {
+    return await bulkImportMut.mutateAsync({ conjuntoId, rows })
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -54,7 +111,11 @@ function UnidadesPage() {
             Apartamentos, casas y locales agrupados por torre.
           </p>
         </div>
-        {isAdmin ? (
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload />
+            Importar CSV
+          </Button>
           <Button
             onClick={() => {
               setEditing(null)
@@ -64,7 +125,7 @@ function UnidadesPage() {
             <Plus />
             Nueva unidad
           </Button>
-        ) : null}
+        </div>
       </div>
 
       <Suspense fallback={<TorresSkeleton />}>
@@ -78,17 +139,24 @@ function UnidadesPage() {
         />
       </Suspense>
 
-      {isAdmin ? (
-        <UnidadDialog
-          open={dialogOpen}
-          onOpenChange={(open) => {
-            setDialogOpen(open)
-            if (!open) setEditing(null)
-          }}
-          conjuntoId={conjuntoId}
-          unidad={editing}
-        />
-      ) : null}
+      <UnidadDialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open)
+          if (!open) setEditing(null)
+        }}
+        conjuntoId={conjuntoId}
+        unidad={editing}
+      />
+
+      <BulkImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        title="Importar unidades"
+        expectedColumns={['torre', 'numero', 'tipo']}
+        validateRow={validateUnidadRow}
+        onImport={handleUnidadImport}
+      />
     </div>
   )
 }

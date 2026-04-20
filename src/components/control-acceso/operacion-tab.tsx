@@ -140,18 +140,21 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
       <div className="flex flex-col gap-4 pb-6">
         {permanenciaDias > 0 && (
           <CollapsibleTable
-            title={`Permanencia ≥ ${permanenciaDias}d (${permanenciaExcedida.length})`}
+            title={`Tiempo de permanencia (${permanenciaDias} días) excedido (${permanenciaExcedida.length})`}
             open={permanenciaOpen}
             onToggle={() => setPermanenciaOpen((o) => !o)}
             badge={permanenciaExcedida.length > 0 ? 'destructive' : undefined}
           >
             <RegistrosRecientesTable
+              variant="activos"
               registros={permanenciaExcedida.map((r) => ({
                 _id: `${r._id}-entrada`,
                 evento: 'ENTRADA' as const,
                 eventoEn: r.entradaEn ?? r._creationTime,
+                entradaEn: r.entradaEn,
                 placaNormalizada: r.placaNormalizada,
                 tipo: r.tipo,
+                vehiculoTipoVisitante: r.vehiculoTipoVisitante,
                 vehiculo: r.vehiculo,
                 unidad: r.unidad,
               }))}
@@ -166,12 +169,15 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
           badge={visitantesDentro.length > 0 ? 'warning' : undefined}
         >
           <RegistrosRecientesTable
+            variant="activos"
             registros={visitantesDentro.map((r) => ({
               _id: `${r._id}-entrada`,
               evento: 'ENTRADA' as const,
               eventoEn: r.entradaEn ?? r._creationTime,
+              entradaEn: r.entradaEn,
               placaNormalizada: r.placaNormalizada,
               tipo: r.tipo,
+              vehiculoTipoVisitante: r.vehiculoTipoVisitante,
               vehiculo: r.vehiculo,
               unidad: r.unidad,
             }))}

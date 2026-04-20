@@ -278,34 +278,38 @@ function ConjuntoScopedSidebar({
           <SidebarGroupLabel>Inventario</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isActive(`${base}/unidades`)}
-                  render={
-                    <Link
-                      to="/c/$conjuntoSlug/unidades"
-                      params={{ conjuntoSlug: conjunto.slug }}
-                    >
-                      <SquareStack />
-                      <span>Unidades</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isActive(`${base}/residentes`)}
-                  render={
-                    <Link
-                      to="/c/$conjuntoSlug/residentes"
-                      params={{ conjuntoSlug: conjunto.slug }}
-                    >
-                      <UsersRound />
-                      <span>Residentes</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
+              {isAdmin ? (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={isActive(`${base}/unidades`)}
+                      render={
+                        <Link
+                          to="/c/$conjuntoSlug/unidades"
+                          params={{ conjuntoSlug: conjunto.slug }}
+                        >
+                          <SquareStack />
+                          <span>Unidades</span>
+                        </Link>
+                      }
+                    />
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={isActive(`${base}/residentes`)}
+                      render={
+                        <Link
+                          to="/c/$conjuntoSlug/residentes"
+                          params={{ conjuntoSlug: conjunto.slug }}
+                        >
+                          <UsersRound />
+                          <span>Residentes</span>
+                        </Link>
+                      }
+                    />
+                  </SidebarMenuItem>
+                </>
+              ) : null}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   isActive={isActive(`${base}/vehiculos`)}
