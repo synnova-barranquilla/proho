@@ -25,7 +25,7 @@ import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
 /** Only show modules that are currently developed */
-const VISIBLE_MODULES: ModuleKey[] = ['control_acceso']
+const VISIBLE_MODULES: ModuleKey[] = ['access_control', 'communications']
 
 interface OrgDetailModulesCardProps {
   org: Doc<'organizations'>

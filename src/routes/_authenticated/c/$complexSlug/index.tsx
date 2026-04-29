@@ -65,7 +65,7 @@ function ComplexDashboardPage() {
   const ctx = Route.useRouteContext()
   const complexId = ctx.complexId
   const activeModules = (ctx as any).activeModules as string[] | undefined
-  const hasControlAcceso = activeModules?.includes('control_acceso') ?? false
+  const hasControlAcceso = activeModules?.includes('access_control') ?? false
 
   return (
     <div className="flex flex-col gap-6">

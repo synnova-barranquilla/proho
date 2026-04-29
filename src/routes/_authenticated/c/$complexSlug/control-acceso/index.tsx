@@ -10,7 +10,7 @@ export const Route = createFileRoute(
   loader: async ({
     context: { queryClient, complexId, complexSlug, activeModules },
   }) => {
-    if (!activeModules.includes('control_acceso')) {
+    if (!activeModules.includes('access_control')) {
       throw redirect({
         to: '/c/$complexSlug',
         params: { complexSlug },

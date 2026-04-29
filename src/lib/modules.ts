@@ -3,7 +3,7 @@
  * Must stay in sync with `convex/organizations/validators.ts::moduleKeys`.
  */
 export const MODULE_KEYS = [
-  'control_acceso',
+  'access_control',
   'communications',
   'convivencia',
   'reservas',
@@ -14,7 +14,7 @@ export const MODULE_KEYS = [
 export type ModuleKey = (typeof MODULE_KEYS)[number]
 
 export const MODULE_LABELS: Record<ModuleKey, string> = {
-  control_acceso: 'Control de acceso',
+  access_control: 'Control de acceso',
   communications: 'Comunicaciones',
   convivencia: 'Convivencia',
   reservas: 'Reservas',
@@ -23,7 +23,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
 }
 
 export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
-  control_acceso:
+  access_control:
     'Control de acceso vehicular, registros de entrada/salida, auditoría',
   communications:
     'Canal de comunicaciones: chat con asistente virtual, tickets de soporte, notificaciones',

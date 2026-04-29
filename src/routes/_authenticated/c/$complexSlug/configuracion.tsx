@@ -45,7 +45,7 @@ function ConfiguracionPage() {
   const ctx = Route.useRouteContext()
   const { complexId, complexSlug } = ctx
   const activeModules = (ctx as any).activeModules as string[] | undefined
-  const hasControlAcceso = activeModules?.includes('control_acceso') ?? false
+  const hasControlAcceso = activeModules?.includes('access_control') ?? false
   const navigate = useNavigate()
   const isAdmin = useIsComplexAdmin()
 

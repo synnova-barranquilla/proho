@@ -192,32 +192,44 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
               </form.Field>
 
               <form.Field name="activeModules">
-                {(field) => {
-                  const isActive = field.state.value.includes('control_acceso')
-                  return (
-                    <Field>
-                      <FieldLabel>Módulos activos</FieldLabel>
-                      <div className="flex items-start justify-between gap-4 rounded-md border p-3">
-                        <div className="flex-1 space-y-0.5">
-                          <Label className="text-sm font-medium">
-                            {MODULE_LABELS.control_acceso}
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            {MODULE_DESCRIPTIONS.control_acceso}
-                          </p>
-                        </div>
-                        <Switch
-                          checked={isActive}
-                          onCheckedChange={(checked) => {
-                            field.handleChange(
-                              checked === true ? ['control_acceso'] : [],
-                            )
-                          }}
-                        />
-                      </div>
-                    </Field>
-                  )
-                }}
+                {(field) => (
+                  <Field>
+                    <FieldLabel>Módulos activos</FieldLabel>
+                    <div className="space-y-2">
+                      {(['access_control', 'communications'] as const).map(
+                        (key) => {
+                          const isActive = field.state.value.includes(key)
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-start justify-between gap-4 rounded-md border p-3"
+                            >
+                              <div className="flex-1 space-y-0.5">
+                                <Label className="text-sm font-medium">
+                                  {MODULE_LABELS[key]}
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                  {MODULE_DESCRIPTIONS[key]}
+                                </p>
+                              </div>
+                              <Switch
+                                checked={isActive}
+                                onCheckedChange={(checked) => {
+                                  const current = field.state.value
+                                  field.handleChange(
+                                    checked === true
+                                      ? [...current, key]
+                                      : current.filter((m) => m !== key),
+                                  )
+                                }}
+                              />
+                            </div>
+                          )
+                        },
+                      )}
+                    </div>
+                  </Field>
+                )}
               </form.Field>
             </FieldGroup>
 

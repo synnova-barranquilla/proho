@@ -65,7 +65,7 @@ export function ComplexSidebar({
   // to show. The backend already enforces these checks on every
   // mutation; this is front-end gating for UX clarity.
   const isAdmin = isComplexAdmin(convexUser, complex, membership)
-  const hasControlAcceso = activeModules.includes('control_acceso')
+  const hasControlAcceso = activeModules.includes('access_control')
   const hasCommunications = activeModules.includes('communications')
 
   return (
