@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 
 export const moduleKeys = v.union(
   v.literal('control_acceso'),
+  v.literal('communications'),
   v.literal('convivencia'),
   v.literal('reservas'),
   v.literal('inspecciones'),
