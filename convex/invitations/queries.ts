@@ -66,17 +66,17 @@ export const listAllPendingWithOrg = query({
 })
 
 /**
- * F4: Lista las invitaciones pendientes de rol ADMIN a nivel org para la
- * organización del usuario autenticado. Solo accesible para org owners.
+ * Lists pending ADMIN org-level invitations for the authenticated user's
+ * organization. Only accessible for org owners.
  *
- * "Pendientes a nivel org" significa:
+ * "Pending org-level" means:
  *   - `status === 'PENDING'`
  *   - `orgRole === 'ADMIN'`
- *   - `conjuntoId === undefined` (las conjunto-scoped no aplican aquí; esas
- *     se listan desde `/admin/c/$conjuntoId/usuarios`)
+ *   - `complexId === undefined` (complex-scoped ones don't apply here; those
+ *     are listed from `/admin/c/$complexId/usuarios`)
  *
- * Usada por `/admin/equipo` para mostrar la sección "Invitaciones pendientes"
- * junto a la tabla de administradores ya activos.
+ * Used by `/admin/equipo` to show the "Pending invitations" section
+ * alongside the table of already active administrators.
  */
 export const listPendingOrgAdminInvitations = query({
   args: {
@@ -100,7 +100,7 @@ export const listPendingOrgAdminInvitations = query({
       .collect()
 
     return pending.filter(
-      (inv) => inv.orgRole === 'ADMIN' && inv.conjuntoId === undefined,
+      (inv) => inv.orgRole === 'ADMIN' && inv.complexId === undefined,
     )
   },
 })

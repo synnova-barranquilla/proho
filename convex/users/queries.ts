@@ -5,19 +5,19 @@ import { getCurrentUser, requireOrgRole } from '../lib/auth'
 
 /**
  * Returns the currently authenticated user's full record plus their
- * organization, and optionally the currently active conjunto. Used by the
+ * organization, and optionally the currently active complex. Used by the
  * `/` loader and the `_authenticated` loader to decide auth, role, and
  * org-active state in a single roundtrip.
  *
- * If `conjuntoId` is provided, the conjunto is fetched and attached (null
+ * If `complexId` is provided, the complex is fetched and attached (null
  * if not found or if the user doesn't have access). Access is NOT enforced
- * here — this is a read helper. Route guards use `requireConjuntoAccess`.
+ * here — this is a read helper. Route guards use `requireComplexAccess`.
  *
  * Returns null if unauthenticated or if the user has not been created yet.
  */
 export const getCurrentContext = query({
   args: {
-    conjuntoId: v.optional(v.id('conjuntos')),
+    complexId: v.optional(v.id('complexes')),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx)
@@ -26,29 +26,26 @@ export const getCurrentContext = query({
     const organization = await ctx.db.get(user.organizationId)
     if (!organization) return null
 
-    let conjunto = null
-    if (args.conjuntoId) {
-      conjunto = await ctx.db.get(args.conjuntoId)
+    let complex = null
+    if (args.complexId) {
+      complex = await ctx.db.get(args.complexId)
     }
 
-    return { user, organization, conjunto }
+    return { user, organization, complex }
   },
 })
 
 /**
- * F4: Lista los ADMINs de la org del usuario autenticado, incluyendo
- * (para cada ADMIN no-owner) los conjuntos donde tiene membership activa.
+ * Lists the ADMINs of the authenticated user's org, including (for each
+ * non-owner ADMIN) the complexes where they have an active membership.
  *
- * Solo accesible para org owners. Un ADMIN no-owner llamando esto recibe
- * un array vacío (defense-in-depth contra clientes que naveguen a /admin/equipo
- * saltando el guard del loader).
+ * Only accessible for org owners. A non-owner ADMIN calling this receives
+ * an empty array (defense-in-depth).
  */
 export const listAdminsByOrg = query({
   args: {
-    // SUPER_ADMIN puede pasar una org distinta para ver el equipo de
-    // otra organización (ej. cuando navega desde /super-admin/conjuntos
-    // y luego va a /admin/equipo). ADMINs ignoran este campo y usan su
-    // propia org.
+    // SUPER_ADMIN can pass a different org to see the team of another
+    // organization. ADMINs ignore this field and use their own org.
     organizationId: v.optional(v.id('organizations')),
   },
   handler: async (ctx, args) => {
@@ -68,11 +65,11 @@ export const listAdminsByOrg = query({
       )
       .collect()
 
-    // Para cada admin no-owner, resolver sus memberships ADMIN activas
+    // For each non-owner admin, resolve their active ADMIN memberships
     const adminsWithMemberships = await Promise.all(
       admins.map(async (admin) => {
         const memberships = await ctx.db
-          .query('conjuntoMemberships')
+          .query('complexMemberships')
           .withIndex('by_user_id', (q) => q.eq('userId', admin._id))
           .filter((q) => q.eq(q.field('active'), true))
           .collect()

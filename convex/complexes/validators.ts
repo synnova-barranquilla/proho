@@ -1,10 +1,10 @@
 import { v } from 'convex/values'
 
-export const conjuntoFields = {
+export const complexFields = {
   organizationId: v.id('organizations'),
   slug: v.string(),
-  nombre: v.string(),
-  direccion: v.string(),
-  ciudad: v.string(),
+  name: v.string(),
+  address: v.string(),
+  city: v.string(),
   active: v.boolean(),
 }

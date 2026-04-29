@@ -1,15 +1,23 @@
 import { defineSchema, defineTable } from 'convex/server'
 
-import { conjuntoConfigFields } from './conjuntoConfig/validators'
-import { conjuntoMembershipFields } from './conjuntoMemberships/validators'
-import { conjuntoFields } from './conjuntos/validators'
+import { accessRecordFields } from './accessRecords/validators'
+import {
+  categoryFields,
+  conversationFields,
+  quickActionFields,
+  ticketEventFields,
+  ticketFields,
+  ticketNoteFields,
+} from './communications/validators'
+import { complexConfigFields } from './complexConfig/validators'
+import { complexFields } from './complexes/validators'
+import { complexMembershipFields } from './complexMemberships/validators'
 import { invitationFields } from './invitations/validators'
 import { organizationFields } from './organizations/validators'
-import { registroAccesoFields } from './registrosAcceso/validators'
-import { residenteFields } from './residentes/validators'
-import { unidadFields } from './unidades/validators'
+import { residentFields } from './residents/validators'
+import { unitFields } from './units/validators'
 import { userFields } from './users/validators'
-import { vehiculoFields } from './vehiculos/validators'
+import { vehicleFields } from './vehicles/validators'
 
 export default defineSchema({
   organizations: defineTable(organizationFields)
@@ -25,44 +33,76 @@ export default defineSchema({
   invitations: defineTable(invitationFields)
     .index('by_email_and_status', ['email', 'status'])
     .index('by_organization_id_and_status', ['organizationId', 'status'])
-    .index('by_conjunto_id_and_status', ['conjuntoId', 'status']),
+    .index('by_complex_id_and_status', ['complexId', 'status']),
 
-  conjuntos: defineTable(conjuntoFields)
+  complexes: defineTable(complexFields)
     .index('by_organization_id', ['organizationId'])
     .index('by_organization_id_and_slug', ['organizationId', 'slug']),
 
-  conjuntoMemberships: defineTable(conjuntoMembershipFields)
+  complexMemberships: defineTable(complexMembershipFields)
     .index('by_user_id', ['userId'])
-    .index('by_conjunto_id', ['conjuntoId'])
-    .index('by_user_and_conjunto', ['userId', 'conjuntoId'])
-    .index('by_conjunto_and_role', ['conjuntoId', 'role']),
+    .index('by_complex_id', ['complexId'])
+    .index('by_user_and_complex', ['userId', 'complexId'])
+    .index('by_complex_and_role', ['complexId', 'role']),
 
-  conjuntoConfig: defineTable(conjuntoConfigFields).index('by_conjunto_id', [
-    'conjuntoId',
+  complexConfig: defineTable(complexConfigFields).index('by_complex_id', [
+    'complexId',
   ]),
 
-  unidades: defineTable(unidadFields)
-    .index('by_conjunto_id', ['conjuntoId'])
-    .index('by_conjunto_id_and_torre', ['conjuntoId', 'torre'])
-    .index('by_conjunto_and_torre_and_numero', [
-      'conjuntoId',
-      'torre',
-      'numero',
-    ]),
+  units: defineTable(unitFields)
+    .index('by_complex_id', ['complexId'])
+    .index('by_complex_and_tower', ['complexId', 'tower'])
+    .index('by_complex_and_tower_and_number', ['complexId', 'tower', 'number']),
 
-  residentes: defineTable(residenteFields)
-    .index('by_conjunto_id', ['conjuntoId'])
-    .index('by_unidad_id', ['unidadId'])
-    .index('by_conjunto_and_documento', ['conjuntoId', 'numeroDocumento']),
+  residents: defineTable(residentFields)
+    .index('by_complex_id', ['complexId'])
+    .index('by_unit_id', ['unitId'])
+    .index('by_complex_and_document', ['complexId', 'documentNumber']),
 
-  vehiculos: defineTable(vehiculoFields)
-    .index('by_conjunto_id', ['conjuntoId'])
-    .index('by_unidad_id', ['unidadId'])
-    .index('by_conjunto_and_placa', ['conjuntoId', 'placa']),
+  vehicles: defineTable(vehicleFields)
+    .index('by_complex_id', ['complexId'])
+    .index('by_unit_id', ['unitId'])
+    .index('by_complex_and_plate', ['complexId', 'plate']),
 
-  registrosAcceso: defineTable(registroAccesoFields)
-    .index('by_conjunto_id', ['conjuntoId'])
-    .index('by_conjunto_and_placa', ['conjuntoId', 'placaNormalizada'])
-    .index('by_conjunto_and_salida', ['conjuntoId', 'salidaEn'])
-    .index('by_conjunto_and_unidad', ['conjuntoId', 'unidadId']),
+  accessRecords: defineTable(accessRecordFields)
+    .index('by_complex_id', ['complexId'])
+    .index('by_complex_and_plate', ['complexId', 'normalizedPlate'])
+    .index('by_complex_and_exit', ['complexId', 'exitedAt'])
+    .index('by_complex_and_unit', ['complexId', 'unitId']),
+
+  conversations: defineTable(conversationFields)
+    .index('by_complex', ['complexId'])
+    .index('by_resident_and_status', ['residentId', 'status'])
+    .index('by_complex_and_status', ['complexId', 'status']),
+
+  tickets: defineTable(ticketFields)
+    .index('by_complex', ['complexId'])
+    .index('by_complex_and_status', ['complexId', 'status'])
+    .index('by_complex_and_publicId', ['complexId', 'publicId'])
+    .index('by_complex_and_priority', ['complexId', 'priority', 'status'])
+    .index('by_resident', ['residentId'])
+    .index('by_complex_and_updatedAt', ['complexId', 'updatedAt'])
+    .index('by_conversation', ['conversationId']),
+
+  ticketEvents: defineTable(ticketEventFields).index('by_ticket', [
+    'ticketId',
+    'createdAt',
+  ]),
+
+  ticketNotes: defineTable(ticketNoteFields).index('by_ticket', [
+    'ticketId',
+    'createdAt',
+  ]),
+
+  categories: defineTable(categoryFields).index('by_complex', [
+    'complexId',
+    'isEnabled',
+    'displayOrder',
+  ]),
+
+  quickActions: defineTable(quickActionFields).index('by_complex', [
+    'complexId',
+    'isEnabled',
+    'displayOrder',
+  ]),
 })

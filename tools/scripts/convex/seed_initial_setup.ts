@@ -21,16 +21,16 @@ import { execSync } from 'node:child_process'
 import { parseArgs } from 'node:util'
 
 const HELP_TEXT = `
-Uso: pnpm seed:initial-setup --email <email> --first-name <nombre> [--last-name <apellido>] --workos-id <id> [--prod]
+Usage: pnpm seed:initial-setup --email <email> --first-name <name> [--last-name <name>] --workos-id <id> [--prod]
 
-Ejemplo (dev, default):
+Example (dev, default):
   pnpm seed:initial-setup \\
     --email admin@synnova.com.co \\
     --first-name Admin \\
     --last-name Synnova \\
     --workos-id user_01K7M4BH5CBKNN92DANSQBBMWD
 
-Ejemplo (production):
+Example (production):
   pnpm seed:initial-setup \\
     --email admin@synnova.com.co \\
     --first-name Admin \\
@@ -39,12 +39,12 @@ Ejemplo (production):
     --prod
 
 Flags:
-  --email        Email del super admin (debe coincidir con WorkOS)
-  --first-name   Nombre
-  --last-name    Apellido (opcional)
-  --workos-id    WorkOS User ID (desde el dashboard de WorkOS)
-  --prod         Ejecutar contra el deployment de producción de Convex
-  -h, --help     Muestra esta ayuda
+  --email        Super admin email (must match WorkOS)
+  --first-name   First name
+  --last-name    Last name (optional)
+  --workos-id    WorkOS User ID (from the WorkOS dashboard)
+  --prod         Run against the Convex production deployment
+  -h, --help     Show this help
 `
 
 const { values } = parseArgs({
@@ -70,7 +70,7 @@ if (!values['first-name']) missing.push('--first-name')
 if (!values['workos-id']) missing.push('--workos-id')
 
 if (missing.length > 0) {
-  console.error(`\n✗ Faltan flags requeridos: ${missing.join(', ')}`)
+  console.error(`\n✗ Missing required flags: ${missing.join(', ')}`)
   console.log(HELP_TEXT)
   process.exit(1)
 }
@@ -79,9 +79,7 @@ const payload: Record<string, unknown> = {
   superAdminEmail: values.email as string,
   superAdminFirstName: values['first-name'] as string,
   superAdminWorkosId: values['workos-id'] as string,
-  // Seed del conjunto demo (Barranquilla) dentro de la org "Demo Conjunto"
-  // en la misma corrida. Idempotente por slug.
-  seedDemoConjunto: true,
+  seedDemoComplex: true,
 }
 if (values['last-name']) {
   payload.superAdminLastName = values['last-name'] as string
@@ -92,18 +90,18 @@ const args = JSON.stringify(payload)
 const target = values.prod ? 'production' : 'dev'
 const prodFlag = values.prod ? ' --prod' : ''
 
-console.log(`\n→ Ejecutando seed:bootstrap en Convex (${target})...`)
+console.log(`\n→ Running seed:bootstrap on Convex (${target})...`)
 console.log(`  email:      ${values.email}`)
 console.log(`  first-name: ${values['first-name']}`)
-console.log(`  last-name:  ${values['last-name'] ?? '(no especificado)'}`)
+console.log(`  last-name:  ${values['last-name'] ?? '(not specified)'}`)
 console.log(`  workos-id:  ${values['workos-id']}\n`)
 
 try {
   execSync(`npx convex run${prodFlag} seed:bootstrap '${args}'`, {
     stdio: 'inherit',
   })
-  console.log('\n✓ Bootstrap completado')
+  console.log('\n✓ Bootstrap completed')
 } catch {
-  console.error('\n✗ Error en bootstrap')
+  console.error('\n✗ Bootstrap error')
   process.exit(1)
 }

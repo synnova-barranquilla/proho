@@ -6,7 +6,7 @@ import {
   internalQuery,
   type MutationCtx,
 } from './_generated/server'
-import { conjuntoConfigDefaults } from './conjuntoConfig/validators'
+import { complexConfigDefaults } from './complexConfig/validators'
 import { INTERNAL_ORG_SLUG } from './lib/organizations'
 
 const DEMO_ORG_SLUG = 'demo-conjunto'
@@ -29,11 +29,11 @@ export const bootstrap = internalMutation({
     superAdminFirstName: v.string(),
     superAdminLastName: v.optional(v.string()),
     superAdminWorkosId: v.string(),
-    // Cuando `true`, además de crear las orgs/super admin, siembra un
-    // conjunto demo completo (40 unidades + 30 residentes + 25 vehículos
-    // + 62 parqueaderos) dentro de la organización "Demo Conjunto".
-    // Idempotente: si el conjunto demo ya existe, no hace nada.
-    seedDemoConjunto: v.optional(v.boolean()),
+    // When `true`, in addition to creating the orgs/super admin, seeds a
+    // complete demo complex (40 units + 30 residents + 25 vehicles
+    // + 62 parking slots) within the "Demo Conjunto" organization.
+    // Idempotent: if the demo complex already exists, does nothing.
+    seedDemoComplex: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // 1. Synnova internal org
@@ -51,7 +51,7 @@ export const bootstrap = internalMutation({
       synnovaOrg = await ctx.db.get(id)
     }
 
-    // 2. Demo conjunto org (sandbox for manual testing)
+    // 2. Demo complex org (sandbox for manual testing)
     let demoOrg = await ctx.db
       .query('organizations')
       .withIndex('by_slug', (q) => q.eq('slug', DEMO_ORG_SLUG))
@@ -85,15 +85,14 @@ export const bootstrap = internalMutation({
         organizationId: synnovaOrg!._id,
         orgRole: 'SUPER_ADMIN',
         active: true,
-        // El super admin interno de Synnova se considera owner de la org interna.
         isOrgOwner: true,
       }))
 
-    let demoConjuntoResult: Awaited<
-      ReturnType<typeof seedConjuntoDemoInternal>
+    let demoComplexResult: Awaited<
+      ReturnType<typeof seedComplexDemoInternal>
     > | null = null
-    if (args.seedDemoConjunto) {
-      demoConjuntoResult = await seedConjuntoDemoInternal(ctx, {
+    if (args.seedDemoComplex) {
+      demoComplexResult = await seedComplexDemoInternal(ctx, {
         organizationId: demoOrg!._id,
       })
     }
@@ -103,16 +102,16 @@ export const bootstrap = internalMutation({
       userId,
       synnovaOrgId: synnovaOrg!._id,
       demoOrgId: demoOrg!._id,
-      demoConjunto: demoConjuntoResult,
+      demoComplex: demoComplexResult,
     }
   },
 })
 
 /**
- * Lista todas las organizaciones registradas en el sistema. Uso exclusivo
- * del CLI interactivo `tools/scripts/convex/seed_conjunto.ts`, que la
- * invoca para mostrar al operador las orgs existentes y dejarle elegir
- * en cuál sembrar un conjunto demo.
+ * Lists all organizations registered in the system. Exclusive use by the
+ * interactive CLI `tools/scripts/convex/seed_conjunto.ts`, which invokes
+ * it to show the operator the existing orgs and let them choose which one
+ * to seed a demo complex in.
  */
 export const listOrganizations = internalQuery({
   args: {},
@@ -128,55 +127,55 @@ export const listOrganizations = internalQuery({
 })
 
 /**
- * F4: seed de un conjunto completo con datos de prueba realistas.
+ * Seed a complete complex with realistic test data.
  *
- * Crea dentro de la organización dada:
- * - 1 conjunto con su conjuntoConfig default
- * - 2 torres × 20 apartamentos (40 unidades, 3 en mora)
- * - 30 residentes (15 propietarios, 10 arrendatarios, 5 familiares)
- * - 25 vehículos (20 carros + 5 motos) repartidos entre unidades
- * - 62 parqueaderos: 40 residentes, 10 visitantes, 10 motos, 2 discapacitados
+ * Creates within the given organization:
+ * - 1 complex with its default complexConfig
+ * - 2 towers x 20 apartments (40 units, 3 in arrears)
+ * - 30 residents (15 owners, 10 tenants, 5 inquilinos)
+ * - 25 vehicles (20 cars + 5 motos) distributed among units
+ * - 62 parking slots: 40 residents, 10 visitors, 10 motos, 2 disabled
  *
- * Uso:
- *   npx convex run seed:seedConjuntoDemo '{"organizationId":"<id>"}'
+ * Usage:
+ *   npx convex run seed:seedComplexDemo '{"organizationId":"<id>"}'
  *
- * Idempotente por slug: si el conjunto "demo-bogota" ya existe en la org,
- * la función no hace nada.
+ * Idempotent by slug: if the complex "demo-bogota" already exists in the org,
+ * the function does nothing.
  */
-export const seedConjuntoDemo = internalMutation({
+export const seedComplexDemo = internalMutation({
   args: {
     organizationId: v.id('organizations'),
-    // Overrides opcionales para poder sembrar múltiples conjuntos demo
-    // en la misma org sin colisionar por slug. Si se omiten, usa los
-    // defaults del conjunto demo costeño.
+    // Optional overrides to be able to seed multiple demo complexes
+    // in the same org without slug collision. If omitted, uses the
+    // defaults of the coastal demo complex.
     slug: v.optional(v.string()),
-    nombre: v.optional(v.string()),
-    direccion: v.optional(v.string()),
-    ciudad: v.optional(v.string()),
+    name: v.optional(v.string()),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
   },
-  handler: async (ctx, args) => seedConjuntoDemoInternal(ctx, args),
+  handler: async (ctx, args) => seedComplexDemoInternal(ctx, args),
 })
 
 /**
- * Implementación compartida del seed de conjunto demo. Extraída como
- * función pura para poder llamarla tanto desde el `seedConjuntoDemo`
- * mutation como desde `bootstrap` (que la encadena cuando se pasa
- * `seedDemoConjunto: true`).
+ * Shared implementation of the demo complex seed. Extracted as a pure
+ * function so it can be called both from the `seedComplexDemo` mutation
+ * and from `bootstrap` (which chains it when `seedDemoComplex: true`
+ * is passed).
  */
-async function seedConjuntoDemoInternal(
+async function seedComplexDemoInternal(
   ctx: MutationCtx,
   args: {
     organizationId: Id<'organizations'>
     slug?: string
-    nombre?: string
-    direccion?: string
-    ciudad?: string
+    name?: string
+    address?: string
+    city?: string
   },
 ) {
   const SLUG = args.slug ?? 'demo-barranquilla'
 
   const existing = await ctx.db
-    .query('conjuntos')
+    .query('complexes')
     .withIndex('by_organization_id_and_slug', (q) =>
       q.eq('organizationId', args.organizationId).eq('slug', SLUG),
     )
@@ -184,53 +183,53 @@ async function seedConjuntoDemoInternal(
   if (existing) {
     return {
       status: 'already_exists' as const,
-      conjuntoId: existing._id,
+      complexId: existing._id,
       slug: SLUG,
     }
   }
 
-  // 1. Conjunto + config
-  const conjuntoId = await ctx.db.insert('conjuntos', {
+  // 1. Complex + config
+  const complexId = await ctx.db.insert('complexes', {
     organizationId: args.organizationId,
     slug: SLUG,
-    nombre: args.nombre ?? 'Conjunto Demo Barranquilla',
-    direccion: args.direccion ?? 'Carrera 53 #80-15',
-    ciudad: args.ciudad ?? 'Barranquilla',
+    name: args.name ?? 'Conjunto Demo Barranquilla',
+    address: args.address ?? 'Carrera 53 #80-15',
+    city: args.city ?? 'Barranquilla',
     active: true,
   })
-  await ctx.db.insert('conjuntoConfig', {
-    conjuntoId,
-    ...conjuntoConfigDefaults,
+  await ctx.db.insert('complexConfig', {
+    complexId,
+    ...complexConfigDefaults,
   })
 
-  // 2. Unidades (2 torres × 20 aptos)
-  const moraSet = new Set(['A-101', 'A-305', 'B-204'])
-  const unidadesCreadas: Array<{
-    _id: Id<'unidades'>
-    torre: string
-    numero: string
+  // 2. Units (2 towers x 20 apts)
+  const arrearsSet = new Set(['A-101', 'A-305', 'B-204'])
+  const unitsCreated: Array<{
+    _id: Id<'units'>
+    tower: string
+    number: string
   }> = []
-  for (const torre of ['A', 'B']) {
-    for (let piso = 1; piso <= 4; piso++) {
-      for (let apto = 1; apto <= 5; apto++) {
-        const numero = `${piso}0${apto}`
-        const key = `${torre}-${numero}`
-        const enMora = moraSet.has(key)
-        const id = await ctx.db.insert('unidades', {
-          conjuntoId,
-          torre,
-          numero,
-          tipo: 'APARTAMENTO',
-          enMora,
-          moraNota: enMora ? 'Retraso cuota administración' : undefined,
+  for (const tower of ['A', 'B']) {
+    for (let floor = 1; floor <= 4; floor++) {
+      for (let apt = 1; apt <= 5; apt++) {
+        const number = `${floor}0${apt}`
+        const key = `${tower}-${number}`
+        const inArrears = arrearsSet.has(key)
+        const id = await ctx.db.insert('units', {
+          complexId,
+          tower,
+          number,
+          type: 'APARTMENT',
+          inArrears,
+          arrearsNote: inArrears ? 'Retraso cuota administración' : undefined,
         })
-        unidadesCreadas.push({ _id: id, torre, numero })
+        unitsCreated.push({ _id: id, tower, number })
       }
     }
   }
 
-  // 3. Residentes (30 apellidos costeños distribuidos)
-  const nombresPool = [
+  // 3. Residents (30 coastal surnames distributed)
+  const namesPool = [
     ['Pedro', 'Barrios Char', 'CC', '72145678'],
     ['Shirley', 'Mejía Polo', 'CC', '32456789'],
     ['Álvaro', 'Noguera Insignares', 'CC', '8456789'],
@@ -264,51 +263,51 @@ async function seedConjuntoDemoInternal(
   ] as const
 
   for (let i = 0; i < 30; i++) {
-    const [nombres, apellidos, tipoDoc, numDoc] = nombresPool[i]
-    const unidad = unidadesCreadas[i % unidadesCreadas.length]
-    const tipo = i < 15 ? 'PROPIETARIO' : i < 25 ? 'ARRENDATARIO' : 'FAMILIAR'
-    const emailHandle = `${nombres}.${apellidos.split(' ')[0]}`
+    const [firstName, lastName, docType, docNum] = namesPool[i]
+    const unit = unitsCreated[i % unitsCreated.length]
+    const type = i < 15 ? 'OWNER' : i < 25 ? 'LESSEE' : 'TENANT'
+    const emailHandle = `${firstName}.${lastName.split(' ')[0]}`
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/\s+/g, '')
-    await ctx.db.insert('residentes', {
-      conjuntoId,
-      unidadId: unidad._id,
-      nombres,
-      apellidos,
-      tipoDocumento: tipoDoc,
-      numeroDocumento: numDoc,
-      telefono: `30${String(10000000 + i).padStart(8, '0')}`,
+    await ctx.db.insert('residents', {
+      complexId,
+      unitId: unit._id,
+      firstName,
+      lastName,
+      documentType: docType,
+      documentNumber: docNum,
+      phone: `30${String(10000000 + i).padStart(8, '0')}`,
       email: `${emailHandle}@demo.com`,
-      tipo,
+      type,
       active: true,
     })
   }
 
-  // 4. Vehículos (25 = 20 carros + 5 motos) con placas locales
+  // 4. Vehicles (25 = 20 cars + 5 motos) with local plates
   for (let i = 0; i < 25; i++) {
-    const unidad = unidadesCreadas[i % unidadesCreadas.length]
-    const esMoto = i >= 20
+    const unit = unitsCreated[i % unitsCreated.length]
+    const isMoto = i >= 20
     const seq = String(100 + i).padStart(3, '0')
-    const placa = esMoto ? `MTB${seq}` : `SYH${seq}`
-    await ctx.db.insert('vehiculos', {
-      conjuntoId,
-      unidadId: unidad._id,
-      placa,
-      tipo: esMoto ? 'MOTO' : 'CARRO',
+    const plate = isMoto ? `MTB${seq}` : `SYH${seq}`
+    await ctx.db.insert('vehicles', {
+      complexId,
+      unitId: unit._id,
+      plate,
+      type: isMoto ? 'MOTORCYCLE' : 'CAR',
       active: true,
     })
   }
 
   return {
     status: 'created' as const,
-    conjuntoId,
+    complexId,
     slug: SLUG,
     summary: {
-      unidades: unidadesCreadas.length,
-      residentes: 30,
-      vehiculos: 25,
+      units: unitsCreated.length,
+      residents: 30,
+      vehicles: 25,
     },
   }
 }

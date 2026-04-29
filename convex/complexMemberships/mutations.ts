@@ -1,33 +1,33 @@
 import { v } from 'convex/values'
 
 import { mutation } from '../_generated/server'
-import { requireConjuntoAccess, requireOrgRole } from '../lib/auth'
+import { requireComplexAccess, requireOrgRole } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { conjuntoRoles } from './validators'
+import { complexRoles } from './validators'
 
 /**
- * Crea una nueva membership para un user existente en un conjunto específico.
+ * Creates a new membership for an existing user in a specific complex.
  *
- * Reglas:
- * - El caller debe tener acceso al conjunto con rol ADMIN (owner o ADMIN membership).
- * - El target user debe pertenecer a la misma organización que el conjunto.
- * - No puede existir otra membership (activa o inactiva) para el mismo par
- *   (userId, conjuntoId). Si ya existe y está inactiva, usar `setActive`.
+ * Rules:
+ * - The caller must have access to the complex with ADMIN role (owner or ADMIN membership).
+ * - The target user must belong to the same organization as the complex.
+ * - There cannot be another membership (active or inactive) for the same pair
+ *   (userId, complexId). If one exists and is inactive, use `setActive`.
  *
- * Usado por:
- * - `/admin/equipo` al agregar acceso de un ADMIN a un conjunto nuevo.
- * - Flujos internos de aceptación de invitations (handleLogin en Paso 3).
+ * Used by:
+ * - `/admin/equipo` when adding an ADMIN's access to a new complex.
+ * - Internal invitation acceptance flows (handleLogin in Step 3).
  */
 export const create = mutation({
   args: {
     userId: v.id('users'),
-    conjuntoId: v.id('conjuntos'),
-    role: conjuntoRoles,
+    complexId: v.id('complexes'),
+    role: complexRoles,
   },
   handler: async (ctx, args) => {
-    const { user: caller, conjunto } = await requireConjuntoAccess(
+    const { user: caller, complex } = await requireComplexAccess(
       ctx,
-      args.conjuntoId,
+      args.complexId,
       { allowedRoles: ['ADMIN'] },
     )
 
@@ -35,7 +35,7 @@ export const create = mutation({
     if (!target) {
       throwConvexError(ERROR_CODES.FORBIDDEN, 'Usuario objetivo no encontrado')
     }
-    if (target.organizationId !== conjunto.organizationId) {
+    if (target.organizationId !== complex.organizationId) {
       throwConvexError(
         ERROR_CODES.FORBIDDEN,
         'El usuario no pertenece a la misma organización del conjunto',
@@ -43,9 +43,9 @@ export const create = mutation({
     }
 
     const existing = await ctx.db
-      .query('conjuntoMemberships')
-      .withIndex('by_user_and_conjunto', (q) =>
-        q.eq('userId', args.userId).eq('conjuntoId', args.conjuntoId),
+      .query('complexMemberships')
+      .withIndex('by_user_and_complex', (q) =>
+        q.eq('userId', args.userId).eq('complexId', args.complexId),
       )
       .unique()
 
@@ -66,14 +66,14 @@ export const create = mutation({
       )
     }
 
-    // Solo un owner puede marcar createdByOwner=true. Los ADMIN no-owner que
-    // creen memberships desde la pantalla de equipo generan createdByOwner=false.
+    // Only an owner can mark createdByOwner=true. Non-owner ADMINs that
+    // create memberships from the team screen generate createdByOwner=false.
     const createdByOwner =
       caller.orgRole === 'ADMIN' && caller.isOrgOwner === true
 
-    const membershipId = await ctx.db.insert('conjuntoMemberships', {
+    const membershipId = await ctx.db.insert('complexMemberships', {
       userId: args.userId,
-      conjuntoId: args.conjuntoId,
+      complexId: args.complexId,
       role: args.role,
       active: true,
       assignedBy: caller._id,
@@ -86,12 +86,12 @@ export const create = mutation({
 })
 
 /**
- * Cambia el rol de una membership existente. Solo ADMIN del conjunto.
+ * Changes the role of an existing membership. Only ADMIN of the complex.
  */
 export const updateRole = mutation({
   args: {
-    membershipId: v.id('conjuntoMemberships'),
-    role: conjuntoRoles,
+    membershipId: v.id('complexMemberships'),
+    role: complexRoles,
   },
   handler: async (ctx, args) => {
     const membership = await ctx.db.get(args.membershipId)
@@ -102,7 +102,7 @@ export const updateRole = mutation({
       )
     }
 
-    await requireConjuntoAccess(ctx, membership.conjuntoId, {
+    await requireComplexAccess(ctx, membership.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -112,12 +112,12 @@ export const updateRole = mutation({
 })
 
 /**
- * Activa/desactiva una membership. Desactivar equivale a revocar acceso
- * (el user pierde acceso al conjunto pero la fila queda para auditoría).
+ * Activates/deactivates a membership. Deactivating is equivalent to revoking
+ * access (the user loses access to the complex but the row stays for audit).
  */
 export const setActive = mutation({
   args: {
-    membershipId: v.id('conjuntoMemberships'),
+    membershipId: v.id('complexMemberships'),
     active: v.boolean(),
   },
   handler: async (ctx, args) => {
@@ -129,7 +129,7 @@ export const setActive = mutation({
       )
     }
 
-    await requireConjuntoAccess(ctx, membership.conjuntoId, {
+    await requireComplexAccess(ctx, membership.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -146,13 +146,13 @@ export const setActive = mutation({
 })
 
 /**
- * Elimina físicamente una membership. Preferir `setActive(false)` para
- * preservar auditoría. Esta función existe para limpiar errores de data entry.
- * Solo ADMIN owner de la org (no ADMIN no-owner) puede eliminar.
+ * Physically deletes a membership. Prefer `setActive(false)` to preserve
+ * audit trail. This function exists to clean up data entry errors.
+ * Only ADMIN owner of the org (not non-owner ADMIN) can delete.
  */
 export const remove = mutation({
   args: {
-    membershipId: v.id('conjuntoMemberships'),
+    membershipId: v.id('complexMemberships'),
   },
   handler: async (ctx, args) => {
     const caller = await requireOrgRole(ctx, ['ADMIN', 'SUPER_ADMIN'])
@@ -164,7 +164,7 @@ export const remove = mutation({
       )
     }
 
-    // Verificar que el conjunto pertenece a la org del caller (excepto SUPER_ADMIN)
+    // Verify the complex belongs to the caller's org (except SUPER_ADMIN)
     if (caller.orgRole === 'ADMIN') {
       if (caller.isOrgOwner !== true) {
         throwConvexError(
@@ -172,8 +172,8 @@ export const remove = mutation({
           'Solo un owner puede eliminar memberships',
         )
       }
-      const conjunto = await ctx.db.get(membership.conjuntoId)
-      if (!conjunto || conjunto.organizationId !== caller.organizationId) {
+      const complex = await ctx.db.get(membership.complexId)
+      if (!complex || complex.organizationId !== caller.organizationId) {
         throwConvexError(
           ERROR_CODES.FORBIDDEN,
           'Conjunto fuera de tu organización',

@@ -1,11 +1,11 @@
 /**
- * Motor de reglas de acceso vehicular.
+ * Vehicle access rules engine.
  *
- * Función pura sin acceso a DB — recibe datos, retorna violaciones.
- * Se usa idéntica en client (para UX instantáneo) y server (safety net).
+ * Pure function with no DB access — receives data, returns violations.
+ * Used identically on client (for instant UX) and server (safety net).
  */
 
-export type VehicleTipo = 'CARRO' | 'MOTO' | 'OTRO'
+export type VehicleTipo = 'CAR' | 'MOTORCYCLE' | 'OTHER'
 
 export interface VehiculoAdentro {
   tipo: VehicleTipo
@@ -14,10 +14,10 @@ export interface VehiculoAdentro {
 }
 
 export interface RuleConfig {
-  reglaIngresoEnMora: boolean
-  reglaVehiculoDuplicado: boolean
-  reglaPermanenciaMaxDias: number
-  reglaIngresoEnSobrecupo: boolean
+  ruleEntryInArrears: boolean
+  ruleDuplicateVehicle: boolean
+  ruleMaxStayDays: number
+  ruleEntryOverCapacity: boolean
 }
 
 export interface OcupacionSnapshot {
@@ -26,21 +26,21 @@ export interface OcupacionSnapshot {
 }
 
 export interface RuleInput {
-  /** Tipo de registro de acceso */
-  tipo: 'RESIDENTE' | 'VISITANTE' | 'VISITA_ADMIN'
-  /** Tipo del vehículo que intenta ingresar */
+  /** Access record type */
+  tipo: 'RESIDENT' | 'VISITOR' | 'ADMIN_VISIT'
+  /** Type of the vehicle attempting to enter */
   vehiculoTipo?: VehicleTipo
-  /** Si la unidad del vehículo está en mora */
+  /** Whether the vehicle's unit is in arrears */
   unidadEnMora?: boolean
-  /** Vehículos de la misma unidad actualmente dentro del conjunto */
+  /** Vehicles from the same unit currently inside the complex */
   vehiculosUnidadAdentro: VehiculoAdentro[]
-  /** Ocupación actual del conjunto completo (para sobrecupo) */
+  /** Current occupancy of the entire complex (for overcapacity) */
   ocupacion: OcupacionSnapshot
-  /** Capacidad configurada del conjunto (0 = ilimitado) */
+  /** Configured capacity of the complex (0 = unlimited) */
   capacidad: OcupacionSnapshot
-  /** Configuración de reglas del conjunto */
+  /** Rules configuration of the complex */
   config: RuleConfig
-  /** Timestamp actual (para cálculo de permanencia) */
+  /** Current timestamp (for stay duration calculation) */
   ahora: number
 }
 
@@ -62,13 +62,13 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000
 export function evaluateRules(input: RuleInput): RuleResult {
   const violations: RuleViolation[] = []
 
-  // R4: Sobrecupo — aplica a RESIDENTE y VISITANTE. VISITA_ADMIN queda exento.
+  // R4: Overcapacity — applies to RESIDENTE and VISITANTE. VISITA_ADMIN is exempt.
   if (
-    input.config.reglaIngresoEnSobrecupo &&
+    input.config.ruleEntryOverCapacity &&
     input.vehiculoTipo &&
-    (input.tipo === 'RESIDENTE' || input.tipo === 'VISITANTE')
+    (input.tipo === 'RESIDENT' || input.tipo === 'VISITOR')
   ) {
-    const esCarro = input.vehiculoTipo !== 'MOTO'
+    const esCarro = input.vehiculoTipo !== 'MOTORCYCLE'
     const ocupacion = esCarro ? input.ocupacion.carros : input.ocupacion.motos
     const capacidad = esCarro ? input.capacidad.carros : input.capacidad.motos
     if (capacidad > 0 && ocupacion >= capacidad) {
@@ -76,52 +76,52 @@ export function evaluateRules(input: RuleInput): RuleResult {
     }
   }
 
-  // Las reglas de residente solo aplican a residentes
-  if (input.tipo !== 'RESIDENTE') {
+  // Resident-only rules only apply to residents
+  if (input.tipo !== 'RESIDENT') {
     return {
       violations,
       requiresJustificacion: violations.length > 0,
     }
   }
 
-  // R1: Ingreso en mora
-  if (input.config.reglaIngresoEnMora && input.unidadEnMora) {
+  // R1: Entry in arrears
+  if (input.config.ruleEntryInArrears && input.unidadEnMora) {
     violations.push('MORA')
   }
 
-  // R2: Vehículo duplicado por unidad
-  if (input.config.reglaVehiculoDuplicado && input.vehiculoTipo) {
+  // R2: Duplicate vehicle per unit
+  if (input.config.ruleDuplicateVehicle && input.vehiculoTipo) {
     const carrosAdentro = input.vehiculosUnidadAdentro.filter(
-      (v) => v.tipo === 'CARRO' || v.tipo === 'OTRO',
+      (v) => v.tipo === 'CAR' || v.tipo === 'OTHER',
     )
     const motosAdentro = input.vehiculosUnidadAdentro.filter(
-      (v) => v.tipo === 'MOTO',
+      (v) => v.tipo === 'MOTORCYCLE',
     )
 
-    if (input.vehiculoTipo === 'CARRO' || input.vehiculoTipo === 'OTRO') {
-      // Si ya hay un carro/otro dentro → duplicado
+    if (input.vehiculoTipo === 'CAR' || input.vehiculoTipo === 'OTHER') {
+      // If there's already a car/other inside -> duplicate
       if (carrosAdentro.length > 0) {
         violations.push('VEHICULO_DUPLICADO')
       }
-      // Si hay una moto dentro y entra un carro → también es duplicado (ya hay vehículo)
+      // If there's a moto inside and a car enters -> also duplicate (vehicle already present)
       else if (motosAdentro.length > 0) {
         violations.push('VEHICULO_DUPLICADO')
       }
     } else {
-      // vehiculoTipo === 'MOTO'
+      // vehiculoTipo === 'MOTORCYCLE'
       if (motosAdentro.length > 0) {
-        // Ya hay una moto → duplicado
+        // Already a moto -> duplicate
         violations.push('VEHICULO_DUPLICADO')
       } else if (carrosAdentro.length > 0) {
-        // Hay un carro y entra una moto → permitido con confirmación
+        // There's a car and a moto enters -> permitted with confirmation
         violations.push('MOTO_ADICIONAL')
       }
     }
   }
 
-  // R3: Permanencia máxima excedida
-  if (input.config.reglaPermanenciaMaxDias > 0) {
-    const limiteMs = input.config.reglaPermanenciaMaxDias * MS_PER_DAY
+  // R3: Maximum stay exceeded
+  if (input.config.ruleMaxStayDays > 0) {
+    const limiteMs = input.config.ruleMaxStayDays * MS_PER_DAY
     const excedido = input.vehiculosUnidadAdentro.some(
       (v) => v.entradaEn != null && input.ahora - v.entradaEn > limiteMs,
     )

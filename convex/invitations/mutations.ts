@@ -3,8 +3,8 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import type { Doc } from '../_generated/dataModel'
 import { mutation } from '../_generated/server'
-import { conjuntoRoles } from '../conjuntoMemberships/validators'
-import { canInvite, requireConjuntoAccess, requireOrgRole } from '../lib/auth'
+import { complexRoles } from '../complexMemberships/validators'
+import { canInvite, requireComplexAccess, requireOrgRole } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { isInternalOrg } from '../lib/organizations'
 import { orgRoles } from '../users/validators'
@@ -16,21 +16,21 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
  *
  * Supports two modes:
  *
- * **Modo A — invitación a nivel organización (como en F3):**
- *   - SUPER_ADMIN invita ADMINs a una org (usado por `/super-admin/organizaciones`).
- *   - No se pasa conjuntoId ni conjuntoRole.
+ * **Mode A -- org-level invitation (as in F3):**
+ *   - SUPER_ADMIN invites ADMINs to an org (used by `/super-admin/organizaciones`).
+ *   - No complexId or complexRole is passed.
  *
- * **Modo B — invitación con contexto de conjunto (F4):**
- *   - Un ADMIN del conjunto invita a alguien con un rol específico de conjunto.
- *   - Si `conjuntoId` está presente, `conjuntoRole` es obligatorio.
- *   - El caller debe tener acceso al conjunto con rol ADMIN.
- *   - El orgRole de la invitation se setea automáticamente a 'ADMIN' (requerido
- *     por el schema actual). La restricción real vive en la conjuntoMembership.
+ * **Mode B -- complex-scoped invitation (F4):**
+ *   - An ADMIN of the complex invites someone with a specific complex role.
+ *   - If `complexId` is present, `complexRole` is required.
+ *   - The caller must have access to the complex with ADMIN role.
+ *   - The orgRole of the invitation is set automatically to 'ADMIN' (required
+ *     by the current schema). The real restriction lives in the complexMembership.
  *
- * Reglas comunes:
- * - Bloquea invitaciones a la organización interna de Synnova.
- * - Revoca invitaciones PENDING previas para el mismo email en la misma org.
- * - Falla si hay un user activo con el mismo email en la misma org.
+ * Common rules:
+ * - Blocks invitations to Synnova's internal organization.
+ * - Revokes previous PENDING invitations for the same email in the same org.
+ * - Fails if there's an active user with the same email in the same org.
  */
 export const create = mutation({
   args: {
@@ -39,34 +39,34 @@ export const create = mutation({
     lastName: v.optional(v.string()),
     orgRole: v.optional(orgRoles),
     organizationId: v.optional(v.id('organizations')),
-    // F4: modo conjunto-scoped
-    conjuntoId: v.optional(v.id('conjuntos')),
-    conjuntoRole: v.optional(conjuntoRoles),
-    // F4: extras solo para org-scoped (rol ADMIN). Permiten que un owner
-    // invite otro admin como owner y/o pre-asigne conjuntos.
+    // Mode: complex-scoped
+    complexId: v.optional(v.id('complexes')),
+    complexRole: v.optional(complexRoles),
+    // Extras only for org-scoped (ADMIN role). Allow an owner to invite
+    // another admin as owner and/or pre-assign complexes.
     isOrgOwnerOnAccept: v.optional(v.boolean()),
-    conjuntoIdsOnAccept: v.optional(v.array(v.id('conjuntos'))),
+    complexIdsOnAccept: v.optional(v.array(v.id('complexes'))),
   },
   handler: async (ctx, args) => {
-    // Discriminar: ¿modo org-scoped (SUPER_ADMIN/owner) o conjunto-scoped (ADMIN del conjunto)?
-    const isConjuntoScoped = args.conjuntoId !== undefined
+    // Discriminate: org-scoped (SUPER_ADMIN/owner) or complex-scoped (ADMIN of the complex)?
+    const isComplexScoped = args.complexId !== undefined
 
-    if (isConjuntoScoped && !args.conjuntoRole) {
+    if (isComplexScoped && !args.complexRole) {
       throwConvexError(
         ERROR_CODES.VALIDATION_ERROR,
-        'conjuntoRole es obligatorio cuando se invita a un conjunto',
+        'complexRole es obligatorio cuando se invita a un conjunto',
       )
     }
 
-    // isOrgOwnerOnAccept y conjuntoIdsOnAccept solo aplican a invitaciones
-    // org-scoped (rol ADMIN). Para conjunto-scoped no tienen sentido.
+    // isOrgOwnerOnAccept and complexIdsOnAccept only apply to org-scoped
+    // invitations (ADMIN role). For complex-scoped they don't make sense.
     if (
-      isConjuntoScoped &&
-      (args.isOrgOwnerOnAccept || args.conjuntoIdsOnAccept)
+      isComplexScoped &&
+      (args.isOrgOwnerOnAccept || args.complexIdsOnAccept)
     ) {
       throwConvexError(
         ERROR_CODES.VALIDATION_ERROR,
-        'isOrgOwnerOnAccept y conjuntoIdsOnAccept solo se permiten en invitaciones org-scoped',
+        'isOrgOwnerOnAccept y complexIdsOnAccept solo se permiten en invitaciones org-scoped',
       )
     }
 
@@ -74,21 +74,18 @@ export const create = mutation({
     let organizationId: Doc<'users'>['organizationId']
     let orgRoleForInvitation: Doc<'users'>['orgRole']
 
-    if (isConjuntoScoped) {
-      // Modo B — conjunto-scoped. El caller debe ser ADMIN del conjunto.
-      const { user, conjunto } = await requireConjuntoAccess(
+    if (isComplexScoped) {
+      // Mode B -- complex-scoped. The caller must be ADMIN of the complex.
+      const { user, complex } = await requireComplexAccess(
         ctx,
-        args.conjuntoId!,
+        args.complexId!,
         { allowedRoles: ['ADMIN'] },
       )
       callerId = user._id
-      organizationId = conjunto.organizationId
+      organizationId = complex.organizationId
       orgRoleForInvitation = 'MEMBER'
     } else {
-      // Modo A — org-scoped. Aceptado para:
-      //  - SUPER_ADMIN: puede invitar ADMINs a cualquier org (onboarding, recuperación)
-      //  - ADMIN + isOrgOwner=true: puede invitar ADMINs a SU propia org
-      //    (crecer el equipo de administradores sin intervención del super-admin)
+      // Mode A -- org-scoped.
       if (!args.organizationId || !args.orgRole) {
         throwConvexError(
           ERROR_CODES.VALIDATION_ERROR,
@@ -139,27 +136,24 @@ export const create = mutation({
       )
     }
 
-    // Validate that any conjunto in `conjuntoIdsOnAccept` belongs to the
-    // target organization. This prevents an owner of org A from sneaking
-    // a valid conjunto id from org B into the payload (data leak).
-    // Skip the check entirely when isOrgOwnerOnAccept is true — owners
-    // see all conjuntos automatically so explicit memberships are noise.
-    let normalizedConjuntoIds: typeof args.conjuntoIdsOnAccept = undefined
+    // Validate that any complex in `complexIdsOnAccept` belongs to the
+    // target organization.
+    let normalizedComplexIds: typeof args.complexIdsOnAccept = undefined
     if (
       !args.isOrgOwnerOnAccept &&
-      args.conjuntoIdsOnAccept &&
-      args.conjuntoIdsOnAccept.length > 0
+      args.complexIdsOnAccept &&
+      args.complexIdsOnAccept.length > 0
     ) {
-      const validIds: Array<(typeof args.conjuntoIdsOnAccept)[number]> = []
-      for (const cid of args.conjuntoIdsOnAccept) {
-        const conjunto = await ctx.db.get(cid)
-        if (!conjunto) {
+      const validIds: Array<(typeof args.complexIdsOnAccept)[number]> = []
+      for (const cid of args.complexIdsOnAccept) {
+        const complex = await ctx.db.get(cid)
+        if (!complex) {
           throwConvexError(
-            ERROR_CODES.CONJUNTO_NOT_FOUND,
-            `Conjunto ${cid} no encontrado`,
+            ERROR_CODES.COMPLEX_NOT_FOUND,
+            `Complex ${cid} not found`,
           )
         }
-        if (conjunto.organizationId !== organizationId) {
+        if (complex.organizationId !== organizationId) {
           throwConvexError(
             ERROR_CODES.FORBIDDEN,
             'No puedes pre-asignar conjuntos de otra organización',
@@ -167,7 +161,7 @@ export const create = mutation({
         }
         validIds.push(cid)
       }
-      normalizedConjuntoIds = validIds
+      normalizedComplexIds = validIds
     }
 
     // Revoke any previous PENDING invitations for this email in this org.
@@ -194,10 +188,10 @@ export const create = mutation({
       invitedBy: callerId,
       invitedAt: now,
       expiresAt: now + SEVEN_DAYS_MS,
-      conjuntoId: args.conjuntoId,
-      conjuntoRole: args.conjuntoRole,
+      complexId: args.complexId,
+      complexRole: args.complexRole,
       isOrgOwnerOnAccept: args.isOrgOwnerOnAccept,
-      conjuntoIdsOnAccept: normalizedConjuntoIds,
+      complexIdsOnAccept: normalizedComplexIds,
     })
 
     // Send invitation email
@@ -213,13 +207,6 @@ export const create = mutation({
 
 /**
  * Revokes a PENDING invitation.
- *
- * Authorization mirrors `create`:
- * - SUPER_ADMIN can revoke any invitation.
- * - ADMIN with conjunto access can revoke conjunto-scoped invitations
- *   for their own conjuntos.
- * - ADMIN with `isOrgOwner === true` can revoke org-scoped ADMIN
- *   invitations that belong to their own organization.
  */
 export const revoke = mutation({
   args: {
@@ -234,13 +221,13 @@ export const revoke = mutation({
       )
     }
 
-    if (invitation.conjuntoId) {
-      // Conjunto-scoped: cualquier ADMIN del conjunto puede revocar
-      await requireConjuntoAccess(ctx, invitation.conjuntoId, {
+    if (invitation.complexId) {
+      // Complex-scoped: any ADMIN of the complex can revoke
+      await requireComplexAccess(ctx, invitation.complexId, {
         allowedRoles: ['ADMIN'],
       })
     } else {
-      // Org-scoped: SUPER_ADMIN o ADMIN owner de la misma org
+      // Org-scoped: SUPER_ADMIN or ADMIN owner of the same org
       const caller = await requireOrgRole(ctx, ['ADMIN', 'SUPER_ADMIN'])
       if (caller.orgRole === 'ADMIN') {
         if (caller.isOrgOwner !== true) {

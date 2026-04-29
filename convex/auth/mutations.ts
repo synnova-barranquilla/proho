@@ -35,7 +35,7 @@ export const handleLogin = mutation({
     const firstName = args.firstName.trim()
     const lastName = args.lastName?.trim() || undefined
 
-    // 1. Does the user already exist? → sync email/firstName/lastName and return.
+    // 1. Does the user already exist? -> sync email/firstName/lastName and return.
     const existing = await ctx.db
       .query('users')
       .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', workosUserId))
@@ -53,10 +53,7 @@ export const handleLogin = mutation({
 
       if (!existing.active) {
         // Before declaring the account deactivated, check if there's a
-        // pending invitation that should reactivate this user. This
-        // handles the flow: super-admin deactivates a user → later
-        // re-invites them → user logs in and should be reactivated
-        // with the new invitation's settings.
+        // pending invitation that should reactivate this user.
         const reactivationInvitations = await ctx.db
           .query('invitations')
           .withIndex('by_email_and_status', (q) =>
@@ -79,13 +76,12 @@ export const handleLogin = mutation({
             ...(lastName ? { lastName } : {}),
           })
 
-          // Create conjunto memberships from the invitation (same logic
-          // as new-user acceptance below).
-          if (reactivationInv.conjuntoId && reactivationInv.conjuntoRole) {
-            await ctx.db.insert('conjuntoMemberships', {
+          // Create complex memberships from the invitation.
+          if (reactivationInv.complexId && reactivationInv.complexRole) {
+            await ctx.db.insert('complexMemberships', {
               userId: existing._id,
-              conjuntoId: reactivationInv.conjuntoId,
-              role: reactivationInv.conjuntoRole,
+              complexId: reactivationInv.complexId,
+              role: reactivationInv.complexRole,
               active: true,
               assignedBy: reactivationInv.invitedBy,
               assignedAt: Date.now(),
@@ -94,13 +90,13 @@ export const handleLogin = mutation({
           }
           if (
             reactivationInv.isOrgOwnerOnAccept !== true &&
-            reactivationInv.conjuntoIdsOnAccept &&
-            reactivationInv.conjuntoIdsOnAccept.length > 0
+            reactivationInv.complexIdsOnAccept &&
+            reactivationInv.complexIdsOnAccept.length > 0
           ) {
-            for (const conjuntoId of reactivationInv.conjuntoIdsOnAccept) {
-              await ctx.db.insert('conjuntoMemberships', {
+            for (const complexId of reactivationInv.complexIdsOnAccept) {
+              await ctx.db.insert('complexMemberships', {
                 userId: existing._id,
-                conjuntoId,
+                complexId,
                 role: 'ADMIN',
                 active: true,
                 assignedBy: reactivationInv.invitedBy,
@@ -117,17 +113,17 @@ export const handleLogin = mutation({
           })
 
           let reactivationSlug: string | undefined
-          if (reactivationInv.conjuntoId) {
-            const c = await ctx.db.get(reactivationInv.conjuntoId)
+          if (reactivationInv.complexId) {
+            const c = await ctx.db.get(reactivationInv.complexId)
             reactivationSlug = c?.slug
           }
 
           return {
             status: 'accepted' as const,
             orgRole: reactivationInv.orgRole,
-            conjuntoId: reactivationInv.conjuntoId,
-            conjuntoRole: reactivationInv.conjuntoRole,
-            conjuntoSlug: reactivationSlug,
+            complexId: reactivationInv.complexId,
+            complexRole: reactivationInv.complexRole,
+            complexSlug: reactivationSlug,
           }
         }
 
@@ -140,28 +136,28 @@ export const handleLogin = mutation({
         return { status: 'organizacion_inactiva' as const }
       }
 
-      // For MEMBER users, resolve their conjunto slug for direct redirect
-      let conjuntoSlug: string | undefined
+      // For MEMBER users, resolve their complex slug for direct redirect
+      let complexSlug: string | undefined
       if (existing.orgRole === 'MEMBER') {
         const membership = await ctx.db
-          .query('conjuntoMemberships')
+          .query('complexMemberships')
           .withIndex('by_user_id', (q) => q.eq('userId', existing._id))
           .filter((q) => q.eq(q.field('active'), true))
           .first()
         if (membership) {
-          const conjunto = await ctx.db.get(membership.conjuntoId)
-          conjuntoSlug = conjunto?.slug
+          const complex = await ctx.db.get(membership.complexId)
+          complexSlug = complex?.slug
         }
       }
 
       return {
         status: 'existing' as const,
         orgRole: existing.orgRole,
-        conjuntoSlug,
+        complexSlug,
       }
     }
 
-    // 2. No user → look for a PENDING invitation matching the verified email.
+    // 2. No user -> look for a PENDING invitation matching the verified email.
     const pendingInvitations = await ctx.db
       .query('invitations')
       .withIndex('by_email_and_status', (q) =>
@@ -174,8 +170,6 @@ export const handleLogin = mutation({
     const invitation = pendingInvitations.at(0)
 
     if (!invitation) {
-      // Could be: no invitation at all, OR the most recent was revoked/expired.
-      // Surface the most recent non-pending one for a clearer error message.
       const anyPrev = await ctx.db
         .query('invitations')
         .withIndex('by_email_and_status', (q) => q.eq('email', email))
@@ -197,7 +191,7 @@ export const handleLogin = mutation({
       return { status: 'invitation_expired' as const }
     }
 
-    // 4. Check that the invitation's org is active. If not, block acceptance.
+    // 4. Check that the invitation's org is active.
     const invitationOrg = await ctx.db.get(invitation.organizationId)
     if (!invitationOrg || !invitationOrg.active) {
       return { status: 'organizacion_inactiva' as const }
@@ -214,18 +208,16 @@ export const handleLogin = mutation({
       organizationId: invitation.organizationId,
       orgRole: invitation.orgRole,
       active: true,
-      // F4: isOrgOwner se propaga desde la invitación. Solo true cuando
-      // `onboardTenant` marcó esta invitación como la del primer admin.
       isOrgOwner: invitation.isOrgOwnerOnAccept === true,
     })
 
-    // F4: si la invitación es conjunto-scoped, crear la membership activa
-    // para el user recién creado.
-    if (invitation.conjuntoId && invitation.conjuntoRole) {
-      await ctx.db.insert('conjuntoMemberships', {
+    // If the invitation is complex-scoped, create the active membership
+    // for the newly created user.
+    if (invitation.complexId && invitation.complexRole) {
+      await ctx.db.insert('complexMemberships', {
         userId,
-        conjuntoId: invitation.conjuntoId,
-        role: invitation.conjuntoRole,
+        complexId: invitation.complexId,
+        role: invitation.complexRole,
         active: true,
         assignedBy: invitation.invitedBy,
         assignedAt: Date.now(),
@@ -233,28 +225,22 @@ export const handleLogin = mutation({
       })
     }
 
-    // F4: si la invitación es org-scoped y trae conjuntos pre-asignados,
-    // crear las memberships ADMIN ahora. Solo aplica si el user NO es
-    // owner — los owners ya ven todos los conjuntos automáticamente
-    // por la lógica de `requireConjuntoAccess`, así que pre-asignar
-    // memberships sería redundante (la mutation de invitations ya valida
-    // esto y limpia la lista cuando isOrgOwnerOnAccept es true).
+    // If the invitation is org-scoped and has pre-assigned complexes,
+    // create the ADMIN memberships now. Only applies if the user is NOT
+    // an owner — owners see all complexes automatically.
     if (
       invitation.isOrgOwnerOnAccept !== true &&
-      invitation.conjuntoIdsOnAccept &&
-      invitation.conjuntoIdsOnAccept.length > 0
+      invitation.complexIdsOnAccept &&
+      invitation.complexIdsOnAccept.length > 0
     ) {
-      for (const conjuntoId of invitation.conjuntoIdsOnAccept) {
-        await ctx.db.insert('conjuntoMemberships', {
+      for (const complexId of invitation.complexIdsOnAccept) {
+        await ctx.db.insert('complexMemberships', {
           userId,
-          conjuntoId,
+          complexId,
           role: 'ADMIN',
           active: true,
           assignedBy: invitation.invitedBy,
           assignedAt: Date.now(),
-          // Pre-assigned by an owner at invitation time, so this counts as
-          // "created by owner" — same semantics as if the owner had used
-          // the ManageAccessDialog matrix after the user accepted.
           createdByOwner: true,
         })
       }
@@ -267,17 +253,17 @@ export const handleLogin = mutation({
     })
 
     let acceptedSlug: string | undefined
-    if (invitation.conjuntoId) {
-      const c = await ctx.db.get(invitation.conjuntoId)
+    if (invitation.complexId) {
+      const c = await ctx.db.get(invitation.complexId)
       acceptedSlug = c?.slug
     }
 
     return {
       status: 'accepted' as const,
       orgRole: invitation.orgRole,
-      conjuntoId: invitation.conjuntoId,
-      conjuntoRole: invitation.conjuntoRole,
-      conjuntoSlug: acceptedSlug,
+      complexId: invitation.complexId,
+      complexRole: invitation.complexRole,
+      complexSlug: acceptedSlug,
     }
   },
 })

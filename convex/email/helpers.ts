@@ -13,27 +13,27 @@ export const getInvitationData = internalQuery({
 
     const org = await ctx.db.get(invitation.organizationId)
 
-    let conjuntoNombre: string | undefined
-    if (invitation.conjuntoId) {
-      const conjunto = await ctx.db.get(invitation.conjuntoId)
-      conjuntoNombre = conjunto?.nombre
+    let complexName: string | undefined
+    if (invitation.complexId) {
+      const complex = await ctx.db.get(invitation.complexId)
+      complexName = complex?.name
     }
 
     return {
       email: invitation.email,
       firstName: invitation.firstName,
       orgRole: invitation.orgRole,
-      conjuntoRole: invitation.conjuntoRole,
-      orgNombre: org?.name,
-      conjuntoNombre,
+      complexRole: invitation.complexRole,
+      orgName: org?.name,
+      complexName,
     }
   },
 })
 
 /**
- * Get summaries for all active conjuntos (used by daily summary cron).
+ * Get summaries for all active complexes (used by daily summary cron).
  */
-export const getAllConjuntoSummaries = internalQuery({
+export const getAllComplexSummaries = internalQuery({
   args: {},
   handler: async (ctx) => {
     // Get all organizations
@@ -41,14 +41,14 @@ export const getAllConjuntoSummaries = internalQuery({
     const activeOrgs = orgs.filter((o) => o.active)
 
     const summaries: Array<{
-      conjuntoNombre: string
-      conjuntoSlug: string
+      complexName: string
+      complexSlug: string
       fecha: string
       stats: {
-        vehiculosDentro: number
-        ingresosAyer: number
-        salidasAyer: number
-        rechazosAyer: number
+        vehiclesInside: number
+        entriesYesterday: number
+        exitsYesterday: number
+        rejectsYesterday: number
       }
       adminEmails: string[]
     }> = []
@@ -69,41 +69,43 @@ export const getAllConjuntoSummaries = internalQuery({
     })
 
     for (const org of activeOrgs) {
-      const conjuntos = await ctx.db
-        .query('conjuntos')
+      const complexes = await ctx.db
+        .query('complexes')
         .withIndex('by_organization_id', (q) => q.eq('organizationId', org._id))
         .collect()
 
-      for (const conjunto of conjuntos.filter((c) => c.active)) {
-        // Get registros
-        const registros = await ctx.db
-          .query('registrosAcceso')
-          .withIndex('by_conjunto_id', (q) => q.eq('conjuntoId', conjunto._id))
+      for (const complex of complexes.filter((c) => c.active)) {
+        // Get records
+        const records = await ctx.db
+          .query('accessRecords')
+          .withIndex('by_complex_id', (q) => q.eq('complexId', complex._id))
           .collect()
 
-        const vehiculosDentro = registros.filter(
-          (r) => r.salidaEn === undefined && r.decisionFinal === 'PERMITIDO',
+        const vehiclesInside = records.filter(
+          (r) => r.exitedAt === undefined && r.finalDecision === 'ALLOWED',
         ).length
 
-        const ayer = registros.filter(
+        const yesterday = records.filter(
           (r) =>
             r._creationTime >= startOfYesterday &&
             r._creationTime < startOfToday,
         )
 
-        const ingresosAyer = ayer.filter(
-          (r) => r.entradaEn != null && r.decisionFinal === 'PERMITIDO',
+        const entriesYesterday = yesterday.filter(
+          (r) => r.enteredAt != null && r.finalDecision === 'ALLOWED',
         ).length
-        const salidasAyer = ayer.filter((r) => r.salidaEn != null).length
-        const rechazosAyer = ayer.filter(
-          (r) => r.decisionFinal === 'RECHAZADO',
+        const exitsYesterday = yesterday.filter(
+          (r) => r.exitedAt != null,
+        ).length
+        const rejectsYesterday = yesterday.filter(
+          (r) => r.finalDecision === 'REJECTED',
         ).length
 
         // Admin emails
         const memberships = await ctx.db
-          .query('conjuntoMemberships')
-          .withIndex('by_conjunto_and_role', (q) =>
-            q.eq('conjuntoId', conjunto._id).eq('role', 'ADMIN'),
+          .query('complexMemberships')
+          .withIndex('by_complex_and_role', (q) =>
+            q.eq('complexId', complex._id).eq('role', 'ADMIN'),
           )
           .collect()
 
@@ -137,14 +139,14 @@ export const getAllConjuntoSummaries = internalQuery({
         if (adminEmails.length === 0) continue
 
         summaries.push({
-          conjuntoNombre: conjunto.nombre,
-          conjuntoSlug: conjunto.slug,
+          complexName: complex.name,
+          complexSlug: complex.slug,
           fecha: fechaLabel,
           stats: {
-            vehiculosDentro,
-            ingresosAyer,
-            salidasAyer,
-            rechazosAyer,
+            vehiclesInside,
+            entriesYesterday,
+            exitsYesterday,
+            rejectsYesterday,
           },
           adminEmails,
         })

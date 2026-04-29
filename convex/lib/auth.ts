@@ -3,7 +3,7 @@ import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { ERROR_CODES, throwConvexError } from './errors'
 
 type OrgRole = Doc<'users'>['orgRole']
-type ConjuntoRole = Doc<'conjuntoMemberships'>['role']
+type ComplexRole = Doc<'complexMemberships'>['role']
 
 /**
  * Returns the currently authenticated user from Convex (looked up by the
@@ -72,65 +72,64 @@ export async function requireOrgRole(
 }
 
 /**
- * F4: Enforces access to a specific conjunto. Lógica:
+ * Enforces access to a specific complex. Logic:
  *
- *   1. SUPER_ADMIN → acceso total (soporte interno).
- *   2. ADMIN con `isOrgOwner === true` y `conjunto.organizationId === user.organizationId`
- *      → acceso automático, sin necesidad de conjuntoMemberships.
- *   3. Cualquier otro caso → requiere conjuntoMemberships activa para ese user/conjunto.
- *      Si se pasa `allowedRoles`, el rol de la membership debe estar incluido.
+ *   1. SUPER_ADMIN -> full access (internal support).
+ *   2. ADMIN with `isOrgOwner === true` and `complex.organizationId === user.organizationId`
+ *      -> automatic access, no complexMemberships needed.
+ *   3. Any other case -> requires active complexMemberships for that user/complex.
+ *      If `allowedRoles` is passed, the membership role must be included.
  *
- * Retorna el user, el conjunto y (cuando aplica) la membership específica.
+ * Returns the user, the complex and (when applicable) the specific membership.
  */
-export async function requireConjuntoAccess(
+export async function requireComplexAccess(
   ctx: QueryCtx | MutationCtx,
-  conjuntoId: Id<'conjuntos'>,
-  options?: { allowedRoles?: Array<ConjuntoRole> },
+  complexId: Id<'complexes'>,
+  options?: { allowedRoles?: Array<ComplexRole> },
 ): Promise<{
   user: Doc<'users'>
-  conjunto: Doc<'conjuntos'>
-  membership?: Doc<'conjuntoMemberships'>
+  complex: Doc<'complexes'>
+  membership?: Doc<'complexMemberships'>
 }> {
   const user = await requireUser(ctx)
-  const conjunto = await ctx.db.get(conjuntoId)
-  if (!conjunto) {
-    throwConvexError(ERROR_CODES.CONJUNTO_NOT_FOUND, 'Conjunto no encontrado')
+  const complex = await ctx.db.get(complexId)
+  if (!complex) {
+    throwConvexError(ERROR_CODES.COMPLEX_NOT_FOUND, 'Complex not found')
   }
-  if (!conjunto.active) {
-    throwConvexError(ERROR_CODES.CONJUNTO_INACTIVE, 'El conjunto está inactivo')
+  if (!complex.active) {
+    throwConvexError(ERROR_CODES.COMPLEX_INACTIVE, 'Complex is inactive')
   }
 
-  // Caso 1: SUPER_ADMIN
+  // Case 1: SUPER_ADMIN
   if (user.orgRole === 'SUPER_ADMIN') {
-    return { user, conjunto }
+    return { user, complex }
   }
 
-  // Caso 2: ADMIN owner con acceso automático a los conjuntos de su org
-  // (orgRole queda narrowed a 'ADMIN' aquí porque SUPER_ADMIN ya se manejó arriba)
+  // Case 2: ADMIN owner with automatic access to their org's complexes
   if (
     user.isOrgOwner === true &&
-    conjunto.organizationId === user.organizationId
+    complex.organizationId === user.organizationId
   ) {
     if (options?.allowedRoles && !options.allowedRoles.includes('ADMIN')) {
       throwConvexError(
         ERROR_CODES.FORBIDDEN,
-        `Se requiere rol ${options.allowedRoles.join(' o ')} (tienes acceso como owner)`,
+        `Requires role ${options.allowedRoles.join(' or ')} (you have access as owner)`,
       )
     }
-    return { user, conjunto }
+    return { user, complex }
   }
 
-  // Caso 3: requiere membership explícita y activa
+  // Case 3: requires explicit and active membership
   const membership = await ctx.db
-    .query('conjuntoMemberships')
-    .withIndex('by_user_and_conjunto', (q) =>
-      q.eq('userId', user._id).eq('conjuntoId', conjuntoId),
+    .query('complexMemberships')
+    .withIndex('by_user_and_complex', (q) =>
+      q.eq('userId', user._id).eq('complexId', complexId),
     )
     .filter((q) => q.eq(q.field('active'), true))
     .first()
 
   if (!membership) {
-    throwConvexError(ERROR_CODES.FORBIDDEN, 'No tienes acceso a este conjunto')
+    throwConvexError(ERROR_CODES.FORBIDDEN, 'No access to this complex')
   }
 
   if (
@@ -139,11 +138,72 @@ export async function requireConjuntoAccess(
   ) {
     throwConvexError(
       ERROR_CODES.FORBIDDEN,
-      `Se requiere rol ${options.allowedRoles.join(' o ')} (tienes ${membership.role})`,
+      `Requires role ${options.allowedRoles.join(' or ')} (you have ${membership.role})`,
     )
   }
 
-  return { user, conjunto, membership }
+  return { user, complex, membership }
+}
+
+/**
+ * Like requireComplexAccess but with two additional constraints for the
+ * communications module:
+ *
+ *   1. Org owners with implicit access (no membership) are DENIED.
+ *      They must have an explicit ADMIN membership on the complex.
+ *   2. SUPER_ADMINs are still allowed (internal support).
+ *
+ * This enforces the privacy rule: org owners (company managers) don't
+ * see resident↔admin conversations by default.
+ */
+export async function requireCommsAccess(
+  ctx: QueryCtx | MutationCtx,
+  complexId: Id<'complexes'>,
+  options?: { allowedRoles?: Array<ComplexRole> },
+): Promise<{
+  user: Doc<'users'>
+  complex: Doc<'complexes'>
+  membership?: Doc<'complexMemberships'>
+}> {
+  const user = await requireUser(ctx)
+  const complex = await ctx.db.get(complexId)
+  if (!complex) {
+    throwConvexError(ERROR_CODES.COMPLEX_NOT_FOUND, 'Complex not found')
+  }
+  if (!complex.active) {
+    throwConvexError(ERROR_CODES.COMPLEX_INACTIVE, 'Complex is inactive')
+  }
+
+  if (user.orgRole === 'SUPER_ADMIN') {
+    return { user, complex }
+  }
+
+  const membership = await ctx.db
+    .query('complexMemberships')
+    .withIndex('by_user_and_complex', (q) =>
+      q.eq('userId', user._id).eq('complexId', complexId),
+    )
+    .filter((q) => q.eq(q.field('active'), true))
+    .first()
+
+  if (!membership) {
+    throwConvexError(
+      ERROR_CODES.FORBIDDEN,
+      'No access to communications for this complex',
+    )
+  }
+
+  if (
+    options?.allowedRoles &&
+    !options.allowedRoles.includes(membership.role)
+  ) {
+    throwConvexError(
+      ERROR_CODES.FORBIDDEN,
+      `Requires role ${options.allowedRoles.join(' or ')} (you have ${membership.role})`,
+    )
+  }
+
+  return { user, complex, membership }
 }
 
 /**
@@ -152,9 +212,7 @@ export async function requireConjuntoAccess(
  *
  * - Nobody can invite SUPER_ADMINs (they come from seed bootstrap only).
  * - SUPER_ADMIN can invite ADMINs to any org.
- * - ADMIN with `isOrgOwner === true` can invite ADMINs **to their own org**
- *   (F4+ — lets org owners grow their admin team without requiring
- *   super-admin intervention).
+ * - ADMIN with `isOrgOwner === true` can invite ADMINs **to their own org**.
  */
 export function canInvite(
   inviter: Doc<'users'>,
@@ -165,7 +223,6 @@ export function canInvite(
 
   if (inviter.orgRole === 'SUPER_ADMIN') return true
 
-  // orgRole is narrowed to 'ADMIN' here (the only remaining union member).
   if (inviter.isOrgOwner === true && inviter.organizationId === targetOrgId) {
     return true
   }

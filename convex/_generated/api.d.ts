@@ -14,16 +14,23 @@ import type {
   FunctionReference,
 } from 'convex/server'
 
+import type * as accessRecords_mutations from '../accessRecords/mutations.js'
+import type * as accessRecords_queries from '../accessRecords/queries.js'
+import type * as accessRecords_validators from '../accessRecords/validators.js'
 import type * as auth_mutations from '../auth/mutations.js'
-import type * as conjuntoConfig_mutations from '../conjuntoConfig/mutations.js'
-import type * as conjuntoConfig_queries from '../conjuntoConfig/queries.js'
-import type * as conjuntoConfig_validators from '../conjuntoConfig/validators.js'
-import type * as conjuntoMemberships_mutations from '../conjuntoMemberships/mutations.js'
-import type * as conjuntoMemberships_queries from '../conjuntoMemberships/queries.js'
-import type * as conjuntoMemberships_validators from '../conjuntoMemberships/validators.js'
-import type * as conjuntos_mutations from '../conjuntos/mutations.js'
-import type * as conjuntos_queries from '../conjuntos/queries.js'
-import type * as conjuntos_validators from '../conjuntos/validators.js'
+import type * as communications_categoryMutations from '../communications/categoryMutations.js'
+import type * as communications_mutations from '../communications/mutations.js'
+import type * as communications_queries from '../communications/queries.js'
+import type * as communications_validators from '../communications/validators.js'
+import type * as complexConfig_mutations from '../complexConfig/mutations.js'
+import type * as complexConfig_queries from '../complexConfig/queries.js'
+import type * as complexConfig_validators from '../complexConfig/validators.js'
+import type * as complexes_mutations from '../complexes/mutations.js'
+import type * as complexes_queries from '../complexes/queries.js'
+import type * as complexes_validators from '../complexes/validators.js'
+import type * as complexMemberships_mutations from '../complexMemberships/mutations.js'
+import type * as complexMemberships_queries from '../complexMemberships/queries.js'
+import type * as complexMemberships_validators from '../complexMemberships/validators.js'
 import type * as crons from '../crons.js'
 import type * as email_actions from '../email/actions.js'
 import type * as email_helpers from '../email/helpers.js'
@@ -43,34 +50,38 @@ import type * as migrations_fixUserNames from '../migrations/fixUserNames.js'
 import type * as organizations_mutations from '../organizations/mutations.js'
 import type * as organizations_queries from '../organizations/queries.js'
 import type * as organizations_validators from '../organizations/validators.js'
-import type * as registrosAcceso_mutations from '../registrosAcceso/mutations.js'
-import type * as registrosAcceso_queries from '../registrosAcceso/queries.js'
-import type * as registrosAcceso_validators from '../registrosAcceso/validators.js'
-import type * as residentes_mutations from '../residentes/mutations.js'
-import type * as residentes_queries from '../residentes/queries.js'
-import type * as residentes_validators from '../residentes/validators.js'
+import type * as residents_mutations from '../residents/mutations.js'
+import type * as residents_queries from '../residents/queries.js'
+import type * as residents_validators from '../residents/validators.js'
 import type * as seed from '../seed.js'
-import type * as unidades_mutations from '../unidades/mutations.js'
-import type * as unidades_queries from '../unidades/queries.js'
-import type * as unidades_validators from '../unidades/validators.js'
+import type * as units_mutations from '../units/mutations.js'
+import type * as units_queries from '../units/queries.js'
+import type * as units_validators from '../units/validators.js'
 import type * as users_mutations from '../users/mutations.js'
 import type * as users_queries from '../users/queries.js'
 import type * as users_validators from '../users/validators.js'
-import type * as vehiculos_mutations from '../vehiculos/mutations.js'
-import type * as vehiculos_queries from '../vehiculos/queries.js'
-import type * as vehiculos_validators from '../vehiculos/validators.js'
+import type * as vehicles_mutations from '../vehicles/mutations.js'
+import type * as vehicles_queries from '../vehicles/queries.js'
+import type * as vehicles_validators from '../vehicles/validators.js'
 
 declare const fullApi: ApiFromModules<{
+  'accessRecords/mutations': typeof accessRecords_mutations
+  'accessRecords/queries': typeof accessRecords_queries
+  'accessRecords/validators': typeof accessRecords_validators
   'auth/mutations': typeof auth_mutations
-  'conjuntoConfig/mutations': typeof conjuntoConfig_mutations
-  'conjuntoConfig/queries': typeof conjuntoConfig_queries
-  'conjuntoConfig/validators': typeof conjuntoConfig_validators
-  'conjuntoMemberships/mutations': typeof conjuntoMemberships_mutations
-  'conjuntoMemberships/queries': typeof conjuntoMemberships_queries
-  'conjuntoMemberships/validators': typeof conjuntoMemberships_validators
-  'conjuntos/mutations': typeof conjuntos_mutations
-  'conjuntos/queries': typeof conjuntos_queries
-  'conjuntos/validators': typeof conjuntos_validators
+  'communications/categoryMutations': typeof communications_categoryMutations
+  'communications/mutations': typeof communications_mutations
+  'communications/queries': typeof communications_queries
+  'communications/validators': typeof communications_validators
+  'complexConfig/mutations': typeof complexConfig_mutations
+  'complexConfig/queries': typeof complexConfig_queries
+  'complexConfig/validators': typeof complexConfig_validators
+  'complexMemberships/mutations': typeof complexMemberships_mutations
+  'complexMemberships/queries': typeof complexMemberships_queries
+  'complexMemberships/validators': typeof complexMemberships_validators
+  'complexes/mutations': typeof complexes_mutations
+  'complexes/queries': typeof complexes_queries
+  'complexes/validators': typeof complexes_validators
   crons: typeof crons
   'email/actions': typeof email_actions
   'email/helpers': typeof email_helpers
@@ -90,22 +101,19 @@ declare const fullApi: ApiFromModules<{
   'organizations/mutations': typeof organizations_mutations
   'organizations/queries': typeof organizations_queries
   'organizations/validators': typeof organizations_validators
-  'registrosAcceso/mutations': typeof registrosAcceso_mutations
-  'registrosAcceso/queries': typeof registrosAcceso_queries
-  'registrosAcceso/validators': typeof registrosAcceso_validators
-  'residentes/mutations': typeof residentes_mutations
-  'residentes/queries': typeof residentes_queries
-  'residentes/validators': typeof residentes_validators
+  'residents/mutations': typeof residents_mutations
+  'residents/queries': typeof residents_queries
+  'residents/validators': typeof residents_validators
   seed: typeof seed
-  'unidades/mutations': typeof unidades_mutations
-  'unidades/queries': typeof unidades_queries
-  'unidades/validators': typeof unidades_validators
+  'units/mutations': typeof units_mutations
+  'units/queries': typeof units_queries
+  'units/validators': typeof units_validators
   'users/mutations': typeof users_mutations
   'users/queries': typeof users_queries
   'users/validators': typeof users_validators
-  'vehiculos/mutations': typeof vehiculos_mutations
-  'vehiculos/queries': typeof vehiculos_queries
-  'vehiculos/validators': typeof vehiculos_validators
+  'vehicles/mutations': typeof vehicles_mutations
+  'vehicles/queries': typeof vehicles_queries
+  'vehicles/validators': typeof vehicles_validators
 }>
 
 /**

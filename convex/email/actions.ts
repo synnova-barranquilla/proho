@@ -10,7 +10,7 @@ import { DailySummaryEmail } from './templates/dailySummary'
 import { InvitationEmail } from './templates/invitation'
 
 /**
- * Send invitation email when a user is invited to a conjunto or organization.
+ * Send invitation email when a user is invited to a complex or organization.
  * Triggered via ctx.scheduler.runAfter from invitations.create mutation.
  */
 export const sendInvitationEmail = internalAction({
@@ -32,13 +32,13 @@ export const sendInvitationEmail = internalAction({
       ? `${process.env.SITE_URL}/login`
       : 'https://app.synnova.com.co/login'
 
-    const rolLabel = invitation.conjuntoRole ?? invitation.orgRole
+    const rolLabel = invitation.complexRole ?? invitation.orgRole
 
     const html = await render(
       InvitationEmail({
         nombreInvitado: invitation.firstName,
         nombreConjunto:
-          invitation.conjuntoNombre ?? invitation.orgNombre ?? 'Synnova',
+          invitation.complexName ?? invitation.orgName ?? 'Synnova',
         rolInvitado: rolLabel,
         loginUrl,
       }),
@@ -46,52 +46,52 @@ export const sendInvitationEmail = internalAction({
 
     await sendEmail({
       to: invitation.email,
-      subject: `Has sido invitado a ${invitation.conjuntoNombre ?? invitation.orgNombre ?? 'Synnova'}`,
+      subject: `Has sido invitado a ${invitation.complexName ?? invitation.orgName ?? 'Synnova'}`,
       html,
     })
   },
 })
 
 /**
- * Send daily summary email to all conjunto admins.
+ * Send daily summary email to all complex admins.
  * Triggered by a daily cron at 11:00 UTC (6am COT).
  */
 export const sendDailySummary = internalAction({
   args: {},
   handler: async (ctx) => {
-    const conjuntoSummaries = await ctx.runQuery(
-      internal.email.helpers.getAllConjuntoSummaries,
+    const complexSummaries = await ctx.runQuery(
+      internal.email.helpers.getAllComplexSummaries,
       {},
     )
 
     const siteUrl = process.env.SITE_URL ?? 'https://app.synnova.com.co'
 
-    for (const summary of conjuntoSummaries) {
-      // Skip conjuntos with no activity
+    for (const summary of complexSummaries) {
+      // Skip complexes with no activity
       if (
-        summary.stats.ingresosAyer === 0 &&
-        summary.stats.salidasAyer === 0 &&
-        summary.stats.rechazosAyer === 0
+        summary.stats.entriesYesterday === 0 &&
+        summary.stats.exitsYesterday === 0 &&
+        summary.stats.rejectsYesterday === 0
       ) {
         continue
       }
 
       const html = await render(
         DailySummaryEmail({
-          nombreConjunto: summary.conjuntoNombre,
+          nombreConjunto: summary.complexName,
           fecha: summary.fecha,
-          vehiculosDentro: summary.stats.vehiculosDentro,
-          ingresosAyer: summary.stats.ingresosAyer,
-          salidasAyer: summary.stats.salidasAyer,
-          rechazosAyer: summary.stats.rechazosAyer,
-          historicoUrl: `${siteUrl}/c/${summary.conjuntoSlug}/control-acceso`,
+          vehiculosDentro: summary.stats.vehiclesInside,
+          ingresosAyer: summary.stats.entriesYesterday,
+          salidasAyer: summary.stats.exitsYesterday,
+          rechazosAyer: summary.stats.rejectsYesterday,
+          historicoUrl: `${siteUrl}/c/${summary.complexSlug}/control-acceso`,
         }),
       )
 
       for (const adminEmail of summary.adminEmails) {
         await sendEmail({
           to: adminEmail,
-          subject: `Resumen de ayer — ${summary.conjuntoNombre}`,
+          subject: `Resumen de ayer — ${summary.complexName}`,
           html,
         })
       }

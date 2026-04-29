@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 
-import { conjuntoRoles } from '../conjuntoMemberships/validators'
+import { complexRoles } from '../complexMemberships/validators'
 import { orgRoles } from '../users/validators'
 
 export const invitationStatus = v.union(
@@ -22,19 +22,19 @@ export const invitationFields = {
   expiresAt: v.number(),
   acceptedAt: v.optional(v.number()),
   acceptedUserId: v.optional(v.id('users')),
-  // F4: soporte para invitar a un conjunto específico con un rol de conjunto.
-  // Si conjuntoId está presente, conjuntoRole es obligatorio (validado en la mutation).
-  conjuntoId: v.optional(v.id('conjuntos')),
-  conjuntoRole: v.optional(conjuntoRoles),
-  // F4: cuando es true, el user creado al aceptar esta invitación se marca
-  // como isOrgOwner: true. Lo setea `onboardTenant` para el primer ADMIN de
-  // cada org. También puede ser seteado por owners existentes desde
-  // /admin/equipo cuando invitan a otro ADMIN que también será owner.
+  // Support for inviting to a specific complex with a complex role.
+  // If complexId is present, complexRole is required (validated in the mutation).
+  complexId: v.optional(v.id('complexes')),
+  complexRole: v.optional(complexRoles),
+  // When true, the user created on acceptance of this invitation is marked
+  // as isOrgOwner: true. Set by `onboardTenant` for the first ADMIN of
+  // each org. Can also be set by existing owners from /admin/equipo when
+  // inviting another ADMIN who will also be an owner.
   isOrgOwnerOnAccept: v.optional(v.boolean()),
-  // F4: lista de conjuntos a los que el invitado tendrá acceso (con role
-  // ADMIN) en el momento de aceptar la invitación. Útil para que un owner
-  // pueda invitar a un nuevo ADMIN no-owner y pre-asignarle conjuntos en
-  // un solo paso desde /admin/equipo. Se ignora si `isOrgOwnerOnAccept`
-  // es true (los owners ven todos los conjuntos automáticamente).
-  conjuntoIdsOnAccept: v.optional(v.array(v.id('conjuntos'))),
+  // List of complexes the invitee will have access to (with ADMIN role)
+  // at the time of accepting the invitation. Useful for an owner to invite
+  // a new non-owner ADMIN and pre-assign complexes in a single step from
+  // /admin/equipo. Ignored if `isOrgOwnerOnAccept` is true (owners see
+  // all complexes automatically).
+  complexIdsOnAccept: v.optional(v.array(v.id('complexes'))),
 }
