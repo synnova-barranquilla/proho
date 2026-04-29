@@ -34,11 +34,11 @@ import {
   type TipoVehiculoSelectable,
 } from './tipo-vehiculo-cards'
 
-type SubScreen = 'OPTIONS' | 'VISITANTE' | 'VIOLACIONES' | 'RESIDENTE'
+type SubScreen = 'OPTIONS' | 'VISITOR' | 'VIOLACIONES' | 'RESIDENT'
 
 interface PendingVisitante {
-  tipo: 'VISITANTE' | 'VISITA_ADMIN'
-  unidadId?: Id<'unidades'>
+  tipo: 'VISITOR' | 'ADMIN_VISIT'
+  unitId?: Id<'units'>
   vehiculoTipo: TipoVehiculoSelectable
 }
 
@@ -54,7 +54,7 @@ const VIOLATION_LABELS: Record<RuleViolation, string> = {
 interface NoEncontradoDialogProps {
   open: boolean
   onClose: () => void
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   placa: string
   placaRaw: string
 }
@@ -62,19 +62,19 @@ interface NoEncontradoDialogProps {
 export function NoEncontradoDialog({
   open,
   onClose,
-  conjuntoId,
+  complexId,
   placa,
   placaRaw,
 }: NoEncontradoDialogProps) {
   const [subScreen, setSubScreen] = useState<SubScreen>('OPTIONS')
   const [selectedUnidadId, setSelectedUnidadId] = useState<string>('')
   const [tipo, setTipo] = useState<TipoVehiculoSelectable>(
-    detectPlacaTipo(placa) ?? 'CARRO',
+    detectPlacaTipo(placa) ?? 'CAR',
   )
   const [pending, setPending] = useState<PendingVisitante | null>(null)
   const [violations, setViolations] = useState<RuleViolation[]>([])
-  const [justificacion, setJustificacion] = useState('')
-  const [observaciones, setObservaciones] = useState('')
+  const [justification, setJustification] = useState('')
+  const [observations, setObservations] = useState('')
 
   // Auto-switch tipo cuando cambia la placa (e.g., usuario regresa con otro valor).
   useEffect(() => {
@@ -85,13 +85,16 @@ export function NoEncontradoDialog({
   const placaValida = placa.length === 6 && isPlacaValidaParaTipo(placa, tipo)
 
   const { data: unidadesData } = useSuspenseQuery(
-    convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
+    convexQuery(api.units.queries.listByComplex, { complexId }),
   )
-  const unidades = unidadesData.torres.flatMap((t) => t.unidades)
+  const unidades = unidadesData.towers.flatMap(
+    (t: { units: Array<{ _id: string; tower: string; number: string }> }) =>
+      t.units,
+  )
   const unidadOptions = buildUnidadOptions(unidades)
 
   const registrarVisitanteFn = useConvexMutation(
-    api.registrosAcceso.mutations.registrarVisitante,
+    api.accessRecords.mutations.registerVisitor,
   )
   const registrarVisitanteMut = useMutation({
     mutationFn: registrarVisitanteFn,
@@ -102,8 +105,8 @@ export function NoEncontradoDialog({
     setSelectedUnidadId('')
     setPending(null)
     setViolations([])
-    setJustificacion('')
-    setObservaciones('')
+    setJustification('')
+    setObservations('')
   }
 
   const handleClose = () => {
@@ -113,25 +116,25 @@ export function NoEncontradoDialog({
 
   const submitVisitante = async (
     req: PendingVisitante,
-    overrides?: { justificacion?: string; observaciones?: string },
+    overrides?: { justification?: string; observations?: string },
   ) => {
     try {
       const result = await registrarVisitanteMut.mutateAsync({
-        conjuntoId,
-        placaRaw,
-        tipo: req.tipo,
-        vehiculoTipo: req.vehiculoTipo,
-        unidadId: req.unidadId,
-        ...(overrides?.justificacion
+        complexId,
+        rawPlate: placaRaw,
+        type: req.tipo,
+        vehicleType: req.vehiculoTipo,
+        unitId: req.unitId,
+        ...(overrides?.justification
           ? {
-              forzarPermitido: true,
-              justificacion: overrides.justificacion.trim(),
-              observaciones: overrides.observaciones?.trim() || undefined,
+              forcePermitted: true,
+              justification: overrides.justification.trim(),
+              observations: overrides.observations?.trim() || undefined,
             }
           : {}),
       })
 
-      if ('requiresJustificacion' in result && result.requiresJustificacion) {
+      if ('requiresJustification' in result && result.requiresJustification) {
         setPending(req)
         setViolations(result.violations)
         setSubScreen('VIOLACIONES')
@@ -139,7 +142,7 @@ export function NoEncontradoDialog({
       }
 
       toast.success(
-        req.tipo === 'VISITA_ADMIN'
+        req.tipo === 'ADMIN_VISIT'
           ? 'Visita administrativa registrada'
           : 'Visitante registrado',
       )
@@ -156,7 +159,7 @@ export function NoEncontradoDialog({
 
   const handleVisitaAdmin = () => {
     if (!placaValida) return
-    void submitVisitante({ tipo: 'VISITA_ADMIN', vehiculoTipo: tipo })
+    void submitVisitante({ tipo: 'ADMIN_VISIT', vehiculoTipo: tipo })
   }
 
   const handleVisitanteConfirmar = () => {
@@ -165,28 +168,28 @@ export function NoEncontradoDialog({
       return
     }
     void submitVisitante({
-      tipo: 'VISITANTE',
+      tipo: 'VISITOR',
       vehiculoTipo: tipo,
-      unidadId: selectedUnidadId as Id<'unidades'>,
+      unitId: selectedUnidadId as Id<'units'>,
     })
   }
 
   const handleConfirmarJustificacion = () => {
     if (!pending) return
-    if (!justificacion.trim()) {
+    if (!justification.trim()) {
       toast.error('Justificación obligatoria')
       return
     }
     void submitVisitante(pending, {
-      justificacion,
-      observaciones,
+      justification,
+      observations,
     })
   }
 
   const isPending = registrarVisitanteMut.isPending
 
-  const dialogOpen = open && subScreen !== 'RESIDENTE'
-  const sheetOpen = open && subScreen === 'RESIDENTE'
+  const dialogOpen = open && subScreen !== 'RESIDENT'
+  const sheetOpen = open && subScreen === 'RESIDENT'
 
   return (
     <>
@@ -220,7 +223,7 @@ export function NoEncontradoDialog({
                   <button
                     type="button"
                     className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => setSubScreen('VISITANTE')}
+                    onClick={() => setSubScreen('VISITOR')}
                     disabled={!placaValida}
                   >
                     <UserRound className="h-6 w-6 shrink-0 text-muted-foreground" />
@@ -250,7 +253,7 @@ export function NoEncontradoDialog({
                   <button
                     type="button"
                     className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => setSubScreen('RESIDENTE')}
+                    onClick={() => setSubScreen('RESIDENT')}
                     disabled={!placaValida}
                   >
                     <Car className="h-6 w-6 shrink-0 text-muted-foreground" />
@@ -265,7 +268,7 @@ export function NoEncontradoDialog({
               </div>
             )}
 
-            {subScreen === 'VISITANTE' && (
+            {subScreen === 'VISITOR' && (
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium">
@@ -297,8 +300,8 @@ export function NoEncontradoDialog({
                 <Field>
                   <FieldLabel>Justificación</FieldLabel>
                   <Textarea
-                    value={justificacion}
-                    onChange={(e) => setJustificacion(e.target.value)}
+                    value={justification}
+                    onChange={(e) => setJustification(e.target.value)}
                     placeholder="Explique por qué se permite el ingreso..."
                     className="min-h-20"
                     required
@@ -307,8 +310,8 @@ export function NoEncontradoDialog({
                 <Field>
                   <FieldLabel>Observaciones (opcional)</FieldLabel>
                   <Textarea
-                    value={observaciones}
-                    onChange={(e) => setObservaciones(e.target.value)}
+                    value={observations}
+                    onChange={(e) => setObservations(e.target.value)}
                     placeholder="Observaciones adicionales del vigilante..."
                     className="min-h-16"
                   />
@@ -322,7 +325,7 @@ export function NoEncontradoDialog({
                 Cancelar
               </Button>
             )}
-            {subScreen === 'VISITANTE' && (
+            {subScreen === 'VISITOR' && (
               <>
                 <Button
                   variant="outline"
@@ -348,11 +351,11 @@ export function NoEncontradoDialog({
                   variant="outline"
                   onClick={() => {
                     setSubScreen(
-                      pending?.tipo === 'VISITANTE' ? 'VISITANTE' : 'OPTIONS',
+                      pending?.tipo === 'VISITOR' ? 'VISITOR' : 'OPTIONS',
                     )
                     setViolations([])
-                    setJustificacion('')
-                    setObservaciones('')
+                    setJustification('')
+                    setObservations('')
                   }}
                   disabled={isPending}
                 >
@@ -360,7 +363,7 @@ export function NoEncontradoDialog({
                 </Button>
                 <Button
                   onClick={handleConfirmarJustificacion}
-                  disabled={isPending || !justificacion.trim()}
+                  disabled={isPending || !justification.trim()}
                 >
                   {isPending ? 'Registrando...' : 'Permitir con justificación'}
                 </Button>
@@ -377,7 +380,7 @@ export function NoEncontradoDialog({
           setSubScreen('OPTIONS')
           onClose()
         }}
-        conjuntoId={conjuntoId}
+        complexId={complexId}
         placa={placa}
         placaRaw={placaRaw}
         initialTipo={tipo}

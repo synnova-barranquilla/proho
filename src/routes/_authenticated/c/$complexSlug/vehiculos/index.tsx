@@ -17,7 +17,7 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { DataTable } from '#/components/ui/data-table'
 import { Skeleton } from '#/components/ui/skeleton'
-import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
+import { useIsComplexAdmin } from '#/lib/complex-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../../../../convex/_generated/api'
@@ -29,68 +29,65 @@ import {
 } from '../../../../../../convex/lib/placa'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$conjuntoSlug/vehiculos/',
+  '/_authenticated/c/$complexSlug/vehiculos/',
 )({
-  loader: async ({ context: { queryClient, conjuntoId } }) => {
+  loader: async ({ context: { queryClient, complexId } }) => {
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
-        api.vehiculos.queries.listByConjunto,
-        { conjuntoId },
+        api.vehicles.queries.listByComplex,
+        { complexId },
       ),
-      prefetchAuthenticatedQuery(
-        queryClient,
-        api.unidades.queries.listByConjunto,
-        { conjuntoId },
-      ),
+      prefetchAuthenticatedQuery(queryClient, api.units.queries.listByComplex, {
+        complexId,
+      }),
     ])
     return null
   },
   component: VehiculosPage,
 })
 
-type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
+type VehiculoRow = Doc<'vehicles'> & { unit: Doc<'units'> | null }
 
 type VehiculoImportRow = {
-  torre: string
-  numero: string
-  placa: string
-  tipo: 'CARRO' | 'MOTO' | 'OTRO'
-  propietarioNombre?: string
+  tower: string
+  number: string
+  plate: string
+  type: 'CAR' | 'MOTORCYCLE' | 'OTHER'
+  ownerName?: string
 }
 
-const VALID_VEHICULO_TIPOS = new Set(['CARRO', 'MOTO', 'OTRO'])
+const VALID_VEHICULO_TIPOS = new Set(['CAR', 'MOTORCYCLE', 'OTHER'])
 
 function VehiculosPage() {
-  const { conjuntoId } = Route.useRouteContext()
-  const isAdmin = useIsConjuntoAdmin()
+  const { complexId } = Route.useRouteContext()
+  const isAdmin = useIsComplexAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [editing, setEditing] = useState<VehiculoRow | null>(null)
 
-  const bulkImportFn = useConvexMutation(api.vehiculos.mutations.bulkImport)
+  const bulkImportFn = useConvexMutation(api.vehicles.mutations.bulkImport)
   const bulkImportMut = useMutation({ mutationFn: bulkImportFn })
 
   const validateVehiculoRow = (
     row: Record<string, string>,
     rowIndex: number,
   ): ValidatedRow<VehiculoImportRow> => {
-    const torre = (row['torre'] || '').trim().toUpperCase()
-    const numero = (row['numero'] || '').trim()
+    const tower = (row['torre'] || '').trim().toUpperCase()
+    const number = (row['numero'] || '').trim()
     const placaRaw = (row['placa'] || '').trim()
     const tipoRaw = (row['tipo'] || '').trim().toUpperCase()
-    const propietarioNombre =
-      (row['propietarioNombre'] || '').trim() || undefined
+    const ownerName = (row['propietarioNombre'] || '').trim() || undefined
     const raw = row
 
-    if (!torre || !numero) {
+    if (!tower || !number) {
       return { rowIndex, valid: false, error: 'Torre y número requeridos', raw }
     }
     if (!placaRaw) {
       return { rowIndex, valid: false, error: 'Placa requerida', raw }
     }
-    const placa = normalizePlaca(placaRaw)
-    if (!isPlacaValida(placa)) {
+    const plate = normalizePlaca(placaRaw)
+    if (!isPlacaValida(plate)) {
       return {
         rowIndex,
         valid: false,
@@ -99,16 +96,16 @@ function VehiculosPage() {
       }
     }
 
-    const detectedTipo = detectPlacaTipo(placa)
+    const detectedTipo = detectPlacaTipo(plate)
     const tipo =
       tipoRaw && VALID_VEHICULO_TIPOS.has(tipoRaw)
-        ? (tipoRaw as 'CARRO' | 'MOTO' | 'OTRO')
-        : (detectedTipo ?? 'CARRO')
+        ? (tipoRaw as 'CAR' | 'MOTORCYCLE' | 'OTHER')
+        : (detectedTipo ?? 'CAR')
 
     return {
       rowIndex,
       valid: true,
-      data: { torre, numero, placa, tipo, propietarioNombre },
+      data: { tower, number, plate, type: tipo, ownerName },
       raw,
     }
   }
@@ -116,7 +113,7 @@ function VehiculosPage() {
   const handleVehiculoImport = async (
     rows: VehiculoImportRow[],
   ): Promise<ImportResult> => {
-    return await bulkImportMut.mutateAsync({ conjuntoId, rows })
+    return await bulkImportMut.mutateAsync({ complexId, rows })
   }
 
   return (
@@ -149,7 +146,7 @@ function VehiculosPage() {
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <VehiculosTable
-          conjuntoId={conjuntoId}
+          complexId={complexId}
           isAdmin={isAdmin}
           onEdit={(v) => {
             setEditing(v)
@@ -166,7 +163,7 @@ function VehiculosPage() {
               setDialogOpen(open)
               if (!open) setEditing(null)
             }}
-            conjuntoId={conjuntoId}
+            complexId={complexId}
             vehiculo={editing}
           />
           <BulkImportDialog
@@ -190,52 +187,51 @@ function VehiculosPage() {
 }
 
 function VehiculosTable({
-  conjuntoId,
+  complexId,
   isAdmin,
   onEdit,
 }: {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   isAdmin: boolean
   onEdit: (v: VehiculoRow) => void
 }) {
   const { data } = useSuspenseQuery(
-    convexQuery(api.vehiculos.queries.listByConjunto, { conjuntoId }),
+    convexQuery(api.vehicles.queries.listByComplex, { complexId }),
   )
 
   const columns: ColumnDef<VehiculoRow>[] = [
     {
       id: 'placa',
       header: 'Placa',
-      accessorKey: 'placa',
+      accessorKey: 'plate',
       cell: ({ row }) => (
         <span className="font-mono font-medium">
-          {formatPlaca(row.original.placa)}
+          {formatPlaca(row.original.plate)}
         </span>
       ),
     },
     {
       id: 'tipo',
       header: 'Tipo',
-      accessorKey: 'tipo',
-      cell: ({ row }) => <Badge variant="outline">{row.original.tipo}</Badge>,
+      accessorKey: 'type',
+      cell: ({ row }) => <Badge variant="outline">{row.original.type}</Badge>,
     },
     {
       id: 'unidad',
       header: 'Unidad',
-      accessorFn: (v) =>
-        v.unidad ? `${v.unidad.torre}-${v.unidad.numero}` : '',
+      accessorFn: (v) => (v.unit ? `${v.unit.tower}-${v.unit.number}` : ''),
       cell: ({ row }) =>
-        row.original.unidad
-          ? `${row.original.unidad.torre}-${row.original.unidad.numero}`
+        row.original.unit
+          ? `${row.original.unit.tower}-${row.original.unit.number}`
           : '—',
     },
     {
       id: 'propietario',
       header: 'Propietario',
-      accessorFn: (v) => v.propietarioNombre ?? '',
+      accessorFn: (v) => v.ownerName ?? '',
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground">
-          {row.original.propietarioNombre ?? '—'}
+          {row.original.ownerName ?? '—'}
         </span>
       ),
     },

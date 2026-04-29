@@ -32,54 +32,57 @@ import { api } from '../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 
 type TipoDoc = 'CC' | 'CE' | 'PA'
-type ResidenteTipo = 'PROPIETARIO' | 'ARRENDATARIO' | 'FAMILIAR'
-type ResidenteRow = Doc<'residentes'> & { unidad: Doc<'unidades'> | null }
+type ResidenteTipo = 'OWNER' | 'LESSEE' | 'TENANT'
+type ResidenteRow = Doc<'residents'> & { unit: Doc<'units'> | null }
 
 interface ResidenteDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   residente: ResidenteRow | null
 }
 
 export function ResidenteDialog({
   open,
   onOpenChange,
-  conjuntoId,
+  complexId,
   residente,
 }: ResidenteDialogProps) {
   const isEdit = residente !== null
 
-  const [unidadId, setUnidadId] = useState<string>('')
-  const [nombres, setNombres] = useState('')
-  const [apellidos, setApellidos] = useState('')
+  const [unitId, setUnitId] = useState<string>('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [tipoDoc, setTipoDoc] = useState<TipoDoc>('CC')
-  const [numeroDoc, setNumeroDoc] = useState('')
-  const [telefono, setTelefono] = useState('')
+  const [documentNumber, setDocumentNumber] = useState('')
+  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
-  const [tipo, setTipo] = useState<ResidenteTipo>('PROPIETARIO')
+  const [tipo, setTipo] = useState<ResidenteTipo>('OWNER')
 
   useEffect(() => {
     if (open) {
-      setUnidadId(residente?.unidadId ?? '')
-      setNombres(residente?.nombres ?? '')
-      setApellidos(residente?.apellidos ?? '')
-      setTipoDoc((residente?.tipoDocumento ?? 'CC') as TipoDoc)
-      setNumeroDoc(residente?.numeroDocumento ?? '')
-      setTelefono(residente?.telefono ?? '')
+      setUnitId(residente?.unitId ?? '')
+      setFirstName(residente?.firstName ?? '')
+      setLastName(residente?.lastName ?? '')
+      setTipoDoc((residente?.documentType ?? 'CC') as TipoDoc)
+      setDocumentNumber(residente?.documentNumber ?? '')
+      setPhone(residente?.phone ?? '')
       setEmail(residente?.email ?? '')
-      setTipo((residente?.tipo ?? 'PROPIETARIO') as ResidenteTipo)
+      setTipo((residente?.type ?? 'OWNER') as ResidenteTipo)
     }
   }, [open, residente])
 
   const { data: unidadesData } = useSuspenseQuery(
-    convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
+    convexQuery(api.units.queries.listByComplex, { complexId }),
   )
-  const unidades = unidadesData.torres.flatMap((t) => t.unidades)
+  const unidades = unidadesData.towers.flatMap(
+    (t: { units: Array<{ _id: string; tower: string; number: string }> }) =>
+      t.units,
+  )
   const unidadOptions = buildUnidadOptions(unidades)
 
-  const createFn = useConvexMutation(api.residentes.mutations.create)
-  const updateFn = useConvexMutation(api.residentes.mutations.update)
+  const createFn = useConvexMutation(api.residents.mutations.create)
+  const updateFn = useConvexMutation(api.residents.mutations.update)
   const createMut = useMutation({ mutationFn: createFn })
   const updateMut = useMutation({ mutationFn: updateFn })
   const isPending = createMut.isPending || updateMut.isPending
@@ -89,28 +92,28 @@ export function ResidenteDialog({
     try {
       if (residente !== null) {
         await updateMut.mutateAsync({
-          residenteId: residente._id,
-          nombres,
-          apellidos,
-          telefono: telefono || undefined,
+          residentId: residente._id,
+          firstName,
+          lastName,
+          phone: phone || undefined,
           email: email || undefined,
-          tipo,
+          type: tipo,
         })
         toast.success('Residente actualizado')
       } else {
-        if (!unidadId) {
+        if (!unitId) {
           toast.error('Selecciona una unidad')
           return
         }
         await createMut.mutateAsync({
-          unidadId: unidadId as Id<'unidades'>,
-          nombres,
-          apellidos,
-          tipoDocumento: tipoDoc,
-          numeroDocumento: numeroDoc,
-          telefono: telefono || undefined,
+          unitId: unitId as Id<'units'>,
+          firstName,
+          lastName,
+          documentType: tipoDoc,
+          documentNumber,
+          phone: phone || undefined,
           email: email || undefined,
-          tipo,
+          type: tipo,
         })
         toast.success('Residente creado')
       }
@@ -139,8 +142,8 @@ export function ResidenteDialog({
               <Field>
                 <FieldLabel>Unidad</FieldLabel>
                 <SearchableSelect
-                  value={unidadId}
-                  onValueChange={setUnidadId}
+                  value={unitId}
+                  onValueChange={setUnitId}
                   options={unidadOptions}
                   placeholder="Selecciona una unidad"
                   searchPlaceholder="Buscar por torre o número..."
@@ -151,16 +154,16 @@ export function ResidenteDialog({
                 <Field>
                   <FieldLabel>Nombres</FieldLabel>
                   <Input
-                    value={nombres}
-                    onChange={(e) => setNombres(e.target.value)}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                     required
                   />
                 </Field>
                 <Field>
                   <FieldLabel>Apellidos</FieldLabel>
                   <Input
-                    value={apellidos}
-                    onChange={(e) => setApellidos(e.target.value)}
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                     required
                   />
                 </Field>
@@ -186,8 +189,8 @@ export function ResidenteDialog({
                   <Field className="col-span-2">
                     <FieldLabel>Número de documento</FieldLabel>
                     <DocumentInput
-                      value={numeroDoc}
-                      onChange={setNumeroDoc}
+                      value={documentNumber}
+                      onChange={setDocumentNumber}
                       required
                     />
                   </Field>
@@ -196,7 +199,7 @@ export function ResidenteDialog({
               <div className="grid grid-cols-2 gap-4">
                 <Field>
                   <FieldLabel>Teléfono</FieldLabel>
-                  <PhoneInput value={telefono} onChange={setTelefono} />
+                  <PhoneInput value={phone} onChange={setPhone} />
                 </Field>
                 <Field>
                   <FieldLabel>Email</FieldLabel>
@@ -217,9 +220,9 @@ export function ResidenteDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PROPIETARIO">Propietario</SelectItem>
-                    <SelectItem value="ARRENDATARIO">Arrendatario</SelectItem>
-                    <SelectItem value="FAMILIAR">Familiar</SelectItem>
+                    <SelectItem value="OWNER">Propietario</SelectItem>
+                    <SelectItem value="LESSEE">Arrendatario</SelectItem>
+                    <SelectItem value="TENANT">Inquilino</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>

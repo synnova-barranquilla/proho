@@ -45,7 +45,7 @@ interface RegistrarResidenteSheetProps {
   open: boolean
   onClose: () => void
   onSuccess?: () => void
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   placa: string
   placaRaw: string
   initialTipo?: TipoVehiculoSelectable
@@ -55,19 +55,19 @@ export function RegistrarResidenteSheet({
   open,
   onClose,
   onSuccess,
-  conjuntoId,
+  complexId,
   placa,
   placaRaw,
   initialTipo,
 }: RegistrarResidenteSheetProps) {
   const [selectedUnidadId, setSelectedUnidadId] = useState<string>('')
   const [tipo, setTipo] = useState<TipoVehiculoSelectable>(
-    initialTipo ?? detectPlacaTipo(placa) ?? 'CARRO',
+    initialTipo ?? detectPlacaTipo(placa) ?? 'CAR',
   )
   const [propietario, setPropietario] = useState('')
   const [violations, setViolations] = useState<RuleViolation[]>([])
-  const [justificacion, setJustificacion] = useState('')
-  const [observaciones, setObservaciones] = useState('')
+  const [justification, setJustification] = useState('')
+  const [observations, setObservations] = useState('')
   const [showViolations, setShowViolations] = useState(false)
 
   // Mantener tipo sincronizado si la placa cambia (no debería ocurrir aquí,
@@ -81,23 +81,26 @@ export function RegistrarResidenteSheet({
   const showPlacaError = placa.length === 6 && !placaValida
 
   const { data: unidadesData } = useSuspenseQuery(
-    convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
+    convexQuery(api.units.queries.listByComplex, { complexId }),
   )
-  const unidades = unidadesData.torres.flatMap((t) => t.unidades)
+  const unidades = unidadesData.towers.flatMap(
+    (t: { units: Array<{ _id: string; tower: string; number: string }> }) =>
+      t.units,
+  )
   const unidadOptions = buildUnidadOptions(unidades)
 
   const registrarFn = useConvexMutation(
-    api.registrosAcceso.mutations.registrarResidenteNuevo,
+    api.accessRecords.mutations.registerNewResident,
   )
   const registrarMut = useMutation({ mutationFn: registrarFn })
 
   const handleClose = () => {
     setSelectedUnidadId('')
-    setTipo(initialTipo ?? detectPlacaTipo(placa) ?? 'CARRO')
+    setTipo(initialTipo ?? detectPlacaTipo(placa) ?? 'CAR')
     setPropietario('')
     setViolations([])
-    setJustificacion('')
-    setObservaciones('')
+    setJustification('')
+    setObservations('')
     setShowViolations(false)
     onClose()
   }
@@ -121,22 +124,22 @@ export function RegistrarResidenteSheet({
     }
     try {
       const result = await registrarMut.mutateAsync({
-        conjuntoId,
-        placaRaw,
-        unidadId: selectedUnidadId as Id<'unidades'>,
-        vehiculoTipo: tipo,
-        propietarioNombre: propietario.trim() || undefined,
-        ...(extras.soloRegistrar ? { soloRegistrar: true } : {}),
+        complexId,
+        rawPlate: placaRaw,
+        unitId: selectedUnidadId as Id<'units'>,
+        vehicleType: tipo,
+        ownerName: propietario.trim() || undefined,
+        ...(extras.soloRegistrar ? { registerOnly: true } : {}),
         ...(extras.forzarPermitido
           ? {
-              forzarPermitido: true,
-              justificacion: justificacion.trim(),
-              observaciones: observaciones.trim() || undefined,
+              forcePermitted: true,
+              justification: justification.trim(),
+              observations: observations.trim() || undefined,
             }
           : {}),
       })
 
-      if ('requiresJustificacion' in result && result.requiresJustificacion) {
+      if ('requiresJustification' in result && result.requiresJustification) {
         setViolations(result.violations)
         setShowViolations(true)
         return
@@ -175,7 +178,7 @@ export function RegistrarResidenteSheet({
     isPending ||
     !selectedUnidadId ||
     !placaValida ||
-    (showViolations && !justificacion.trim())
+    (showViolations && !justification.trim())
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -239,8 +242,8 @@ export function RegistrarResidenteSheet({
               <Field>
                 <FieldLabel>Justificación</FieldLabel>
                 <Textarea
-                  value={justificacion}
-                  onChange={(e) => setJustificacion(e.target.value)}
+                  value={justification}
+                  onChange={(e) => setJustification(e.target.value)}
                   placeholder="Explique por qué se permite el ingreso..."
                   className="min-h-20"
                   required
@@ -249,8 +252,8 @@ export function RegistrarResidenteSheet({
               <Field>
                 <FieldLabel>Observaciones (opcional)</FieldLabel>
                 <Textarea
-                  value={observaciones}
-                  onChange={(e) => setObservaciones(e.target.value)}
+                  value={observations}
+                  onChange={(e) => setObservations(e.target.value)}
                   placeholder="Observaciones adicionales del vigilante..."
                   className="min-h-16"
                 />

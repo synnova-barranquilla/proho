@@ -12,7 +12,7 @@ function reducer(
 
     case 'RESULTADO_PERMITIDO':
       return {
-        screen: 'PERMITIDO',
+        screen: 'ALLOWED',
         placa: '',
         registroId: action.registroId,
         violations: action.violations,
@@ -24,7 +24,7 @@ function reducer(
         placa: action.placaRaw,
         placaRaw: action.placaRaw,
         violations: action.violations,
-        vehiculoId: action.vehiculoId,
+        vehicleId: action.vehicleId,
         unidadInfo: action.unidadInfo,
       }
 
@@ -38,7 +38,7 @@ function reducer(
     case 'RESULTADO_YA_DENTRO':
       return {
         screen: 'YA_DENTRO',
-        placa: action.registro.placaNormalizada,
+        placa: action.registro.normalizedPlate,
         registro: action.registro,
       }
 

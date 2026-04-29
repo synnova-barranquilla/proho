@@ -18,24 +18,24 @@ import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
-interface ConjuntoSwitcherProps {
-  current: Doc<'conjuntos'>
+interface ComplexSwitcherProps {
+  current: Doc<'complexes'>
 }
 
-export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
+export function ComplexSwitcher({ current }: ComplexSwitcherProps) {
   const navigate = useNavigate()
-  const { data: conjuntos } = useQuery(
-    convexQuery(api.conjuntos.queries.listForCurrentUser, {}),
+  const { data: complexes } = useQuery(
+    convexQuery(api.complexes.queries.listForCurrentUser, {}),
   )
 
-  const list = conjuntos ?? []
+  const list = complexes ?? []
   const hasMultiple = list.length > 1
 
   if (!hasMultiple) {
     return (
       <div className="flex max-w-[220px] items-center gap-2 rounded-md border px-3 py-1.5">
         <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <span className="truncate text-sm font-medium">{current.nombre}</span>
+        <span className="truncate text-sm font-medium">{current.name}</span>
       </div>
     )
   }
@@ -53,7 +53,7 @@ export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
       >
         <div className="flex items-center gap-2 overflow-hidden">
           <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="truncate text-sm font-medium">{current.nombre}</span>
+          <span className="truncate text-sm font-medium">{current.name}</span>
         </div>
         <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
@@ -70,17 +70,17 @@ export function ConjuntoSwitcher({ current }: ConjuntoSwitcherProps) {
               onClick={() => {
                 if (!isCurrent) {
                   navigate({
-                    to: '/c/$conjuntoSlug',
-                    params: { conjuntoSlug: c.slug },
+                    to: '/c/$complexSlug',
+                    params: { complexSlug: c.slug },
                   })
                 }
               }}
             >
               <Building2 className="mr-2 h-4 w-4 text-muted-foreground" />
               <div className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-medium">{c.nombre}</span>
+                <span className="truncate text-sm font-medium">{c.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {c.ciudad}
+                  {c.city}
                 </span>
               </div>
               <Check

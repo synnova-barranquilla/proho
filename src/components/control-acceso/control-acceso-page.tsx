@@ -1,7 +1,7 @@
 import { Suspense, useState } from 'react'
 
 import { Skeleton } from '#/components/ui/skeleton'
-import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
+import { useIsComplexAdmin } from '#/lib/complex-role'
 import { cn } from '#/lib/utils'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { DashboardTab } from './dashboard-tab'
@@ -25,12 +25,12 @@ const TABS: TabDef[] = [
 ]
 
 interface ControlAccesoPageProps {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
 }
 
-export function ControlAccesoPage({ conjuntoId }: ControlAccesoPageProps) {
+export function ControlAccesoPage({ complexId }: ControlAccesoPageProps) {
   const [activeTab, setActiveTab] = useState<Tab>('operacion')
-  const isAdmin = useIsConjuntoAdmin()
+  const isAdmin = useIsComplexAdmin()
 
   const visibleTabs = TABS.filter((t) => !t.adminOnly || isAdmin)
 
@@ -72,18 +72,10 @@ export function ControlAccesoPage({ conjuntoId }: ControlAccesoPageProps) {
         )}
       >
         <Suspense fallback={<TabSkeleton />}>
-          {activeTab === 'operacion' && (
-            <OperacionTab conjuntoId={conjuntoId} />
-          )}
-          {activeTab === 'dashboard' && (
-            <DashboardTab conjuntoId={conjuntoId} />
-          )}
-          {activeTab === 'historico' && (
-            <HistoricoTab conjuntoId={conjuntoId} />
-          )}
-          {activeTab === 'novedades' && (
-            <NovedadesTab conjuntoId={conjuntoId} />
-          )}
+          {activeTab === 'operacion' && <OperacionTab complexId={complexId} />}
+          {activeTab === 'dashboard' && <DashboardTab complexId={complexId} />}
+          {activeTab === 'historico' && <HistoricoTab complexId={complexId} />}
+          {activeTab === 'novedades' && <NovedadesTab complexId={complexId} />}
         </Suspense>
       </div>
     </div>

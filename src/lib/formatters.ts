@@ -57,9 +57,9 @@ export function formatPlaca(raw: string): string {
 
 // --- Duracion ---------------------------------------------------------------
 
-export function formatDuracion(entradaEn: number | undefined): string {
-  if (entradaEn == null) return '—'
-  const diff = Date.now() - entradaEn
+export function formatDuracion(enteredAt: number | undefined): string {
+  if (enteredAt == null) return '—'
+  const diff = Date.now() - enteredAt
   const mins = Math.floor(diff / 60_000)
   if (mins < 1) return '< 1m'
   if (mins < 60) return `${mins}m`

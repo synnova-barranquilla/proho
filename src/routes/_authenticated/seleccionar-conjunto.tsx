@@ -31,15 +31,15 @@ export const Route = createFileRoute('/_authenticated/seleccionar-conjunto')({
   loader: async ({ context: { queryClient } }) => {
     const conjuntos = await prefetchAuthenticatedQuery(
       queryClient,
-      api.conjuntos.queries.listForCurrentUser,
+      api.complexes.queries.listForCurrentUser,
       {},
     )
 
     // Si solo hay un conjunto accesible, redirect directo.
     if (conjuntos.length === 1) {
       throw redirect({
-        to: '/c/$conjuntoSlug',
-        params: { conjuntoSlug: conjuntos[0].slug },
+        to: '/c/$complexSlug',
+        params: { complexSlug: conjuntos[0].slug },
       })
     }
 
@@ -96,7 +96,7 @@ function ConjuntosGrid({
 }) {
   const navigate = useNavigate()
   const { data: conjuntos } = useSuspenseQuery(
-    convexQuery(api.conjuntos.queries.listForCurrentUser, {}),
+    convexQuery(api.complexes.queries.listForCurrentUser, {}),
   )
 
   if (conjuntos.length === 0) {
@@ -105,14 +105,14 @@ function ConjuntosGrid({
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {conjuntos.map((c: Doc<'conjuntos'>) => (
+      {conjuntos.map((c: Doc<'complexes'>) => (
         <button
           key={c._id}
           type="button"
           onClick={() =>
             navigate({
-              to: '/c/$conjuntoSlug',
-              params: { conjuntoSlug: c.slug },
+              to: '/c/$complexSlug',
+              params: { complexSlug: c.slug },
             })
           }
           className="group text-left"
@@ -122,10 +122,10 @@ function ConjuntosGrid({
               <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <Building2 className="h-5 w-5" />
               </div>
-              <CardTitle className="text-lg">{c.nombre}</CardTitle>
+              <CardTitle className="text-lg">{c.name}</CardTitle>
               <CardDescription className="flex items-center gap-1 text-xs">
                 <MapPin className="h-3 w-3" />
-                {c.direccion}, {c.ciudad}
+                {c.address}, {c.city}
               </CardDescription>
             </CardHeader>
             <CardContent>

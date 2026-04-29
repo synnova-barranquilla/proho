@@ -58,8 +58,8 @@ export function InviteAdminDialog({
   const mutation = useMutation({ mutationFn })
 
   const [makeOwner, setMakeOwner] = useState(false)
-  const [selectedConjuntoIds, setSelectedConjuntoIds] = useState<
-    Array<Id<'conjuntos'>>
+  const [selectedComplexIds, setSelectedConjuntoIds] = useState<
+    Array<Id<'complexes'>>
   >([])
 
   // Only fetch the orgs list if we need to show the picker.
@@ -75,8 +75,8 @@ export function InviteAdminDialog({
   )
 
   // Conjuntos for the selected org (super admin sees all).
-  const conjuntosQuery = useQuery({
-    ...convexQuery(api.conjuntos.queries.listAllForSuperAdmin, {}),
+  const complexesQuery = useQuery({
+    ...convexQuery(api.complexes.queries.listAllForSuperAdmin, {}),
     enabled: open,
   })
 
@@ -102,9 +102,9 @@ export function InviteAdminDialog({
           lastName: value.lastName,
           orgRole: 'ADMIN',
           isOrgOwnerOnAccept: makeOwner || undefined,
-          conjuntoIdsOnAccept:
-            !makeOwner && selectedConjuntoIds.length > 0
-              ? selectedConjuntoIds
+          complexIdsOnAccept:
+            !makeOwner && selectedComplexIds.length > 0
+              ? selectedComplexIds
               : undefined,
         })
         toast.success('Invitación creada', {
@@ -150,7 +150,7 @@ export function InviteAdminDialog({
   // When initialOrgId is set the org is fixed; otherwise read from form state.
   const currentOrgId =
     initialOrgId ?? (form.state.values.organizationId || undefined)
-  const orgConjuntos = (conjuntosQuery.data ?? []).filter(
+  const orgComplexes = (complexesQuery.data ?? []).filter(
     (c) => c.organizationId === currentOrgId && c.active,
   )
 
@@ -313,15 +313,15 @@ export function InviteAdminDialog({
                 </div>
               </div>
 
-              {!makeOwner && orgConjuntos.length > 0 ? (
+              {!makeOwner && orgComplexes.length > 0 ? (
                 <Field>
                   <FieldLabel>Conjuntos a asignar</FieldLabel>
                   <FieldDescription>
                     Selecciona los conjuntos a los que tendrá acceso.
                   </FieldDescription>
                   <div className="flex flex-wrap gap-1.5 rounded-md border p-2">
-                    {orgConjuntos.map((c) => {
-                      const selected = selectedConjuntoIds.includes(c._id)
+                    {orgComplexes.map((c) => {
+                      const selected = selectedComplexIds.includes(c._id)
                       return (
                         <Badge
                           key={c._id}
@@ -335,7 +335,7 @@ export function InviteAdminDialog({
                             )
                           }
                         >
-                          {c.nombre}
+                          {c.name}
                         </Badge>
                       )
                     })}

@@ -13,24 +13,24 @@ interface RegistrosRecientesTableProps {
 }
 
 const TIPO_VEHICULO_ICON: Record<string, LucideIcon> = {
-  CARRO: Car,
-  MOTO: Bike,
-  OTRO: Car,
+  CAR: Car,
+  MOTORCYCLE: Bike,
+  OTHER: Car,
 }
 
 const TIPO_REGISTRO_LABEL: Record<string, string> = {
-  RESIDENTE: 'Residente',
-  VISITANTE: 'Visitante',
-  VISITA_ADMIN: 'Visita admin',
+  RESIDENT: 'Residente',
+  VISITOR: 'Visitante',
+  ADMIN_VISIT: 'Visita admin',
 }
 
 const TIPO_REGISTRO_VARIANT: Record<
   string,
   'default' | 'secondary' | 'outline'
 > = {
-  RESIDENTE: 'default',
-  VISITANTE: 'secondary',
-  VISITA_ADMIN: 'outline',
+  RESIDENT: 'default',
+  VISITOR: 'secondary',
+  ADMIN_VISIT: 'outline',
 }
 
 function formatHora(timestamp: number): string {
@@ -50,7 +50,7 @@ const sharedColumns: ColumnDef<RegistroReciente, unknown>[] = [
     header: 'Placa',
     cell: ({ row }) => (
       <span className="font-mono text-base font-medium">
-        {formatPlaca(row.original.placaNormalizada)}
+        {formatPlaca(row.original.normalizedPlate)}
       </span>
     ),
   },
@@ -60,26 +60,28 @@ const sharedColumns: ColumnDef<RegistroReciente, unknown>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const tipo =
-        row.original.vehiculoTipoVisitante ??
-        row.original.vehiculo?.tipo ??
-        'CARRO'
+        row.original.visitorVehicleType ?? row.original.vehicle?.type ?? 'CAR'
       const Icon = TIPO_VEHICULO_ICON[tipo] ?? Car
       return (
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <Icon className="h-4 w-4" />
           <span className="text-sm">
-            {tipo === 'MOTO' ? 'Moto' : tipo === 'OTRO' ? 'Otro' : 'Carro'}
+            {tipo === 'MOTORCYCLE'
+              ? 'Moto'
+              : tipo === 'OTHER'
+                ? 'Otro'
+                : 'Carro'}
           </span>
         </span>
       )
     },
   },
   {
-    accessorKey: 'tipo',
+    accessorKey: 'type',
     header: 'Registro',
     cell: ({ row }) => (
-      <Badge variant={TIPO_REGISTRO_VARIANT[row.original.tipo] ?? 'default'}>
-        {TIPO_REGISTRO_LABEL[row.original.tipo] ?? row.original.tipo}
+      <Badge variant={TIPO_REGISTRO_VARIANT[row.original.type] ?? 'default'}>
+        {TIPO_REGISTRO_LABEL[row.original.type] ?? row.original.type}
       </Badge>
     ),
   },
@@ -87,11 +89,11 @@ const sharedColumns: ColumnDef<RegistroReciente, unknown>[] = [
     id: 'unidad',
     header: 'Unidad',
     cell: ({ row }) => {
-      const u = row.original.unidad
+      const u = row.original.unit
       if (!u) return <span className="text-muted-foreground">—</span>
       return (
         <span className="text-sm">
-          T{u.torre} — {u.numero}
+          T{u.tower} — {u.number}
         </span>
       )
     },
@@ -105,7 +107,7 @@ const activosColumns: ColumnDef<RegistroReciente, unknown>[] = [
     header: 'Duración',
     cell: ({ row }) => (
       <span className="text-sm tabular-nums text-muted-foreground">
-        {formatDuracion(row.original.entradaEn)}
+        {formatDuracion(row.original.enteredAt)}
       </span>
     ),
   },
@@ -114,7 +116,7 @@ const activosColumns: ColumnDef<RegistroReciente, unknown>[] = [
     header: 'Ingreso',
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {formatHora(row.original.eventoEn)}
+        {formatHora(row.original.eventAt)}
       </span>
     ),
   },
@@ -127,7 +129,7 @@ const recientesColumns: ColumnDef<RegistroReciente, unknown>[] = [
     header: 'Evento',
     enableSorting: false,
     cell: ({ row }) => {
-      const esSalida = row.original.evento === 'SALIDA'
+      const esSalida = row.original.event === 'SALIDA'
       return (
         <span
           className={`flex items-center gap-1.5 text-sm ${esSalida ? 'text-amber-600' : 'text-green-600'}`}
@@ -147,7 +149,7 @@ const recientesColumns: ColumnDef<RegistroReciente, unknown>[] = [
     header: 'Hora',
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {formatHora(row.original.eventoEn)}
+        {formatHora(row.original.eventAt)}
       </span>
     ),
   },

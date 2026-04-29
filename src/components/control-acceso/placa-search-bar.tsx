@@ -9,7 +9,7 @@ import { formatPlaca } from '#/lib/formatters'
 import type { Doc } from '../../../convex/_generated/dataModel'
 import { isPlacaValida, normalizePlaca } from '../../../convex/lib/placa'
 
-type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
+type VehiculoRow = Doc<'vehicles'> & { unit: Doc<'units'> | null }
 
 interface PlacaSearchBarProps {
   onSubmit: (placa: string) => void
@@ -34,7 +34,7 @@ export function PlacaSearchBar({
   const suggestions = useMemo(() => {
     if (!placaNorm || placaNorm.length < 2) return []
     return vehiculos
-      .filter((v) => v.active && v.placa.includes(placaNorm))
+      .filter((v) => v.active && v.plate.includes(placaNorm))
       .slice(0, 8)
   }, [placaNorm, vehiculos])
 
@@ -64,10 +64,10 @@ export function PlacaSearchBar({
 
   const handleSelect = (vehiculo: VehiculoRow) => {
     justSubmittedRef.current = true
-    setPlaca(vehiculo.placa)
+    setPlaca(vehiculo.plate)
     setShowDropdown(false)
     setSelectedIndex(-1)
-    onSubmit(vehiculo.placa)
+    onSubmit(vehiculo.plate)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -168,8 +168,8 @@ export function PlacaSearchBar({
           className="absolute bottom-full z-50 mb-1 w-full rounded-md border bg-popover shadow-lg"
         >
           {suggestions.map((veh, i) => {
-            const Icon = veh.tipo === 'MOTO' ? Bike : Car
-            const unidad = veh.unidad
+            const Icon = veh.type === 'MOTORCYCLE' ? Bike : Car
+            const unidad = veh.unit
             return (
               <button
                 key={veh._id}
@@ -184,18 +184,18 @@ export function PlacaSearchBar({
               >
                 <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="font-mono text-base font-medium">
-                  {formatPlaca(veh.placa)}
+                  {formatPlaca(veh.plate)}
                 </span>
                 <Badge variant="outline" className="text-xs">
-                  {veh.tipo === 'MOTO'
+                  {veh.type === 'MOTORCYCLE'
                     ? 'Moto'
-                    : veh.tipo === 'OTRO'
+                    : veh.type === 'OTHER'
                       ? 'Otro'
                       : 'Carro'}
                 </Badge>
                 {unidad && (
                   <span className="ml-auto text-sm text-muted-foreground">
-                    T{unidad.torre} — {unidad.numero}
+                    T{unidad.tower} — {unidad.number}
                   </span>
                 )}
               </button>

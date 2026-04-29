@@ -32,73 +32,70 @@ import {
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { NumberInput } from '#/components/ui/number-input'
 import { Skeleton } from '#/components/ui/skeleton'
-import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
+import { useIsComplexAdmin } from '#/lib/complex-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 
-export const Route = createFileRoute('/_authenticated/c/$conjuntoSlug/')({
-  loader: async ({ context: { queryClient, conjuntoId } }) => {
+export const Route = createFileRoute('/_authenticated/c/$complexSlug/')({
+  loader: async ({ context: { queryClient, complexId } }) => {
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
-        api.conjuntos.queries.getWithStats,
-        { conjuntoId },
+        api.complexes.queries.getWithStats,
+        { complexId },
       ),
       prefetchAuthenticatedQuery(
         queryClient,
-        api.registrosAcceso.queries.getDashboardStats,
-        { conjuntoId },
+        api.accessRecords.queries.getDashboardStats,
+        { complexId },
       ),
       prefetchAuthenticatedQuery(
         queryClient,
-        api.conjuntoConfig.queries.getByConjunto,
-        { conjuntoId },
+        api.complexConfig.queries.getByComplex,
+        { complexId },
       ),
     ])
     return null
   },
-  component: ConjuntoDashboardPage,
+  component: ComplexDashboardPage,
 })
 
-function ConjuntoDashboardPage() {
+function ComplexDashboardPage() {
   const ctx = Route.useRouteContext()
-  const conjuntoId = ctx.conjuntoId
+  const complexId = ctx.complexId
   const activeModules = (ctx as any).activeModules as string[] | undefined
   const hasControlAcceso = activeModules?.includes('control_acceso') ?? false
 
   return (
     <div className="flex flex-col gap-6">
       <Suspense fallback={<DashboardSkeleton />}>
-        <Dashboard
-          conjuntoId={conjuntoId}
-          hasControlAcceso={hasControlAcceso}
-        />
+        <Dashboard complexId={complexId} hasControlAcceso={hasControlAcceso} />
       </Suspense>
     </div>
   )
 }
 
 function Dashboard({
-  conjuntoId,
+  complexId,
   hasControlAcceso,
 }: {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   hasControlAcceso: boolean
 }) {
   const { data } = useSuspenseQuery(
-    convexQuery(api.conjuntos.queries.getWithStats, { conjuntoId }),
+    convexQuery(api.complexes.queries.getWithStats, { complexId }),
   )
-  const { conjunto, stats } = data
+  const { complex, stats } = data
 
   return (
     <>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {conjunto.nombre}
+          {complex.name}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {conjunto.direccion}, {conjunto.ciudad}
+          {complex.address}, {complex.city}
         </p>
       </div>
 
@@ -106,52 +103,52 @@ function Dashboard({
         <StatCard
           icon={<SquareStack className="h-4 w-4" />}
           label="Unidades"
-          value={stats.unidades}
+          value={stats.units}
           sub={
-            stats.unidadesEnMora > 0
-              ? `${stats.unidadesEnMora} en mora`
+            stats.unitsInArrears > 0
+              ? `${stats.unitsInArrears} en mora`
               : 'Ninguna en mora'
           }
-          highlight={stats.unidadesEnMora > 0}
+          highlight={stats.unitsInArrears > 0}
         />
         <StatCard
           icon={<UsersRound className="h-4 w-4" />}
           label="Residentes"
-          value={stats.residentesActivos}
+          value={stats.activeResidents}
           sub="activos"
         />
         <StatCard
           icon={<Car className="h-4 w-4" />}
           label="Vehículos"
-          value={stats.vehiculosActivos}
+          value={stats.activeVehicles}
           sub="activos"
         />
         {hasControlAcceso && (
           <ParkingCard
-            conjuntoId={conjuntoId}
-            carros={stats.parqueaderosCarros}
-            motos={stats.parqueaderosMotos}
+            complexId={complexId}
+            carros={stats.carParkingSlots}
+            motos={stats.motoParkingSlots}
           />
         )}
       </div>
 
       {hasControlAcceso && (
-        <ParkingResumen conjuntoId={conjuntoId} conjuntoSlug={conjunto.slug} />
+        <ParkingResumen complexId={complexId} complexSlug={complex.slug} />
       )}
     </>
   )
 }
 
 function ParkingCard({
-  conjuntoId,
+  complexId,
   carros,
   motos,
 }: {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   carros: number
   motos: number
 }) {
-  const isAdmin = useIsConjuntoAdmin()
+  const isAdmin = useIsComplexAdmin()
   const [open, setOpen] = useState(false)
 
   return (
@@ -191,7 +188,7 @@ function ParkingCard({
         <ParkingSettingsDialog
           open={open}
           onOpenChange={setOpen}
-          conjuntoId={conjuntoId}
+          complexId={complexId}
           initialCarros={carros}
           initialMotos={motos}
         />
@@ -203,13 +200,13 @@ function ParkingCard({
 function ParkingSettingsDialog({
   open,
   onOpenChange,
-  conjuntoId,
+  complexId,
   initialCarros,
   initialMotos,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   initialCarros: number
   initialMotos: number
 }) {
@@ -217,22 +214,22 @@ function ParkingSettingsDialog({
   const [motos, setMotos] = useState(initialMotos)
 
   const { data: config } = useSuspenseQuery(
-    convexQuery(api.conjuntoConfig.queries.getByConjunto, { conjuntoId }),
+    convexQuery(api.complexConfig.queries.getByComplex, { complexId }),
   )
 
-  const mutationFn = useConvexMutation(api.conjuntoConfig.mutations.upsert)
+  const mutationFn = useConvexMutation(api.complexConfig.mutations.upsert)
   const mutation = useMutation({ mutationFn })
 
   const handleSave = async () => {
     try {
       await mutation.mutateAsync({
-        conjuntoId,
-        reglaIngresoEnMora: config?.reglaIngresoEnMora ?? true,
-        reglaVehiculoDuplicado: config?.reglaVehiculoDuplicado ?? true,
-        reglaPermanenciaMaxDias: config?.reglaPermanenciaMaxDias ?? 30,
-        reglaIngresoEnSobrecupo: config?.reglaIngresoEnSobrecupo ?? true,
-        parqueaderosCarros: carros,
-        parqueaderosMotos: motos,
+        complexId,
+        ruleEntryInArrears: config?.ruleEntryInArrears ?? true,
+        ruleDuplicateVehicle: config?.ruleDuplicateVehicle ?? true,
+        ruleMaxStayDays: config?.ruleMaxStayDays ?? 30,
+        ruleEntryOverCapacity: config?.ruleEntryOverCapacity ?? true,
+        carParkingSlots: carros,
+        motoParkingSlots: motos,
       })
       toast.success('Capacidad de parqueaderos actualizada')
       onOpenChange(false)
@@ -282,15 +279,15 @@ function ParkingSettingsDialog({
 }
 
 function ParkingResumen({
-  conjuntoId,
-  conjuntoSlug,
+  complexId,
+  complexSlug,
 }: {
-  conjuntoId: Id<'conjuntos'>
-  conjuntoSlug: string
+  complexId: Id<'complexes'>
+  complexSlug: string
 }) {
   const { data: stats } = useSuspenseQuery(
-    convexQuery(api.registrosAcceso.queries.getDashboardStats, {
-      conjuntoId,
+    convexQuery(api.accessRecords.queries.getDashboardStats, {
+      complexId,
     }),
   )
 
@@ -302,8 +299,8 @@ function ParkingResumen({
           <CardTitle className="text-base">Control de acceso</CardTitle>
         </div>
         <Link
-          to="/c/$conjuntoSlug/control-acceso"
-          params={{ conjuntoSlug }}
+          to="/c/$complexSlug/control-acceso"
+          params={{ complexSlug }}
           className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >
           Ver todo
@@ -315,21 +312,21 @@ function ParkingResumen({
           <div className="flex items-center gap-2">
             <Car className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-2xl font-semibold">{stats.vehiculosDentro}</p>
+              <p className="text-2xl font-semibold">{stats.vehiclesInside}</p>
               <p className="text-xs text-muted-foreground">dentro ahora</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <LogIn className="h-4 w-4 text-green-600" />
             <div>
-              <p className="text-2xl font-semibold">{stats.ingresosHoy}</p>
+              <p className="text-2xl font-semibold">{stats.entriesToday}</p>
               <p className="text-xs text-muted-foreground">ingresos hoy</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <div>
-              <p className="text-2xl font-semibold">{stats.rechazosHoy}</p>
+              <p className="text-2xl font-semibold">{stats.rejectsToday}</p>
               <p className="text-xs text-muted-foreground">rechazos hoy</p>
             </div>
           </div>

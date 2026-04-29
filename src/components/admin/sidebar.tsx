@@ -5,6 +5,7 @@ import {
   Building2,
   Car,
   Home,
+  MessageSquare,
   Settings,
   Shield,
   ShieldCheck,
@@ -24,56 +25,58 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '#/components/ui/sidebar'
-import { isConjuntoAdmin } from '#/lib/conjunto-role'
+import { isComplexAdmin } from '#/lib/complex-role'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
-interface ConjuntoSidebarProps {
-  conjunto: Doc<'conjuntos'> | null
-  membership: Doc<'conjuntoMemberships'> | null
-  fromConjunto?: Doc<'conjuntos'> | null
+interface ComplexSidebarProps {
+  complex: Doc<'complexes'> | null
+  membership: Doc<'complexMemberships'> | null
+  fromComplex?: Doc<'complexes'> | null
   activeModules?: string[]
 }
 
 const authenticatedRoute = getRouteApi('/_authenticated')
 
-export function ConjuntoSidebar({
-  conjunto,
+export function ComplexSidebar({
+  complex,
   membership,
-  fromConjunto,
+  fromComplex,
   activeModules = [],
-}: ConjuntoSidebarProps) {
+}: ComplexSidebarProps) {
   const location = useLocation()
   const pathname = location.pathname
   const { convexUser, organization } = authenticatedRoute.useLoaderData()
   const isOrgOwner = convexUser.isOrgOwner === true
   const isSuperAdmin = convexUser.orgRole === 'SUPER_ADMIN'
 
-  if (conjunto === null) {
+  if (complex === null) {
     return (
       <OrgLevelSidebar
         orgName={organization.name}
         pathname={pathname}
-        fromConjunto={fromConjunto ?? null}
+        fromComplex={fromComplex ?? null}
         isOrgOwner={isOrgOwner}
         isSuperAdmin={isSuperAdmin}
       />
     )
   }
 
-  // Conjunto-scoped: derive the effective role to decide which items
+  // Complex-scoped: derive the effective role to decide which items
   // to show. The backend already enforces these checks on every
   // mutation; this is front-end gating for UX clarity.
-  const isAdmin = isConjuntoAdmin(convexUser, conjunto, membership)
+  const isAdmin = isComplexAdmin(convexUser, complex, membership)
   const hasControlAcceso = activeModules.includes('control_acceso')
+  const hasCommunications = activeModules.includes('communications')
 
   return (
-    <ConjuntoScopedSidebar
-      conjunto={conjunto}
+    <ComplexScopedSidebar
+      complex={complex}
       pathname={pathname}
       isAdmin={isAdmin}
       isOrgOwner={isOrgOwner}
       isSuperAdmin={isSuperAdmin}
       hasControlAcceso={hasControlAcceso}
+      hasCommunications={hasCommunications}
     />
   )
 }
@@ -85,13 +88,13 @@ export function ConjuntoSidebar({
 function OrgLevelSidebar({
   orgName,
   pathname,
-  fromConjunto,
+  fromComplex,
   isOrgOwner,
   isSuperAdmin,
 }: {
   orgName: string
   pathname: string
-  fromConjunto: Doc<'conjuntos'> | null
+  fromComplex: Doc<'complexes'> | null
   isOrgOwner: boolean
   isSuperAdmin: boolean
 }) {
@@ -128,17 +131,17 @@ function OrgLevelSidebar({
                   />
                 </SidebarMenuItem>
               ) : null}
-              {fromConjunto ? (
+              {fromComplex ? (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     render={
                       <Link
-                        to="/c/$conjuntoSlug"
-                        params={{ conjuntoSlug: fromConjunto.slug }}
+                        to="/c/$complexSlug"
+                        params={{ complexSlug: fromComplex.slug }}
                       >
                         <ArrowLeft />
                         <span className="truncate">
-                          Volver a {fromConjunto.nombre}
+                          Volver a {fromComplex.name}
                         </span>
                       </Link>
                     }
@@ -185,25 +188,27 @@ function OrgLevelSidebar({
 }
 
 // ---------------------------------------------------------------------------
-// Conjunto-scoped sidebar (used by /c/$conjuntoSlug/*)
+// Complex-scoped sidebar (used by /c/$complexSlug/*)
 // ---------------------------------------------------------------------------
 
-function ConjuntoScopedSidebar({
-  conjunto,
+function ComplexScopedSidebar({
+  complex,
   pathname,
   isAdmin,
   isOrgOwner,
   isSuperAdmin,
   hasControlAcceso,
+  hasCommunications,
 }: {
-  conjunto: Doc<'conjuntos'>
+  complex: Doc<'complexes'>
   pathname: string
   isAdmin: boolean
   isOrgOwner: boolean
   isSuperAdmin: boolean
   hasControlAcceso: boolean
+  hasCommunications: boolean
 }) {
-  const base = `/c/${conjunto.slug}`
+  const base = `/c/${complex.slug}`
 
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(path + '/')
@@ -222,11 +227,9 @@ function ConjuntoScopedSidebar({
               <Building2 className="h-4 w-4" />
             </div>
             <div className="flex flex-col overflow-hidden">
-              <h2 className="truncate text-sm font-semibold">
-                {conjunto.nombre}
-              </h2>
+              <h2 className="truncate text-sm font-semibold">{complex.name}</h2>
               <p className="truncate text-xs text-muted-foreground">
-                {conjunto.ciudad}
+                {complex.city}
               </p>
             </div>
           </div>
@@ -261,8 +264,8 @@ function ConjuntoScopedSidebar({
                   isActive={pathname === base}
                   render={
                     <Link
-                      to="/c/$conjuntoSlug"
-                      params={{ conjuntoSlug: conjunto.slug }}
+                      to="/c/$complexSlug"
+                      params={{ complexSlug: complex.slug }}
                     >
                       <Home />
                       <span>Inicio</span>
@@ -285,8 +288,8 @@ function ConjuntoScopedSidebar({
                       isActive={isActive(`${base}/unidades`)}
                       render={
                         <Link
-                          to="/c/$conjuntoSlug/unidades"
-                          params={{ conjuntoSlug: conjunto.slug }}
+                          to="/c/$complexSlug/unidades"
+                          params={{ complexSlug: complex.slug }}
                         >
                           <SquareStack />
                           <span>Unidades</span>
@@ -299,8 +302,8 @@ function ConjuntoScopedSidebar({
                       isActive={isActive(`${base}/residentes`)}
                       render={
                         <Link
-                          to="/c/$conjuntoSlug/residentes"
-                          params={{ conjuntoSlug: conjunto.slug }}
+                          to="/c/$complexSlug/residentes"
+                          params={{ complexSlug: complex.slug }}
                         >
                           <UsersRound />
                           <span>Residentes</span>
@@ -315,8 +318,8 @@ function ConjuntoScopedSidebar({
                   isActive={isActive(`${base}/vehiculos`)}
                   render={
                     <Link
-                      to="/c/$conjuntoSlug/vehiculos"
-                      params={{ conjuntoSlug: conjunto.slug }}
+                      to="/c/$complexSlug/vehiculos"
+                      params={{ complexSlug: complex.slug }}
                     >
                       <Car />
                       <span>Vehículos</span>
@@ -328,25 +331,43 @@ function ConjuntoScopedSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {hasControlAcceso ? (
+        {hasControlAcceso || hasCommunications ? (
           <SidebarGroup>
             <SidebarGroupLabel>Operación</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={isActive(`${base}/control-acceso`)}
-                    render={
-                      <Link
-                        to="/c/$conjuntoSlug/control-acceso"
-                        params={{ conjuntoSlug: conjunto.slug }}
-                      >
-                        <ShieldCheck />
-                        <span>Control de acceso</span>
-                      </Link>
-                    }
-                  />
-                </SidebarMenuItem>
+                {hasControlAcceso ? (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={isActive(`${base}/control-acceso`)}
+                      render={
+                        <Link
+                          to="/c/$complexSlug/control-acceso"
+                          params={{ complexSlug: complex.slug }}
+                        >
+                          <ShieldCheck />
+                          <span>Control de acceso</span>
+                        </Link>
+                      }
+                    />
+                  </SidebarMenuItem>
+                ) : null}
+                {hasCommunications ? (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={isActive(`${base}/communications`)}
+                      render={
+                        <Link
+                          to="/c/$complexSlug/communications"
+                          params={{ complexSlug: complex.slug }}
+                        >
+                          <MessageSquare />
+                          <span>Comunicaciones</span>
+                        </Link>
+                      }
+                    />
+                  </SidebarMenuItem>
+                ) : null}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -364,8 +385,8 @@ function ConjuntoScopedSidebar({
                         isActive={isActive(`${base}/usuarios`)}
                         render={
                           <Link
-                            to="/c/$conjuntoSlug/usuarios"
-                            params={{ conjuntoSlug: conjunto.slug }}
+                            to="/c/$complexSlug/usuarios"
+                            params={{ complexSlug: complex.slug }}
                           >
                             <Users />
                             <span>Usuarios del conjunto</span>
@@ -378,8 +399,8 @@ function ConjuntoScopedSidebar({
                         isActive={isActive(`${base}/configuracion`)}
                         render={
                           <Link
-                            to="/c/$conjuntoSlug/configuracion"
-                            params={{ conjuntoSlug: conjunto.slug }}
+                            to="/c/$complexSlug/configuracion"
+                            params={{ complexSlug: complex.slug }}
                           >
                             <Settings />
                             <span>Configuración</span>
@@ -396,7 +417,7 @@ function ConjuntoScopedSidebar({
                       render={
                         <Link
                           to="/admin/equipo"
-                          search={{ from: conjunto.slug }}
+                          search={{ from: complex.slug }}
                         >
                           <Shield />
                           <span>Equipo de la org</span>

@@ -28,37 +28,37 @@ import {
 import { api } from '../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 
-type UnidadTipo = Doc<'unidades'>['tipo']
+type UnidadTipo = Doc<'units'>['type']
 
 interface UnidadDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  conjuntoId: Id<'conjuntos'>
-  unidad: Doc<'unidades'> | null
+  complexId: Id<'complexes'>
+  unidad: Doc<'units'> | null
 }
 
 export function UnidadDialog({
   open,
   onOpenChange,
-  conjuntoId,
+  complexId,
   unidad,
 }: UnidadDialogProps) {
   const isEdit = unidad !== null
 
-  const [torre, setTorre] = useState('')
-  const [numero, setNumero] = useState('')
-  const [tipo, setTipo] = useState<UnidadTipo>('APARTAMENTO')
+  const [tower, setTower] = useState('')
+  const [number, setNumber] = useState('')
+  const [tipo, setTipo] = useState<UnidadTipo>('APARTMENT')
 
   useEffect(() => {
     if (open) {
-      setTorre(unidad?.torre ?? '')
-      setNumero(unidad?.numero ?? '')
-      setTipo(unidad?.tipo ?? 'APARTAMENTO')
+      setTower(unidad?.tower ?? '')
+      setNumber(unidad?.number ?? '')
+      setTipo(unidad?.type ?? 'APARTMENT')
     }
   }, [open, unidad])
 
-  const createFn = useConvexMutation(api.unidades.mutations.create)
-  const updateFn = useConvexMutation(api.unidades.mutations.update)
+  const createFn = useConvexMutation(api.units.mutations.create)
+  const updateFn = useConvexMutation(api.units.mutations.update)
   const createMut = useMutation({ mutationFn: createFn })
   const updateMut = useMutation({ mutationFn: updateFn })
 
@@ -69,18 +69,18 @@ export function UnidadDialog({
     try {
       if (unidad !== null) {
         await updateMut.mutateAsync({
-          unidadId: unidad._id,
-          torre,
-          numero,
-          tipo,
+          unitId: unidad._id,
+          tower,
+          number,
+          type: tipo,
         })
         toast.success('Unidad actualizada')
       } else {
         await createMut.mutateAsync({
-          conjuntoId,
-          torre,
-          numero,
-          tipo,
+          complexId,
+          tower,
+          number,
+          type: tipo,
         })
         toast.success('Unidad creada')
       }
@@ -108,8 +108,8 @@ export function UnidadDialog({
                 <Field>
                   <FieldLabel>Torre</FieldLabel>
                   <Input
-                    value={torre}
-                    onChange={(e) => setTorre(e.target.value)}
+                    value={tower}
+                    onChange={(e) => setTower(e.target.value)}
                     placeholder="A"
                     required
                   />
@@ -117,8 +117,8 @@ export function UnidadDialog({
                 <Field>
                   <FieldLabel>Número</FieldLabel>
                   <Input
-                    value={numero}
-                    onChange={(e) => setNumero(e.target.value)}
+                    value={number}
+                    onChange={(e) => setNumber(e.target.value)}
                     placeholder="301"
                     required
                   />
@@ -126,17 +126,14 @@ export function UnidadDialog({
               </div>
               <Field>
                 <FieldLabel>Tipo</FieldLabel>
-                <Select
-                  value={tipo}
-                  onValueChange={(v) => v && setTipo(v)}
-                >
+                <Select value={tipo} onValueChange={(v) => v && setTipo(v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
-                    <SelectItem value="CASA">Casa</SelectItem>
-                    <SelectItem value="LOCAL">Local</SelectItem>
+                    <SelectItem value="APARTMENT">Apartamento</SelectItem>
+                    <SelectItem value="HOUSE">Casa</SelectItem>
+                    <SelectItem value="COMMERCIAL">Local</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>

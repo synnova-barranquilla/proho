@@ -34,7 +34,7 @@ const VIOLATION_LABELS: Record<RuleViolation, string> = {
 interface ViolacionesDialogProps {
   open: boolean
   onClose: () => void
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   placa: string
   placaRaw: string
   violations: RuleViolation[]
@@ -44,22 +44,22 @@ interface ViolacionesDialogProps {
 export function ViolacionesDialog({
   open,
   onClose,
-  conjuntoId,
+  complexId,
   placa,
   placaRaw,
   violations,
   unidadInfo,
 }: ViolacionesDialogProps) {
-  const [justificacion, setJustificacion] = useState('')
-  const [observaciones, setObservaciones] = useState('')
+  const [justification, setJustification] = useState('')
+  const [observations, setObservations] = useState('')
 
   const registrarIngresoFn = useConvexMutation(
-    api.registrosAcceso.mutations.registrarIngreso,
+    api.accessRecords.mutations.registerEntry,
   )
   const registrarIngresoMut = useMutation({ mutationFn: registrarIngresoFn })
 
   const registrarRechazoFn = useConvexMutation(
-    api.registrosAcceso.mutations.registrarRechazo,
+    api.accessRecords.mutations.registerRejection,
   )
   const registrarRechazoMut = useMutation({ mutationFn: registrarRechazoFn })
 
@@ -69,11 +69,11 @@ export function ViolacionesDialog({
   const handlePermitir = async () => {
     try {
       await registrarIngresoMut.mutateAsync({
-        conjuntoId,
-        placaRaw,
-        forzarPermitido: true,
-        justificacion,
-        observaciones: observaciones.trim() || undefined,
+        complexId,
+        rawPlate: placaRaw,
+        forcePermitted: true,
+        justification,
+        observations: observations.trim() || undefined,
       })
       toast.success('Ingreso registrado con justificación')
       onClose()
@@ -90,10 +90,10 @@ export function ViolacionesDialog({
   const handleRechazar = async () => {
     try {
       await registrarRechazoMut.mutateAsync({
-        conjuntoId,
-        placaRaw,
-        tipo: 'RESIDENTE',
-        decisionMotor: violations,
+        complexId,
+        rawPlate: placaRaw,
+        type: 'RESIDENT',
+        engineDecision: violations,
       })
       toast.error('Ingreso rechazado')
       onClose()
@@ -140,8 +140,8 @@ export function ViolacionesDialog({
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">Justificación</label>
               <Textarea
-                value={justificacion}
-                onChange={(e) => setJustificacion(e.target.value)}
+                value={justification}
+                onChange={(e) => setJustification(e.target.value)}
                 placeholder="Explique por qué se permite el ingreso..."
                 className="min-h-20"
               />
@@ -152,8 +152,8 @@ export function ViolacionesDialog({
                 Observaciones (opcional)
               </label>
               <Textarea
-                value={observaciones}
-                onChange={(e) => setObservaciones(e.target.value)}
+                value={observations}
+                onChange={(e) => setObservations(e.target.value)}
                 placeholder="Observaciones adicionales del vigilante..."
                 className="min-h-16"
               />
@@ -173,7 +173,7 @@ export function ViolacionesDialog({
           </Button>
           <Button
             onClick={handlePermitir}
-            disabled={isPending || !justificacion.trim()}
+            disabled={isPending || !justification.trim()}
             className="bg-amber-600 hover:bg-amber-700"
           >
             {registrarIngresoMut.isPending ? 'Registrando...' : 'Permitir'}

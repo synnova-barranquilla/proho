@@ -5,37 +5,37 @@ import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$conjuntoSlug/control-acceso/',
+  '/_authenticated/c/$complexSlug/control-acceso/',
 )({
   loader: async ({
-    context: { queryClient, conjuntoId, conjuntoSlug, activeModules },
+    context: { queryClient, complexId, complexSlug, activeModules },
   }) => {
-    if (!(activeModules).includes('control_acceso')) {
+    if (!activeModules.includes('control_acceso')) {
       throw redirect({
-        to: '/c/$conjuntoSlug',
-        params: { conjuntoSlug },
+        to: '/c/$complexSlug',
+        params: { complexSlug },
       })
     }
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
-        api.registrosAcceso.queries.listActivos,
-        { conjuntoId },
+        api.accessRecords.queries.listActive,
+        { complexId },
       ),
       prefetchAuthenticatedQuery(
         queryClient,
-        api.registrosAcceso.queries.listRecientes,
-        { conjuntoId },
+        api.accessRecords.queries.listRecent,
+        { complexId },
       ),
       prefetchAuthenticatedQuery(
         queryClient,
-        api.vehiculos.queries.listByConjunto,
-        { conjuntoId },
+        api.vehicles.queries.listByComplex,
+        { complexId },
       ),
       prefetchAuthenticatedQuery(
         queryClient,
-        api.conjuntoConfig.queries.getByConjunto,
-        { conjuntoId },
+        api.complexConfig.queries.getByComplex,
+        { complexId },
       ),
     ])
     return null
@@ -44,6 +44,6 @@ export const Route = createFileRoute(
 })
 
 function ControlAccesoRoute() {
-  const { conjuntoId } = Route.useRouteContext()
-  return <ControlAccesoPage conjuntoId={conjuntoId} />
+  const { complexId } = Route.useRouteContext()
+  return <ControlAccesoPage complexId={complexId} />
 }

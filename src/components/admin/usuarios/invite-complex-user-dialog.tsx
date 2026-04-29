@@ -29,30 +29,30 @@ import {
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
-type ConjuntoRole = 'ASISTENTE' | 'VIGILANTE' | 'RESIDENTE'
+type ComplexRole = 'GUARD' | 'OWNER' | 'TENANT' | 'LESSEE'
 
-interface InviteConjuntoUserDialogProps {
+interface InviteComplexUserDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
 }
 
-export function InviteConjuntoUserDialog({
+export function InviteComplexUserDialog({
   open,
   onOpenChange,
-  conjuntoId,
-}: InviteConjuntoUserDialogProps) {
+  complexId,
+}: InviteComplexUserDialogProps) {
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [role, setRole] = useState<ConjuntoRole>('VIGILANTE')
+  const [role, setRole] = useState<ComplexRole>('GUARD')
 
   useEffect(() => {
     if (open) {
       setEmail('')
       setFirstName('')
       setLastName('')
-      setRole('VIGILANTE')
+      setRole('GUARD')
     }
   }, [open])
 
@@ -66,8 +66,8 @@ export function InviteConjuntoUserDialog({
         email,
         firstName,
         lastName: lastName || undefined,
-        conjuntoId,
-        conjuntoRole: role,
+        complexId,
+        complexRole: role,
       })
       toast.success('Invitación enviada', {
         description: `${email} recibirá acceso como ${role} al aceptar.`,
@@ -127,15 +127,16 @@ export function InviteConjuntoUserDialog({
                 <FieldLabel>Rol en el conjunto</FieldLabel>
                 <Select
                   value={role}
-                  onValueChange={(v) => v && setRole(v as ConjuntoRole)}
+                  onValueChange={(v) => v && setRole(v as ComplexRole)}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="VIGILANTE">Vigilante</SelectItem>
-                    <SelectItem value="ASISTENTE">Asistente</SelectItem>
-                    <SelectItem value="RESIDENTE">Residente</SelectItem>
+                    <SelectItem value="GUARD">Vigilante</SelectItem>
+                    <SelectItem value="OWNER">Propietario</SelectItem>
+                    <SelectItem value="TENANT">Inquilino</SelectItem>
+                    <SelectItem value="LESSEE">Arrendatario</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>

@@ -19,7 +19,7 @@ export const Route = createFileRoute('/_authenticated/super-admin/conjuntos')({
   loader: async ({ context: { queryClient } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
-      api.conjuntos.queries.listAllForSuperAdmin,
+      api.complexes.queries.listAllForSuperAdmin,
       {},
     )
     return null
@@ -27,7 +27,7 @@ export const Route = createFileRoute('/_authenticated/super-admin/conjuntos')({
   component: SuperAdminConjuntosPage,
 })
 
-type ConjuntoRow = Doc<'conjuntos'> & {
+type ConjuntoRow = Doc<'complexes'> & {
   organization: Doc<'organizations'> | null
 }
 
@@ -51,7 +51,7 @@ function SuperAdminConjuntosPage() {
 
 function ConjuntosTable() {
   const { data } = useSuspenseQuery(
-    convexQuery(api.conjuntos.queries.listAllForSuperAdmin, {}),
+    convexQuery(api.complexes.queries.listAllForSuperAdmin, {}),
   )
 
   const columns: ColumnDef<ConjuntoRow>[] = [
@@ -68,10 +68,10 @@ function ConjuntosTable() {
     {
       id: 'nombre',
       header: 'Conjunto',
-      accessorKey: 'nombre',
+      accessorKey: 'name',
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="font-medium">{row.original.nombre}</span>
+          <span className="font-medium">{row.original.name}</span>
           <span className="text-xs text-muted-foreground">
             {row.original.slug}
           </span>
@@ -86,11 +86,11 @@ function ConjuntosTable() {
     {
       id: 'direccion',
       header: 'Dirección',
-      accessorKey: 'direccion',
+      accessorKey: 'address',
       enableSorting: false,
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground">
-          {row.original.direccion}
+          {row.original.address}
         </span>
       ),
     },
@@ -115,8 +115,8 @@ function ConjuntosTable() {
       },
       cell: ({ row }) => (
         <Link
-          to="/c/$conjuntoSlug"
-          params={{ conjuntoSlug: row.original.slug }}
+          to="/c/$complexSlug"
+          params={{ complexSlug: row.original.slug }}
           className={buttonVariants({ variant: 'outline', size: 'sm' })}
         >
           <ExternalLink />

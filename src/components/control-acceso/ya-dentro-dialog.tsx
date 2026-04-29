@@ -34,26 +34,26 @@ function formatTimeAgo(timestamp: number | undefined): string {
 interface YaDentroDialogProps {
   open: boolean
   onClose: () => void
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   registro: RegistroActivo
 }
 
 export function YaDentroDialog({
   open,
   onClose,
-  conjuntoId,
+  complexId,
   registro,
 }: YaDentroDialogProps) {
   const registrarSalidaFn = useConvexMutation(
-    api.registrosAcceso.mutations.registrarSalida,
+    api.accessRecords.mutations.registerExit,
   )
   const registrarSalidaMut = useMutation({ mutationFn: registrarSalidaFn })
 
   const handleSalida = async () => {
     try {
       await registrarSalidaMut.mutateAsync({
-        conjuntoId,
-        placaRaw: registro.placaNormalizada,
+        complexId,
+        rawPlate: registro.normalizedPlate,
       })
       toast.success('Salida registrada')
       onClose()
@@ -67,8 +67,8 @@ export function YaDentroDialog({
     }
   }
 
-  const unidad = registro.unidad
-  const unidadLabel = unidad ? `T${unidad.torre} — ${unidad.numero}` : '—'
+  const unidad = registro.unit
+  const unidadLabel = unidad ? `T${unidad.tower} — ${unidad.number}` : '—'
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -85,14 +85,14 @@ export function YaDentroDialog({
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="font-mono text-lg font-medium">
-                {formatPlaca(registro.placaNormalizada)}
+                {formatPlaca(registro.normalizedPlate)}
               </span>
               <span className="text-sm text-muted-foreground">
                 {unidadLabel}
               </span>
             </div>
             <div className="rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-sm dark:border-orange-900 dark:bg-orange-950/20">
-              Ingresó {formatTimeAgo(registro.entradaEn)}
+              Ingresó {formatTimeAgo(registro.enteredAt)}
             </div>
           </div>
         </DialogBody>

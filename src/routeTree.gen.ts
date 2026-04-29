@@ -14,14 +14,15 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedCConjuntoSlugConfiguracionRouteImport } from './routes/_authenticated/c/$conjuntoSlug/configuracion'
-import { Route as AuthenticatedCConjuntoSlugControlAccesoIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/control-acceso/index'
-import { Route as AuthenticatedCConjuntoSlugIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/index'
-import { Route as AuthenticatedCConjuntoSlugResidentesIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/residentes/index'
-import { Route as AuthenticatedCConjuntoSlugRouteRouteImport } from './routes/_authenticated/c/$conjuntoSlug/route'
-import { Route as AuthenticatedCConjuntoSlugUnidadesIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/unidades/index'
-import { Route as AuthenticatedCConjuntoSlugUsuariosRouteImport } from './routes/_authenticated/c/$conjuntoSlug/usuarios'
-import { Route as AuthenticatedCConjuntoSlugVehiculosIndexRouteImport } from './routes/_authenticated/c/$conjuntoSlug/vehiculos/index'
+import { Route as AuthenticatedCComplexSlugCommunicationsIndexRouteImport } from './routes/_authenticated/c/$complexSlug/communications/index'
+import { Route as AuthenticatedCComplexSlugConfiguracionRouteImport } from './routes/_authenticated/c/$complexSlug/configuracion'
+import { Route as AuthenticatedCComplexSlugControlAccesoIndexRouteImport } from './routes/_authenticated/c/$complexSlug/control-acceso/index'
+import { Route as AuthenticatedCComplexSlugIndexRouteImport } from './routes/_authenticated/c/$complexSlug/index'
+import { Route as AuthenticatedCComplexSlugResidentesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/residentes/index'
+import { Route as AuthenticatedCComplexSlugRouteRouteImport } from './routes/_authenticated/c/$complexSlug/route'
+import { Route as AuthenticatedCComplexSlugUnidadesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/unidades/index'
+import { Route as AuthenticatedCComplexSlugUsuariosRouteImport } from './routes/_authenticated/c/$complexSlug/usuarios'
+import { Route as AuthenticatedCComplexSlugVehiculosIndexRouteImport } from './routes/_authenticated/c/$complexSlug/vehiculos/index'
 import { Route as AuthenticatedSeleccionarConjuntoRouteImport } from './routes/_authenticated/seleccionar-conjunto'
 import { Route as AuthenticatedSuperAdminConjuntosRouteImport } from './routes/_authenticated/super-admin/conjuntos'
 import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
@@ -158,17 +159,17 @@ const AuthenticatedAdminEquipoRoute =
     path: '/equipo',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const AuthenticatedCConjuntoSlugRouteRoute =
-  AuthenticatedCConjuntoSlugRouteRouteImport.update({
-    id: '/c/$conjuntoSlug',
-    path: '/c/$conjuntoSlug',
+const AuthenticatedCComplexSlugRouteRoute =
+  AuthenticatedCComplexSlugRouteRouteImport.update({
+    id: '/c/$complexSlug',
+    path: '/c/$complexSlug',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedCConjuntoSlugIndexRoute =
-  AuthenticatedCConjuntoSlugIndexRouteImport.update({
+const AuthenticatedCComplexSlugIndexRoute =
+  AuthenticatedCComplexSlugIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
 const AuthenticatedSuperAdminOrganizacionesOrgIdRoute =
   AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport.update({
@@ -176,41 +177,47 @@ const AuthenticatedSuperAdminOrganizacionesOrgIdRoute =
     path: '/organizaciones/$orgId',
     getParentRoute: () => AuthenticatedSuperAdminRouteRoute,
   } as any)
-const AuthenticatedCConjuntoSlugUsuariosRoute =
-  AuthenticatedCConjuntoSlugUsuariosRouteImport.update({
+const AuthenticatedCComplexSlugUsuariosRoute =
+  AuthenticatedCComplexSlugUsuariosRouteImport.update({
     id: '/usuarios',
     path: '/usuarios',
-    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoSlugConfiguracionRoute =
-  AuthenticatedCConjuntoSlugConfiguracionRouteImport.update({
+const AuthenticatedCComplexSlugConfiguracionRoute =
+  AuthenticatedCComplexSlugConfiguracionRouteImport.update({
     id: '/configuracion',
     path: '/configuracion',
-    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoSlugVehiculosIndexRoute =
-  AuthenticatedCConjuntoSlugVehiculosIndexRouteImport.update({
+const AuthenticatedCComplexSlugVehiculosIndexRoute =
+  AuthenticatedCComplexSlugVehiculosIndexRouteImport.update({
     id: '/vehiculos/',
     path: '/vehiculos/',
-    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoSlugUnidadesIndexRoute =
-  AuthenticatedCConjuntoSlugUnidadesIndexRouteImport.update({
+const AuthenticatedCComplexSlugUnidadesIndexRoute =
+  AuthenticatedCComplexSlugUnidadesIndexRouteImport.update({
     id: '/unidades/',
     path: '/unidades/',
-    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoSlugResidentesIndexRoute =
-  AuthenticatedCConjuntoSlugResidentesIndexRouteImport.update({
+const AuthenticatedCComplexSlugResidentesIndexRoute =
+  AuthenticatedCComplexSlugResidentesIndexRouteImport.update({
     id: '/residentes/',
     path: '/residentes/',
-    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
-const AuthenticatedCConjuntoSlugControlAccesoIndexRoute =
-  AuthenticatedCConjuntoSlugControlAccesoIndexRouteImport.update({
+const AuthenticatedCComplexSlugControlAccesoIndexRoute =
+  AuthenticatedCComplexSlugControlAccesoIndexRouteImport.update({
     id: '/control-acceso/',
     path: '/control-acceso/',
-    getParentRoute: () => AuthenticatedCConjuntoSlugRouteRoute,
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugCommunicationsIndexRoute =
+  AuthenticatedCComplexSlugCommunicationsIndexRouteImport.update({
+    id: '/communications/',
+    path: '/communications/',
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -229,21 +236,22 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
-  '/c/$conjuntoSlug': typeof AuthenticatedCConjuntoSlugRouteRouteWithChildren
+  '/c/$complexSlug': typeof AuthenticatedCComplexSlugRouteRouteWithChildren
   '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
   '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
-  '/c/$conjuntoSlug/configuracion': typeof AuthenticatedCConjuntoSlugConfiguracionRoute
-  '/c/$conjuntoSlug/usuarios': typeof AuthenticatedCConjuntoSlugUsuariosRoute
+  '/c/$complexSlug/configuracion': typeof AuthenticatedCComplexSlugConfiguracionRoute
+  '/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
-  '/c/$conjuntoSlug/': typeof AuthenticatedCConjuntoSlugIndexRoute
-  '/c/$conjuntoSlug/control-acceso/': typeof AuthenticatedCConjuntoSlugControlAccesoIndexRoute
-  '/c/$conjuntoSlug/residentes/': typeof AuthenticatedCConjuntoSlugResidentesIndexRoute
-  '/c/$conjuntoSlug/unidades/': typeof AuthenticatedCConjuntoSlugUnidadesIndexRoute
-  '/c/$conjuntoSlug/vehiculos/': typeof AuthenticatedCConjuntoSlugVehiculosIndexRoute
+  '/c/$complexSlug/': typeof AuthenticatedCComplexSlugIndexRoute
+  '/c/$complexSlug/communications/': typeof AuthenticatedCComplexSlugCommunicationsIndexRoute
+  '/c/$complexSlug/control-acceso/': typeof AuthenticatedCComplexSlugControlAccesoIndexRoute
+  '/c/$complexSlug/residentes/': typeof AuthenticatedCComplexSlugResidentesIndexRoute
+  '/c/$complexSlug/unidades/': typeof AuthenticatedCComplexSlugUnidadesIndexRoute
+  '/c/$complexSlug/vehiculos/': typeof AuthenticatedCComplexSlugVehiculosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -265,14 +273,15 @@ export interface FileRoutesByTo {
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/super-admin': typeof AuthenticatedSuperAdminIndexRoute
-  '/c/$conjuntoSlug/configuracion': typeof AuthenticatedCConjuntoSlugConfiguracionRoute
-  '/c/$conjuntoSlug/usuarios': typeof AuthenticatedCConjuntoSlugUsuariosRoute
+  '/c/$complexSlug/configuracion': typeof AuthenticatedCComplexSlugConfiguracionRoute
+  '/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
-  '/c/$conjuntoSlug': typeof AuthenticatedCConjuntoSlugIndexRoute
-  '/c/$conjuntoSlug/control-acceso': typeof AuthenticatedCConjuntoSlugControlAccesoIndexRoute
-  '/c/$conjuntoSlug/residentes': typeof AuthenticatedCConjuntoSlugResidentesIndexRoute
-  '/c/$conjuntoSlug/unidades': typeof AuthenticatedCConjuntoSlugUnidadesIndexRoute
-  '/c/$conjuntoSlug/vehiculos': typeof AuthenticatedCConjuntoSlugVehiculosIndexRoute
+  '/c/$complexSlug': typeof AuthenticatedCComplexSlugIndexRoute
+  '/c/$complexSlug/communications': typeof AuthenticatedCComplexSlugCommunicationsIndexRoute
+  '/c/$complexSlug/control-acceso': typeof AuthenticatedCComplexSlugControlAccesoIndexRoute
+  '/c/$complexSlug/residentes': typeof AuthenticatedCComplexSlugResidentesIndexRoute
+  '/c/$complexSlug/unidades': typeof AuthenticatedCComplexSlugUnidadesIndexRoute
+  '/c/$complexSlug/vehiculos': typeof AuthenticatedCComplexSlugVehiculosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -292,21 +301,22 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/_authenticated/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
-  '/_authenticated/c/$conjuntoSlug': typeof AuthenticatedCConjuntoSlugRouteRouteWithChildren
+  '/_authenticated/c/$complexSlug': typeof AuthenticatedCComplexSlugRouteRouteWithChildren
   '/_authenticated/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/_authenticated/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
   '/_authenticated/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
-  '/_authenticated/c/$conjuntoSlug/configuracion': typeof AuthenticatedCConjuntoSlugConfiguracionRoute
-  '/_authenticated/c/$conjuntoSlug/usuarios': typeof AuthenticatedCConjuntoSlugUsuariosRoute
+  '/_authenticated/c/$complexSlug/configuracion': typeof AuthenticatedCComplexSlugConfiguracionRoute
+  '/_authenticated/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/_authenticated/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
-  '/_authenticated/c/$conjuntoSlug/': typeof AuthenticatedCConjuntoSlugIndexRoute
-  '/_authenticated/c/$conjuntoSlug/control-acceso/': typeof AuthenticatedCConjuntoSlugControlAccesoIndexRoute
-  '/_authenticated/c/$conjuntoSlug/residentes/': typeof AuthenticatedCConjuntoSlugResidentesIndexRoute
-  '/_authenticated/c/$conjuntoSlug/unidades/': typeof AuthenticatedCConjuntoSlugUnidadesIndexRoute
-  '/_authenticated/c/$conjuntoSlug/vehiculos/': typeof AuthenticatedCConjuntoSlugVehiculosIndexRoute
+  '/_authenticated/c/$complexSlug/': typeof AuthenticatedCComplexSlugIndexRoute
+  '/_authenticated/c/$complexSlug/communications/': typeof AuthenticatedCComplexSlugCommunicationsIndexRoute
+  '/_authenticated/c/$complexSlug/control-acceso/': typeof AuthenticatedCComplexSlugControlAccesoIndexRoute
+  '/_authenticated/c/$complexSlug/residentes/': typeof AuthenticatedCComplexSlugResidentesIndexRoute
+  '/_authenticated/c/$complexSlug/unidades/': typeof AuthenticatedCComplexSlugUnidadesIndexRoute
+  '/_authenticated/c/$complexSlug/vehiculos/': typeof AuthenticatedCComplexSlugVehiculosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -326,21 +336,22 @@ export interface FileRouteTypes {
     | '/admin'
     | '/super-admin'
     | '/seleccionar-conjunto'
-    | '/c/$conjuntoSlug'
+    | '/c/$complexSlug'
     | '/admin/equipo'
     | '/super-admin/conjuntos'
     | '/super-admin/usuarios'
     | '/api/auth/callback'
     | '/admin/'
     | '/super-admin/'
-    | '/c/$conjuntoSlug/configuracion'
-    | '/c/$conjuntoSlug/usuarios'
+    | '/c/$complexSlug/configuracion'
+    | '/c/$complexSlug/usuarios'
     | '/super-admin/organizaciones/$orgId'
-    | '/c/$conjuntoSlug/'
-    | '/c/$conjuntoSlug/control-acceso/'
-    | '/c/$conjuntoSlug/residentes/'
-    | '/c/$conjuntoSlug/unidades/'
-    | '/c/$conjuntoSlug/vehiculos/'
+    | '/c/$complexSlug/'
+    | '/c/$complexSlug/communications/'
+    | '/c/$complexSlug/control-acceso/'
+    | '/c/$complexSlug/residentes/'
+    | '/c/$complexSlug/unidades/'
+    | '/c/$complexSlug/vehiculos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -362,14 +373,15 @@ export interface FileRouteTypes {
     | '/api/auth/callback'
     | '/admin'
     | '/super-admin'
-    | '/c/$conjuntoSlug/configuracion'
-    | '/c/$conjuntoSlug/usuarios'
+    | '/c/$complexSlug/configuracion'
+    | '/c/$complexSlug/usuarios'
     | '/super-admin/organizaciones/$orgId'
-    | '/c/$conjuntoSlug'
-    | '/c/$conjuntoSlug/control-acceso'
-    | '/c/$conjuntoSlug/residentes'
-    | '/c/$conjuntoSlug/unidades'
-    | '/c/$conjuntoSlug/vehiculos'
+    | '/c/$complexSlug'
+    | '/c/$complexSlug/communications'
+    | '/c/$complexSlug/control-acceso'
+    | '/c/$complexSlug/residentes'
+    | '/c/$complexSlug/unidades'
+    | '/c/$complexSlug/vehiculos'
   id:
     | '__root__'
     | '/'
@@ -388,21 +400,22 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/super-admin'
     | '/_authenticated/seleccionar-conjunto'
-    | '/_authenticated/c/$conjuntoSlug'
+    | '/_authenticated/c/$complexSlug'
     | '/_authenticated/admin/equipo'
     | '/_authenticated/super-admin/conjuntos'
     | '/_authenticated/super-admin/usuarios'
     | '/api/auth/callback'
     | '/_authenticated/admin/'
     | '/_authenticated/super-admin/'
-    | '/_authenticated/c/$conjuntoSlug/configuracion'
-    | '/_authenticated/c/$conjuntoSlug/usuarios'
+    | '/_authenticated/c/$complexSlug/configuracion'
+    | '/_authenticated/c/$complexSlug/usuarios'
     | '/_authenticated/super-admin/organizaciones/$orgId'
-    | '/_authenticated/c/$conjuntoSlug/'
-    | '/_authenticated/c/$conjuntoSlug/control-acceso/'
-    | '/_authenticated/c/$conjuntoSlug/residentes/'
-    | '/_authenticated/c/$conjuntoSlug/unidades/'
-    | '/_authenticated/c/$conjuntoSlug/vehiculos/'
+    | '/_authenticated/c/$complexSlug/'
+    | '/_authenticated/c/$complexSlug/communications/'
+    | '/_authenticated/c/$complexSlug/control-acceso/'
+    | '/_authenticated/c/$complexSlug/residentes/'
+    | '/_authenticated/c/$complexSlug/unidades/'
+    | '/_authenticated/c/$complexSlug/vehiculos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -578,19 +591,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEquipoRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/c/$conjuntoSlug': {
-      id: '/_authenticated/c/$conjuntoSlug'
-      path: '/c/$conjuntoSlug'
-      fullPath: '/c/$conjuntoSlug'
-      preLoaderRoute: typeof AuthenticatedCConjuntoSlugRouteRouteImport
+    '/_authenticated/c/$complexSlug': {
+      id: '/_authenticated/c/$complexSlug'
+      path: '/c/$complexSlug'
+      fullPath: '/c/$complexSlug'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugRouteRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/c/$conjuntoSlug/': {
-      id: '/_authenticated/c/$conjuntoSlug/'
+    '/_authenticated/c/$complexSlug/': {
+      id: '/_authenticated/c/$complexSlug/'
       path: '/'
-      fullPath: '/c/$conjuntoSlug/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoSlugIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
+      fullPath: '/c/$complexSlug/'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugIndexRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
     '/_authenticated/super-admin/organizaciones/$orgId': {
       id: '/_authenticated/super-admin/organizaciones/$orgId'
@@ -599,47 +612,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport
       parentRoute: typeof AuthenticatedSuperAdminRouteRoute
     }
-    '/_authenticated/c/$conjuntoSlug/usuarios': {
-      id: '/_authenticated/c/$conjuntoSlug/usuarios'
+    '/_authenticated/c/$complexSlug/usuarios': {
+      id: '/_authenticated/c/$complexSlug/usuarios'
       path: '/usuarios'
-      fullPath: '/c/$conjuntoSlug/usuarios'
-      preLoaderRoute: typeof AuthenticatedCConjuntoSlugUsuariosRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
+      fullPath: '/c/$complexSlug/usuarios'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugUsuariosRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoSlug/configuracion': {
-      id: '/_authenticated/c/$conjuntoSlug/configuracion'
+    '/_authenticated/c/$complexSlug/configuracion': {
+      id: '/_authenticated/c/$complexSlug/configuracion'
       path: '/configuracion'
-      fullPath: '/c/$conjuntoSlug/configuracion'
-      preLoaderRoute: typeof AuthenticatedCConjuntoSlugConfiguracionRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
+      fullPath: '/c/$complexSlug/configuracion'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugConfiguracionRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoSlug/vehiculos/': {
-      id: '/_authenticated/c/$conjuntoSlug/vehiculos/'
+    '/_authenticated/c/$complexSlug/vehiculos/': {
+      id: '/_authenticated/c/$complexSlug/vehiculos/'
       path: '/vehiculos'
-      fullPath: '/c/$conjuntoSlug/vehiculos/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoSlugVehiculosIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
+      fullPath: '/c/$complexSlug/vehiculos/'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugVehiculosIndexRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoSlug/unidades/': {
-      id: '/_authenticated/c/$conjuntoSlug/unidades/'
+    '/_authenticated/c/$complexSlug/unidades/': {
+      id: '/_authenticated/c/$complexSlug/unidades/'
       path: '/unidades'
-      fullPath: '/c/$conjuntoSlug/unidades/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoSlugUnidadesIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
+      fullPath: '/c/$complexSlug/unidades/'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugUnidadesIndexRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoSlug/residentes/': {
-      id: '/_authenticated/c/$conjuntoSlug/residentes/'
+    '/_authenticated/c/$complexSlug/residentes/': {
+      id: '/_authenticated/c/$complexSlug/residentes/'
       path: '/residentes'
-      fullPath: '/c/$conjuntoSlug/residentes/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoSlugResidentesIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
+      fullPath: '/c/$complexSlug/residentes/'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugResidentesIndexRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
-    '/_authenticated/c/$conjuntoSlug/control-acceso/': {
-      id: '/_authenticated/c/$conjuntoSlug/control-acceso/'
+    '/_authenticated/c/$complexSlug/control-acceso/': {
+      id: '/_authenticated/c/$complexSlug/control-acceso/'
       path: '/control-acceso'
-      fullPath: '/c/$conjuntoSlug/control-acceso/'
-      preLoaderRoute: typeof AuthenticatedCConjuntoSlugControlAccesoIndexRouteImport
-      parentRoute: typeof AuthenticatedCConjuntoSlugRouteRoute
+      fullPath: '/c/$complexSlug/control-acceso/'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugControlAccesoIndexRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/communications/': {
+      id: '/_authenticated/c/$complexSlug/communications/'
+      path: '/communications'
+      fullPath: '/c/$complexSlug/communications/'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugCommunicationsIndexRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
   }
 }
@@ -682,43 +702,46 @@ const AuthenticatedSuperAdminRouteRouteWithChildren =
     AuthenticatedSuperAdminRouteRouteChildren,
   )
 
-interface AuthenticatedCConjuntoSlugRouteRouteChildren {
-  AuthenticatedCConjuntoSlugConfiguracionRoute: typeof AuthenticatedCConjuntoSlugConfiguracionRoute
-  AuthenticatedCConjuntoSlugUsuariosRoute: typeof AuthenticatedCConjuntoSlugUsuariosRoute
-  AuthenticatedCConjuntoSlugIndexRoute: typeof AuthenticatedCConjuntoSlugIndexRoute
-  AuthenticatedCConjuntoSlugControlAccesoIndexRoute: typeof AuthenticatedCConjuntoSlugControlAccesoIndexRoute
-  AuthenticatedCConjuntoSlugResidentesIndexRoute: typeof AuthenticatedCConjuntoSlugResidentesIndexRoute
-  AuthenticatedCConjuntoSlugUnidadesIndexRoute: typeof AuthenticatedCConjuntoSlugUnidadesIndexRoute
-  AuthenticatedCConjuntoSlugVehiculosIndexRoute: typeof AuthenticatedCConjuntoSlugVehiculosIndexRoute
+interface AuthenticatedCComplexSlugRouteRouteChildren {
+  AuthenticatedCComplexSlugConfiguracionRoute: typeof AuthenticatedCComplexSlugConfiguracionRoute
+  AuthenticatedCComplexSlugUsuariosRoute: typeof AuthenticatedCComplexSlugUsuariosRoute
+  AuthenticatedCComplexSlugIndexRoute: typeof AuthenticatedCComplexSlugIndexRoute
+  AuthenticatedCComplexSlugCommunicationsIndexRoute: typeof AuthenticatedCComplexSlugCommunicationsIndexRoute
+  AuthenticatedCComplexSlugControlAccesoIndexRoute: typeof AuthenticatedCComplexSlugControlAccesoIndexRoute
+  AuthenticatedCComplexSlugResidentesIndexRoute: typeof AuthenticatedCComplexSlugResidentesIndexRoute
+  AuthenticatedCComplexSlugUnidadesIndexRoute: typeof AuthenticatedCComplexSlugUnidadesIndexRoute
+  AuthenticatedCComplexSlugVehiculosIndexRoute: typeof AuthenticatedCComplexSlugVehiculosIndexRoute
 }
 
-const AuthenticatedCConjuntoSlugRouteRouteChildren: AuthenticatedCConjuntoSlugRouteRouteChildren =
+const AuthenticatedCComplexSlugRouteRouteChildren: AuthenticatedCComplexSlugRouteRouteChildren =
   {
-    AuthenticatedCConjuntoSlugConfiguracionRoute:
-      AuthenticatedCConjuntoSlugConfiguracionRoute,
-    AuthenticatedCConjuntoSlugUsuariosRoute:
-      AuthenticatedCConjuntoSlugUsuariosRoute,
-    AuthenticatedCConjuntoSlugIndexRoute: AuthenticatedCConjuntoSlugIndexRoute,
-    AuthenticatedCConjuntoSlugControlAccesoIndexRoute:
-      AuthenticatedCConjuntoSlugControlAccesoIndexRoute,
-    AuthenticatedCConjuntoSlugResidentesIndexRoute:
-      AuthenticatedCConjuntoSlugResidentesIndexRoute,
-    AuthenticatedCConjuntoSlugUnidadesIndexRoute:
-      AuthenticatedCConjuntoSlugUnidadesIndexRoute,
-    AuthenticatedCConjuntoSlugVehiculosIndexRoute:
-      AuthenticatedCConjuntoSlugVehiculosIndexRoute,
+    AuthenticatedCComplexSlugConfiguracionRoute:
+      AuthenticatedCComplexSlugConfiguracionRoute,
+    AuthenticatedCComplexSlugUsuariosRoute:
+      AuthenticatedCComplexSlugUsuariosRoute,
+    AuthenticatedCComplexSlugIndexRoute: AuthenticatedCComplexSlugIndexRoute,
+    AuthenticatedCComplexSlugCommunicationsIndexRoute:
+      AuthenticatedCComplexSlugCommunicationsIndexRoute,
+    AuthenticatedCComplexSlugControlAccesoIndexRoute:
+      AuthenticatedCComplexSlugControlAccesoIndexRoute,
+    AuthenticatedCComplexSlugResidentesIndexRoute:
+      AuthenticatedCComplexSlugResidentesIndexRoute,
+    AuthenticatedCComplexSlugUnidadesIndexRoute:
+      AuthenticatedCComplexSlugUnidadesIndexRoute,
+    AuthenticatedCComplexSlugVehiculosIndexRoute:
+      AuthenticatedCComplexSlugVehiculosIndexRoute,
   }
 
-const AuthenticatedCConjuntoSlugRouteRouteWithChildren =
-  AuthenticatedCConjuntoSlugRouteRoute._addFileChildren(
-    AuthenticatedCConjuntoSlugRouteRouteChildren,
+const AuthenticatedCComplexSlugRouteRouteWithChildren =
+  AuthenticatedCComplexSlugRouteRoute._addFileChildren(
+    AuthenticatedCComplexSlugRouteRouteChildren,
   )
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedSuperAdminRouteRoute: typeof AuthenticatedSuperAdminRouteRouteWithChildren
   AuthenticatedSeleccionarConjuntoRoute: typeof AuthenticatedSeleccionarConjuntoRoute
-  AuthenticatedCConjuntoSlugRouteRoute: typeof AuthenticatedCConjuntoSlugRouteRouteWithChildren
+  AuthenticatedCComplexSlugRouteRoute: typeof AuthenticatedCComplexSlugRouteRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -726,8 +749,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSuperAdminRouteRoute:
     AuthenticatedSuperAdminRouteRouteWithChildren,
   AuthenticatedSeleccionarConjuntoRoute: AuthenticatedSeleccionarConjuntoRoute,
-  AuthenticatedCConjuntoSlugRouteRoute:
-    AuthenticatedCConjuntoSlugRouteRouteWithChildren,
+  AuthenticatedCComplexSlugRouteRoute:
+    AuthenticatedCComplexSlugRouteRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

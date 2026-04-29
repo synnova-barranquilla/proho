@@ -3,21 +3,21 @@ import type { RuleViolation } from '../../../convex/lib/rulesEngine'
 
 // ─── Enriched types from queries ───────────────────────────────────────
 
-export type RegistroActivo = Doc<'registrosAcceso'> & {
-  vehiculo: Doc<'vehiculos'> | null
-  unidad: Doc<'unidades'> | null
+export type RegistroActivo = Doc<'accessRecords'> & {
+  vehicle: Doc<'vehicles'> | null
+  unit: Doc<'units'> | null
 }
 
 export interface RegistroReciente {
   _id: string
-  evento: 'ENTRADA' | 'SALIDA'
-  eventoEn: number
-  entradaEn?: number
-  placaNormalizada: string
-  tipo: string
-  vehiculoTipoVisitante?: 'CARRO' | 'MOTO' | 'OTRO'
-  vehiculo: Doc<'vehiculos'> | null
-  unidad: Doc<'unidades'> | null
+  event: 'ENTRADA' | 'SALIDA'
+  eventAt: number
+  enteredAt?: number
+  normalizedPlate: string
+  type: string
+  visitorVehicleType?: 'CAR' | 'MOTORCYCLE' | 'OTHER'
+  vehicle: Doc<'vehicles'> | null
+  unit: Doc<'units'> | null
 }
 
 // ─── State machine ─────────────────────────────────────────────────────
@@ -26,9 +26,9 @@ export type ControlAccesoScreen =
   | { screen: 'IDLE' }
   | { screen: 'PROCESANDO'; placa: string }
   | {
-      screen: 'PERMITIDO'
+      screen: 'ALLOWED'
       placa: string
-      registroId: Id<'registrosAcceso'>
+      registroId: Id<'accessRecords'>
       violations: string[]
     }
   | {
@@ -36,7 +36,7 @@ export type ControlAccesoScreen =
       placa: string
       placaRaw: string
       violations: RuleViolation[]
-      vehiculoId: Id<'vehiculos'>
+      vehicleId: Id<'vehicles'>
       unidadInfo: string
     }
   | { screen: 'NO_ENCONTRADO'; placa: string; placaRaw: string }
@@ -50,14 +50,14 @@ export type ControlAccesoAction =
   | { type: 'BUSCAR_PLACA'; placa: string }
   | {
       type: 'RESULTADO_PERMITIDO'
-      registroId: Id<'registrosAcceso'>
+      registroId: Id<'accessRecords'>
       violations: string[]
     }
   | {
       type: 'RESULTADO_VIOLACIONES'
       placaRaw: string
       violations: RuleViolation[]
-      vehiculoId: Id<'vehiculos'>
+      vehicleId: Id<'vehicles'>
       unidadInfo: string
     }
   | { type: 'RESULTADO_NO_ENCONTRADO'; placaRaw: string }

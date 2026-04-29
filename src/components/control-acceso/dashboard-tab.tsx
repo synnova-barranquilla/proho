@@ -14,16 +14,16 @@ import type { Id } from '../../../convex/_generated/dataModel'
 import type { RegistroActivo } from './types'
 
 interface DashboardTabProps {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
 }
 
 const columns: ColumnDef<RegistroActivo, unknown>[] = [
   {
-    accessorKey: 'placaNormalizada',
+    accessorKey: 'normalizedPlate',
     header: 'Placa',
     cell: ({ row }) => (
       <span className="font-mono text-base font-medium">
-        {formatPlaca(row.original.placaNormalizada)}
+        {formatPlaca(row.original.normalizedPlate)}
       </span>
     ),
   },
@@ -33,15 +33,17 @@ const columns: ColumnDef<RegistroActivo, unknown>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const tipo =
-        row.original.vehiculo?.tipo ??
-        row.original.vehiculoTipoVisitante ??
-        'CARRO'
-      const Icon = tipo === 'MOTO' ? Bike : Car
+        row.original.vehicle?.type ?? row.original.visitorVehicleType ?? 'CAR'
+      const Icon = tipo === 'MOTORCYCLE' ? Bike : Car
       return (
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <Icon className="h-4 w-4" />
           <span className="text-sm">
-            {tipo === 'MOTO' ? 'Moto' : tipo === 'OTRO' ? 'Otro' : 'Carro'}
+            {tipo === 'MOTORCYCLE'
+              ? 'Moto'
+              : tipo === 'OTHER'
+                ? 'Otro'
+                : 'Carro'}
           </span>
         </span>
       )
@@ -51,11 +53,11 @@ const columns: ColumnDef<RegistroActivo, unknown>[] = [
     id: 'unidad',
     header: 'Unidad',
     cell: ({ row }) => {
-      const u = row.original.unidad
+      const u = row.original.unit
       if (!u) return <span className="text-muted-foreground">—</span>
       return (
         <span className="text-sm">
-          T{u.torre} — {u.numero}
+          T{u.tower} — {u.number}
         </span>
       )
     },
@@ -65,38 +67,38 @@ const columns: ColumnDef<RegistroActivo, unknown>[] = [
     header: 'Duración',
     cell: ({ row }) => (
       <span className="text-sm tabular-nums text-muted-foreground">
-        {formatDuracion(row.original.entradaEn)}
+        {formatDuracion(row.original.enteredAt)}
       </span>
     ),
   },
 ]
 
-export function DashboardTab({ conjuntoId }: DashboardTabProps) {
+export function DashboardTab({ complexId }: DashboardTabProps) {
   const { data: activos } = useSuspenseQuery(
-    convexQuery(api.registrosAcceso.queries.listActivos, { conjuntoId }),
+    convexQuery(api.accessRecords.queries.listActive, { complexId }),
   )
 
   const carrosDentro = activos.filter((r: RegistroActivo) => {
-    const tipo = r.vehiculo?.tipo ?? r.vehiculoTipoVisitante ?? 'CARRO'
-    return tipo !== 'MOTO'
+    const tipo = r.vehicle?.type ?? r.visitorVehicleType ?? 'CAR'
+    return tipo !== 'MOTORCYCLE'
   }).length
 
   const motosDentro = activos.filter(
     (r: RegistroActivo) =>
-      (r.vehiculo?.tipo ?? r.vehiculoTipoVisitante) === 'MOTO',
+      (r.vehicle?.type ?? r.visitorVehicleType) === 'MOTORCYCLE',
   ).length
 
   const visitantesDentro = activos.filter(
-    (r: RegistroActivo) => r.tipo === 'VISITANTE' || r.tipo === 'VISITA_ADMIN',
+    (r: RegistroActivo) => r.type === 'VISITOR' || r.type === 'ADMIN_VISIT',
   ).length
 
   const residentesDentro = useMemo(
     () =>
       activos
-        .filter((r: RegistroActivo) => r.tipo === 'RESIDENTE')
+        .filter((r: RegistroActivo) => r.type === 'RESIDENT')
         .sort(
           (a: RegistroActivo, b: RegistroActivo) =>
-            (a.entradaEn ?? a._creationTime) - (b.entradaEn ?? b._creationTime),
+            (a.enteredAt ?? a._creationTime) - (b.enteredAt ?? b._creationTime),
         ),
     [activos],
   )

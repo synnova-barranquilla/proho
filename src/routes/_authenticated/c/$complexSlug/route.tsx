@@ -12,32 +12,27 @@ import { convexQuery } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
-import { ConjuntoLayout } from '#/components/admin/layout'
+import { ComplexLayout } from '#/components/admin/layout'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 
 /**
- * Layout base del segmento `/c/$conjuntoSlug/*`.
+ * Layout base del segmento `/c/$complexSlug/*`.
  *
- * **Importante:** pese al nombre del parámetro (`conjuntoId`) el valor
- * contenido en la URL es el **slug** human-readable del conjunto
- * (`torres-de-la-alhambra`), NO el Convex id. El parámetro conserva el
- * nombre `conjuntoId` por compatibilidad con el árbol de rutas existente.
- *
- * `beforeLoad` resuelve slug → conjunto real vía `conjuntos.queries.getBySlug`,
+ * `beforeLoad` resuelve slug → complex real vía `complexes.queries.getBySlug`,
  * y hace disponible el Convex id real a las rutas hijas a través del
- * contexto de router (`context.conjuntoId`). Las hijas leen ese id real
+ * contexto de router (`context.complexId`). Las hijas leen ese id real
  * para todas sus queries de Convex (`getRouteApi(...).useRouteContext()`).
  */
-export const Route = createFileRoute('/_authenticated/c/$conjuntoSlug')({
+export const Route = createFileRoute('/_authenticated/c/$complexSlug')({
   beforeLoad: async ({ context: { queryClient }, params }) => {
-    const slug = params.conjuntoSlug
+    const slug = params.complexSlug
 
     let data
     try {
       data = await prefetchAuthenticatedQuery(
         queryClient,
-        api.conjuntos.queries.getBySlug,
+        api.complexes.queries.getBySlug,
         { slug },
       )
     } catch (err) {
@@ -52,12 +47,12 @@ export const Route = createFileRoute('/_authenticated/c/$conjuntoSlug')({
     }
 
     return {
-      conjuntoId: data.conjunto._id,
-      conjuntoSlug: slug,
+      complexId: data.complex._id,
+      complexSlug: slug,
       activeModules: data.activeModules as string[],
     }
   },
-  component: ConjuntoAdminRoute,
+  component: ComplexAdminRoute,
 })
 
 /** Grace period (ms) antes de declarar un revoke como definitivo. */
@@ -65,7 +60,7 @@ const REVOKE_GRACE_MS = 1500
 
 /**
  * Returns true when the error represents a real access revocation
- * (FORBIDDEN, CONJUNTO_NOT_FOUND, etc.), as opposed to a transient
+ * (FORBIDDEN, COMPLEX_NOT_FOUND, etc.), as opposed to a transient
  * auth hiccup (UNAUTHENTICATED during WorkOS token refresh).
  */
 function isRevokeError(error: unknown): boolean {
@@ -74,22 +69,19 @@ function isRevokeError(error: unknown): boolean {
   return code !== 'UNAUTHENTICATED'
 }
 
-function ConjuntoAdminRoute() {
-  const { conjuntoSlug: slug } = Route.useParams()
+function ComplexAdminRoute() {
+  const { complexSlug: slug } = Route.useParams()
   const navigate = useNavigate()
 
   // Reactive subscription — same query key as the prefetch in beforeLoad,
   // so initial render uses the cached data (no loading state). Subsequent
   // re-executions by Convex (e.g. membership revoked in another tab) flow
   // through here.
-  const query = useQuery(convexQuery(api.conjuntos.queries.getBySlug, { slug }))
+  const query = useQuery(convexQuery(api.complexes.queries.getBySlug, { slug }))
 
   const timerRef = useRef<number | null>(null)
 
   useEffect(() => {
-    // While the query is still fetching (initial load, refetch after a
-    // Convex reactive re-execution, or WebSocket reconnect), we don't act
-    // on intermediate error/null states — they may resolve on their own.
     const isSettled =
       query.fetchStatus === 'idle' &&
       (query.status === 'error' || query.status === 'success')
@@ -114,11 +106,6 @@ function ConjuntoAdminRoute() {
       return
     }
 
-    // Grace period: wait before declaring a definitive revoke. Convex may
-    // re-run subscriptions during transient consistency windows (e.g. right
-    // after a write to the conjuntos/memberships table) and recover the
-    // correct state quickly. If the query settles back to valid data within
-    // the window, the cleanup cancels the timer.
     if (timerRef.current === null) {
       timerRef.current = window.setTimeout(() => {
         toast.error('Tu acceso a este conjunto fue revocado', {
@@ -141,12 +128,12 @@ function ConjuntoAdminRoute() {
   if (!query.data) return null
 
   return (
-    <ConjuntoLayout
-      conjunto={query.data.conjunto}
+    <ComplexLayout
+      complex={query.data.complex}
       membership={query.data.membership}
       activeModules={query.data.activeModules}
     >
       <Outlet />
-    </ConjuntoLayout>
+    </ComplexLayout>
   )
 }

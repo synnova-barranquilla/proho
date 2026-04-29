@@ -85,30 +85,30 @@ function ManageAccessDialogBody({
   const { data: admins } = useSuspenseQuery(
     convexQuery(api.users.queries.listAdminsByOrg, { organizationId }),
   )
-  const { data: conjuntos } = useSuspenseQuery(
-    convexQuery(api.conjuntos.queries.listForCurrentUser, {}),
+  const { data: complexes } = useSuspenseQuery(
+    convexQuery(api.complexes.queries.listForCurrentUser, {}),
   )
 
   // Derive the live admin from the query. If the admin was deleted
   // (unlikely mid-flow) we render an empty state.
   const admin = admins.find((a) => a._id === adminId) ?? null
 
-  const createFn = useConvexMutation(api.conjuntoMemberships.mutations.create)
+  const createFn = useConvexMutation(api.complexMemberships.mutations.create)
   const createMutation = useMutation({ mutationFn: createFn })
   const setActiveFn = useConvexMutation(
-    api.conjuntoMemberships.mutations.setActive,
+    api.complexMemberships.mutations.setActive,
   )
   const setActiveMutation = useMutation({ mutationFn: setActiveFn })
 
-  const handleToggle = async (conjuntoId: Id<'conjuntos'>) => {
+  const handleToggle = async (complexId: Id<'complexes'>) => {
     if (!admin) return
-    const existing = admin.memberships.find((m) => m.conjuntoId === conjuntoId)
+    const existing = admin.memberships.find((m) => m.complexId === complexId)
 
     try {
       if (!existing) {
         await createMutation.mutateAsync({
           userId: admin._id,
-          conjuntoId,
+          complexId,
           role: 'ADMIN',
         })
         toast.success('Acceso otorgado')
@@ -151,7 +151,7 @@ function ManageAccessDialogBody({
       </DialogHeader>
 
       <DialogBody>
-        {conjuntos.length === 0 ? (
+        {complexes.length === 0 ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
             No hay conjuntos en la organización aún.
           </div>
@@ -160,9 +160,9 @@ function ManageAccessDialogBody({
             Este administrador ya no está disponible.
           </div>
         ) : (
-          <ConjuntoAccessList
+          <ComplexAccessList
             admin={admin}
-            conjuntos={conjuntos}
+            complexes={complexes}
             onToggle={handleToggle}
             isPending={createMutation.isPending || setActiveMutation.isPending}
           />
@@ -176,23 +176,23 @@ function ManageAccessDialogBody({
   )
 }
 
-function ConjuntoAccessList({
+function ComplexAccessList({
   admin,
-  conjuntos,
+  complexes,
   onToggle,
   isPending,
 }: {
   admin: Doc<'users'> & {
-    memberships: Array<Doc<'conjuntoMemberships'>>
+    memberships: Array<Doc<'complexMemberships'>>
   }
-  conjuntos: Array<Doc<'conjuntos'>>
-  onToggle: (id: Id<'conjuntos'>) => void
+  complexes: Array<Doc<'complexes'>>
+  onToggle: (id: Id<'complexes'>) => void
   isPending: boolean
 }) {
   return (
     <div className="flex flex-col gap-2">
-      {conjuntos.map((c) => {
-        const membership = admin.memberships.find((m) => m.conjuntoId === c._id)
+      {complexes.map((c) => {
+        const membership = admin.memberships.find((m) => m.complexId === c._id)
         const isActive = membership?.active === true
         return (
           <button
@@ -220,9 +220,9 @@ function ConjuntoAccessList({
             </div>
             <Building2 className="h-4 w-4 text-muted-foreground" />
             <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-medium">{c.nombre}</span>
+              <span className="truncate text-sm font-medium">{c.name}</span>
               <span className="truncate text-xs text-muted-foreground">
-                {c.direccion}, {c.ciudad}
+                {c.address}, {c.city}
               </span>
             </div>
           </button>

@@ -23,18 +23,18 @@ import {
 } from '#/components/ui/field'
 import { NumberInput } from '#/components/ui/number-input'
 import { Switch } from '#/components/ui/switch'
-import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
+import { useIsComplexAdmin } from '#/lib/complex-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$conjuntoSlug/configuracion',
+  '/_authenticated/c/$complexSlug/configuracion',
 )({
-  loader: async ({ context: { queryClient, conjuntoId } }) => {
+  loader: async ({ context: { queryClient, complexId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
-      api.conjuntoConfig.queries.getByConjunto,
-      { conjuntoId },
+      api.complexConfig.queries.getByComplex,
+      { complexId },
     )
     return null
   },
@@ -43,74 +43,71 @@ export const Route = createFileRoute(
 
 function ConfiguracionPage() {
   const ctx = Route.useRouteContext()
-  const { conjuntoId, conjuntoSlug } = ctx
+  const { complexId, complexSlug } = ctx
   const activeModules = (ctx as any).activeModules as string[] | undefined
   const hasControlAcceso = activeModules?.includes('control_acceso') ?? false
   const navigate = useNavigate()
-  const isAdmin = useIsConjuntoAdmin()
+  const isAdmin = useIsComplexAdmin()
 
-  // Client-side guard: only admins can see/edit conjunto config. The
-  // backend mutation rejects non-admins too, but we skip rendering the
-  // form entirely to avoid exposing sensitive configuration values.
   useEffect(() => {
     if (!isAdmin) {
       void navigate({
-        to: '/c/$conjuntoSlug',
-        params: { conjuntoSlug },
+        to: '/c/$complexSlug',
+        params: { complexSlug },
       })
     }
-  }, [isAdmin, navigate, conjuntoSlug])
+  }, [isAdmin, navigate, complexSlug])
 
   const { data: config } = useSuspenseQuery(
-    convexQuery(api.conjuntoConfig.queries.getByConjunto, {
-      conjuntoId,
+    convexQuery(api.complexConfig.queries.getByComplex, {
+      complexId,
     }),
   )
 
-  const [reglaIngresoEnMora, setReglaIngresoEnMora] = useState(
-    config?.reglaIngresoEnMora ?? true,
+  const [ruleEntryInArrears, setRuleEntryInArrears] = useState(
+    config?.ruleEntryInArrears ?? true,
   )
-  const [reglaVehiculoDuplicado, setReglaVehiculoDuplicado] = useState(
-    config?.reglaVehiculoDuplicado ?? true,
+  const [ruleDuplicateVehicle, setRuleDuplicateVehicle] = useState(
+    config?.ruleDuplicateVehicle ?? true,
   )
-  const [reglaPermanenciaMaxDias, setReglaPermanenciaMaxDias] = useState(
-    config?.reglaPermanenciaMaxDias ?? 30,
+  const [ruleMaxStayDays, setRuleMaxStayDays] = useState(
+    config?.ruleMaxStayDays ?? 30,
   )
-  const [reglaIngresoEnSobrecupo, setReglaIngresoEnSobrecupo] = useState(
-    config?.reglaIngresoEnSobrecupo ?? true,
+  const [ruleEntryOverCapacity, setRuleEntryOverCapacity] = useState(
+    config?.ruleEntryOverCapacity ?? true,
   )
-  const [parqueaderosCarros, setParqueaderosCarros] = useState(
-    config?.parqueaderosCarros ?? 0,
+  const [carParkingSlots, setCarParkingSlots] = useState(
+    config?.carParkingSlots ?? 0,
   )
-  const [parqueaderosMotos, setParqueaderosMotos] = useState(
-    config?.parqueaderosMotos ?? 0,
+  const [motoParkingSlots, setMotoParkingSlots] = useState(
+    config?.motoParkingSlots ?? 0,
   )
 
   useEffect(() => {
     if (config) {
-      setReglaIngresoEnMora(config.reglaIngresoEnMora)
-      setReglaVehiculoDuplicado(config.reglaVehiculoDuplicado)
-      setReglaPermanenciaMaxDias(config.reglaPermanenciaMaxDias)
-      setReglaIngresoEnSobrecupo(config.reglaIngresoEnSobrecupo)
-      setParqueaderosCarros(config.parqueaderosCarros)
-      setParqueaderosMotos(config.parqueaderosMotos)
+      setRuleEntryInArrears(config.ruleEntryInArrears)
+      setRuleDuplicateVehicle(config.ruleDuplicateVehicle)
+      setRuleMaxStayDays(config.ruleMaxStayDays)
+      setRuleEntryOverCapacity(config.ruleEntryOverCapacity)
+      setCarParkingSlots(config.carParkingSlots)
+      setMotoParkingSlots(config.motoParkingSlots)
     }
   }, [config])
 
-  const upsertFn = useConvexMutation(api.conjuntoConfig.mutations.upsert)
+  const upsertFn = useConvexMutation(api.complexConfig.mutations.upsert)
   const upsertMut = useMutation({ mutationFn: upsertFn })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       await upsertMut.mutateAsync({
-        conjuntoId,
-        reglaIngresoEnMora,
-        reglaVehiculoDuplicado,
-        reglaPermanenciaMaxDias,
-        reglaIngresoEnSobrecupo,
-        parqueaderosCarros,
-        parqueaderosMotos,
+        complexId,
+        ruleEntryInArrears,
+        ruleDuplicateVehicle,
+        ruleMaxStayDays,
+        ruleEntryOverCapacity,
+        carParkingSlots,
+        motoParkingSlots,
       })
       toast.success('Configuración actualizada')
     } catch (err) {
@@ -158,8 +155,8 @@ function ConfiguracionPage() {
                     </FieldDescription>
                   </div>
                   <Switch
-                    checked={reglaIngresoEnMora}
-                    onCheckedChange={setReglaIngresoEnMora}
+                    checked={ruleEntryInArrears}
+                    onCheckedChange={setRuleEntryInArrears}
                   />
                 </Field>
                 <Field orientation="horizontal">
@@ -172,8 +169,8 @@ function ConfiguracionPage() {
                     </FieldDescription>
                   </div>
                   <Switch
-                    checked={reglaVehiculoDuplicado}
-                    onCheckedChange={setReglaVehiculoDuplicado}
+                    checked={ruleDuplicateVehicle}
+                    onCheckedChange={setRuleDuplicateVehicle}
                   />
                 </Field>
                 <Field orientation="horizontal">
@@ -187,8 +184,8 @@ function ConfiguracionPage() {
                     </FieldDescription>
                   </div>
                   <Switch
-                    checked={reglaIngresoEnSobrecupo}
-                    onCheckedChange={setReglaIngresoEnSobrecupo}
+                    checked={ruleEntryOverCapacity}
+                    onCheckedChange={setRuleEntryOverCapacity}
                   />
                 </Field>
                 <Field>
@@ -196,8 +193,8 @@ function ConfiguracionPage() {
                   <NumberInput
                     min={0}
                     max={365}
-                    value={reglaPermanenciaMaxDias}
-                    onChange={(v) => setReglaPermanenciaMaxDias(v ?? 0)}
+                    value={ruleMaxStayDays}
+                    onChange={(v) => setRuleMaxStayDays(v ?? 0)}
                   />
                   <FieldDescription>
                     Máximo de días que un vehículo puede permanecer dentro. Si
@@ -224,16 +221,16 @@ function ConfiguracionPage() {
                   <FieldLabel>Parqueaderos de carros</FieldLabel>
                   <NumberInput
                     min={0}
-                    value={parqueaderosCarros}
-                    onChange={(v) => setParqueaderosCarros(v ?? 0)}
+                    value={carParkingSlots}
+                    onChange={(v) => setCarParkingSlots(v ?? 0)}
                   />
                 </Field>
                 <Field>
                   <FieldLabel>Parqueaderos de motos</FieldLabel>
                   <NumberInput
                     min={0}
-                    value={parqueaderosMotos}
-                    onChange={(v) => setParqueaderosMotos(v ?? 0)}
+                    value={motoParkingSlots}
+                    onChange={(v) => setMotoParkingSlots(v ?? 0)}
                   />
                 </Field>
               </FieldGroup>

@@ -2,7 +2,7 @@ import { Bike, Car } from 'lucide-react'
 
 import { cn } from '#/lib/utils'
 
-export type TipoVehiculoSelectable = 'CARRO' | 'MOTO'
+export type TipoVehiculoSelectable = 'CAR' | 'MOTORCYCLE'
 
 interface TipoVehiculoCardsProps {
   value: TipoVehiculoSelectable
@@ -16,8 +16,8 @@ const OPTIONS: Array<{
   label: string
   Icon: typeof Car
 }> = [
-  { value: 'CARRO', label: 'Carro', Icon: Car },
-  { value: 'MOTO', label: 'Moto', Icon: Bike },
+  { value: 'CAR', label: 'Carro', Icon: Car },
+  { value: 'MOTORCYCLE', label: 'Moto', Icon: Bike },
 ]
 
 export function TipoVehiculoCards({

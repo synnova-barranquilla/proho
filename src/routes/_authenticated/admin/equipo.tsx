@@ -13,7 +13,7 @@ import { z } from 'zod'
 
 import { InviteOrgAdminDialog } from '#/components/admin/equipo/invite-org-admin-dialog'
 import { ManageAccessDialog } from '#/components/admin/equipo/manage-access-dialog'
-import { ConjuntoLayout } from '#/components/admin/layout'
+import { ComplexLayout } from '#/components/admin/layout'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
@@ -66,16 +66,16 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
       throw redirect({ to: '/seleccionar-conjunto' })
     }
 
-    // Resolve the fromConjunto FIRST so we know which org to scope to.
-    let fromConjunto: Doc<'conjuntos'> | null = null
+    // Resolve the fromComplex FIRST so we know which org to scope to.
+    let fromComplex: Doc<'complexes'> | null = null
     if (deps.from) {
       try {
-        const result = await client.query(api.conjuntos.queries.getBySlug, {
+        const result = await client.query(api.complexes.queries.getBySlug, {
           slug: deps.from,
         })
-        fromConjunto = result?.conjunto ?? null
+        fromComplex = result?.complex ?? null
       } catch {
-        fromConjunto = null
+        fromComplex = null
       }
     }
 
@@ -83,8 +83,8 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
     // scope the admins + invitations queries to that org. Without this
     // the queries would use the super admin's own org (Synnova).
     const scopedOrgId =
-      context.user.orgRole === 'SUPER_ADMIN' && fromConjunto
-        ? fromConjunto.organizationId
+      context.user.orgRole === 'SUPER_ADMIN' && fromComplex
+        ? fromComplex.organizationId
         : undefined
 
     await Promise.all([
@@ -95,7 +95,7 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
       ),
       prefetchAuthenticatedQuery(
         queryClient,
-        api.conjuntos.queries.listForCurrentUser,
+        api.complexes.queries.listForCurrentUser,
         {},
       ),
       prefetchAuthenticatedQuery(
@@ -105,13 +105,13 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
       ),
     ])
 
-    return { fromConjunto, scopedOrgId }
+    return { fromComplex, scopedOrgId }
   },
   component: EquipoPage,
 })
 
 function EquipoPage() {
-  const { fromConjunto, scopedOrgId } = Route.useLoaderData()
+  const { fromComplex, scopedOrgId } = Route.useLoaderData()
   const [inviteOpen, setInviteOpen] = useState(false)
   // Store only the id of the admin being edited. The dialog re-derives
   // the live admin row from the `listAdminsByOrg` query on every render
@@ -120,7 +120,7 @@ function EquipoPage() {
     useState<Id<'users'> | null>(null)
 
   return (
-    <ConjuntoLayout conjunto={null} fromConjunto={fromConjunto}>
+    <ComplexLayout complex={null} fromComplex={fromComplex}>
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-start justify-between">
           <div>
@@ -180,12 +180,12 @@ function EquipoPage() {
           if (!open) setManageAccessForId(null)
         }}
       />
-    </ConjuntoLayout>
+    </ComplexLayout>
   )
 }
 
 type AdminRow = Doc<'users'> & {
-  memberships: Array<Doc<'conjuntoMemberships'>>
+  memberships: Array<Doc<'complexMemberships'>>
 }
 
 function AdminsTable({
@@ -200,14 +200,14 @@ function AdminsTable({
       organizationId,
     }),
   )
-  const { data: conjuntos } = useSuspenseQuery(
-    convexQuery(api.conjuntos.queries.listForCurrentUser, {}),
+  const { data: complexes } = useSuspenseQuery(
+    convexQuery(api.complexes.queries.listForCurrentUser, {}),
   )
 
   const setActiveFn = useConvexMutation(api.users.mutations.setUserActive)
   const setActive = useMutation({ mutationFn: setActiveFn })
 
-  const conjuntoMap = new Map(conjuntos.map((c) => [c._id, c]))
+  const complexMap = new Map(complexes.map((c) => [c._id, c]))
 
   const handleToggleActive = async (admin: AdminRow) => {
     try {
@@ -279,10 +279,10 @@ function AdminsTable({
                 ) : (
                   <div className="flex flex-wrap gap-1">
                     {admin.memberships.map((m) => {
-                      const c = conjuntoMap.get(m.conjuntoId)
+                      const c = complexMap.get(m.complexId)
                       return (
                         <Badge key={m._id} variant="outline">
-                          {c?.nombre ?? m.conjuntoId.slice(0, 6)}
+                          {c?.name ?? m.complexId.slice(0, 6)}
                         </Badge>
                       )
                     })}

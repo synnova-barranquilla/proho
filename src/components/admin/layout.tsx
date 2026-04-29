@@ -8,56 +8,56 @@ import {
   useSidebar,
 } from '#/components/ui/sidebar'
 import type { Doc } from '../../../convex/_generated/dataModel'
-import { ConjuntoHeader } from './header'
-import { ConjuntoSidebar } from './sidebar'
+import { ComplexHeader } from './header'
+import { ComplexSidebar } from './sidebar'
 
-interface ConjuntoLayoutProps {
+interface ComplexLayoutProps {
   /**
-   * The currently selected conjunto, or `null` for organization-level admin
-   * routes like `/admin/equipo` that are not scoped to a specific conjunto.
-   * When `null`, the sidebar hides conjunto-specific items (Unidades,
+   * The currently selected complex, or `null` for organization-level admin
+   * routes like `/admin/equipo` that are not scoped to a specific complex.
+   * When `null`, the sidebar hides complex-specific items (Unidades,
    * Residentes, Vehículos, Parqueaderos, Configuración) and shows a
-   * "Volver al selector" link; the header hides the ConjuntoSwitcher.
+   * "Volver al selector" link; the header hides the ComplexSwitcher.
    */
-  conjunto: Doc<'conjuntos'> | null
+  complex: Doc<'complexes'> | null
   /**
-   * The current user's membership for the active conjunto, if any.
+   * The current user's membership for the active complex, if any.
    * - `null` for owners and SUPER_ADMINs (they don't need a membership).
-   * - Contains the role (ADMIN / ASISTENTE / VIGILANTE / RESIDENTE) for
-   *   everyone else.
+   * - Contains the role (ADMIN / VIGILANTE / PROPIETARIO / INQUILINO /
+   *   ARRENDATARIO) for everyone else.
    * The sidebar uses this to gate "admin-only" items (Usuarios,
-   * Configuración) when rendering inside a conjunto.
+   * Configuración) when rendering inside a complex.
    */
-  membership?: Doc<'conjuntoMemberships'> | null
+  membership?: Doc<'complexMemberships'> | null
   /**
    * When an org-level page (e.g. `/admin/equipo`) was opened from a
-   * conjunto-scoped page, pass the source conjunto here so the sidebar
-   * can render a "Volver a <nombre>" shortcut back to it. Ignored when
-   * `conjunto` is not `null`.
+   * complex-scoped page, pass the source complex here so the sidebar
+   * can render a "Volver a <name>" shortcut back to it. Ignored when
+   * `complex` is not `null`.
    */
-  fromConjunto?: Doc<'conjuntos'> | null
+  fromComplex?: Doc<'complexes'> | null
   activeModules?: string[]
   children: React.ReactNode
 }
 
-export function ConjuntoLayout({
-  conjunto,
+export function ComplexLayout({
+  complex,
   membership,
-  fromConjunto,
+  fromComplex,
   activeModules,
   children,
-}: ConjuntoLayoutProps) {
+}: ComplexLayoutProps) {
   return (
     <SidebarProvider>
       <MobileAutoClose />
-      <ConjuntoSidebar
-        conjunto={conjunto}
+      <ComplexSidebar
+        complex={complex}
         membership={membership ?? null}
-        fromConjunto={fromConjunto}
+        fromComplex={fromComplex}
         activeModules={activeModules}
       />
       <SidebarInset>
-        <ConjuntoHeader conjunto={conjunto} />
+        <ComplexHeader complex={complex} />
         <main className="flex flex-1 flex-col p-4 sm:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>

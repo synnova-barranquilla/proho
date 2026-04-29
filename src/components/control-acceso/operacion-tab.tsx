@@ -21,41 +21,41 @@ import { ViolacionesDialog } from './violaciones-dialog'
 import { YaDentroDialog } from './ya-dentro-dialog'
 
 interface OperacionTabProps {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
 }
 
-export function OperacionTab({ conjuntoId }: OperacionTabProps) {
+export function OperacionTab({ complexId }: OperacionTabProps) {
   const [state, dispatch] = useControlAcceso()
 
   const { data: activos } = useSuspenseQuery(
-    convexQuery(api.registrosAcceso.queries.listActivos, { conjuntoId }),
+    convexQuery(api.accessRecords.queries.listActive, { complexId }),
   )
 
   const { data: recientes } = useSuspenseQuery(
-    convexQuery(api.registrosAcceso.queries.listRecientes, { conjuntoId }),
+    convexQuery(api.accessRecords.queries.listRecent, { complexId }),
   )
 
   const { data: vehiculos } = useSuspenseQuery(
-    convexQuery(api.vehiculos.queries.listByConjunto, { conjuntoId }),
+    convexQuery(api.vehicles.queries.listByComplex, { complexId }),
   )
 
   const { data: config } = useSuspenseQuery(
-    convexQuery(api.conjuntoConfig.queries.getByConjunto, { conjuntoId }),
+    convexQuery(api.complexConfig.queries.getByComplex, { complexId }),
   )
 
   const carrosDentro = activos.filter((r) => {
-    const tipo = r.vehiculo?.tipo ?? r.vehiculoTipoVisitante ?? 'CARRO'
-    return tipo !== 'MOTO'
+    const tipo = r.vehicle?.type ?? r.visitorVehicleType ?? 'CAR'
+    return tipo !== 'MOTORCYCLE'
   }).length
   const motosDentro = activos.filter(
-    (r) => (r.vehiculo?.tipo ?? r.vehiculoTipoVisitante) === 'MOTO',
+    (r) => (r.vehicle?.type ?? r.visitorVehicleType) === 'MOTORCYCLE',
   ).length
-  const carrosCapacidad = config?.parqueaderosCarros ?? 0
-  const motosCapacidad = config?.parqueaderosMotos ?? 0
-  const permanenciaDias = config?.reglaPermanenciaMaxDias ?? 0
+  const carrosCapacidad = config?.carParkingSlots ?? 0
+  const motosCapacidad = config?.motoParkingSlots ?? 0
+  const permanenciaDias = config?.ruleMaxStayDays ?? 0
 
   const registrarIngresoFn = useConvexMutation(
-    api.registrosAcceso.mutations.registrarIngreso,
+    api.accessRecords.mutations.registerEntry,
   )
   const registrarIngresoMut = useMutation({ mutationFn: registrarIngresoFn })
 
@@ -64,7 +64,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
       const placaNorm = normalizePlaca(placa)
 
       const yaAdentro = activos.find(
-        (r: RegistroActivo) => r.placaNormalizada === placaNorm,
+        (r: RegistroActivo) => r.normalizedPlate === placaNorm,
       )
       if (yaAdentro) {
         dispatch({ type: 'RESULTADO_YA_DENTRO', registro: yaAdentro })
@@ -75,8 +75,8 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
 
       try {
         const result = await registrarIngresoMut.mutateAsync({
-          conjuntoId,
-          placaRaw: placa,
+          complexId,
+          rawPlate: placa,
         })
 
         if ('found' in result && !result.found) {
@@ -84,12 +84,12 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
           return
         }
 
-        if ('requiresJustificacion' in result && result.requiresJustificacion) {
+        if ('requiresJustification' in result && result.requiresJustification) {
           dispatch({
             type: 'RESULTADO_VIOLACIONES',
             placaRaw: placa,
             violations: result.violations as any,
-            vehiculoId: '' as Id<'vehiculos'>,
+            vehicleId: '' as Id<'vehicles'>,
             unidadInfo: '',
           })
           return
@@ -109,7 +109,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         dispatch({ type: 'VOLVER_IDLE' })
       }
     },
-    [activos, conjuntoId, dispatch, registrarIngresoMut],
+    [activos, complexId, dispatch, registrarIngresoMut],
   )
 
   const handleVolver = useCallback(() => {
@@ -121,7 +121,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
   const [recientesOpen, setRecientesOpen] = useState(false)
 
   const visitantesDentro = activos.filter(
-    (r) => r.tipo === 'VISITANTE' || r.tipo === 'VISITA_ADMIN',
+    (r) => r.type === 'VISITOR' || r.type === 'ADMIN_VISIT',
   )
 
   const permanenciaMs = permanenciaDias * 24 * 60 * 60 * 1000
@@ -129,9 +129,9 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
     permanenciaDias > 0
       ? activos.filter(
           (r) =>
-            r.tipo === 'RESIDENTE' &&
-            r.entradaEn != null &&
-            Date.now() - r.entradaEn >= permanenciaMs,
+            r.type === 'RESIDENT' &&
+            r.enteredAt != null &&
+            Date.now() - r.enteredAt >= permanenciaMs,
         )
       : []
 
@@ -149,14 +149,14 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
               variant="activos"
               registros={permanenciaExcedida.map((r) => ({
                 _id: `${r._id}-entrada`,
-                evento: 'ENTRADA' as const,
-                eventoEn: r.entradaEn ?? r._creationTime,
-                entradaEn: r.entradaEn,
-                placaNormalizada: r.placaNormalizada,
-                tipo: r.tipo,
-                vehiculoTipoVisitante: r.vehiculoTipoVisitante,
-                vehiculo: r.vehiculo,
-                unidad: r.unidad,
+                event: 'ENTRADA' as const,
+                eventAt: r.enteredAt ?? r._creationTime,
+                enteredAt: r.enteredAt,
+                normalizedPlate: r.normalizedPlate,
+                type: r.type,
+                visitorVehicleType: r.visitorVehicleType,
+                vehicle: r.vehicle,
+                unit: r.unit,
               }))}
             />
           </CollapsibleTable>
@@ -172,14 +172,14 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
             variant="activos"
             registros={visitantesDentro.map((r) => ({
               _id: `${r._id}-entrada`,
-              evento: 'ENTRADA' as const,
-              eventoEn: r.entradaEn ?? r._creationTime,
-              entradaEn: r.entradaEn,
-              placaNormalizada: r.placaNormalizada,
-              tipo: r.tipo,
-              vehiculoTipoVisitante: r.vehiculoTipoVisitante,
-              vehiculo: r.vehiculo,
-              unidad: r.unidad,
+              event: 'ENTRADA' as const,
+              eventAt: r.enteredAt ?? r._creationTime,
+              enteredAt: r.enteredAt,
+              normalizedPlate: r.normalizedPlate,
+              type: r.type,
+              visitorVehicleType: r.visitorVehicleType,
+              vehicle: r.vehicle,
+              unit: r.unit,
             }))}
           />
         </CollapsibleTable>
@@ -221,7 +221,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         <ViolacionesDialog
           open
           onClose={handleVolver}
-          conjuntoId={conjuntoId}
+          complexId={complexId}
           placa={state.placa}
           placaRaw={state.placaRaw}
           violations={state.violations}
@@ -233,7 +233,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         <YaDentroDialog
           open
           onClose={handleVolver}
-          conjuntoId={conjuntoId}
+          complexId={complexId}
           registro={state.registro}
         />
       )}
@@ -242,7 +242,7 @@ export function OperacionTab({ conjuntoId }: OperacionTabProps) {
         <NoEncontradoDialog
           open
           onClose={handleVolver}
-          conjuntoId={conjuntoId}
+          complexId={complexId}
           placa={state.placa}
           placaRaw={state.placaRaw}
         />

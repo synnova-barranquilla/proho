@@ -8,7 +8,7 @@ import { ConvexError } from 'convex/values'
 import { UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { InviteConjuntoUserDialog } from '#/components/admin/usuarios/invite-conjunto-user-dialog'
+import { InviteComplexUserDialog } from '#/components/admin/usuarios/invite-complex-user-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
@@ -20,39 +20,39 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
-import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
+import { useIsComplexAdmin } from '#/lib/complex-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../convex/_generated/dataModel'
 
-export const Route = createFileRoute(
-  '/_authenticated/c/$conjuntoSlug/usuarios',
-)({
-  loader: async ({ context: { queryClient, conjuntoId } }) => {
-    await prefetchAuthenticatedQuery(
-      queryClient,
-      api.conjuntoMemberships.queries.listByConjunto,
-      { conjuntoId },
-    )
-    return null
+export const Route = createFileRoute('/_authenticated/c/$complexSlug/usuarios')(
+  {
+    loader: async ({ context: { queryClient, complexId } }) => {
+      await prefetchAuthenticatedQuery(
+        queryClient,
+        api.complexMemberships.queries.listByComplex,
+        { complexId },
+      )
+      return null
+    },
+    component: UsuariosComplexPage,
   },
-  component: UsuariosConjuntoPage,
-})
+)
 
-function UsuariosConjuntoPage() {
-  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
+function UsuariosComplexPage() {
+  const { complexId, complexSlug } = Route.useRouteContext()
   const navigate = useNavigate()
-  const isAdmin = useIsConjuntoAdmin()
+  const isAdmin = useIsComplexAdmin()
   const [inviteOpen, setInviteOpen] = useState(false)
 
   useEffect(() => {
     if (!isAdmin) {
       void navigate({
-        to: '/c/$conjuntoSlug',
-        params: { conjuntoSlug },
+        to: '/c/$complexSlug',
+        params: { complexSlug },
       })
     }
-  }, [isAdmin, navigate, conjuntoSlug])
+  }, [isAdmin, navigate, complexSlug])
 
   if (!isAdmin) return null
 
@@ -64,7 +64,7 @@ function UsuariosConjuntoPage() {
             Usuarios del conjunto
           </h1>
           <p className="text-sm text-muted-foreground">
-            Vigilantes, asistentes y otros usuarios con acceso a este conjunto.
+            Vigilantes y otros usuarios con acceso a este conjunto.
           </p>
         </div>
         <Button onClick={() => setInviteOpen(true)}>
@@ -74,31 +74,31 @@ function UsuariosConjuntoPage() {
       </div>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
-        <MembershipsTable conjuntoId={conjuntoId} />
+        <MembershipsTable complexId={complexId} />
       </Suspense>
 
-      <InviteConjuntoUserDialog
+      <InviteComplexUserDialog
         open={inviteOpen}
         onOpenChange={setInviteOpen}
-        conjuntoId={conjuntoId}
+        complexId={complexId}
       />
     </div>
   )
 }
 
-type MembershipRow = Doc<'conjuntoMemberships'> & {
+type MembershipRow = Doc<'complexMemberships'> & {
   user: Doc<'users'> | null
 }
 
-function MembershipsTable({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
+function MembershipsTable({ complexId }: { complexId: Id<'complexes'> }) {
   const { data: memberships } = useSuspenseQuery(
-    convexQuery(api.conjuntoMemberships.queries.listByConjunto, {
-      conjuntoId,
+    convexQuery(api.complexMemberships.queries.listByComplex, {
+      complexId,
     }),
   )
 
   const setActiveFn = useConvexMutation(
-    api.conjuntoMemberships.mutations.setActive,
+    api.complexMemberships.mutations.setActive,
   )
   const setActive = useMutation({ mutationFn: setActiveFn })
 
@@ -125,8 +125,7 @@ function MembershipsTable({ conjuntoId }: { conjuntoId: Id<'conjuntos'> }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        No hay usuarios del conjunto aún. Invita al primer vigilante o
-        asistente.
+        No hay usuarios del conjunto aún. Invita al primer vigilante.
       </div>
     )
   }

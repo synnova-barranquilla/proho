@@ -19,9 +19,9 @@ import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
 
-type RegistroRow = Doc<'registrosAcceso'> & {
-  vehiculo: Doc<'vehiculos'> | null
-  unidad: Doc<'unidades'> | null
+type RegistroRow = Doc<'accessRecords'> & {
+  vehicle: Doc<'vehicles'> | null
+  unit: Doc<'units'> | null
 }
 
 const PERIODO_OPTIONS = [
@@ -56,16 +56,16 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     header: 'Fecha',
     cell: ({ row }) => (
       <span className="text-sm">
-        {formatDateTime(row.original.entradaEn ?? row.original._creationTime)}
+        {formatDateTime(row.original.enteredAt ?? row.original._creationTime)}
       </span>
     ),
   },
   {
-    accessorKey: 'placaNormalizada',
+    accessorKey: 'normalizedPlate',
     header: 'Placa',
     cell: ({ row }) => (
       <span className="font-mono text-sm font-medium">
-        {formatPlaca(row.original.placaNormalizada)}
+        {formatPlaca(row.original.normalizedPlate)}
       </span>
     ),
   },
@@ -73,10 +73,10 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     id: 'unidad',
     header: 'Unidad',
     cell: ({ row }) => {
-      const u = row.original.unidad
+      const u = row.original.unit as { tower: string; number: string } | null
       return u ? (
         <span className="text-sm">
-          T{u.torre} — {u.numero}
+          T{u.tower} — {u.number}
         </span>
       ) : (
         <span className="text-sm text-muted-foreground">—</span>
@@ -88,7 +88,7 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     header: 'Reglas violadas',
     enableSorting: false,
     cell: ({ row }) => {
-      const motor = row.original.decisionMotor as RuleViolation[]
+      const motor = row.original.engineDecision as RuleViolation[]
       return (
         <div className="flex flex-wrap gap-1">
           {motor.map((v) => (
@@ -101,36 +101,36 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     },
   },
   {
-    id: 'justificacion',
+    id: 'justification',
     header: 'Justificación',
     enableSorting: false,
     cell: ({ row }) => (
-      <span className="text-sm">{row.original.justificacion ?? '—'}</span>
+      <span className="text-sm">{row.original.justification ?? '—'}</span>
     ),
   },
   {
-    id: 'observaciones',
+    id: 'observations',
     header: 'Observaciones',
     enableSorting: false,
     cell: ({ row }) => (
-      <span className="text-sm">{row.original.observaciones ?? '—'}</span>
+      <span className="text-sm">{row.original.observations ?? '—'}</span>
     ),
   },
 ]
 
 interface NovedadesTabProps {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
 }
 
-export function NovedadesTab({ conjuntoId }: NovedadesTabProps) {
+export function NovedadesTab({ complexId }: NovedadesTabProps) {
   const [periodo, setPeriodo] = useState('7d')
 
   const periodoMs = PERIODO_OPTIONS.find((p) => p.value === periodo)?.ms ?? 0
 
   const { data: registros } = useSuspenseQuery(
-    convexQuery(api.registrosAcceso.queries.listHistorico, {
-      conjuntoId,
-      periodoMs: periodoMs || undefined,
+    convexQuery(api.accessRecords.queries.listHistory, {
+      complexId,
+      periodMs: periodoMs || undefined,
     }),
   )
 
@@ -138,7 +138,7 @@ export function NovedadesTab({ conjuntoId }: NovedadesTabProps) {
   const overrides = useMemo(
     () =>
       (registros as RegistroRow[]).filter(
-        (r) => r.decisionMotor.length > 0 && r.decisionFinal === 'PERMITIDO',
+        (r) => r.engineDecision.length > 0 && r.finalDecision === 'ALLOWED',
       ),
     [registros],
   )

@@ -25,19 +25,19 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
-import { useIsConjuntoAdmin } from '#/lib/conjunto-role'
+import { useIsComplexAdmin } from '#/lib/complex-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$conjuntoSlug/unidades/',
+  '/_authenticated/c/$complexSlug/unidades/',
 )({
-  loader: async ({ context: { queryClient, conjuntoId } }) => {
+  loader: async ({ context: { queryClient, complexId } }) => {
     await prefetchAuthenticatedQuery(
       queryClient,
-      api.unidades.queries.listByConjunto,
-      { conjuntoId },
+      api.units.queries.listByComplex,
+      { complexId },
     )
     return null
   },
@@ -45,35 +45,35 @@ export const Route = createFileRoute(
 })
 
 function UnidadesPage() {
-  const { conjuntoId, conjuntoSlug } = Route.useRouteContext()
-  const isAdmin = useIsConjuntoAdmin()
+  const { complexId, complexSlug } = Route.useRouteContext()
+  const isAdmin = useIsComplexAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
-  const [editing, setEditing] = useState<Doc<'unidades'> | null>(null)
+  const [editing, setEditing] = useState<Doc<'units'> | null>(null)
 
-  const bulkImportFn = useConvexMutation(api.unidades.mutations.bulkImport)
+  const bulkImportFn = useConvexMutation(api.units.mutations.bulkImport)
   const bulkImportMut = useMutation({ mutationFn: bulkImportFn })
 
   if (!isAdmin) {
-    return <Navigate to="/c/$conjuntoSlug" params={{ conjuntoSlug }} />
+    return <Navigate to="/c/$complexSlug" params={{ complexSlug }} />
   }
 
-  const VALID_TIPOS = new Set(['APARTAMENTO', 'CASA', 'LOCAL'])
+  const VALID_TIPOS = new Set(['APARTMENT', 'HOUSE', 'COMMERCIAL'])
 
   const validateUnidadRow = (
     row: Record<string, string>,
     rowIndex: number,
   ): ValidatedRow<{
-    torre: string
-    numero: string
-    tipo: 'APARTAMENTO' | 'CASA' | 'LOCAL'
+    tower: string
+    number: string
+    type: 'APARTMENT' | 'HOUSE' | 'COMMERCIAL'
   }> => {
-    const torre = (row['torre'] || '').trim().toUpperCase()
-    const numero = (row['numero'] || '').trim()
-    const tipoRaw = (row['tipo'] || 'APARTAMENTO').trim().toUpperCase()
+    const tower = (row['torre'] || '').trim().toUpperCase()
+    const number = (row['numero'] || '').trim()
+    const tipoRaw = (row['tipo'] || 'APARTMENT').trim().toUpperCase()
     const raw = row
 
-    if (!torre || !numero) {
+    if (!tower || !number) {
       return { rowIndex, valid: false, error: 'Torre y número requeridos', raw }
     }
     if (!VALID_TIPOS.has(tipoRaw)) {
@@ -84,9 +84,9 @@ function UnidadesPage() {
       rowIndex,
       valid: true,
       data: {
-        torre,
-        numero,
-        tipo: tipoRaw as 'APARTAMENTO' | 'CASA' | 'LOCAL',
+        tower,
+        number,
+        type: tipoRaw as 'APARTMENT' | 'HOUSE' | 'COMMERCIAL',
       },
       raw,
     }
@@ -94,12 +94,12 @@ function UnidadesPage() {
 
   const handleUnidadImport = async (
     rows: Array<{
-      torre: string
-      numero: string
-      tipo: 'APARTAMENTO' | 'CASA' | 'LOCAL'
+      tower: string
+      number: string
+      type: 'APARTMENT' | 'HOUSE' | 'COMMERCIAL'
     }>,
   ): Promise<ImportResult> => {
-    return await bulkImportMut.mutateAsync({ conjuntoId, rows })
+    return await bulkImportMut.mutateAsync({ complexId, rows })
   }
 
   return (
@@ -130,7 +130,7 @@ function UnidadesPage() {
 
       <Suspense fallback={<TorresSkeleton />}>
         <TorresList
-          conjuntoId={conjuntoId}
+          complexId={complexId}
           isAdmin={isAdmin}
           onEdit={(u) => {
             setEditing(u)
@@ -145,7 +145,7 @@ function UnidadesPage() {
           setDialogOpen(open)
           if (!open) setEditing(null)
         }}
-        conjuntoId={conjuntoId}
+        complexId={complexId}
         unidad={editing}
       />
 
@@ -162,28 +162,28 @@ function UnidadesPage() {
 }
 
 function TorresList({
-  conjuntoId,
+  complexId,
   isAdmin,
   onEdit,
 }: {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   isAdmin: boolean
-  onEdit: (u: Doc<'unidades'>) => void
+  onEdit: (u: Doc<'units'>) => void
 }) {
   const { data } = useSuspenseQuery(
-    convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
+    convexQuery(api.units.queries.listByComplex, { complexId }),
   )
 
-  const setMoraFn = useConvexMutation(api.unidades.mutations.setMora)
+  const setMoraFn = useConvexMutation(api.units.mutations.setArrears)
   const setMora = useMutation({ mutationFn: setMoraFn })
 
-  const handleToggleMora = async (u: Doc<'unidades'>) => {
+  const handleToggleMora = async (u: Doc<'units'>) => {
     try {
       await setMora.mutateAsync({
-        unidadId: u._id,
-        enMora: !u.enMora,
+        unitId: u._id,
+        inArrears: !u.inArrears,
       })
-      toast.success(u.enMora ? 'Mora removida' : 'Unidad marcada en mora')
+      toast.success(u.inArrears ? 'Mora removida' : 'Unidad marcada en mora')
     } catch (err) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
@@ -206,12 +206,12 @@ function TorresList({
 
   return (
     <div className="flex flex-col gap-6">
-      {data.torres.map((t) => (
-        <div key={t.torre} className="flex flex-col gap-2">
+      {data.towers.map((t) => (
+        <div key={t.tower} className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold text-muted-foreground">
-            Torre {t.torre}{' '}
+            Torre {t.tower}{' '}
             <span className="text-xs font-normal">
-              ({t.unidades.length} unidades)
+              ({t.units.length} unidades)
             </span>
           </h2>
           <Table>
@@ -227,19 +227,19 @@ function TorresList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {t.unidades.map((u, i) => (
+              {t.units.map((u, i) => (
                 <TableRow key={u._id}>
                   <TableCell className="text-muted-foreground tabular-nums">
                     {i + 1}
                   </TableCell>
-                  <TableCell className="font-medium">{u.numero}</TableCell>
+                  <TableCell className="font-medium">{u.number}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
-                      {u.tipo}
+                      {u.type}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {u.enMora ? (
+                    {u.inArrears ? (
                       <Badge variant="destructive">En mora</Badge>
                     ) : (
                       <span className="text-xs text-muted-foreground">
@@ -255,7 +255,7 @@ function TorresList({
                           size="sm"
                           onClick={() => handleToggleMora(u)}
                         >
-                          {u.enMora ? 'Quitar mora' : 'Marcar mora'}
+                          {u.inArrears ? 'Quitar mora' : 'Marcar mora'}
                         </Button>
                         <Button
                           variant="outline"

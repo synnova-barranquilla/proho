@@ -67,18 +67,23 @@ export function CreateConjuntoDialog({
     }
   }, [open])
 
-  const createFn = useConvexMutation(api.conjuntos.mutations.create)
+  const createFn = useConvexMutation(api.complexes.mutations.create)
   const createMut = useMutation({ mutationFn: createFn })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await createMut.mutateAsync({ slug, nombre, direccion, ciudad })
+      await createMut.mutateAsync({
+        slug,
+        name: nombre,
+        address: direccion,
+        city: ciudad,
+      })
       toast.success('Conjunto creado')
       onOpenChange(false)
       void navigate({
-        to: '/c/$conjuntoSlug',
-        params: { conjuntoSlug: slug },
+        to: '/c/$complexSlug',
+        params: { complexSlug: slug },
       })
     } catch (err) {
       if (err instanceof ConvexError) {

@@ -32,55 +32,58 @@ import {
   type TipoVehiculoSelectable,
 } from '../../control-acceso/tipo-vehiculo-cards'
 
-type VehiculoRow = Doc<'vehiculos'> & { unidad: Doc<'unidades'> | null }
+type VehiculoRow = Doc<'vehicles'> & { unit: Doc<'units'> | null }
 
 interface VehiculoDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
   vehiculo: VehiculoRow | null
 }
 
 export function VehiculoDialog({
   open,
   onOpenChange,
-  conjuntoId,
+  complexId,
   vehiculo,
 }: VehiculoDialogProps) {
   const isEdit = vehiculo !== null
 
-  const [unidadId, setUnidadId] = useState<string>('')
-  const [placa, setPlaca] = useState('')
-  const [tipo, setTipo] = useState<TipoVehiculoSelectable>('CARRO')
+  const [unitId, setUnitId] = useState<string>('')
+  const [plate, setPlate] = useState('')
+  const [tipo, setTipo] = useState<TipoVehiculoSelectable>('CAR')
   const [propietario, setPropietario] = useState('')
 
-  const placaValida = placa.length === 6 && isPlacaValidaParaTipo(placa, tipo)
-  const showPlacaError = placa.length === 6 && !placaValida
+  const placaValida = plate.length === 6 && isPlacaValidaParaTipo(plate, tipo)
+  const showPlacaError = plate.length === 6 && !placaValida
 
   useEffect(() => {
     if (open) {
-      setUnidadId(vehiculo?.unidadId ?? '')
-      setPlaca(vehiculo?.placa ?? '')
-      const vehiculoTipo = vehiculo?.tipo ?? 'CARRO'
-      setTipo(vehiculoTipo === 'MOTO' ? 'MOTO' : 'CARRO')
-      setPropietario(vehiculo?.propietarioNombre ?? '')
+      setUnitId(vehiculo?.unitId ?? '')
+      setPlate(vehiculo?.plate ?? '')
+      const vehiculoTipo = vehiculo?.type ?? 'CAR'
+      setTipo(vehiculoTipo === 'MOTORCYCLE' ? 'MOTORCYCLE' : 'CAR')
+      setPropietario(vehiculo?.ownerName ?? '')
     }
   }, [open, vehiculo])
 
   // Auto-switch tipo cuando la placa matchea un formato específico
   useEffect(() => {
-    const detected = detectPlacaTipo(placa)
+    const detected = detectPlacaTipo(plate)
     if (detected) setTipo(detected)
-  }, [placa])
+  }, [plate])
 
   const { data: unidadesData } = useSuspenseQuery(
-    convexQuery(api.unidades.queries.listByConjunto, { conjuntoId }),
+    convexQuery(api.units.queries.listByComplex, { complexId }),
   )
-  const unidades = unidadesData.torres.flatMap((t) => t.unidades)
+  const unidades = unidadesData.towers.flatMap(
+    (t: { units: Array<{ _id: string; tower: string; number: string }> }) =>
+      t.units,
+  )
   const unidadOptions = buildUnidadOptions(unidades)
 
-  const createFn = useConvexMutation(api.vehiculos.mutations.create)
-  const updateFn = useConvexMutation(api.vehiculos.mutations.update)
+  const createFn = useConvexMutation(api.vehicles.mutations.create)
+  const updateFn = useConvexMutation(api.vehicles.mutations.update)
   const createMut = useMutation({ mutationFn: createFn })
   const updateMut = useMutation({ mutationFn: updateFn })
   const isPending = createMut.isPending || updateMut.isPending
@@ -90,23 +93,23 @@ export function VehiculoDialog({
     try {
       if (vehiculo !== null) {
         await updateMut.mutateAsync({
-          vehiculoId: vehiculo._id,
-          unidadId: unidadId as Id<'unidades'>,
-          placa,
-          tipo,
-          propietarioNombre: propietario || undefined,
+          vehicleId: vehiculo._id,
+          unitId: unitId as Id<'units'>,
+          plate,
+          type: tipo,
+          ownerName: propietario || undefined,
         })
         toast.success('Vehículo actualizado')
       } else {
-        if (!unidadId) {
+        if (!unitId) {
           toast.error('Selecciona una unidad')
           return
         }
         await createMut.mutateAsync({
-          unidadId: unidadId as Id<'unidades'>,
-          placa,
-          tipo,
-          propietarioNombre: propietario || undefined,
+          unitId: unitId as Id<'units'>,
+          plate,
+          type: tipo,
+          ownerName: propietario || undefined,
         })
         toast.success('Vehículo creado')
       }
@@ -135,8 +138,8 @@ export function VehiculoDialog({
               <Field>
                 <FieldLabel>Unidad</FieldLabel>
                 <SearchableSelect
-                  value={unidadId}
-                  onValueChange={setUnidadId}
+                  value={unitId}
+                  onValueChange={setUnitId}
                   options={unidadOptions}
                   placeholder="Selecciona una unidad"
                   searchPlaceholder="Buscar por torre o número..."
@@ -149,8 +152,8 @@ export function VehiculoDialog({
               <Field>
                 <FieldLabel>Placa</FieldLabel>
                 <PlacaInput
-                  value={placa}
-                  onChange={setPlaca}
+                  value={plate}
+                  onChange={setPlate}
                   aria-invalid={showPlacaError}
                   required
                 />

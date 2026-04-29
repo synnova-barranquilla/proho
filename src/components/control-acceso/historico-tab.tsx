@@ -20,9 +20,9 @@ import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { normalizePlaca } from '../../../convex/lib/placa'
 
-type RegistroRow = Doc<'registrosAcceso'> & {
-  vehiculo: Doc<'vehiculos'> | null
-  unidad: Doc<'unidades'> | null
+type RegistroRow = Doc<'accessRecords'> & {
+  vehicle: Doc<'vehicles'> | null
+  unit: Doc<'units'> | null
 }
 
 const PERIODO_OPTIONS = [
@@ -33,14 +33,14 @@ const PERIODO_OPTIONS = [
 ]
 
 const TIPO_LABELS: Record<string, string> = {
-  RESIDENTE: 'Residente',
-  VISITANTE: 'Visitante',
-  VISITA_ADMIN: 'Visita admin',
+  RESIDENT: 'Residente',
+  VISITOR: 'Visitante',
+  ADMIN_VISIT: 'Visita admin',
 }
 
 const DECISION_LABELS: Record<string, string> = {
-  PERMITIDO: 'Permitido',
-  RECHAZADO: 'Rechazado',
+  ALLOWED: 'Permitido',
+  REJECTED: 'Rechazado',
 }
 
 function formatDateTime(ts: number | undefined): string {
@@ -55,11 +55,11 @@ function formatDateTime(ts: number | undefined): string {
 
 const columns: ColumnDef<RegistroRow, unknown>[] = [
   {
-    accessorKey: 'placaNormalizada',
+    accessorKey: 'normalizedPlate',
     header: 'Placa',
     cell: ({ row }) => (
       <span className="font-mono text-sm font-medium">
-        {formatPlaca(row.original.placaNormalizada)}
+        {formatPlaca(row.original.normalizedPlate)}
       </span>
     ),
   },
@@ -68,7 +68,7 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     header: 'Tipo',
     cell: ({ row }) => (
       <span className="text-sm">
-        {TIPO_LABELS[row.original.tipo] ?? row.original.tipo}
+        {TIPO_LABELS[row.original.type] ?? row.original.type}
       </span>
     ),
   },
@@ -76,10 +76,10 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     id: 'unidad',
     header: 'Unidad',
     cell: ({ row }) => {
-      const u = row.original.unidad
+      const u = row.original.unit
       return u ? (
         <span className="text-sm">
-          T{u.torre} — {u.numero}
+          T{u.tower} — {u.number}
         </span>
       ) : (
         <span className="text-sm text-muted-foreground">—</span>
@@ -90,23 +90,23 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     id: 'entrada',
     header: 'Entrada',
     cell: ({ row }) => (
-      <span className="text-sm">{formatDateTime(row.original.entradaEn)}</span>
+      <span className="text-sm">{formatDateTime(row.original.enteredAt)}</span>
     ),
   },
   {
     id: 'salida',
     header: 'Salida',
     cell: ({ row }) => (
-      <span className="text-sm">{formatDateTime(row.original.salidaEn)}</span>
+      <span className="text-sm">{formatDateTime(row.original.exitedAt)}</span>
     ),
   },
   {
-    accessorKey: 'decisionFinal',
+    accessorKey: 'finalDecision',
     header: 'Decisión',
     cell: ({ row }) => {
-      const decision = row.original.decisionFinal
+      const decision = row.original.finalDecision
       return (
-        <Badge variant={decision === 'PERMITIDO' ? 'default' : 'destructive'}>
+        <Badge variant={decision === 'ALLOWED' ? 'default' : 'destructive'}>
           {DECISION_LABELS[decision] ?? decision}
         </Badge>
       )
@@ -117,7 +117,7 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     header: 'Reglas',
     enableSorting: false,
     cell: ({ row }) => {
-      const motor = row.original.decisionMotor
+      const motor = row.original.engineDecision
       if (motor.length === 0) return null
       return (
         <span className="text-xs text-amber-600">
@@ -129,10 +129,10 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
 ]
 
 interface HistoricoTabProps {
-  conjuntoId: Id<'conjuntos'>
+  complexId: Id<'complexes'>
 }
 
-export function HistoricoTab({ conjuntoId }: HistoricoTabProps) {
+export function HistoricoTab({ complexId }: HistoricoTabProps) {
   const [periodo, setPeriodo] = useState('7d')
   const [placaFilter, setPlacaFilter] = useState('')
   const [tipoFilter, setTipoFilter] = useState('todos')
@@ -141,9 +141,9 @@ export function HistoricoTab({ conjuntoId }: HistoricoTabProps) {
   const periodoMs = PERIODO_OPTIONS.find((p) => p.value === periodo)?.ms ?? 0
 
   const { data: registros } = useSuspenseQuery(
-    convexQuery(api.registrosAcceso.queries.listHistorico, {
-      conjuntoId,
-      periodoMs: periodoMs || undefined,
+    convexQuery(api.accessRecords.queries.listHistory, {
+      complexId,
+      periodMs: periodoMs || undefined,
     }),
   )
 
@@ -152,15 +152,15 @@ export function HistoricoTab({ conjuntoId }: HistoricoTabProps) {
 
     if (placaFilter.trim()) {
       const norm = normalizePlaca(placaFilter)
-      result = result.filter((r) => r.placaNormalizada.includes(norm))
+      result = result.filter((r) => r.normalizedPlate.includes(norm))
     }
 
     if (tipoFilter !== 'todos') {
-      result = result.filter((r) => r.tipo === tipoFilter)
+      result = result.filter((r) => r.type === tipoFilter)
     }
 
     if (decisionFilter !== 'todos') {
-      result = result.filter((r) => r.decisionFinal === decisionFilter)
+      result = result.filter((r) => r.finalDecision === decisionFilter)
     }
 
     return result
@@ -195,9 +195,9 @@ export function HistoricoTab({ conjuntoId }: HistoricoTabProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos los tipos</SelectItem>
-            <SelectItem value="RESIDENTE">Residente</SelectItem>
-            <SelectItem value="VISITANTE">Visitante</SelectItem>
-            <SelectItem value="VISITA_ADMIN">Visita admin</SelectItem>
+            <SelectItem value="RESIDENT">Residente</SelectItem>
+            <SelectItem value="VISITOR">Visitante</SelectItem>
+            <SelectItem value="ADMIN_VISIT">Visita admin</SelectItem>
           </SelectContent>
         </Select>
 
@@ -210,8 +210,8 @@ export function HistoricoTab({ conjuntoId }: HistoricoTabProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todas las decisiones</SelectItem>
-            <SelectItem value="PERMITIDO">Permitido</SelectItem>
-            <SelectItem value="RECHAZADO">Rechazado</SelectItem>
+            <SelectItem value="ALLOWED">Permitido</SelectItem>
+            <SelectItem value="REJECTED">Rechazado</SelectItem>
           </SelectContent>
         </Select>
       </div>

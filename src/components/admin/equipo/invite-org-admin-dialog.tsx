@@ -70,17 +70,17 @@ export function InviteOrgAdminDialog({
   // the tanstack-form schema because they're not validated as form fields —
   // they're independent toggles passed straight to the mutation.
   const [makeOwner, setMakeOwner] = useState(false)
-  const [selectedConjuntoIds, setSelectedConjuntoIds] = useState<
-    Array<Id<'conjuntos'>>
+  const [selectedComplexIds, setSelectedComplexIds] = useState<
+    Array<Id<'complexes'>>
   >([])
 
-  // Conjuntos visible to the current owner. Used by the multi-select.
+  // Complexes visible to the current owner. Used by the multi-select.
   // We only fetch them when the dialog is open.
-  const conjuntosQuery = useQuery({
-    ...convexQuery(api.conjuntos.queries.listForCurrentUser, {}),
+  const complexesQuery = useQuery({
+    ...convexQuery(api.complexes.queries.listForCurrentUser, {}),
     enabled: open,
   })
-  const conjuntos = conjuntosQuery.data ?? []
+  const complexes = complexesQuery.data ?? []
 
   const form = useForm({
     defaultValues: {
@@ -101,21 +101,21 @@ export function InviteOrgAdminDialog({
           lastName: value.lastName,
           orgRole: 'ADMIN',
           isOrgOwnerOnAccept: makeOwner || undefined,
-          conjuntoIdsOnAccept:
-            !makeOwner && selectedConjuntoIds.length > 0
-              ? selectedConjuntoIds
+          complexIdsOnAccept:
+            !makeOwner && selectedComplexIds.length > 0
+              ? selectedComplexIds
               : undefined,
         })
         toast.success('Invitación creada', {
           description: makeOwner
             ? `${value.email} fue invitado como owner. Verá todos los conjuntos al aceptar.`
-            : selectedConjuntoIds.length > 0
-              ? `${value.email} fue invitado con acceso a ${selectedConjuntoIds.length} conjunto(s).`
+            : selectedComplexIds.length > 0
+              ? `${value.email} fue invitado con acceso a ${selectedComplexIds.length} conjunto(s).`
               : `${value.email} fue invitado como ADMIN. Podrás asignarle conjuntos después de que acepte.`,
         })
         form.reset()
         setMakeOwner(false)
-        setSelectedConjuntoIds([])
+        setSelectedComplexIds([])
         onOpenChange(false)
       } catch (err) {
         if (err instanceof ConvexError) {
@@ -132,7 +132,7 @@ export function InviteOrgAdminDialog({
     if (open) {
       form.reset({ email: '', firstName: '', lastName: undefined })
       setMakeOwner(false)
-      setSelectedConjuntoIds([])
+      setSelectedComplexIds([])
     }
   }, [open])
 
@@ -141,15 +141,15 @@ export function InviteOrgAdminDialog({
       if (!next) {
         form.reset()
         setMakeOwner(false)
-        setSelectedConjuntoIds([])
+        setSelectedComplexIds([])
       }
       onOpenChange(next)
     },
     [form, onOpenChange],
   )
 
-  const toggleConjunto = (id: Id<'conjuntos'>) => {
-    setSelectedConjuntoIds((prev) =>
+  const toggleComplex = (id: Id<'complexes'>) => {
+    setSelectedComplexIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     )
   }
@@ -266,8 +266,8 @@ export function InviteOrgAdminDialog({
                   <FieldLabel>
                     Acceso a conjuntos{' '}
                     <span className="text-xs font-normal text-muted-foreground">
-                      ({selectedConjuntoIds.length} seleccionado
-                      {selectedConjuntoIds.length === 1 ? '' : 's'})
+                      ({selectedComplexIds.length} seleccionado
+                      {selectedComplexIds.length === 1 ? '' : 's'})
                     </span>
                   </FieldLabel>
                   <FieldDescription>
@@ -275,11 +275,11 @@ export function InviteOrgAdminDialog({
                     acceso desde el momento en que acepte. Puedes dejarlo vacío
                     y asignárselos después.
                   </FieldDescription>
-                  <ConjuntoMultiSelect
-                    conjuntos={conjuntos}
-                    selectedIds={selectedConjuntoIds}
-                    onToggle={toggleConjunto}
-                    isLoading={conjuntosQuery.isLoading}
+                  <ComplexMultiSelect
+                    complexes={complexes}
+                    selectedIds={selectedComplexIds}
+                    onToggle={toggleComplex}
+                    isLoading={complexesQuery.isLoading}
                   />
                 </Field>
               ) : null}
@@ -298,15 +298,15 @@ export function InviteOrgAdminDialog({
   )
 }
 
-function ConjuntoMultiSelect({
-  conjuntos,
+function ComplexMultiSelect({
+  complexes,
   selectedIds,
   onToggle,
   isLoading,
 }: {
-  conjuntos: Array<Doc<'conjuntos'>>
-  selectedIds: Array<Id<'conjuntos'>>
-  onToggle: (id: Id<'conjuntos'>) => void
+  complexes: Array<Doc<'complexes'>>
+  selectedIds: Array<Id<'complexes'>>
+  onToggle: (id: Id<'complexes'>) => void
   isLoading: boolean
 }) {
   if (isLoading) {
@@ -317,7 +317,7 @@ function ConjuntoMultiSelect({
     )
   }
 
-  if (conjuntos.length === 0) {
+  if (complexes.length === 0) {
     return (
       <div className="rounded-md border border-dashed py-6 text-center text-xs text-muted-foreground">
         No hay conjuntos en la organización aún.
@@ -327,7 +327,7 @@ function ConjuntoMultiSelect({
 
   return (
     <div className="flex max-h-64 flex-col gap-2 overflow-y-auto rounded-md border p-2">
-      {conjuntos.map((c) => {
+      {complexes.map((c) => {
         const isSelected = selectedIds.includes(c._id)
         return (
           <button
@@ -353,9 +353,9 @@ function ConjuntoMultiSelect({
             </div>
             <Building2 className="h-4 w-4 text-muted-foreground" />
             <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-medium">{c.nombre}</span>
+              <span className="truncate text-sm font-medium">{c.name}</span>
               <span className="truncate text-xs text-muted-foreground">
-                {c.direccion}, {c.ciudad}
+                {c.address}, {c.city}
               </span>
             </div>
           </button>

@@ -4,17 +4,17 @@
  * a user to their "home" based on role.
  *
  * - SUPER_ADMIN → /super-admin
- * - ADMIN → /seleccionar-conjunto (decides based on 0/1/N conjuntos)
- * - MEMBER with conjuntoSlug → /c/$slug (direct to their conjunto)
- * - MEMBER without conjuntoSlug → /seleccionar-conjunto
+ * - ADMIN → /seleccionar-conjunto (decides based on 0/1/N complexes)
+ * - MEMBER with complexSlug → /c/$slug (direct to their complex)
+ * - MEMBER without complexSlug → /seleccionar-conjunto
  */
 type OrgRole = 'SUPER_ADMIN' | 'ADMIN' | 'MEMBER'
 
 export function getDashboardPathForRole(
   orgRole: OrgRole,
-  conjuntoSlug?: string,
+  complexSlug?: string,
 ): string {
   if (orgRole === 'SUPER_ADMIN') return '/super-admin'
-  if (conjuntoSlug) return `/c/${conjuntoSlug}`
+  if (complexSlug) return `/c/${complexSlug}`
   return '/seleccionar-conjunto'
 }

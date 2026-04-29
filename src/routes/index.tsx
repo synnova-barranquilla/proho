@@ -71,7 +71,7 @@ export const Route = createFileRoute('/')({
       case 'existing':
       case 'accepted':
         throw redirect({
-          to: getDashboardPathForRole(result.orgRole, result.conjuntoSlug),
+          to: getDashboardPathForRole(result.orgRole, result.complexSlug),
         })
     }
   },
