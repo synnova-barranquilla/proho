@@ -21,4 +21,5 @@ export const complexMembershipFields = {
   // (e.g. onboardTenant), false when a non-owner ADMIN created their own complex
   // and the system auto-assigned membership.
   createdByOwner: v.boolean(),
+  residentId: v.optional(v.id('residents')),
 }

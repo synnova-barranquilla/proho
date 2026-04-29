@@ -37,4 +37,5 @@ export const invitationFields = {
   // /admin/equipo. Ignored if `isOrgOwnerOnAccept` is true (owners see
   // all complexes automatically).
   complexIdsOnAccept: v.optional(v.array(v.id('complexes'))),
+  residentId: v.optional(v.id('residents')),
 }

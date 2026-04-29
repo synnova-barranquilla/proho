@@ -1,9 +1,18 @@
 import { v } from 'convex/values'
 
+import { internal } from '../_generated/api'
 import { mutation } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { documentType, residentTypes } from './validators'
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+
+const RESIDENT_TYPE_TO_COMPLEX_ROLE = {
+  OWNER: 'OWNER',
+  LESSEE: 'LESSEE',
+  TENANT: 'TENANT',
+} as const
 
 export const create = mutation({
   args: {
@@ -21,7 +30,7 @@ export const create = mutation({
     if (!unit) {
       throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Unidad no encontrada')
     }
-    await requireComplexAccess(ctx, unit.complexId, {
+    const { user } = await requireComplexAccess(ctx, unit.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -35,7 +44,6 @@ export const create = mutation({
       )
     }
 
-    // Document unique per complex
     const existing = await ctx.db
       .query('residents')
       .withIndex('by_complex_and_document', (q) =>
@@ -61,6 +69,45 @@ export const create = mutation({
       type: args.type,
       active: true,
     })
+
+    const email = args.email?.trim()
+    if (email) {
+      const complexRole = RESIDENT_TYPE_TO_COMPLEX_ROLE[args.type]
+
+      const previousPending = await ctx.db
+        .query('invitations')
+        .withIndex('by_email_and_status', (q) =>
+          q.eq('email', email).eq('status', 'PENDING'),
+        )
+        .collect()
+      for (const prev of previousPending) {
+        if (prev.organizationId === user.organizationId) {
+          await ctx.db.patch(prev._id, { status: 'REVOKED' })
+        }
+      }
+
+      const now = Date.now()
+      const invitationId = await ctx.db.insert('invitations', {
+        email,
+        firstName,
+        lastName,
+        orgRole: 'MEMBER',
+        organizationId: user.organizationId,
+        status: 'PENDING',
+        invitedBy: user._id,
+        invitedAt: now,
+        expiresAt: now + SEVEN_DAYS_MS,
+        complexId: unit.complexId,
+        complexRole,
+        residentId,
+      })
+
+      await ctx.scheduler.runAfter(
+        0,
+        internal.email.actions.sendInvitationEmail,
+        { invitationId },
+      )
+    }
 
     return { residentId }
   },

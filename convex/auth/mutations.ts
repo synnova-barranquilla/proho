@@ -86,6 +86,7 @@ export const handleLogin = mutation({
               assignedBy: reactivationInv.invitedBy,
               assignedAt: Date.now(),
               createdByOwner: false,
+              residentId: reactivationInv.residentId,
             })
           }
           if (
@@ -222,6 +223,7 @@ export const handleLogin = mutation({
         assignedBy: invitation.invitedBy,
         assignedAt: Date.now(),
         createdByOwner: false,
+        residentId: invitation.residentId,
       })
     }
 
