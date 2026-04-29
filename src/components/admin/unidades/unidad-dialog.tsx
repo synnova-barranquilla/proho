@@ -128,7 +128,15 @@ export function UnidadDialog({
                 <FieldLabel>Tipo</FieldLabel>
                 <Select value={tipo} onValueChange={(v) => v && setTipo(v)}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Selecciona tipo">
+                      {
+                        {
+                          APARTMENT: 'Apartamento',
+                          HOUSE: 'Casa',
+                          COMMERCIAL: 'Local',
+                        }[tipo]
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="APARTMENT">Apartamento</SelectItem>

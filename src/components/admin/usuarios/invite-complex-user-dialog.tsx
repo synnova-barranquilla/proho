@@ -130,7 +130,16 @@ export function InviteComplexUserDialog({
                   onValueChange={(v) => v && setRole(v as ComplexRole)}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Selecciona rol">
+                      {
+                        {
+                          GUARD: 'Vigilante',
+                          OWNER: 'Propietario',
+                          TENANT: 'Inquilino',
+                          LESSEE: 'Arrendatario',
+                        }[role]
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="GUARD">Vigilante</SelectItem>

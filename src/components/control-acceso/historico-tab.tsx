@@ -191,7 +191,16 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
 
         <Select value={tipoFilter} onValueChange={(v) => v && setTipoFilter(v)}>
           <SelectTrigger className="w-[150px]">
-            <SelectValue />
+            <SelectValue placeholder="Tipo">
+              {
+                {
+                  todos: 'Todos los tipos',
+                  RESIDENT: 'Residente',
+                  VISITOR: 'Visitante',
+                  ADMIN_VISIT: 'Visita admin',
+                }[tipoFilter]
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos los tipos</SelectItem>
@@ -206,7 +215,15 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
           onValueChange={(v) => v && setDecisionFilter(v)}
         >
           <SelectTrigger className="w-[150px]">
-            <SelectValue />
+            <SelectValue placeholder="Decisión">
+              {
+                {
+                  todos: 'Todas las decisiones',
+                  ALLOWED: 'Permitido',
+                  REJECTED: 'Rechazado',
+                }[decisionFilter]
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todas las decisiones</SelectItem>

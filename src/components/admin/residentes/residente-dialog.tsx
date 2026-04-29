@@ -217,7 +217,15 @@ export function ResidenteDialog({
                   onValueChange={(v) => v && setTipo(v as ResidenteTipo)}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Selecciona tipo">
+                      {
+                        {
+                          OWNER: 'Propietario',
+                          LESSEE: 'Arrendatario',
+                          TENANT: 'Inquilino',
+                        }[tipo]
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="OWNER">Propietario</SelectItem>
