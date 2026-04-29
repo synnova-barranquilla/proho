@@ -60,7 +60,7 @@ export function TipoVehiculoCards({
             <span
               className={cn(
                 'text-sm font-medium',
-                selected ? 'text-foreground' : 'text-muted-foreground',
+                selected ? 'text-primary' : 'text-muted-foreground',
               )}
             >
               {label}
