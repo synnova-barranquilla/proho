@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 
+import { internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import { mutation, type MutationCtx } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
@@ -490,6 +491,61 @@ export const flagAbusive = mutation({
     })
 
     return { ticketId: ticket._id }
+  },
+})
+
+export const sendResidentMessage = mutation({
+  args: {
+    complexId: v.id('complexes'),
+    content: v.string(),
+    quickActionId: v.optional(v.id('quickActions')),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: ['OWNER', 'TENANT', 'LESSEE'],
+    })
+
+    // Look up the resident record via the membership's residentId
+    if (!membership?.residentId) {
+      throwConvexError(
+        ERROR_CODES.FORBIDDEN,
+        'No se encontró tu registro de residente asociado',
+      )
+    }
+
+    const resident = await ctx.db.get(membership.residentId)
+    if (!resident) {
+      throwConvexError(
+        ERROR_CODES.FORBIDDEN,
+        'No se encontró tu registro de residente',
+      )
+    }
+
+    // If a quickActionId is provided, use the quick action flow
+    if (args.quickActionId) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.communications.actions.handleQuickAction,
+        {
+          complexId: args.complexId,
+          residentId: resident._id,
+          quickActionId: args.quickActionId,
+        },
+      )
+    } else {
+      // Schedule the internal action to handle bot response
+      await ctx.scheduler.runAfter(
+        0,
+        internal.communications.actions.handleResidentMessage,
+        {
+          complexId: args.complexId,
+          residentId: resident._id,
+          content: args.content,
+        },
+      )
+    }
+
+    return { success: true }
   },
 })
 

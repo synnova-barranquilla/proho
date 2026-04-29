@@ -2,11 +2,16 @@ import { useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
-import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import {
+  convexQuery,
+  useConvexAction,
+  useConvexMutation,
+} from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import {
   ArrowLeft,
   Clock,
+  Loader2,
   Paperclip,
   RefreshCw,
   Send,
@@ -93,6 +98,9 @@ export function TicketDetailPanel({
 }: TicketDetailPanelProps) {
   const [noteContent, setNoteContent] = useState('')
   const [showAudit, setShowAudit] = useState(false)
+  const [suggestion, setSuggestion] = useState('')
+  const [isSuggesting, setIsSuggesting] = useState(false)
+  const [showSuggestion, setShowSuggestion] = useState(false)
 
   const { data: ticket } = useSuspenseQuery(
     convexQuery(api.communications.queries.getTicket, { ticketId }),
@@ -130,6 +138,10 @@ export function TicketDetailPanel({
     api.communications.mutations.addTicketNote,
   )
   const addNoteMut = useMutation({ mutationFn: addNoteFn })
+
+  const suggestResponseFn = useConvexAction(
+    api.communications.actions.suggestResponse,
+  )
 
   if (!ticket) {
     return (
@@ -225,6 +237,39 @@ export function TicketDetailPanel({
       } else {
         toast.error('Error inesperado')
       }
+    }
+  }
+
+  const handleSuggestResponse = async () => {
+    setIsSuggesting(true)
+    setShowSuggestion(true)
+    setSuggestion('')
+    try {
+      const result = await suggestResponseFn({ ticketId })
+      if (result.error) {
+        toast.error(result.error)
+        setShowSuggestion(false)
+      } else {
+        setSuggestion(result.text ?? '')
+      }
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error al generar sugerencia')
+      } else {
+        toast.error('Error inesperado al generar sugerencia')
+      }
+      setShowSuggestion(false)
+    } finally {
+      setIsSuggesting(false)
+    }
+  }
+
+  const handleUseSuggestion = () => {
+    if (suggestion.trim()) {
+      setNoteContent(suggestion)
+      setShowSuggestion(false)
+      setSuggestion('')
     }
   }
 
@@ -455,13 +500,65 @@ export function TicketDetailPanel({
                   {showAudit ? 'Ocultar auditoría' : 'Auditoría'}
                 </Button>
 
-                <Button variant="outline" disabled className="w-full">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Sugerir respuesta
+                <Button
+                  variant="outline"
+                  onClick={handleSuggestResponse}
+                  disabled={isSuggesting}
+                  className="w-full"
+                >
+                  {isSuggesting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="mr-2 h-4 w-4" />
+                  )}
+                  {isSuggesting ? 'Generando...' : 'Sugerir respuesta'}
                 </Button>
               </div>
             </CardContent>
           </Card>
+
+          {showSuggestion && (
+            <Card size="sm">
+              <CardHeader>
+                <CardTitle>Respuesta sugerida</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isSuggesting ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generando sugerencia...
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Textarea
+                      value={suggestion}
+                      onChange={(e) => setSuggestion(e.target.value)}
+                      className="min-h-24"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleUseSuggestion}
+                        disabled={!suggestion.trim()}
+                      >
+                        Usar como nota
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setShowSuggestion(false)
+                          setSuggestion('')
+                        }}
+                      >
+                        Descartar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card size="sm">
             <CardHeader>

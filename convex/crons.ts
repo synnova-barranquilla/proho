@@ -11,4 +11,11 @@ crons.daily(
   internal.email.actions.sendDailySummary,
 )
 
+// Close conversations inactive for 30+ minutes
+crons.interval(
+  'close-inactive-conversations',
+  { minutes: 5 },
+  internal.communications.actions.closeInactiveConversations,
+)
+
 export default crons
