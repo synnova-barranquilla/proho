@@ -32,27 +32,27 @@ const statusConfig: Record<
 > = {
   done: {
     icon: CheckCircle2,
-    label: 'Completada',
+    label: 'Completed',
     color: 'text-emerald-600 dark:text-emerald-400',
   },
   wip: {
     icon: Loader2,
-    label: 'En progreso',
+    label: 'In progress',
     color: 'text-blue-600 dark:text-blue-400',
   },
   pending: {
     icon: Circle,
-    label: 'Pendiente',
+    label: 'Pending',
     color: 'text-muted-foreground/50',
   },
   blocked: {
     icon: XCircle,
-    label: 'Bloqueada',
+    label: 'Blocked',
     color: 'text-red-600 dark:text-red-400',
   },
   deferred: {
     icon: Clock,
-    label: 'Diferida',
+    label: 'Deferred',
     color: 'text-amber-500 dark:text-amber-400',
     muted: true,
   },
@@ -170,8 +170,8 @@ function PhaseRow({
           })}
           {stats.deferred > 0 && (
             <p className="mt-1 pb-1 text-xs text-muted-foreground/60">
-              {stats.deferred} tarea{stats.deferred > 1 ? 's' : ''} diferida
-              {stats.deferred > 1 ? 's' : ''} a pre-prod
+              {stats.deferred} task{stats.deferred > 1 ? 's' : ''} deferred to
+              pre-prod
             </p>
           )}
         </div>
@@ -192,7 +192,7 @@ function ProgressPage() {
             Synnova
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Progreso del Proyecto — Actualizado {lastUpdated}
+            Project Progress — Updated {lastUpdated}
           </p>
         </div>
         <ThemeToggle />
@@ -202,7 +202,7 @@ function ProgressPage() {
       <section className="mb-10 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border/60 bg-card px-5 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Progreso Total
+            Total Progress
           </p>
           <p className="mt-1 font-mono text-2xl font-bold tabular-nums">
             {totals.percent}
@@ -212,7 +212,7 @@ function ProgressPage() {
           </p>
           <ProgressBar percent={totals.percent} className="mt-2" />
           <p className="mt-1.5 text-xs tabular-nums text-muted-foreground">
-            {totals.done} de {totals.total} tareas
+            {totals.done} of {totals.total} tasks
           </p>
         </div>
         <div className="rounded-xl border border-border/60 bg-card px-5 py-4 shadow-sm">
@@ -231,7 +231,7 @@ function ProgressPage() {
                 </p>
               </div>
               <p className="mt-1.5 text-xs tabular-nums text-muted-foreground">
-                {totals.mvpDone} de {totals.mvpTotal} tareas activas completadas
+                {totals.mvpDone} of {totals.mvpTotal} active tasks completed
               </p>
             </>
           ) : (
@@ -244,7 +244,7 @@ function ProgressPage() {
               </p>
               <ProgressBar percent={totals.mvpPercent} className="mt-2" />
               <p className="mt-1.5 text-xs tabular-nums text-muted-foreground">
-                {totals.mvpDone} de {totals.mvpTotal} tareas
+                {totals.mvpDone} of {totals.mvpTotal} tasks
               </p>
             </>
           )}
@@ -253,7 +253,7 @@ function ProgressPage() {
           {totals.mvpPercent === 100 ? (
             <>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Estado
+                Status
               </p>
               <div className="mt-2 flex items-center gap-2">
                 <Target
@@ -261,16 +261,15 @@ function ProgressPage() {
                   className="shrink-0 text-emerald-600 dark:text-emerald-400"
                 />
                 <p className="text-sm font-semibold leading-snug">
-                  MVP Completo
+                  MVP Complete
                 </p>
               </div>
               {totals.mvpDeferred > 0 && (
                 <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                   <Clock size={12} />
                   <span>
-                    {totals.mvpDeferred} tarea
-                    {totals.mvpDeferred > 1 ? 's' : ''} diferida
-                    {totals.mvpDeferred > 1 ? 's' : ''} a pre-producción
+                    {totals.mvpDeferred} task{totals.mvpDeferred > 1 ? 's' : ''}{' '}
+                    deferred to pre-prod
                   </span>
                 </div>
               )}
@@ -278,7 +277,7 @@ function ProgressPage() {
           ) : (
             <>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Enfoque Actual
+                Current Focus
               </p>
               <div className="mt-2 flex items-center gap-2">
                 <Target
@@ -290,7 +289,7 @@ function ProgressPage() {
                 </p>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                {currentFocus.done} de {currentFocus.total} tareas completadas
+                {currentFocus.done} of {currentFocus.total} tasks completed
               </p>
             </>
           )}

@@ -1,423 +1,555 @@
-# Tareas del Proyecto — Synnova
+# Project Tasks — Synnova
 
-> Cada tarea es atómica: una unidad de trabajo que se puede completar, revisar y marcar como hecha de forma independiente.
-> Schema incremental: las tablas de Convex se crean en la fase del módulo que las necesita, no todas de golpe.
+> Each task is atomic: a unit of work that can be completed, reviewed, and marked as done independently.
+> Incremental schema: Convex tables are created in the module phase that needs them, not all at once.
 
 ---
 
 ## Milestones
 
-| Milestone            | Fases          | Qué se puede hacer al completarlo                                                                                                      |
-| -------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **M1 — Foundation**  | F0, F1\*, F2   | App boots, auth funciona, tablas base de org creadas. (\*F1 parcial: solo tablas, infra multi-tenant diferida a pre-prod)              |
-| **M2 — Admin Ready** | F3, F4         | Super Admin onboardea tenants. Conjunto Admin configura un conjunto completo (torres, aptos, vehículos, residentes, reglas, permisos)  |
-| **M3 — Parking MVP** | F5, F6, F7, F8 | Vigilante opera en tablet (offline-first). Admin ve dashboards y auditoría. Crons generan alertas. **Listo para primer cliente real.** |
-| **M4 — Post-MVP**    | F9+            | Convivencia, reservas, inspecciones, notificaciones, dashboard ejecutivo                                                               |
+| Milestone               | Phases                   | What you can do when it's complete                                                                                                 |
+| ----------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **M1 — Foundation**     | F0, F1\*, F2             | App boots, auth works, base org tables created. (\*F1 partial: tables only, multi-tenant infra deferred to pre-prod)               |
+| **M2 — Admin Ready**    | F3, F4                   | Super Admin onboards tenants. Complex Admin configures a complete complex (towers, apts, vehicles, residents, rules, permissions)  |
+| **M3 — Parking MVP**    | F5, F6, F7, F8           | Guard operates on tablet (offline-first). Admin sees dashboards and audit. Crons generate alerts. **Ready for first real client.** |
+| **M4 — Post-MVP**       | F9+                      | Coexistence reports, reservations, inspections, notifications, executive dashboard                                                 |
+| **M5 — Communications** | W-2, W-1, W0, W1, W2, W3 | Residents chat with AI bot, tickets escalated to staff, in-app notifications, category management                                  |
 
 ---
 
-## Fase 0 — Configuración del Proyecto
+## Phase 0 — Project Setup
 
-| ID   | Tarea                                                                                                                                                   | Estado |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| 0.1  | Inicializar repositorio Git con .gitignore y estructura de carpetas                                                                                     | done   |
-| 0.2  | Scaffold del proyecto con TanStack Start + TypeScript                                                                                                   | done   |
-| 0.3  | Configurar Tailwind CSS v4 con dark mode (class strategy, `prefers-color-scheme` default)                                                               | done   |
-| 0.4  | Configurar shadcn/ui con tema base: colores (incluyendo semánticos para motor: verde, rojo, ámbar, morado), tipografía, border-radius, dark mode tokens | done   |
-| 0.5  | Implementar theme toggle (light/dark/system) persistido en localStorage                                                                                 | done   |
-| 0.6  | Configurar t3-oss/env con esquema Zod de variables de entorno                                                                                           | done   |
-| 0.7  | Crear proyecto en Convex, instalar SDK, configurar provider                                                                                             | done   |
-| 0.8  | Integrar Convex con TanStack Query (@convex-dev/react-query)                                                                                            | done   |
-| 0.9  | Crear cuenta WorkOS, obtener API keys, instalar AuthKit SDK                                                                                             | done   |
-| 0.10 | Conectar repositorio a Vercel, configurar variables de entorno                                                                                          | done   |
-| 0.11 | Configurar TanStack Router con estructura base de rutas (public, auth, super-admin, admin, vigilante)                                                   | done   |
-| 0.12 | Configurar ESLint, Prettier, TypeScript strict                                                                                                          | done   |
-| 0.13 | Configurar CI/CD básico (GitHub Actions o Vercel auto-deploy)                                                                                           | done   |
-
----
-
-## Fase 1 — Arquitectura Multi-Tenant
-
-> Las tablas base (1.3, 1.4) son necesarias ya que el modelo de datos referencia `organization_id`. La infraestructura de subdominios y middleware se difiere a pre-prod deploy.
-
-| ID   | Tarea                                                                                                           | Estado   |
-| ---- | --------------------------------------------------------------------------------------------------------------- | -------- |
-| 1.1  | Configurar wildcard domain `*.synnova.com.co` en Vercel Pro                                                     | deferred |
-| 1.2  | Crear middleware de detección de tenant (leer Host header, extraer slug)                                        | deferred |
-| 1.3  | Crear tabla `organizations` en Convex (id, slug, nombre, plan, config, módulos activos) con schema validator    | done     |
-| 1.4  | Crear tabla `organization_modules` en Convex (organization_id, module_key, activo, config) con schema validator | done     |
-| 1.5  | Implementar query de resolución de tenant por slug                                                              | deferred |
-| 1.6  | Crear TenantProvider en React (expone organization_id y config al árbol)                                        | deferred |
-| 1.7  | Implementar filtro global: inyectar organization_id en toda query de Convex                                     | deferred |
-| 1.8  | Crear página de tenant no encontrado (subdominio no registrado)                                                 | deferred |
-| 1.9  | Implementar lógica de feature flags por módulo según config del tenant                                          | deferred |
-| 1.10 | Configurar DNS y certificado SSL wildcard                                                                       | deferred |
+| ID   | Task                                                                                                                                               | Status |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 0.1  | Initialize Git repository with .gitignore and folder structure                                                                                     | done   |
+| 0.2  | Scaffold project with TanStack Start + TypeScript                                                                                                  | done   |
+| 0.3  | Configure Tailwind CSS v4 with dark mode (class strategy, `prefers-color-scheme` default)                                                          | done   |
+| 0.4  | Configure shadcn/ui with base theme: colors (including semantic for motor: green, red, amber, purple), typography, border-radius, dark mode tokens | done   |
+| 0.5  | Implement theme toggle (light/dark/system) persisted in localStorage                                                                               | done   |
+| 0.6  | Configure t3-oss/env with Zod schema for environment variables                                                                                     | done   |
+| 0.7  | Create Convex project, install SDK, configure provider                                                                                             | done   |
+| 0.8  | Integrate Convex with TanStack Query (@convex-dev/react-query)                                                                                     | done   |
+| 0.9  | Create WorkOS account, obtain API keys, install AuthKit SDK                                                                                        | done   |
+| 0.10 | Connect repository to Vercel, configure environment variables                                                                                      | done   |
+| 0.11 | Configure TanStack Router with base route structure (public, auth, super-admin, admin, guard)                                                      | done   |
+| 0.12 | Configure ESLint, Prettier, TypeScript strict                                                                                                      | done   |
+| 0.13 | Configure basic CI/CD (GitHub Actions or Vercel auto-deploy)                                                                                       | done   |
 
 ---
 
-## Fase 2 — Autenticación y Usuarios
+## Phase 1 — Multi-Tenant Architecture
 
-| ID   | Tarea                                                                                                                                                                            |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.1  | Crear tabla `users` en Convex con `orgRole` (SUPER_ADMIN/ADMIN); sin `conjuntoId`/`role` monolíticos                                                                             |
-| 2.2  | Implementar pantalla de login con WorkOS AuthKit (landing + ruta `/login` + middleware `src/start.ts`)                                                                           |
-| 2.3  | Implementar callback de autenticación (redirect de WorkOS, extraer sesión, coordinar con Convex)                                                                                 |
-| 2.4  | Implementar sincronización WorkOS → Convex al login (email/name auto-sync, resolver invitations)                                                                                 |
-| 2.5  | Configurar WorkOS Organizations (campo `workosOrganizationId` optional en schema; flujo completo en F3)                                                                          |
-| 2.6  | Definir enum `orgRoles` (SUPER_ADMIN, ADMIN); `conjuntoRoles` (ASISTENTE, VIGILANTE, RESIDENTE) se define en F4                                                                  |
-| 2.7  | Crear middleware de protección de rutas (`_authenticated` loader: `getAuth()` + Convex user lookup)                                                                              |
-| 2.8  | Implementar middleware de autorización por rol en funciones Convex (`requireOrgRole`, `canInvite`)                                                                               |
-| 2.9  | Implementar flujo de logout (`/logout` con `signOut()` server-side)                                                                                                              |
-| 2.10 | Implementar flujo de recuperación de contraseña vía WorkOS (nativo en hosted page)                                                                                               |
-| 2.11 | Configurar Convex custom JWT auth con WorkOS (`convex/auth.config.ts` con JWKS)                                                                                                  |
-| 2.12 | Reorganizar providers: `ConvexProviderWithAuth` + `AppProviders` wrapper (WorkOS fuera, Convex dentro)                                                                           |
-| 2.13 | Crear tabla `invitations` en Convex (status, expiración 7 días, invitedBy, name, acceptedUserId)                                                                                 |
-| 2.14 | Implementar CRUD de invitations (`create`, `revoke`, `getByEmail`, `listByOrganization`) con validaciones de rol                                                                 |
-| 2.15 | Implementar helpers de autorización en `convex/lib/auth.ts` (`getCurrentUser`, `requireUser`, `requireOrgRole`, `canInvite`)                                                     |
-| 2.16 | Implementar `handleLogin` en `convex/auth/mutations.ts` (coordinador del flujo: lookup + sync + invitation acceptance + discriminated union de resultado)                        |
-| 2.17 | Seed `seed:initial-setup` + script CLI (`tools/scripts/convex/seed_initial_setup.ts`) con flags `--email --name --workos-id --prod`                                              |
-| 2.18 | Crear 6 páginas de error (`/no-registrado`, `/invitacion-expirada`, `/invitacion-revocada`, `/cuenta-desactivada`, `/no-autorizado`, `/error-auth`) + componente `<ErrorPage />` |
-| 2.19 | Crear landing pública minimal + ruta `/login` + home con redirect por rol + helper `getDashboardPathForRole`                                                                     |
+> The base tables (1.3, 1.4) are needed since the data model references `organization_id`. Subdomain infrastructure and middleware are deferred to pre-prod deploy.
+
+| ID   | Task                                                                                                              | Status   |
+| ---- | ----------------------------------------------------------------------------------------------------------------- | -------- |
+| 1.1  | Configure wildcard domain `*.synnova.com.co` on Vercel Pro                                                        | deferred |
+| 1.2  | Create tenant detection middleware (read Host header, extract slug)                                               | deferred |
+| 1.3  | Create `organizations` table in Convex (id, slug, name, plan, config, active modules) with schema validator       | done     |
+| 1.4  | Create `organization_modules` table in Convex (organization_id, module_key, active, config) with schema validator | done     |
+| 1.5  | Implement tenant resolution query by slug                                                                         | deferred |
+| 1.6  | Create TenantProvider in React (exposes organization_id and config to the tree)                                   | deferred |
+| 1.7  | Implement global filter: inject organization_id in every Convex query                                             | deferred |
+| 1.8  | Create tenant not found page (unregistered subdomain)                                                             | deferred |
+| 1.9  | Implement feature flag logic per module based on tenant config                                                    | deferred |
+| 1.10 | Configure DNS and wildcard SSL certificate                                                                        | deferred |
 
 ---
 
-## Fase 3 — Admin: Super Admin (Gestión de Tenants)
+## Phase 2 — Authentication and Users
 
-> El Super Admin (equipo Synnova) gestiona las organizaciones y asigna administradores de conjunto.
-
-| ID   | Tarea                                                                                                                                                                                         | Estado |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| 3.1  | Crear layout de Super Admin (sidebar: organizaciones, usuarios, conjuntos)                                                                                                                    | done   |
-| 3.2  | Crear vista de listado de organizaciones/tenants (DataTable multi-sort)                                                                                                                       | done   |
-| 3.3  | Crear flujo de onboarding de nuevo tenant (crea org + invita admin inicial usando `invitations.create` de F2)                                                                                 | done   |
-| 3.4  | Implementar edición y desactivación de tenants                                                                                                                                                | done   |
-| 3.5  | Crear vista de listado de usuarios con filtro por organización y rol (DataTable multi-sort)                                                                                                   | done   |
-| 3.6  | Crear flujo de registro de admin de conjunto (usa `invitations.create` de F2 con `orgRole: ADMIN`)                                                                                            | done   |
-| 3.7  | Implementar toggle de módulos activos por tenant                                                                                                                                              | done   |
-| 3.8  | Panel `/super-admin/conjuntos` cross-org con DataTable, botón "Abrir" para entrar como admin                                                                                                  | done   |
-| 3.9  | Desactivar/reactivar usuarios desde super-admin (columna Acciones + toggle "Mostrar inactivos")                                                                                               | done   |
-| 3.10 | Super admin cross-org: `getBySlug` global, `listAdminsByOrg`/`listPendingOrgAdminInvitations` con `organizationId` param, sidebar "Volver a super admin", `ManageAccessDialog` scoped por org | done   |
-| 3.11 | `InviteAdminDialog` con toggle owner + multi-select conjuntos (desde super-admin y detalle de org)                                                                                            | done   |
-
----
-
-## Fase 4 — Admin: Conjunto Admin (Configuración del Conjunto)
-
-> El Admin de conjunto configura todo lo necesario para que el módulo de parqueaderos funcione: torres, apartamentos, vehículos, residentes, parqueaderos, reglas y permisos. Caso B soportado (empresas administradoras con staff múltiple) vía `isOrgOwner` + `conjuntoMemberships`.
-
-**Cambios de alcance (plan final):**
-
-- **4.16 y 4.17 (permisos granulares)** → diferidas a F7 cuando el flujo de parking defina qué acciones requieren restricción individual.
-- **4.20** → reducida a stub de 4 counters. El dashboard rico con gráficos y actividad se hace post-parking.
-- **4.27 (nueva)** → Pantalla de equipo de la organización para que owners gestionen ADMINs no-owner y sus accesos por conjunto.
-
-| ID       | Tarea                                                                                                                         | Estado   |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------- | -------- |
-| 4.1      | Crear layout de Admin de conjunto (sidebar: conjunto, unidades, residentes, vehículos, parqueaderos, configuración, usuarios) | done     |
-| 4.2      | Crear tabla `conjuntos` en Convex                                                                                             | done     |
-| 4.3      | Crear CRUD de conjuntos + `CreateConjuntoDialog` con slug auto-derivado                                                       | done     |
-| 4.4      | Implementar selector de conjunto (ConjuntoSwitcher en header)                                                                 | done     |
-| 4.5      | Crear tabla `unidades` en Convex (torre + número únicos por conjunto)                                                         | done     |
-| 4.6      | Crear CRUD de unidades/apartamentos con vista por torre                                                                       | done     |
-| 4.7      | Crear tabla `residentes` en Convex (sin userId — los residentes no son users en el MVP)                                       | done     |
-| 4.8      | Crear CRUD de residentes con asociación a unidad                                                                              | done     |
-| 4.9      | Crear tabla `vehiculos` en Convex (placa única por conjunto, asociación a unidad)                                             | done     |
-| 4.10     | Crear CRUD de vehículos registrados con asociación a unidad                                                                   | done     |
-| 4.11     | ~~Tabla parqueaderos~~ → Capacidad carros/motos en `conjuntoConfig` (simplificado en Polish)                                  | done     |
-| 4.13     | ~~Crear tabla `regla_config`~~ → Reemplazada por `conjuntoConfig` tipada (row único por conjunto)                             | done     |
-| 4.14     | Crear pantalla tipada de configuración del conjunto (`conjuntoConfig`)                                                        | done     |
-| 4.15     | Implementar gestión de estado de mora (toggle por unidad)                                                                     | done     |
-| ~~4.16~~ | ~~Crear tabla `permisos_usuario`~~ → **Diferida a F7**                                                                        | deferred |
-| ~~4.17~~ | ~~Implementar gestión de permisos granulares~~ → **Diferida a F7**                                                            | deferred |
-| 4.18     | Crear gestión de usuarios del conjunto (invita VIGILANTE/ASISTENTE vía invitations expandidas)                                | done     |
-| 4.19     | Seed unificado: `seed:initial-setup` + `seed:conjunto` interactivo, datos costeños (Barranquilla)                             | done     |
-| 4.20     | Crear dashboard stub con 4 counters simples (unidades, residentes, vehículos, parqueaderos)                                   | done     |
-| 4.21     | Crear tabla `conjuntoMemberships` con auditoría (assignedBy, assignedAt, revokedAt, createdByOwner)                           | done     |
-| 4.22     | Definir enum `conjuntoRoles` (ADMIN, ASISTENTE, VIGILANTE, RESIDENTE) + agregar `isOrgOwner` a users                          | done     |
-| 4.23     | Mutations de `conjuntoMemberships` (create con reactivación de inactivas, updateRole, setActive)                              | done     |
-| 4.24     | Expandir invitations con `conjuntoId` + `conjuntoRole` + `isOrgOwnerOnAccept` + `conjuntoIdsOnAccept`                         | done     |
-| 4.25     | Selector post-login `/seleccionar-conjunto` + CTA "Crear mi primer conjunto" para owners                                      | done     |
-| 4.26     | URL segmentada `/c/$conjuntoSlug/*` + `requireConjuntoAccess` + `getBySlug` (rutas movidas de /admin/c/ a /c/)                | done     |
-| 4.27     | Pantalla `/admin/equipo` con queries scoped por org (super admin cross-org) + `ManageAccessDialog`                            | done     |
-| 4.28     | Polish R1: `cursor-pointer` en botones, `NavigationProgressBar` con debounce 150ms, columna `#` en todas las tablas           | done     |
-| 4.29     | Polish R2: `PhoneInput`, `DocumentInput`, `PlacaInput` — formateo en vivo con storage canónico (`src/lib/formatters.ts`)      | done     |
-| 4.30     | Polish R3: `DataTable` genérico con TanStack Table multi-sort (`src/components/ui/data-table.tsx`), migrado a 3+ tablas       | done     |
-| 4.31     | `CreateConjuntoDialog` con slug auto-derivado + CTA "Crear mi primer conjunto" en `/seleccionar-conjunto` para owners         | done     |
-| 4.32     | Fix: falso toast "acceso revocado" → grace period 1.5s + filtro `UNAUTHENTICATED` + check `fetchStatus`                       | done     |
-| 4.33     | Fix: `handleLogin` reactiva usuarios desactivados cuando hay invitación pendiente válida                                      | done     |
-| 4.34     | Fix: `conjuntoMemberships.create` reactiva memberships inactivas en vez de rechazar con `MEMBERSHIP_ALREADY_EXISTS`           | done     |
+| ID   | Task                                                                                                                                                                        |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.1  | Create `users` table in Convex with `orgRole` (SUPER_ADMIN/ADMIN); no monolithic `complexId`/`role`                                                                         |
+| 2.2  | Implement login screen with WorkOS AuthKit (landing + `/login` route + `src/start.ts` middleware)                                                                           |
+| 2.3  | Implement authentication callback (WorkOS redirect, extract session, coordinate with Convex)                                                                                |
+| 2.4  | Implement WorkOS → Convex sync on login (email/name auto-sync, resolve invitations)                                                                                         |
+| 2.5  | Configure WorkOS Organizations (`workosOrganizationId` optional field in schema; full flow in F3)                                                                           |
+| 2.6  | Define `orgRoles` enum (SUPER_ADMIN, ADMIN); `complexRoles` (ASISTENTE, VIGILANTE, RESIDENTE) defined in F4                                                                 |
+| 2.7  | Create route protection middleware (`_authenticated` loader: `getAuth()` + Convex user lookup)                                                                              |
+| 2.8  | Implement role-based authorization middleware in Convex functions (`requireOrgRole`, `canInvite`)                                                                           |
+| 2.9  | Implement logout flow (`/logout` with `signOut()` server-side)                                                                                                              |
+| 2.10 | Implement password recovery flow via WorkOS (native in hosted page)                                                                                                         |
+| 2.11 | Configure Convex custom JWT auth with WorkOS (`convex/auth.config.ts` with JWKS)                                                                                            |
+| 2.12 | Reorganize providers: `ConvexProviderWithAuth` + `AppProviders` wrapper (WorkOS outside, Convex inside)                                                                     |
+| 2.13 | Create `invitations` table in Convex (status, 7-day expiration, invitedBy, name, acceptedUserId)                                                                            |
+| 2.14 | Implement invitations CRUD (`create`, `revoke`, `getByEmail`, `listByOrganization`) with role validations                                                                   |
+| 2.15 | Implement authorization helpers in `convex/lib/auth.ts` (`getCurrentUser`, `requireUser`, `requireOrgRole`, `canInvite`)                                                    |
+| 2.16 | Implement `handleLogin` in `convex/auth/mutations.ts` (flow coordinator: lookup + sync + invitation acceptance + discriminated union result)                                |
+| 2.17 | Seed `seed:initial-setup` + CLI script (`tools/scripts/convex/seed_initial_setup.ts`) with flags `--email --name --workos-id --prod`                                        |
+| 2.18 | Create 6 error pages (`/no-registrado`, `/invitacion-expirada`, `/invitacion-revocada`, `/cuenta-desactivada`, `/no-autorizado`, `/error-auth`) + `<ErrorPage />` component |
+| 2.19 | Create minimal public landing + `/login` route + home with role-based redirect + `getDashboardPathForRole` helper                                                           |
 
 ---
 
-## Fase 5 — Parqueaderos: Capa de Datos Optimistic-First
+## Phase 3 — Admin: Super Admin (Tenant Management)
 
-> Arquitectura optimistic-first: Convex reactivo mantiene datos en memoria via subscripciones. Las búsquedas por placa son locales sobre datos suscritos. Las escrituras usan optimistic updates nativos de Convex. El motor de reglas corre en client (velocidad) y server (safety net).
+> The Super Admin (Synnova team) manages organizations and assigns complex administrators.
 
-| ID   | Tarea                                                                                                                                      |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 5.1  | Extraer `normalizePlaca` a `convex/lib/placa.ts` compartida                                                                                |
-| 5.2  | Agregar ERROR_CODES para F5 (REGISTRO_NOT_FOUND, REGISTRO_ALREADY_EXITED, VEHICULO_NOT_FOUND, UNIDAD_NOT_FOUND)                            |
-| 5.3  | Actualizar `conjuntoConfig`: reemplazar 5 campos viejos por 3 reglas (reglaIngresoEnMora, reglaVehiculoDuplicado, reglaPermanenciaMaxDias) |
-| 5.4  | Crear tabla `registrosAcceso` en Convex (tipo unificado: RESIDENTE/VISITANTE/VISITA_ADMIN) con validators e índices                        |
-| 5.5  | ~~Tabla novedades~~ → Campo `novedad` opcional en `registrosAcceso` (simplificado en Polish)                                               |
-| 5.6  | Motor de reglas `evaluateRules()`: función pura compartida client/server (R1 mora, R2 duplicado, R3 permanencia)                           |
-| 5.7  | Actualizar UI de configuración del conjunto con los 3 toggles de reglas                                                                    |
-| 5.8  | Queries: `listActivos` (vehículos dentro), `listRecientes` (últimos 5), `findActivoByPlaca` (para salida)                                  |
-| 5.9  | Queries de novedades: `listByConjunto`, `listByRegistro`                                                                                   |
-| 5.10 | Mutation `registrarIngreso`: ingreso residente con evaluación server-side + novedades automáticas                                          |
-| 5.11 | Mutation `registrarSalida`: salida activa + soporte salida sin entrada                                                                     |
-| 5.12 | Mutation `registrarVisitante`: ingreso VISITANTE (con unidad) o VISITA_ADMIN (sin unidad), sin reglas                                      |
-| 5.13 | Mutation `registrarResidenteNuevo`: crear vehículo permanente + ingreso atómico con reglas                                                 |
-| 5.14 | Tests unitarios del motor de reglas (20 escenarios: R1, R2 carro/moto, R3, múltiples, visitantes exentos)                                  |
+| ID   | Task                                                                                                                                                                                         | Status |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 3.1  | Create Super Admin layout (sidebar: organizations, users, complexes)                                                                                                                         | done   |
+| 3.2  | Create organization/tenant list view (DataTable multi-sort)                                                                                                                                  | done   |
+| 3.3  | Create new tenant onboarding flow (creates org + invites initial admin using `invitations.create` from F2)                                                                                   | done   |
+| 3.4  | Implement tenant editing and deactivation                                                                                                                                                    | done   |
+| 3.5  | Create user list view with organization and role filters (DataTable multi-sort)                                                                                                              | done   |
+| 3.6  | Create complex admin registration flow (uses `invitations.create` from F2 with `orgRole: ADMIN`)                                                                                             | done   |
+| 3.7  | Implement active module toggle per tenant                                                                                                                                                    | done   |
+| 3.8  | `/super-admin/complexes` cross-org panel with DataTable, "Open" button to enter as admin                                                                                                     | done   |
+| 3.9  | Deactivate/reactivate users from super-admin (Actions column + "Show inactive" toggle)                                                                                                       | done   |
+| 3.10 | Super admin cross-org: global `getBySlug`, `listAdminsByOrg`/`listPendingOrgAdminInvitations` with `organizationId` param, "Back to super admin" sidebar, `ManageAccessDialog` scoped by org | done   |
+| 3.11 | `InviteAdminDialog` with owner toggle + multi-select complexes (from super-admin and org detail)                                                                                             | done   |
 
 ---
 
-## Fase 6 — Parqueaderos: Pantallas del Vigilante
+## Phase 4 — Admin: Complex Admin (Complex Configuration)
 
-> Pantallas bajo `/admin/c/$conjuntoSlug/control-acceso`. State machine con `useReducer`. Resultados como dialogs sobre la página (tabla de activos visible). Auto-detección entrada/salida por placa. Combobox con autocomplete para búsqueda de vehículos.
+> The Complex Admin configures everything needed for the parking module to work: towers, apartments, vehicles, residents, parking, rules, and permissions. Case B supported (management companies with multiple staff) via `isOrgOwner` + `complexMemberships`.
 
-| ID   | Tarea                                                                                                |
-| ---- | ---------------------------------------------------------------------------------------------------- |
-| 6.1  | Sidebar "Operación" + ruta control-acceso + page shell tablet-first                                  |
-| 6.2  | State machine (useReducer) + pantalla principal: PlacaSearchBar combobox + tabla activos (5 cols)    |
-| 6.3  | Dialog: reglas violadas (ámbar, violaciones + justificación + permitir/rechazar/cancelar)            |
-| 6.4  | Dialog: salida vehicular (azul, permanencia calculada, observación opcional)                         |
-| 6.5  | Dialog: vehículo ya está dentro (naranja, opción registrar salida)                                   |
-| 6.6  | Dialog: no identificado (3 opciones: visitante con SearchableSelect, visita admin un tap, residente) |
-| 6.7  | Sheet: registrar vehículo nuevo como residente (SearchableSelect unidad, tipo, propietario)          |
-| 6.8  | Backend: mutation actualizarObservacion + mutation crearManual novedad + tipo MANUAL en validators   |
-| 6.9  | FAB + Sheet: novedades manuales (descripción libre)                                                  |
-| 6.10 | PlacaSearchBar → Combobox con autocomplete de vehículos registrados                                  |
-| 6.11 | Componente SearchableSelect reutilizable + reemplazo en todos los selects con datos de DB            |
-| 6.12 | Fix: editar vehículo permite cambiar unidad (mutation update + UI)                                   |
-| 6.13 | Fix: rechazos excluidos de tabla activos (filtro decisionFinal === PERMITIDO)                        |
-| 6.14 | Fix: prevenir doble mutation en selección de combobox (justSubmittedRef guard)                       |
+**Scope changes (final plan):**
 
----
+- **4.16 and 4.17 (granular permissions)** → deferred to F7 when the parking flow defines which actions require individual restriction.
+- **4.20** → reduced to stub with 4 counters. Rich dashboard with charts and activity done post-parking.
+- **4.27 (new)** → Organization team screen for owners to manage non-owner ADMINs and their complex access.
 
-## Fase 7 — Parqueaderos: Dashboards, Histórico y Auditoría
-
-> Tabs dentro de control-acceso (Dashboard, Histórico, Novedades, Auditoría). Solo visibles para ADMIN + SUPER_ADMIN. Vigilante solo ve tab Operación. Paginación client-side con PaginatedDataTable.
-
-| ID  | Tarea                                                                                                                   |
-| --- | ----------------------------------------------------------------------------------------------------------------------- |
-| 7.1 | Refactorizar control-acceso a 5 tabs + Dashboard con 5 KPIs (vehículos dentro, ingresos/salidas/novedades/rechazos hoy) |
-| 7.2 | Vista de histórico: tabla paginada con filtros (periodo Hoy/7d/30d/Todo, placa, tipo registro, decisión final)          |
-| 7.3 | Vista de novedades: tabla paginada con filtros (periodo, tipo de novedad)                                               |
-| 7.4 | Vista de auditoría: tabla paginada de overrides (decisionMotor no vacío + decisionFinal PERMITIDO), filtro periodo      |
-| 7.5 | Fix: commit tipos generados Convex (api.d.ts) para CI typecheck                                                         |
-| 7.6 | Reemplazar stub parking en home conjunto con 3 KPIs reales + link a control-acceso                                      |
-
----
-
-## Fase 8 — Parqueaderos: Alertas y Crons (deferred)
-
-> Diferido a revisión futura. R3 ya se evalúa al ingreso. Visitantes sin reglas. No bloqueante para MVP.
-
-| ID  | Tarea                                                          |
-| --- | -------------------------------------------------------------- |
-| 8.1 | Cron: tiempo excedido residentes (60 min) → novedad            |
-| 8.2 | Cron: tiempo excedido visitantes (60 min) → novedad            |
-| 8.3 | Cron: visitantes después 5pm → novedad                         |
-| 8.4 | Cron: vehículos >30 días permanencia → novedad                 |
-| 8.5 | Deduplicación de novedades de tiempo                           |
-| 8.6 | Check local permanencia excedida (UI vigilante, alerta visual) |
+| ID       | Task                                                                                                                      | Status   |
+| -------- | ------------------------------------------------------------------------------------------------------------------------- | -------- |
+| 4.1      | Create Complex Admin layout (sidebar: complex, units, residents, vehicles, parking, configuration, users)                 | done     |
+| 4.2      | Create `complexes` table in Convex                                                                                        | done     |
+| 4.3      | Create complexes CRUD + `CreateComplexDialog` with auto-derived slug                                                      | done     |
+| 4.4      | Implement complex selector (ComplexSwitcher in header)                                                                    | done     |
+| 4.5      | Create `units` table in Convex (tower + number unique per complex)                                                        | done     |
+| 4.6      | Create units/apartments CRUD with tower view                                                                              | done     |
+| 4.7      | Create `residents` table in Convex (no userId — residents are not users in the MVP)                                       | done     |
+| 4.8      | Create residents CRUD with unit association                                                                               | done     |
+| 4.9      | Create `vehicles` table in Convex (plate unique per complex, unit association)                                            | done     |
+| 4.10     | Create registered vehicles CRUD with unit association                                                                     | done     |
+| 4.11     | ~~Parking spaces table~~ → Car/motorcycle capacity in `complexConfig` (simplified in Polish)                              | done     |
+| 4.13     | ~~Create `rule_config` table~~ → Replaced by typed `complexConfig` (single row per complex)                               | done     |
+| 4.14     | Create typed complex configuration screen (`complexConfig`)                                                               | done     |
+| 4.15     | Implement delinquency status management (toggle per unit)                                                                 | done     |
+| ~~4.16~~ | ~~Create `user_permissions` table~~ → **Deferred to F7**                                                                  | deferred |
+| ~~4.17~~ | ~~Implement granular permission management~~ → **Deferred to F7**                                                         | deferred |
+| 4.18     | Create complex user management (invite VIGILANTE/ASISTENTE via expanded invitations)                                      | done     |
+| 4.19     | Unified seed: `seed:initial-setup` + interactive `seed:complex`, coastal data (Barranquilla)                              | done     |
+| 4.20     | Create dashboard stub with 4 simple counters (units, residents, vehicles, parking)                                        | done     |
+| 4.21     | Create `complexMemberships` table with audit trail (assignedBy, assignedAt, revokedAt, createdByOwner)                    | done     |
+| 4.22     | Define `complexRoles` enum (ADMIN, ASISTENTE, VIGILANTE, RESIDENTE) + add `isOrgOwner` to users                           | done     |
+| 4.23     | `complexMemberships` mutations (create with inactive reactivation, updateRole, setActive)                                 | done     |
+| 4.24     | Expand invitations with `complexId` + `complexRole` + `isOrgOwnerOnAccept` + `complexIdsOnAccept`                         | done     |
+| 4.25     | Post-login selector `/select-complex` + CTA "Create my first complex" for owners                                          | done     |
+| 4.26     | Segmented URL `/c/$complexSlug/*` + `requireComplexAccess` + `getBySlug` (routes moved from /admin/c/ to /c/)             | done     |
+| 4.27     | `/admin/team` screen with org-scoped queries (super admin cross-org) + `ManageAccessDialog`                               | done     |
+| 4.28     | Polish R1: `cursor-pointer` on buttons, `NavigationProgressBar` with 150ms debounce, `#` column in all tables             | done     |
+| 4.29     | Polish R2: `PhoneInput`, `DocumentInput`, `PlacaInput` — live formatting with canonical storage (`src/lib/formatters.ts`) | done     |
+| 4.30     | Polish R3: Generic `DataTable` with TanStack Table multi-sort (`src/components/ui/data-table.tsx`), migrated to 3+ tables | done     |
+| 4.31     | `CreateComplexDialog` with auto-derived slug + CTA "Create my first complex" on `/select-complex` for owners              | done     |
+| 4.32     | Fix: false "access revoked" toast → 1.5s grace period + `UNAUTHENTICATED` filter + `fetchStatus` check                    | done     |
+| 4.33     | Fix: `handleLogin` reactivates deactivated users when there is a valid pending invitation                                 | done     |
+| 4.34     | Fix: `complexMemberships.create` reactivates inactive memberships instead of rejecting with `MEMBERSHIP_ALREADY_EXISTS`   | done     |
 
 ---
 
-## Email — Integración Resend + React Email
+## Phase 5 — Parking: Optimistic-First Data Layer
 
-> Sender: `Synnova <avisos@synnova.com.co>`. 2 templates: invitación + resumen diario. Cron 6am COT. Footer disclaimer no-reply.
+> Optimistic-first architecture: Convex reactive keeps data in memory via subscriptions. Plate searches are local over subscribed data. Writes use native Convex optimistic updates. The rule engine runs on client (speed) and server (safety net).
 
-| ID   | Tarea                                                                |
+| ID   | Task                                                                                                                            |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 5.1  | Extract `normalizePlaca` to shared `convex/lib/placa.ts`                                                                        |
+| 5.2  | Add ERROR_CODES for F5 (ACCESS_RECORD_NOT_FOUND, ACCESS_RECORD_ALREADY_EXITED, VEHICLE_NOT_FOUND, UNIT_NOT_FOUND)               |
+| 5.3  | Update `complexConfig`: replace 5 old fields with 3 rules (reglaIngresoEnMora, reglaVehiculoDuplicado, reglaPermanenciaMaxDias) |
+| 5.4  | Create `accessRecords` table in Convex (unified type: RESIDENTE/VISITANTE/VISITA_ADMIN) with validators and indexes             |
+| 5.5  | ~~Incidents table~~ → Optional `novedad` field in `accessRecords` (simplified in Polish)                                        |
+| 5.6  | Rule engine `evaluateRules()`: pure shared client/server function (R1 delinquency, R2 duplicate, R3 max stay)                   |
+| 5.7  | Update complex configuration UI with the 3 rule toggles                                                                         |
+| 5.8  | Queries: `listActivos` (vehicles inside), `listRecientes` (last 5), `findActivoByPlaca` (for exit)                              |
+| 5.9  | Incident queries: `listByComplex`, `listByRecord`                                                                               |
+| 5.10 | Mutation `registrarIngreso`: resident entry with server-side evaluation + automatic incidents                                   |
+| 5.11 | Mutation `registrarSalida`: active exit + support exit without entry                                                            |
+| 5.12 | Mutation `registrarVisitante`: VISITANTE entry (with unit) or VISITA_ADMIN (without unit), no rules                             |
+| 5.13 | Mutation `registrarResidenteNuevo`: create permanent vehicle + atomic entry with rules                                          |
+| 5.14 | Unit tests for rule engine (20 scenarios: R1, R2 car/motorcycle, R3, multiple, visitors exempt)                                 |
+
+---
+
+## Phase 6 — Parking: Guard Screens
+
+> Screens under `/admin/c/$complexSlug/access-control`. State machine with `useReducer`. Results as dialogs over the page (active vehicles table visible). Auto-detect entry/exit by plate. Combobox with autocomplete for vehicle search.
+
+| ID   | Task                                                                                               |
+| ---- | -------------------------------------------------------------------------------------------------- |
+| 6.1  | Sidebar "Operations" + access-control route + tablet-first page shell                              |
+| 6.2  | State machine (useReducer) + main screen: PlacaSearchBar combobox + active vehicles table (5 cols) |
+| 6.3  | Dialog: violated rules (amber, violations + justification + allow/reject/cancel)                   |
+| 6.4  | Dialog: vehicle exit (blue, calculated stay duration, optional observation)                        |
+| 6.5  | Dialog: vehicle already inside (orange, option to register exit)                                   |
+| 6.6  | Dialog: unidentified (3 options: visitor with SearchableSelect, admin visit one tap, resident)     |
+| 6.7  | Sheet: register new vehicle as resident (SearchableSelect unit, type, owner)                       |
+| 6.8  | Backend: updateObservation mutation + createManual incident mutation + MANUAL type in validators   |
+| 6.9  | FAB + Sheet: manual incidents (free-form description)                                              |
+| 6.10 | PlacaSearchBar → Combobox with registered vehicle autocomplete                                     |
+| 6.11 | Reusable SearchableSelect component + replacement in all selects with DB data                      |
+| 6.12 | Fix: edit vehicle allows changing unit (update mutation + UI)                                      |
+| 6.13 | Fix: rejections excluded from active vehicles table (filter decisionFinal === PERMITIDO)           |
+| 6.14 | Fix: prevent double mutation on combobox selection (justSubmittedRef guard)                        |
+
+---
+
+## Phase 7 — Parking: Dashboards, History, and Audit
+
+> Tabs within access-control (Dashboard, History, Incidents, Audit). Only visible to ADMIN + SUPER_ADMIN. Guard only sees Operations tab. Client-side pagination with PaginatedDataTable.
+
+| ID  | Task                                                                                                                  |
+| --- | --------------------------------------------------------------------------------------------------------------------- |
+| 7.1 | Refactor access-control to 5 tabs + Dashboard with 5 KPIs (vehicles inside, entries/exits/incidents/rejections today) |
+| 7.2 | History view: paginated table with filters (period Today/7d/30d/All, plate, record type, final decision)              |
+| 7.3 | Incidents view: paginated table with filters (period, incident type)                                                  |
+| 7.4 | Audit view: paginated table of overrides (non-empty decisionMotor + decisionFinal PERMITIDO), period filter           |
+| 7.5 | Fix: commit Convex generated types (api.d.ts) for CI typecheck                                                        |
+| 7.6 | Replace parking stub on complex home with 3 real KPIs + link to access-control                                        |
+
+---
+
+## Phase 8 — Parking: Alerts and Crons (deferred)
+
+> Deferred for future review. R3 is already evaluated on entry. Visitors have no rules. Not blocking for MVP.
+
+| ID  | Task                                                   |
+| --- | ------------------------------------------------------ |
+| 8.1 | Cron: resident time exceeded (60 min) → incident       |
+| 8.2 | Cron: visitor time exceeded (60 min) → incident        |
+| 8.3 | Cron: visitors after 5pm → incident                    |
+| 8.4 | Cron: vehicles >30 days stay → incident                |
+| 8.5 | Time incident deduplication                            |
+| 8.6 | Local max stay exceeded check (guard UI, visual alert) |
+
+---
+
+## Email — Resend + React Email Integration
+
+> Sender: `Synnova <avisos@synnova.com.co>`. 2 templates: invitation + daily summary. Cron 6am COT. Footer no-reply disclaimer.
+
+| ID   | Task                                                                 |
 | ---- | -------------------------------------------------------------------- |
-| E.1  | Instalar resend + @react-email/components + react-email + script     |
-| E.2  | Utilidad sendEmail con fetch directo a Resend API                    |
-| E.3  | Template layout compartido (logo texto + footer disclaimer)          |
-| E.4  | Template invitación (nombre, conjunto, rol, botón login)             |
-| E.5  | Template resumen diario (5 KPIs + lista novedades + botón histórico) |
-| E.6  | Action sendInvitationEmail + trigger en invitations.create           |
-| E.7  | Queries helper (getInvitationData, getAllConjuntoSummaries)          |
-| E.8  | Action sendDailySummary (itera conjuntos activos, envía a admins)    |
-| E.9  | Cron diario 11:00 UTC (6am COT) en convex/crons.ts                   |
-| E.10 | Configurar RESEND_API_KEY en Convex env                              |
+| E.1  | Install resend + @react-email/components + react-email + script      |
+| E.2  | sendEmail utility with direct fetch to Resend API                    |
+| E.3  | Shared template layout (text logo + footer disclaimer)               |
+| E.4  | Invitation template (name, complex, role, login button)              |
+| E.5  | Daily summary template (5 KPIs + incidents list + history button)    |
+| E.6  | sendInvitationEmail action + trigger in invitations.create           |
+| E.7  | Helper queries (getInvitationData, getAllComplexSummaries)           |
+| E.8  | sendDailySummary action (iterates active complexes, sends to admins) |
+| E.9  | Daily cron 11:00 UTC (6am COT) in convex/crons.ts                    |
+| E.10 | Configure RESEND_API_KEY in Convex env                               |
 
 ---
 
-## Fase 9 — Reportes de Convivencia
+## Post-MVP Polish (April 13, 2026)
 
-> Post-MVP. Schema se crea al iniciar esta fase.
+> UX adjustments, architecture simplifications, observability, and operational improvements made post-MVP.
 
-| ID   | Tarea                                                                                                      |
-| ---- | ---------------------------------------------------------------------------------------------------------- |
-| 9.1  | Crear tabla `incidentes_convivencia` en Convex con schema validator e índices                              |
-| 9.2  | Crear formulario de nuevo incidente (TanStack Form + Zod: tipo, descripción, fecha, ubicación, reportante) |
-| 9.3  | Integrar UploadThing para carga de evidencia fotográfica                                                   |
-| 9.4  | Crear mutation de Convex para registrar incidente                                                          |
-| 9.5  | Crear listado de incidentes con paginación y búsqueda                                                      |
-| 9.6  | Implementar filtros por estado (Pendiente, En Proceso, Resuelto) y por tipo/fecha                          |
-| 9.7  | Crear vista de detalle de incidente (info + evidencias + historial de comentarios)                         |
-| 9.8  | Implementar cambio de estado (Pendiente → En Proceso → Resuelto)                                           |
-| 9.9  | Implementar campo de notas/comentarios internos por incidente                                              |
-| 9.10 | Crear vista Kanban con columnas por estado (drag-and-drop)                                                 |
-| 9.11 | Crear dashboard de incidentes (KPIs: total, pendientes, resueltos)                                         |
-| 9.12 | Implementar gráficos: incidentes por mes, distribución por tipo, estado actual                             |
-| 9.13 | Implementar detección de patrones (residentes/unidades con incidentes recurrentes)                         |
+### P1 — Architecture and Roles
 
----
+| ID   | Task                                                      | Status |
+| ---- | --------------------------------------------------------- | ------ |
+| P1.1 | Apply shadcn/ui preset (blue primary, Roboto, base-nova)  | done   |
+| P1.2 | Default light mode + `?theme=` query param override       | done   |
+| P1.3 | Theme toggle in user menu (admin + super-admin)           | done   |
+| P1.4 | Add `MEMBER` orgRole for guards/assistants/residents      | done   |
+| P1.5 | Move routes `/admin/c/` → `/c/` (shared ConjuntoLayout)   | done   |
+| P1.6 | Rename `$complexId` → `$complexSlug` in routes and params | done   |
+| P1.7 | Only parking module visible in org create dialog          | done   |
+| P1.8 | Fix: DropdownMenuLabel inside Group (Base UI error #31)   | done   |
+| P1.9 | Fix: restore DialogBody removed by shadcn preset          | done   |
 
-## Fase 10 — Reserva de Zonas Sociales
+### P2 — Observability
 
-> Post-MVP. Schema se crea al iniciar esta fase.
+| ID   | Task                                                      | Status |
+| ---- | --------------------------------------------------------- | ------ |
+| P2.1 | Integrate Sentry (client + server + source maps + replay) | done   |
+| P2.2 | `/tunnel` route for Sentry proxy (bypass ad blockers)     | done   |
 
-| ID   | Tarea                                                                                |
-| ---- | ------------------------------------------------------------------------------------ |
-| 10.1 | Crear tablas `zonas_sociales` y `reservas` en Convex con schema validators           |
-| 10.2 | Crear CRUD de zonas sociales (nombre, capacidad, horarios, reglas)                   |
-| 10.3 | Crear formulario de solicitud de reserva (zona, fecha, horario, condiciones)         |
-| 10.4 | Crear mutation de Convex con validación de disponibilidad y reglas                   |
-| 10.5 | Implementar validación de reglas (fechas bloqueadas, límite por residente, horarios) |
-| 10.6 | Crear vista de calendario mensual/semanal con reservas por zona                      |
-| 10.7 | Implementar flujo de aprobación/rechazo por admin                                    |
-| 10.8 | Crear vista de historial de reservas con filtros                                     |
-| 10.9 | Crear panel de configuración de reglas por zona                                      |
+### P3 — Access Control UX
 
----
+| ID   | Task                                                               | Status |
+| ---- | ------------------------------------------------------------------ | ------ |
+| P3.1 | Unit search by abbreviation (t1302, a101, etc.)                    | done   |
+| P3.2 | Fix: separate dialog + sheet in resident registration (no overlay) | done   |
+| P3.3 | Cancel → returns to dialog, success → closes everything            | done   |
+| P3.4 | Collapsible tables: stay >=30d, visitors, recent                   | done   |
+| P3.5 | Recent records (48h) with entry/exit as separate rows              | done   |
+| P3.6 | Sticky plate input at bottom + suggestions upward                  | done   |
+| P3.7 | Occupancy stats (cars X/Y, motorcycles X/Y) above input            | done   |
+| P3.8 | Dashboard: 3 occupancy cards + residents by duration table         | done   |
 
-## Fase 11 — Apertura y Cierre
+### P4 — Simplifications
 
-> Post-MVP. Schema se crea al iniciar esta fase.
-
-| ID   | Tarea                                                                                                   |
-| ---- | ------------------------------------------------------------------------------------------------------- |
-| 11.1 | Crear tablas `areas_inspeccion`, `inspecciones`, `inspecciones_detalle` en Convex con schema validators |
-| 11.2 | Crear CRUD de áreas de inspección por conjunto                                                          |
-| 11.3 | Crear formulario de inspección diaria (checklist dinámico basado en áreas configuradas)                 |
-| 11.4 | Integrar UploadThing para foto obligatoria por área inspeccionada                                       |
-| 11.5 | Implementar estados por área: OK / Novedad / Requiere Acción + observación                              |
-| 11.6 | Crear mutation de Convex para guardar inspección completa (AM o PM)                                     |
-| 11.7 | Crear vista de historial de inspecciones (tabla diaria, expandible por detalle)                         |
-| 11.8 | Crear dashboard de tendencias (gráficos de áreas con novedades recurrentes)                             |
-| 11.9 | Implementar alerta automática: novedad en misma área 3+ días seguidos                                   |
+| ID   | Task                                                                 | Status |
+| ---- | -------------------------------------------------------------------- | ------ |
+| P4.1 | Parking: individual table → car/motorcycle capacity in complexConfig | done   |
+| P4.2 | Incidents: separate table → optional field in accessRecord           | done   |
+| P4.3 | Remove observation field + direct exit (no intermediate dialog)      | done   |
+| P4.4 | Remove Incidents tab + manual incident FAB                           | done   |
 
 ---
 
-## Fase 12 — Notificaciones WhatsApp
+## M5 — Communications
 
-> Post-MVP. Infraestructura de email ya implementada (ver sección Email). Templates de email para módulos futuros se definen dentro de cada módulo.
+### Phase W-2 — Update Project Documentation
 
-| ID   | Tarea                                                                     |
-| ---- | ------------------------------------------------------------------------- |
-| 12.1 | Crear app en Meta Business, obtener token, configurar webhook WhatsApp    |
-| 12.2 | Implementar acción de Convex para envío de mensajes WhatsApp via Meta API |
-| 12.3 | Crear templates de mensajes aprobados en Meta Business                    |
-| 12.4 | Integrar WhatsApp en alertas de parqueadero e incidentes                  |
-| 12.5 | Implementar recepción de mensajes entrantes vía webhook                   |
-| 12.6 | Crear flujo conversacional asistido (menú de opciones, toque humano)      |
-| 12.7 | Crear página de preferencias de notificación por usuario                  |
+| ID    | Task                                                       | Status  |
+| ----- | ---------------------------------------------------------- | ------- |
+| W-2.1 | Translate docs/plan/tasks.md to English                    | pending |
+| W-2.2 | Translate docs/plan/progress.md to English                 | pending |
+| W-2.3 | Add M5 Communications milestone with phases W-1 through W3 | pending |
+| W-2.4 | Break each phase into atomic tasks                         | pending |
+| W-2.5 | Update milestone summary table                             | pending |
+
+### Phase W-1 — Rename Spanish → English
+
+| ID     | Task                                                                                                 | Status  |
+| ------ | ---------------------------------------------------------------------------------------------------- | ------- |
+| W-1.1  | Rename `conjuntos` table → `complexes` with all field renames                                        | pending |
+| W-1.2  | Rename `conjuntoConfig` table → `complexConfig` with all field renames                               | pending |
+| W-1.3  | Rename `conjuntoMemberships` table → `complexMemberships`                                            | pending |
+| W-1.4  | Rename `unidades` table → `units` with all field renames                                             | pending |
+| W-1.5  | Rename `residentes` table → `residents` with all field renames                                       | pending |
+| W-1.6  | Rename `vehiculos` table → `vehicles` with all field renames                                         | pending |
+| W-1.7  | Rename `registrosAcceso` table → `accessRecords` with all field renames                              | pending |
+| W-1.8  | Remove RESIDENTE and ASISTENTE from complexRoles, remove FAMILIAR from residents.type, add INQUILINO | pending |
+| W-1.9  | Add residentId to invitations and complexMemberships                                                 | pending |
+| W-1.10 | Update all frontend components, helpers, routes to use new names                                     | pending |
+| W-1.11 | Run `npx convex dev --clear`, re-seed, verify all features                                           | pending |
+
+### Phase W0 — Foundation (Roles + Module Key + Config)
+
+| ID    | Task                                                                                                                | Status  |
+| ----- | ------------------------------------------------------------------------------------------------------------------- | ------- |
+| W0.1  | Add 'communications' to moduleKeys in organizations/validators.ts                                                   | pending |
+| W0.2  | Add AUXILIAR role to complexRoles (optional per complex)                                                            | pending |
+| W0.3  | Add businessHours (per-day mon-sun), timezone, ticketPrefix, ticketSequence to complexConfig                        | pending |
+| W0.4  | Add error codes: TICKET_NOT_FOUND, TICKET_ALREADY_CLOSED, INVALID_TICKET_TRANSITION, RESIDENT_HAS_OPEN_CONVERSATION | pending |
+| W0.5  | Create requireCommsAccess helper (denies implicit org-owner access)                                                 | pending |
+| W0.6  | Add isComplexStaff and isResident frontend helpers                                                                  | pending |
+| W0.7  | Install @convex-dev/agent, @ai-sdk/google, uploadthing, @uploadthing/react                                          | pending |
+| W0.8  | Set up agent component in convex/convex.config.ts                                                                   | pending |
+| W0.9  | Add "Communications" sidebar entry gated on activeModules                                                           | pending |
+| W0.10 | Create communications route with module guard                                                                       | pending |
+
+### Phase W1 — Conversations + Tickets Data Model (No Bot)
+
+| ID    | Task                                                                                       | Status  |
+| ----- | ------------------------------------------------------------------------------------------ | ------- |
+| W1.1  | Create conversations table (complexId, residentId, threadId, status, timestamps)           | pending |
+| W1.2  | Create tickets table (publicId, status, priority, origin, categories, assignment, summary) | pending |
+| W1.3  | Create ticketEvents table (append-only audit trail)                                        | pending |
+| W1.4  | Create ticketNotes table (internal admin/auxiliar notes)                                   | pending |
+| W1.5  | Create categories table (platform defaults + complex custom)                               | pending |
+| W1.6  | Create quickActions table (platform defaults + complex custom)                             | pending |
+| W1.7  | Seed platform default categories (14 categories across high/medium/low)                    | pending |
+| W1.8  | Seed platform default quick actions (6 actions)                                            | pending |
+| W1.9  | Mutation: createTicket with atomic publicId generation + recurrence detection              | pending |
+| W1.10 | Mutation: createInPersonTicket (admin creates on behalf of resident, no thread)            | pending |
+| W1.11 | Mutation: closeTicket with state transition + event logging                                | pending |
+| W1.12 | Mutation: reopenTicket (any closed → open_waiting_admin)                                   | pending |
+| W1.13 | Mutation: reassignTicket (ADMIN ↔ AUXILIAR)                                                | pending |
+| W1.14 | Mutation: reclassifyTicket (categories + priority)                                         | pending |
+| W1.15 | Mutation: flagAbusive                                                                      | pending |
+| W1.16 | Mutation: addTicketNote (ADMIN/AUXILIAR only)                                              | pending |
+| W1.17 | Mutations: category CRUD (platform defaults read-only, can only toggle isEnabled)          | pending |
+| W1.18 | Mutations: quickAction CRUD (same pattern as categories)                                   | pending |
+| W1.19 | Query: listTickets (paginated, filtered, enriched with resident info)                      | pending |
+| W1.20 | Query: getTicket (full detail with access control)                                         | pending |
+| W1.21 | Query: listTicketEvents (audit trail)                                                      | pending |
+| W1.22 | Query: listTicketNotes                                                                     | pending |
+| W1.23 | Query: searchClosedTickets (by publicId, tower+apt, date)                                  | pending |
+| W1.24 | Query: countByStatus (inbox badges)                                                        | pending |
+| W1.25 | Query: getActiveConversation (resident's open conversation)                                | pending |
+| W1.26 | Query: listCategories, listQuickActions                                                    | pending |
+| W1.27 | Query: listConversations (staff view with resident info)                                   | pending |
+| W1.28 | Frontend: communications-page.tsx (role-based view switcher)                               | pending |
+| W1.29 | Frontend: staff-conversations-tab.tsx (active conversations with status badges)            | pending |
+| W1.30 | Frontend: staff-tickets-tab.tsx (priority-grouped inbox with filters)                      | pending |
+| W1.31 | Frontend: ticket-detail-panel.tsx (split layout: chat + metadata + actions)                | pending |
+| W1.32 | Frontend: message-thread.tsx (chat bubbles with role labels)                               | pending |
+| W1.33 | Frontend: resident-chat.tsx (chat + quick actions + past cases)                            | pending |
+| W1.34 | Frontend: create-in-person-dialog.tsx                                                      | pending |
+| W1.35 | UploadThing integration (file attachments per-message + aggregated view)                   | pending |
+
+### Phase W2 — Bot + LLM Integration
+
+| ID    | Task                                                                           | Status  |
+| ----- | ------------------------------------------------------------------------------ | ------- |
+| W2.1  | Define support agent with Gemini 2.5 Flash Lite model + system prompt          | pending |
+| W2.2  | Define bot tools: escalateToHuman, flagAbusiveLanguage                         | pending |
+| W2.3  | Action: handleResidentMessage (create/reuse conversation, stream bot response) | pending |
+| W2.4  | Action: escalarAHumano (LLM classification, create ticket, system message)     | pending |
+| W2.5  | Action: suggestResponse (on-demand for staff, last 20 messages)                | pending |
+| W2.6  | Action: computeTicketSummary (LLM summary on ticket close)                     | pending |
+| W2.7  | Action: handleQuickAction (info-only vs intent accelerator)                    | pending |
+| W2.8  | Action: closeInactiveConversations (cron, 30 min timeout)                      | pending |
+| W2.9  | Business hours helpers (per-day schedule, isBusinessHours, getNextOpenTime)    | pending |
+| W2.10 | Implement 3-message fallback escalation counter                                | pending |
+| W2.11 | Implement post-escalation static acknowledgment (no LLM)                       | pending |
+| W2.12 | Add inactivity cron to convex/crons.ts (every 5 min)                           | pending |
+| W2.13 | Frontend: quick-actions-bar.tsx (intent accelerators)                          | pending |
+| W2.14 | Frontend: bot-streaming-indicator.tsx (typing animation)                       | pending |
+| W2.15 | Frontend: bot-confirmation-buttons.tsx (Yes/No for resolution)                 | pending |
+| W2.16 | Frontend: outside-hours-banner.tsx                                             | pending |
+| W2.17 | Frontend: suggest-response-button.tsx (editable LLM draft)                     | pending |
+
+### Phase W3 — Notifications + Config UI + Polish
+
+| ID    | Task                                                                                      | Status  |
+| ----- | ----------------------------------------------------------------------------------------- | ------- |
+| W3.1  | Create notifications table                                                                | pending |
+| W3.2  | Create notifications on key events (new message, escalation, closure, reopen, assignment) | pending |
+| W3.3  | Mutation: markRead                                                                        | pending |
+| W3.4  | Query: countUnread, listNotifications                                                     | pending |
+| W3.5  | Frontend: notification-panel.tsx (header dropdown)                                        | pending |
+| W3.6  | Frontend: notification-badge.tsx (sidebar + header)                                       | pending |
+| W3.7  | Frontend: ticket-filters.tsx (TanStack Router query params)                               | pending |
+| W3.8  | Frontend: ticket-search.tsx (closed ticket search)                                        | pending |
+| W3.9  | Frontend: ticket-audit-trail.tsx (event timeline)                                         | pending |
+| W3.10 | Config UI: business hours per-day editor                                                  | pending |
+| W3.11 | Config UI: ticket prefix (editable until first ticket)                                    | pending |
+| W3.12 | Config UI: categories CRUD (platform defaults toggle-only)                                | pending |
+| W3.13 | Config UI: quick actions CRUD (platform defaults toggle-only)                             | pending |
 
 ---
 
-## Fase 13 — Dashboard Ejecutivo
+## Phase 9 — Coexistence Reports
+
+> Post-MVP. Schema created when this phase starts.
+
+| ID   | Task                                                                                        |
+| ---- | ------------------------------------------------------------------------------------------- |
+| 9.1  | Create `coexistence_incidents` table in Convex with schema validator and indexes            |
+| 9.2  | Create new incident form (TanStack Form + Zod: type, description, date, location, reporter) |
+| 9.3  | Integrate UploadThing for photographic evidence upload                                      |
+| 9.4  | Create Convex mutation to register incident                                                 |
+| 9.5  | Create incident list with pagination and search                                             |
+| 9.6  | Implement filters by status (Pending, In Progress, Resolved) and by type/date               |
+| 9.7  | Create incident detail view (info + evidence + comment history)                             |
+| 9.8  | Implement status change (Pending → In Progress → Resolved)                                  |
+| 9.9  | Implement internal notes/comments field per incident                                        |
+| 9.10 | Create Kanban view with status columns (drag-and-drop)                                      |
+| 9.11 | Create incident dashboard (KPIs: total, pending, resolved)                                  |
+| 9.12 | Implement charts: incidents by month, distribution by type, current status                  |
+| 9.13 | Implement pattern detection (residents/units with recurring incidents)                      |
+
+---
+
+## Phase 10 — Social Area Reservations
+
+> Post-MVP. Schema created when this phase starts.
+
+| ID   | Task                                                                             |
+| ---- | -------------------------------------------------------------------------------- |
+| 10.1 | Create `social_areas` and `reservations` tables in Convex with schema validators |
+| 10.2 | Create social areas CRUD (name, capacity, schedules, rules)                      |
+| 10.3 | Create reservation request form (area, date, time slot, conditions)              |
+| 10.4 | Create Convex mutation with availability and rule validation                     |
+| 10.5 | Implement rule validation (blocked dates, per-resident limit, schedules)         |
+| 10.6 | Create monthly/weekly calendar view with reservations by area                    |
+| 10.7 | Implement approval/rejection flow by admin                                       |
+| 10.8 | Create reservation history view with filters                                     |
+| 10.9 | Create per-area rule configuration panel                                         |
+
+---
+
+## Phase 11 — Opening and Closing Inspections
+
+> Post-MVP. Schema created when this phase starts.
+
+| ID   | Task                                                                                                   |
+| ---- | ------------------------------------------------------------------------------------------------------ |
+| 11.1 | Create `inspection_areas`, `inspections`, `inspection_details` tables in Convex with schema validators |
+| 11.2 | Create inspection areas CRUD per complex                                                               |
+| 11.3 | Create daily inspection form (dynamic checklist based on configured areas)                             |
+| 11.4 | Integrate UploadThing for mandatory photo per inspected area                                           |
+| 11.5 | Implement per-area statuses: OK / Incident / Requires Action + observation                             |
+| 11.6 | Create Convex mutation to save complete inspection (AM or PM)                                          |
+| 11.7 | Create inspection history view (daily table, expandable by detail)                                     |
+| 11.8 | Create trend dashboard (charts of areas with recurring incidents)                                      |
+| 11.9 | Implement automatic alert: incident in same area 3+ consecutive days                                   |
+
+---
+
+## Phase 12 — WhatsApp Notifications
+
+> Post-MVP. Email infrastructure already implemented (see Email section). Email templates for future modules are defined within each module.
+
+| ID   | Task                                                               |
+| ---- | ------------------------------------------------------------------ |
+| 12.1 | Create Meta Business app, obtain token, configure WhatsApp webhook |
+| 12.2 | Implement Convex action for WhatsApp message sending via Meta API  |
+| 12.3 | Create approved message templates in Meta Business                 |
+| 12.4 | Integrate WhatsApp in parking and incident alerts                  |
+| 12.5 | Implement incoming message reception via webhook                   |
+| 12.6 | Create assisted conversational flow (option menu, human touch)     |
+| 12.7 | Create per-user notification preferences page                      |
+
+---
+
+## Phase 13 — Executive Dashboard
 
 > Post-MVP.
 
-| ID   | Tarea                                                                                             |
-| ---- | ------------------------------------------------------------------------------------------------- |
-| 13.1 | Crear dashboard ejecutivo por conjunto (KPIs: ocupación, incidentes, reservas, inspecciones)      |
-| 13.2 | Crear vista comparativa multi-conjunto (tabla/gráfico entre conjuntos de la misma org)            |
-| 13.3 | Implementar métricas de calidad de operación (tiempo de resolución, cumplimiento de inspecciones) |
-| 13.4 | Implementar exportación de reportes a CSV/Excel                                                   |
-| 13.5 | Crear portal público para invitados (formularios accesibles sin login)                            |
+| ID   | Task                                                                                           |
+| ---- | ---------------------------------------------------------------------------------------------- |
+| 13.1 | Create per-complex executive dashboard (KPIs: occupancy, incidents, reservations, inspections) |
+| 13.2 | Create multi-complex comparative view (table/chart across complexes in the same org)           |
+| 13.3 | Implement operational quality metrics (resolution time, inspection compliance)                 |
+| 13.4 | Implement report export to CSV/Excel                                                           |
+| 13.5 | Create public portal for guests (accessible forms without login)                               |
 
 ---
 
-## Fase 14 — Testing Final, Optimización y Deploy
+## Phase 14 — Final Testing, Optimization, and Deploy
 
-| ID    | Tarea                                                                                                     |
-| ----- | --------------------------------------------------------------------------------------------------------- |
-| 14.1  | Testear aislamiento de datos entre tenants                                                                |
-| 14.2  | Testear operación offline completa (desconectar, operar, reconectar, verificar sync y reconciliación)     |
-| 14.3  | Escribir tests de integración para flujos end-to-end (onboarding → config → ingreso → salida → auditoría) |
-| 14.4  | Escribir tests de componentes UI con Testing Library                                                      |
-| 14.5  | Optimizar queries de Convex (revisar índices, reducir scans)                                              |
-| 14.6  | Implementar lazy loading de rutas (code splitting)                                                        |
-| 14.7  | Configurar dominio synnova.com.co + wildcard en Vercel                                                    |
-| 14.8  | Configurar monitoreo y alertas de producción                                                              |
-| 14.9  | Realizar pruebas de carga multi-tenant                                                                    |
-| 14.10 | Deploy a producción                                                                                       |
-
----
-
-## Post-MVP Polish (13 abril 2026)
-
-> Ajustes de UX, simplificaciones de arquitectura, observabilidad y mejoras operativas realizadas post-MVP.
-
-### P1 — Arquitectura y Roles
-
-| ID   | Tarea                                                              | Estado |
-| ---- | ------------------------------------------------------------------ | ------ |
-| P1.1 | Aplicar preset shadcn/ui (blue primary, Roboto, base-nova)         | done   |
-| P1.2 | Default light mode + `?theme=` query param override                | done   |
-| P1.3 | Theme toggle en user menu (admin + super-admin)                    | done   |
-| P1.4 | Agregar orgRole `MEMBER` para vigilantes/asistentes/residentes     | done   |
-| P1.5 | Mover rutas `/admin/c/` → `/c/` (layout compartido ConjuntoLayout) | done   |
-| P1.6 | Renombrar `$conjuntoId` → `$conjuntoSlug` en rutas y params        | done   |
-| P1.7 | Solo módulo parking visible en org create dialog                   | done   |
-| P1.8 | Fix: DropdownMenuLabel dentro de Group (Base UI error #31)         | done   |
-| P1.9 | Fix: restaurar DialogBody removido por preset shadcn               | done   |
-
-### P2 — Observabilidad
-
-| ID   | Tarea                                                    | Estado |
-| ---- | -------------------------------------------------------- | ------ |
-| P2.1 | Integrar Sentry (client + server + source maps + replay) | done   |
-| P2.2 | Ruta `/tunnel` para proxy Sentry (bypass ad blockers)    | done   |
-
-### P3 — UX Control de Acceso
-
-| ID   | Tarea                                                             | Estado |
-| ---- | ----------------------------------------------------------------- | ------ |
-| P3.1 | Búsqueda de unidades por abreviatura (t1302, a101, etc.)          | done   |
-| P3.2 | Fix: separar dialog + sheet en registro residente (sin overlay)   | done   |
-| P3.3 | Cancel → vuelve al dialog, success → cierra todo                  | done   |
-| P3.4 | Tablas colapsables: permanencia ≥30d, visitantes, recientes       | done   |
-| P3.5 | Registros recientes (48h) con entrada/salida como filas separadas | done   |
-| P3.6 | Input de placa sticky al fondo + sugerencias hacia arriba         | done   |
-| P3.7 | Stats de ocupación (carros X/Y, motos X/Y) sobre el input         | done   |
-| P3.8 | Dashboard: 3 cards occupancy + tabla residentes por duración      | done   |
-
-### P4 — Simplificaciones
-
-| ID   | Tarea                                                                     | Estado |
-| ---- | ------------------------------------------------------------------------- | ------ |
-| P4.1 | Parqueaderos: tabla individual → capacidad carros/motos en conjuntoConfig | done   |
-| P4.2 | Novedades: tabla separada → campo opcional en registroAcceso              | done   |
-| P4.3 | Eliminar campo observacion + salida directa (sin diálogo intermedio)      | done   |
-| P4.4 | Eliminar tab Novedades + FAB de novedad manual                            | done   |
+| ID    | Task                                                                                         |
+| ----- | -------------------------------------------------------------------------------------------- |
+| 14.1  | Test data isolation between tenants                                                          |
+| 14.2  | Test full offline operation (disconnect, operate, reconnect, verify sync and reconciliation) |
+| 14.3  | Write integration tests for end-to-end flows (onboarding → config → entry → exit → audit)    |
+| 14.4  | Write UI component tests with Testing Library                                                |
+| 14.5  | Optimize Convex queries (review indexes, reduce scans)                                       |
+| 14.6  | Implement lazy loading of routes (code splitting)                                            |
+| 14.7  | Configure synnova.com.co domain + wildcard on Vercel                                         |
+| 14.8  | Configure production monitoring and alerts                                                   |
+| 14.9  | Perform multi-tenant load testing                                                            |
+| 14.10 | Deploy to production                                                                         |
 
 ---
 
-## Resumen
+## Summary
 
-| Fase   | Nombre                               | Tareas | Milestone |
-| ------ | ------------------------------------ | ------ | --------- |
-| 0      | Configuración del Proyecto           | 13     | M1        |
-| 1      | Arquitectura Multi-Tenant            | 10     | M1        |
-| 2      | Autenticación y Usuarios             | 19     | M1        |
-| 3      | Admin: Super Admin                   | 11     | M2        |
-| 4      | Admin: Conjunto Admin                | 33     | M2        |
-| 5      | Parqueaderos: Datos Offline-First    | 14     | M3        |
-| 6      | Parqueaderos: Reglas y Pantallas     | 12     | M3        |
-| 7      | Parqueaderos: Dashboards y Auditoría | 5      | M3        |
-| 8      | Parqueaderos: Alertas y Crons        | 6      | M3        |
-| Email  | Integración Resend                   | 10     | MVP       |
-| Polish | Post-MVP Polish                      | 23     | MVP       |
-| 9      | Reportes de Convivencia              | 13     | M4        |
-| 10     | Reserva de Zonas Sociales            | 9      | M4        |
-| 11     | Apertura y Cierre                    | 9      | M4        |
-| 12     | Notificaciones                       | 7      | M4        |
-| 13     | Dashboard Ejecutivo                  | 5      | M4        |
-| 14     | Testing Final y Deploy               | 10     | M3/M4     |
+| Phase  | Name                                     | Tasks | Milestone |
+| ------ | ---------------------------------------- | ----- | --------- |
+| 0      | Project Setup                            | 13    | M1        |
+| 1      | Multi-Tenant Architecture                | 10    | M1        |
+| 2      | Authentication and Users                 | 19    | M1        |
+| 3      | Admin: Super Admin                       | 11    | M2        |
+| 4      | Admin: Complex Admin                     | 33    | M2        |
+| 5      | Parking: Optimistic-First Data           | 14    | M3        |
+| 6      | Parking: Rules and Screens               | 12    | M3        |
+| 7      | Parking: Dashboards and Audit            | 5     | M3        |
+| 8      | Parking: Alerts and Crons                | 6     | M3        |
+| Email  | Resend Integration                       | 10    | MVP       |
+| Polish | Post-MVP Polish                          | 23    | MVP       |
+| W-2    | Update Project Documentation             | 5     | M5        |
+| W-1    | Rename Spanish → English                 | 11    | M5        |
+| W0     | Foundation (Roles + Module Key + Config) | 10    | M5        |
+| W1     | Conversations + Tickets (No Bot)         | 35    | M5        |
+| W2     | Bot + LLM Integration                    | 17    | M5        |
+| W3     | Notifications + Config UI + Polish       | 13    | M5        |
+| 9      | Coexistence Reports                      | 13    | M4        |
+| 10     | Social Area Reservations                 | 9     | M4        |
+| 11     | Opening and Closing Inspections          | 9     | M4        |
+| 12     | WhatsApp Notifications                   | 7     | M4        |
+| 13     | Executive Dashboard                      | 5     | M4        |
+| 14     | Final Testing and Deploy                 | 10    | M3/M4     |
 
-> **MVP = M1 + M2 + M3 + Email + Polish = todas las tareas activas completadas**
+> **MVP = M1 + M2 + M3 + Email + Polish = all active tasks completed**
