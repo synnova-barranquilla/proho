@@ -30,7 +30,7 @@ export const create = mutation({
     if (!unit) {
       throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Unidad no encontrada')
     }
-    const { user } = await requireComplexAccess(ctx, unit.complexId, {
+    const { user, complex } = await requireComplexAccess(ctx, unit.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -81,7 +81,7 @@ export const create = mutation({
         )
         .collect()
       for (const prev of previousPending) {
-        if (prev.organizationId === user.organizationId) {
+        if (prev.organizationId === complex.organizationId) {
           await ctx.db.patch(prev._id, { status: 'REVOKED' })
         }
       }
@@ -92,7 +92,7 @@ export const create = mutation({
         firstName,
         lastName,
         orgRole: 'MEMBER',
-        organizationId: user.organizationId,
+        organizationId: complex.organizationId,
         status: 'PENDING',
         invitedBy: user._id,
         invitedAt: now,
