@@ -235,7 +235,13 @@ function TorresList({
                   <TableCell className="font-medium">{u.number}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
-                      {u.type}
+                      {
+                        {
+                          APARTMENT: 'Apartamento',
+                          HOUSE: 'Casa',
+                          COMMERCIAL: 'Local',
+                        }[u.type]
+                      }
                     </Badge>
                   </TableCell>
                   <TableCell>

@@ -143,7 +143,13 @@ function ResidentesTable({
       accessorKey: 'type',
       cell: ({ row }) => (
         <Badge variant="outline" className="text-xs">
-          {row.original.type}
+          {
+            {
+              OWNER: 'Propietario',
+              LESSEE: 'Arrendatario',
+              TENANT: 'Inquilino',
+            }[row.original.type]
+          }
         </Badge>
       ),
     },

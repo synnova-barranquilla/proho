@@ -214,7 +214,15 @@ function VehiculosTable({
       id: 'tipo',
       header: 'Tipo',
       accessorKey: 'type',
-      cell: ({ row }) => <Badge variant="outline">{row.original.type}</Badge>,
+      cell: ({ row }) => (
+        <Badge variant="outline">
+          {
+            { CAR: 'Carro', MOTORCYCLE: 'Moto', OTHER: 'Otro' }[
+              row.original.type
+            ]
+          }
+        </Badge>
+      ),
     },
     {
       id: 'unidad',
