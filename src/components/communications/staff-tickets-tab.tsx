@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { convexQuery } from '@convex-dev/react-query'
 import { ChevronDown, ChevronRight, Plus, Ticket } from 'lucide-react'
@@ -114,7 +114,7 @@ export function StaffTicketsTab({ complexId }: StaffTicketsTabProps) {
   const [selectedTicketId, setSelectedTicketId] =
     useState<Id<'tickets'> | null>(null)
 
-  const { data: tickets } = useSuspenseQuery(
+  const { data: tickets = [] } = useQuery(
     convexQuery(api.communications.queries.listTickets, {
       complexId,
       ...(filters.status ? { status: filters.status } : {}),
@@ -124,7 +124,16 @@ export function StaffTicketsTab({ complexId }: StaffTicketsTabProps) {
     }),
   )
 
-  const { data: counts } = useSuspenseQuery(
+  const {
+    data: counts = {
+      open_waiting_admin: 0,
+      open_waiting_resident: 0,
+      closed_by_bot: 0,
+      closed_by_admin: 0,
+      closed_by_inactivity: 0,
+      reopened: 0,
+    },
+  } = useQuery(
     convexQuery(api.communications.queries.countByStatus, { complexId }),
   )
 

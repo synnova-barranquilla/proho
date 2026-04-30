@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { useUIMessages } from '@convex-dev/agent/react'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
@@ -38,8 +38,8 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Query for the current resident's active conversation
-  const { data: conversation } = useSuspenseQuery(
+  // Query for the current resident's active conversation (non-suspense to avoid SSR auth issues)
+  const { data: conversation } = useQuery(
     convexQuery(api.communications.queries.getMyActiveConversation, {
       complexId,
     }),
