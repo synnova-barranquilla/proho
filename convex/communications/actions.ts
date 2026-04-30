@@ -6,7 +6,7 @@ import { v } from 'convex/values'
 import { components, internal } from '../_generated/api'
 import { action, internalAction } from '../_generated/server'
 import { supportAgent } from './agent'
-import { getBusinessHoursMessage, isBusinessHours } from './businessHours'
+import { isBusinessHours } from './businessHours'
 
 /**
  * Handle a message from a resident in the chat interface.
@@ -80,12 +80,12 @@ export const handleResidentMessage = internalAction({
       { complexId: args.complexId },
     )
 
-    // 5. Build context prompt
-    const contextParts: string[] = []
+    // 5. Build system context (injected as system message, NOT visible to resident)
+    const systemParts: string[] = []
     if (residentInfo) {
-      contextParts.push(`Residente: ${residentInfo.name}`)
+      systemParts.push(`Residente: ${residentInfo.name}`)
       if (residentInfo.tower && residentInfo.unitNumber) {
-        contextParts.push(
+        systemParts.push(
           `Torre ${residentInfo.tower}, Apto ${residentInfo.unitNumber}`,
         )
       }
@@ -95,13 +95,15 @@ export const handleResidentMessage = internalAction({
     const tz = complexConfig?.timezone ?? 'America/Bogota'
 
     if (!isBusinessHours(bh, tz)) {
-      contextParts.push(`[NOTA SISTEMA: ${getBusinessHoursMessage(bh, tz)}]`)
+      systemParts.push(
+        `NOTA: Estamos fuera de horario laboral. Informa al residente que las respuestas del equipo administrativo podrían ser más demoradas, pero sigue atendiendo normalmente.`,
+      )
     }
 
-    const contextPrompt =
-      contextParts.length > 0
-        ? `Contexto: ${contextParts.join('. ')}.\n\nMensaje del residente: ${args.content}`
-        : args.content
+    const systemContext =
+      systemParts.length > 0
+        ? `Contexto de esta conversación: ${systemParts.join('. ')}.`
+        : undefined
 
     // 6. Save user message
     await saveMessage(ctx, components.agent, {
@@ -114,11 +116,14 @@ export const handleResidentMessage = internalAction({
       const result = await supportAgent.streamText(
         ctx,
         { threadId },
-        { prompt: contextPrompt },
+        {
+          prompt: args.content,
+          system: systemContext,
+        },
         {
           saveStreamDeltas: {
             chunking: 'word',
-            throttleMs: 1000,
+            throttleMs: 100,
           },
         },
       )
