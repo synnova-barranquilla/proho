@@ -21,10 +21,10 @@ export type Milestone = {
 }
 
 export const currentFocus = {
-  phaseId: 'W2',
-  phaseName: 'Bot + LLM Integration',
+  phaseId: 'W3',
+  phaseName: 'Notifications + Config UI + Polish',
   done: 0,
-  total: 17,
+  total: 13,
 }
 export const lastUpdated = 'April 29, 2026'
 
@@ -1141,83 +1141,83 @@ export const milestones: Milestone[] = [
           {
             id: 'W2.1',
             name: 'Define support agent with Gemini 2.5 Flash Lite',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.2',
             name: 'Define bot tools: escalateToHuman, flagAbusiveLanguage',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.3',
             name: 'Action: handleResidentMessage (stream bot response)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.4',
             name: 'Action: escalarAHumano (classify + create ticket)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.5',
             name: 'Action: suggestResponse (on-demand for staff)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.6',
             name: 'Action: computeTicketSummary (on close)',
-            status: 'pending',
+            status: 'done',
           },
-          { id: 'W2.7', name: 'Action: handleQuickAction', status: 'pending' },
+          { id: 'W2.7', name: 'Action: handleQuickAction', status: 'done' },
           {
             id: 'W2.8',
             name: 'Action: closeInactiveConversations (cron)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.9',
             name: 'Business hours helpers (per-day schedule)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.10',
             name: 'Implement 3-message fallback escalation',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.11',
             name: 'Post-escalation static acknowledgment',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.12',
             name: 'Add inactivity cron (every 5 min)',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.13',
             name: 'Frontend: quick-actions-bar.tsx',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.14',
             name: 'Frontend: bot-streaming-indicator.tsx',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.15',
             name: 'Frontend: bot-confirmation-buttons.tsx',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.16',
             name: 'Frontend: outside-hours-banner.tsx',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W2.17',
             name: 'Frontend: suggest-response-button.tsx',
-            status: 'pending',
+            status: 'done',
           },
         ],
       },
