@@ -105,13 +105,7 @@ export const handleResidentMessage = internalAction({
         ? `Contexto de esta conversación: ${systemParts.join('. ')}.`
         : undefined
 
-    // 6. Save user message
-    await saveMessage(ctx, components.agent, {
-      threadId,
-      message: { role: 'user', content: args.content },
-    })
-
-    // 7. Stream bot response
+    // 6. Stream bot response (prompt saves the user message automatically)
     try {
       const result = await supportAgent.streamText(
         ctx,
