@@ -1,14 +1,13 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { CommunicationsPage } from '#/components/communications/communications-page'
-import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
-import { api } from '../../../../../../convex/_generated/api'
 
 export const Route = createFileRoute(
   '/_authenticated/c/$complexSlug/communications/',
 )({
-  loader: async ({
-    context: { queryClient, complexId, complexSlug, activeModules, convexUser },
+  ssr: false,
+  beforeLoad: async ({
+    context: { complexSlug, activeModules, convexUser },
   }) => {
     const isSuperAdmin = convexUser.orgRole === 'SUPER_ADMIN'
     if (!activeModules.includes('communications') && !isSuperAdmin) {
@@ -17,19 +16,6 @@ export const Route = createFileRoute(
         params: { complexSlug },
       })
     }
-    await Promise.all([
-      prefetchAuthenticatedQuery(
-        queryClient,
-        api.communications.queries.listCategories,
-        { complexId },
-      ).catch(() => null),
-      prefetchAuthenticatedQuery(
-        queryClient,
-        api.communications.queries.listQuickActions,
-        { complexId },
-      ).catch(() => null),
-    ])
-    return null
   },
   component: CommunicationsRoute,
 })

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
 import { convexQuery } from '@convex-dev/react-query'
 import { MessageSquare } from 'lucide-react'
@@ -13,7 +13,7 @@ interface StaffConversationsTabProps {
 export function StaffConversationsTab({
   complexId,
 }: StaffConversationsTabProps) {
-  const { data: conversations = [] } = useQuery(
+  const { data: conversations } = useSuspenseQuery(
     convexQuery(api.communications.queries.listConversations, { complexId }),
   )
 
