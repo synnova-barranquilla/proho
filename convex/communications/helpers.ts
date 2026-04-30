@@ -354,7 +354,7 @@ export const escalateConversation = internalMutation({
       createdAt: now,
     })
 
-    return { ticketId, publicId }
+    return { ticketId, publicId, assignedRole: bestRole }
   },
 })
 

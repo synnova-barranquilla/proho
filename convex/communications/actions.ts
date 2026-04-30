@@ -152,13 +152,20 @@ export const handleResidentMessage = internalAction({
                 },
               )
 
-              await saveMessage(ctx, components.agent, {
-                threadId,
-                message: {
-                  role: 'assistant',
-                  content: `Tu caso ha sido registrado con el número ${escalationResult.publicId}. Un miembro del equipo administrativo lo revisará pronto. A partir de ahora, las respuestas las recibirás directamente del equipo.`,
-                },
-              })
+              if (escalationResult) {
+                const roleLabel =
+                  escalationResult.assignedRole === 'AUXILIAR'
+                    ? 'Auxiliar Operativo'
+                    : 'Coordinador(a) Administrativo(a)'
+
+                await saveMessage(ctx, components.agent, {
+                  threadId,
+                  message: {
+                    role: 'assistant',
+                    content: `Tu caso ha sido registrado con el número ${escalationResult.publicId} y asignado al ${roleLabel}. Te responderá pronto. A partir de ahora, las respuestas las recibirás directamente del equipo.`,
+                  },
+                })
+              }
               escalated = true
             }
           }
