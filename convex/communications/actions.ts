@@ -83,12 +83,16 @@ export const handleResidentMessage = internalAction({
     // 5. Build system context (injected as system message, NOT visible to resident)
     const systemParts: string[] = []
     if (residentInfo) {
-      systemParts.push(`Residente: ${residentInfo.name}`)
+      systemParts.push(
+        `DATOS DEL RESIDENTE (ya los tienes, NO preguntes por ellos):`,
+      )
+      systemParts.push(`- Nombre: ${residentInfo.name}`)
       if (residentInfo.tower && residentInfo.unitNumber) {
         systemParts.push(
-          `Torre ${residentInfo.tower}, Apto ${residentInfo.unitNumber}`,
+          `- Torre: ${residentInfo.tower}, Apartamento: ${residentInfo.unitNumber}`,
         )
       }
+      systemParts.push(`- Tipo: ${residentInfo.type}`)
     }
 
     const bh = complexConfig?.businessHours
@@ -101,9 +105,7 @@ export const handleResidentMessage = internalAction({
     }
 
     const systemContext =
-      systemParts.length > 0
-        ? `Contexto de esta conversación: ${systemParts.join('. ')}.`
-        : undefined
+      systemParts.length > 0 ? systemParts.join('\n') : undefined
 
     // 6. Stream bot response (prompt saves the user message automatically)
     try {

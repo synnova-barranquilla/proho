@@ -84,21 +84,29 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
   // Check if any message is currently streaming
   const isStreaming = messages.some((m) => m.status === 'streaming')
 
-  // Auto-scroll to bottom on every render cycle where messages or streaming state changes
-  const lastMsgCount = messages.length
-  const lastMsg = messages.at(-1)
-  const lastMsgContent = lastMsg
-    ? lastMsg.parts
-        .filter((p: { type: string }) => p.type === 'text')
-        .map((p: { type: string; text?: string }) => p.text || '')
-        .join('').length
-    : 0
-
+  // Auto-scroll to bottom — use MutationObserver to catch every DOM change
+  // (streaming chunks, new messages, optimistic messages)
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    const el = scrollRef.current
+    if (!el) return
+
+    const scrollToBottom = () => {
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight
+      })
     }
-  }, [lastMsgCount, lastMsgContent, isStreaming, optimisticUserMsg])
+
+    scrollToBottom()
+
+    const observer = new MutationObserver(scrollToBottom)
+    observer.observe(el, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    })
+
+    return () => observer.disconnect()
+  }, [conversation?.threadId])
 
   const sendResidentMessageFn = useConvexMutation(
     api.communications.mutations.sendResidentMessage,

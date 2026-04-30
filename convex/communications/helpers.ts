@@ -115,6 +115,7 @@ export const getResidentInfo = internalQuery({
       tower: unit?.tower ?? null,
       unitNumber: unit?.number ?? null,
       unitId: resident.unitId,
+      type: resident.type,
     }
   },
 })
