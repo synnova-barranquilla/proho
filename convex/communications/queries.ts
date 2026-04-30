@@ -1,7 +1,10 @@
+import { listUIMessages, syncStreams, vStreamArgs } from '@convex-dev/agent'
+import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
+import { components } from '../_generated/api'
 import { query } from '../_generated/server'
-import { requireCommsAccess } from '../lib/auth'
+import { requireCommsAccess, requireUser } from '../lib/auth'
 import { ticketPriorities, ticketStatuses } from './validators'
 
 const STAFF_ROLES = ['ADMIN', 'AUXILIAR'] as const
@@ -332,6 +335,54 @@ export const listQuickActions = query({
     ]
 
     return merged.sort((a, b) => a.displayOrder - b.displayOrder)
+  },
+})
+
+export const getMyActiveConversation = query({
+  args: {
+    complexId: v.id('complexes'),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: ['OWNER', 'TENANT', 'LESSEE'],
+    })
+
+    const residentId = membership?.residentId
+    if (!residentId) return null
+
+    const conversation = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', residentId).eq('status', 'active'),
+      )
+      .first()
+
+    if (conversation) return conversation
+
+    // Also check escalated (still visible to resident)
+    return await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', residentId).eq('status', 'escalated'),
+      )
+      .first()
+  },
+})
+
+export const listThreadMessages = query({
+  args: {
+    threadId: v.string(),
+    paginationOpts: paginationOptsValidator,
+    streamArgs: v.optional(vStreamArgs),
+  },
+  handler: async (ctx, args) => {
+    await requireUser(ctx)
+
+    const paginated = await listUIMessages(ctx, components.agent, args)
+    const streams = args.streamArgs
+      ? await syncStreams(ctx, components.agent, args as any)
+      : undefined
+    return { ...paginated, streams }
   },
 })
 

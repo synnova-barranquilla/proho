@@ -1,8 +1,9 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
-import { useConvexMutation } from '@convex-dev/react-query'
+import { useUIMessages } from '@convex-dev/agent/react'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import { Bot, Paperclip, Send, User } from 'lucide-react'
 import { toast } from 'sonner'
@@ -14,18 +15,6 @@ import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { BotStreamingIndicator } from './bot-streaming-indicator'
 import { QuickActionsBar } from './quick-actions-bar'
-
-/**
- * Local-only message type used for optimistic UI before the backend
- * conversation thread exists. Once we integrate @convex-dev/agent's
- * useUIMessages, these will be replaced by real thread messages.
- */
-interface LocalMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  createdAt: number
-}
 
 interface ResidentChatProps {
   complexId: Id<'complexes'>
@@ -42,47 +31,74 @@ export function ResidentChat({ complexId }: ResidentChatProps) {
 }
 
 function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
-  const [messages, setMessages] = useState<LocalMessage[]>([])
   const [input, setInput] = useState('')
-  const [isBotTyping, setIsBotTyping] = useState(false)
+  const [optimisticUserMsg, setOptimisticUserMsg] = useState<string | null>(
+    null,
+  )
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Check for an active conversation for this resident.
-  // For now we call the query but don't have a residentId readily
-  // available from the frontend (that requires looking up the logged-in
-  // user's resident record). We'll skip the active-conversation query
-  // until the backend provides a helper. The chat works in "new
-  // conversation" mode for every session.
-  const hasMessages = messages.length > 0
+  // Query for the current resident's active conversation
+  const { data: conversation } = useSuspenseQuery(
+    convexQuery(api.communications.queries.getMyActiveConversation, {
+      complexId,
+    }),
+  )
+
+  const threadId = conversation?.threadId ?? null
+
+  // Subscribe to thread messages with streaming when we have a threadId
+  const { results: threadMessages } = useUIMessages(
+    api.communications.queries.listThreadMessages,
+    threadId ? { threadId } : 'skip',
+    { initialNumItems: 50, stream: true },
+  )
+
+  const messages = threadMessages
+  const hasMessages = messages.length > 0 || optimisticUserMsg !== null
+
+  // Clear optimistic message once real messages arrive
+  useEffect(() => {
+    if (optimisticUserMsg && messages.length > 0) {
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')
+      if (lastUserMsg) {
+        const lastUserText = lastUserMsg.parts
+          .filter((p: { type: string }) => p.type === 'text')
+          .map((p: { type: string; text?: string }) => p.text ?? '')
+          .join('')
+        if (lastUserText === optimisticUserMsg) {
+          setOptimisticUserMsg(null)
+        }
+      }
+    }
+  }, [messages, optimisticUserMsg])
+
+  // Check if any message is currently streaming
+  const isStreaming = messages.some((m) => m.status === 'streaming')
+
+  // Auto-scroll to bottom when messages change or streaming
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages, isStreaming, optimisticUserMsg])
 
   const sendResidentMessageFn = useConvexMutation(
     api.communications.mutations.sendResidentMessage,
   )
   const sendMut = useMutation({ mutationFn: sendResidentMessageFn })
 
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messages, isBotTyping])
-
   const handleSend = useCallback(
     async (text: string, quickActionId?: Id<'quickActions'>) => {
       const trimmed = text.trim()
       if (!trimmed) return
 
-      const userMsg: LocalMessage = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content: trimmed,
-        createdAt: Date.now(),
-      }
-
-      setMessages((prev) => [...prev, userMsg])
       setInput('')
-      setIsBotTyping(true)
+
+      // Show optimistic user message if no thread yet
+      if (!threadId) {
+        setOptimisticUserMsg(trimmed)
+      }
 
       try {
         await sendMut.mutateAsync({
@@ -90,22 +106,8 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
           content: trimmed,
           quickActionId,
         })
-
-        // The real bot response will come through the agent thread subscription.
-        // For now, show a placeholder acknowledgment after a short delay.
-        setTimeout(() => {
-          const botMsg: LocalMessage = {
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            content:
-              'Tu mensaje ha sido recibido. Un asistente te responderá pronto.',
-            createdAt: Date.now(),
-          }
-          setMessages((prev) => [...prev, botMsg])
-          setIsBotTyping(false)
-        }, 1500)
       } catch (err) {
-        setIsBotTyping(false)
+        setOptimisticUserMsg(null)
         if (err instanceof ConvexError) {
           const d = err.data as { message?: string }
           toast.error(d.message ?? 'Error al enviar mensaje')
@@ -114,7 +116,7 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
         }
       }
     },
-    [complexId, sendMut],
+    [complexId, sendMut, threadId],
   )
 
   const handleQuickAction = useCallback(
@@ -152,18 +154,42 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
               Asistente Synnova
             </p>
             <p className="max-w-sm text-sm text-muted-foreground/80">
-              Escribe tu mensaje o usa una acción rápida para iniciar una
-              conversación. Te ayudaremos con solicitudes, reportes y consultas
+              Escribe tu mensaje o usa una accion rapida para iniciar una
+              conversacion. Te ayudaremos con solicitudes, reportes y consultas
               del conjunto.
             </p>
           </div>
         )}
 
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
+          <MessageBubble key={msg.key} message={msg} />
         ))}
 
-        {isBotTyping && <BotStreamingIndicator />}
+        {/* Optimistic user message (before thread exists) */}
+        {optimisticUserMsg && (
+          <div className={cn('flex items-start gap-2', 'flex-row-reverse')}>
+            <div
+              className={cn(
+                'flex size-7 shrink-0 items-center justify-center rounded-full',
+                'bg-primary text-primary-foreground',
+              )}
+            >
+              <User className="h-3.5 w-3.5" />
+            </div>
+            <div
+              className={cn(
+                'max-w-[80%] rounded-lg px-3 py-2 text-sm',
+                'bg-primary text-primary-foreground',
+              )}
+            >
+              <p className="whitespace-pre-wrap">{optimisticUserMsg}</p>
+            </div>
+          </div>
+        )}
+
+        {(isStreaming || optimisticUserMsg !== null) && (
+          <BotStreamingIndicator />
+        )}
       </div>
 
       {/* Chat input */}
@@ -177,7 +203,7 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
           size="icon-sm"
           disabled
           className="shrink-0"
-          title="Los adjuntos no se envían al asistente"
+          title="Los adjuntos no se envian al asistente"
         >
           <Paperclip className="h-4 w-4" />
         </Button>
@@ -209,8 +235,22 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
   )
 }
 
-function MessageBubble({ message }: { message: LocalMessage }) {
+interface UIMessageLike {
+  key: string
+  role: 'user' | 'assistant' | 'system'
+  parts: Array<{ type: string; text?: string }>
+  status: string
+}
+
+function MessageBubble({ message }: { message: UIMessageLike }) {
   const isUser = message.role === 'user'
+
+  const text = message.parts
+    .filter((p) => p.type === 'text')
+    .map((p) => p.text ?? '')
+    .join('')
+
+  if (!text) return null
 
   return (
     <div className={cn('flex items-start gap-2', isUser && 'flex-row-reverse')}>
@@ -228,26 +268,30 @@ function MessageBubble({ message }: { message: LocalMessage }) {
           <Bot className="h-3.5 w-3.5" />
         )}
       </div>
-      <div
-        className={cn(
-          'max-w-[80%] rounded-lg px-3 py-2 text-sm',
-          isUser
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-foreground',
-        )}
-      >
-        <p className="whitespace-pre-wrap">{message.content}</p>
+      <div className="flex max-w-[80%] flex-col gap-0.5">
         <p
           className={cn(
-            'mt-1 text-[10px]',
-            isUser ? 'text-primary-foreground/70' : 'text-muted-foreground',
+            'text-[10px]',
+            isUser
+              ? 'text-right text-muted-foreground'
+              : 'text-muted-foreground',
           )}
         >
-          {new Date(message.createdAt).toLocaleTimeString('es-CO', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+          {isUser ? 'Tu' : 'Asistente Synnova'}
         </p>
+        <div
+          className={cn(
+            'rounded-lg px-3 py-2 text-sm',
+            isUser
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-foreground',
+          )}
+        >
+          <p className="whitespace-pre-wrap">{text}</p>
+          {message.status === 'streaming' && (
+            <span className="inline-block h-3 w-1 animate-pulse bg-current" />
+          )}
+        </div>
       </div>
     </div>
   )

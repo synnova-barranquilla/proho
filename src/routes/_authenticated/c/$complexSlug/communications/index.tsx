@@ -8,9 +8,10 @@ export const Route = createFileRoute(
   '/_authenticated/c/$complexSlug/communications/',
 )({
   loader: async ({
-    context: { queryClient, complexId, complexSlug, activeModules },
+    context: { queryClient, complexId, complexSlug, activeModules, convexUser },
   }) => {
-    if (!activeModules.includes('communications')) {
+    const isSuperAdmin = convexUser.orgRole === 'SUPER_ADMIN'
+    if (!activeModules.includes('communications') && !isSuperAdmin) {
       throw redirect({
         to: '/c/$complexSlug',
         params: { complexSlug },
