@@ -22,12 +22,12 @@ export const Route = createFileRoute(
         queryClient,
         api.communications.queries.listCategories,
         { complexId },
-      ),
+      ).catch(() => null),
       prefetchAuthenticatedQuery(
         queryClient,
         api.communications.queries.listQuickActions,
         { complexId },
-      ),
+      ).catch(() => null),
     ])
     return null
   },
