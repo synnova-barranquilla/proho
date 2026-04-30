@@ -93,11 +93,7 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
       if (!trimmed) return
 
       setInput('')
-
-      // Show optimistic user message if no thread yet
-      if (!threadId) {
-        setOptimisticUserMsg(trimmed)
-      }
+      setOptimisticUserMsg(trimmed)
 
       try {
         await sendMut.mutateAsync({
