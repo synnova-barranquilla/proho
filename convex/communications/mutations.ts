@@ -575,3 +575,52 @@ export const addTicketNote = mutation({
     return { noteId }
   },
 })
+
+export const closeConversation = mutation({
+  args: {
+    complexId: v.id('complexes'),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: ['OWNER', 'TENANT', 'LESSEE'],
+    })
+
+    const residentId = membership?.residentId
+    if (!residentId) {
+      throwConvexError(ERROR_CODES.FORBIDDEN, 'No resident record linked')
+    }
+
+    const conversation = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', residentId).eq('status', 'active'),
+      )
+      .first()
+
+    if (!conversation) {
+      const escalated = await ctx.db
+        .query('conversations')
+        .withIndex('by_resident_and_status', (q) =>
+          q.eq('residentId', residentId).eq('status', 'escalated'),
+        )
+        .first()
+
+      if (escalated) {
+        await ctx.db.patch(escalated._id, {
+          status: 'resolved_by_bot',
+          updatedAt: Date.now(),
+        })
+        return { closed: true }
+      }
+
+      return { closed: false }
+    }
+
+    await ctx.db.patch(conversation._id, {
+      status: 'resolved_by_bot',
+      updatedAt: Date.now(),
+    })
+
+    return { closed: true }
+  },
+})

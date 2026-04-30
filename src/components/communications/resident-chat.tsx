@@ -5,10 +5,19 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { useUIMessages } from '@convex-dev/agent/react'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
-import { Bot, Paperclip, Send, User } from 'lucide-react'
+import { Bot, MessageSquarePlus, Paperclip, Send, User } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
 import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
@@ -96,6 +105,26 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
   )
   const sendMut = useMutation({ mutationFn: sendResidentMessageFn })
 
+  const closeConversationFn = useConvexMutation(
+    api.communications.mutations.closeConversation,
+  )
+  const closeMut = useMutation({ mutationFn: closeConversationFn })
+
+  const handleNewConversation = useCallback(async () => {
+    try {
+      await closeMut.mutateAsync({ complexId })
+      setOptimisticUserMsg(null)
+      toast.success('Conversación cerrada. Puedes iniciar una nueva.')
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error al cerrar conversación')
+      } else {
+        toast.error('Error inesperado')
+      }
+    }
+  }, [complexId, closeMut])
+
   const handleSend = useCallback(
     async (text: string, quickActionId?: Id<'quickActions'>) => {
       const trimmed = text.trim()
@@ -135,8 +164,57 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
     handleSend(input)
   }
 
+  const conversationIsOpen =
+    conversation?.status === 'active' || conversation?.status === 'escalated'
+
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
   return (
     <div className="flex flex-1 flex-col">
+      {/* New conversation button */}
+      {hasMessages && (
+        <div className="flex justify-end pb-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={closeMut.isPending}
+            onClick={() => {
+              if (conversationIsOpen) {
+                setConfirmOpen(true)
+              } else {
+                handleNewConversation()
+              }
+            }}
+          >
+            <MessageSquarePlus className="h-4 w-4" />
+            Nueva conversación
+          </Button>
+        </div>
+      )}
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>¿Iniciar nueva conversación?</DialogTitle>
+            <DialogDescription>
+              Tu conversación actual será cerrada. Si tienes un caso abierto,
+              seguirá activo y podrás verlo en tu historial.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+            <Button
+              onClick={() => {
+                setConfirmOpen(false)
+                handleNewConversation()
+              }}
+            >
+              Cerrar e iniciar nueva
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {!hasMessages && (
         <Suspense fallback={null}>
           <QuickActionsBar complexId={complexId} onAction={handleQuickAction} />
