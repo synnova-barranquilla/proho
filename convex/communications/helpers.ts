@@ -357,3 +357,26 @@ export const escalateConversation = internalMutation({
     return { ticketId, publicId }
   },
 })
+
+export const flagTicketAbusive = internalMutation({
+  args: {
+    ticketId: v.id('tickets'),
+  },
+  handler: async (ctx, args) => {
+    const ticket = await ctx.db.get(args.ticketId)
+    if (!ticket) return
+
+    await ctx.db.patch(args.ticketId, {
+      flaggedAbusive: true,
+      updatedAt: Date.now(),
+    })
+
+    await ctx.db.insert('ticketEvents', {
+      complexId: ticket.complexId,
+      ticketId: args.ticketId,
+      type: 'flagged_abusive',
+      actorType: 'bot',
+      createdAt: Date.now(),
+    })
+  },
+})

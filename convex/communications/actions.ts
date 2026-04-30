@@ -122,11 +122,67 @@ export const handleResidentMessage = internalAction({
         },
       )
 
-      // Wait for stream to complete
-      await result.text
+      // Wait for stream to complete and check for tool calls
+      const steps = await result.steps
+
+      // Check if the bot called escalateToHuman
+      let escalated = false
+      for (const step of steps) {
+        for (const toolResult of step.toolResults) {
+          if (toolResult.toolName === 'escalateToHuman') {
+            const output = toolResult.output as {
+              escalated: boolean
+              summary: string
+              categories: string[]
+              priority: string
+            }
+            if (output.escalated) {
+              const escalationResult = await ctx.runMutation(
+                internal.communications.helpers.escalateConversation,
+                {
+                  complexId: args.complexId,
+                  residentId: args.residentId,
+                  conversationId: conversation._id,
+                  summary: output.summary || 'Escalado por el asistente',
+                  categories:
+                    output.categories.length > 0
+                      ? output.categories
+                      : ['other'],
+                  priority: output.priority as 'high' | 'medium' | 'low',
+                },
+              )
+
+              await saveMessage(ctx, components.agent, {
+                threadId,
+                message: {
+                  role: 'assistant',
+                  content: `Tu caso ha sido registrado con el número ${escalationResult.publicId}. Un miembro del equipo administrativo lo revisará pronto. A partir de ahora, las respuestas las recibirás directamente del equipo.`,
+                },
+              })
+              escalated = true
+            }
+          }
+          if (toolResult.toolName === 'flagAbusiveLanguage') {
+            const output = toolResult.output as { flagged: boolean }
+            if (output.flagged) {
+              const ticket = await ctx.runQuery(
+                internal.communications.helpers.getTicketByConversation,
+                { conversationId: conversation._id },
+              )
+              if (ticket) {
+                await ctx.runMutation(
+                  internal.communications.helpers.flagTicketAbusive,
+                  { ticketId: ticket._id },
+                )
+              }
+            }
+          }
+        }
+      }
+
+      if (escalated) return
     } catch (error) {
       console.error('Error streaming bot response:', error)
-      // Save a fallback message
       await saveMessage(ctx, components.agent, {
         threadId,
         message: {
@@ -143,7 +199,7 @@ export const handleResidentMessage = internalAction({
       { conversationId: conversation._id },
     )
 
-    // 9. Check for 3-message fallback (bot stuck)
+    // 9. Check for 3-message fallback (bot stuck in loop)
     try {
       const recentMessages = await listMessages(ctx, components.agent, {
         threadId,
@@ -161,7 +217,6 @@ export const handleResidentMessage = internalAction({
       }
 
       if (consecutiveAssistant >= 3) {
-        // Bot is stuck — auto-escalate
         await ctx.runMutation(
           internal.communications.helpers.escalateConversation,
           {
