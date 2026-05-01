@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google'
-import { Agent, createTool } from '@convex-dev/agent'
+import { Agent, createTool, stepCountIs } from '@convex-dev/agent'
 import { z } from 'zod'
 
 import { components } from '../_generated/api'
@@ -91,4 +91,5 @@ Mantén tus respuestas cortas (máximo 2-3 oraciones por turno). No uses listas 
     escalateToHuman: escalateToHumanTool,
     flagAbusiveLanguage: flagAbusiveLanguageTool,
   },
+  stopWhen: stepCountIs(3),
 })
