@@ -18,11 +18,14 @@ export const saveAdminMessageToThread = internalAction({
     senderRole: v.string(),
   },
   handler: async (ctx, args) => {
+    // Use 'user' role with a STAFF prefix so it creates a separate message
+    // (not merged with the previous assistant message). The prefix identifies
+    // the sender as admin/auxiliar in the chat UI.
     await saveMessage(ctx, components.agent, {
       threadId: args.threadId,
       message: {
-        role: 'assistant',
-        content: `[${args.senderRole}]: ${args.content}`,
+        role: 'user',
+        content: `[STAFF:${args.senderRole}]: ${args.content}`,
       },
     })
   },

@@ -18,6 +18,7 @@ import {
   Paperclip,
   RefreshCw,
   Send,
+  Shield,
   Sparkles,
   StickyNote,
   Tag,
@@ -774,8 +775,6 @@ function ThreadMessages({ threadId }: { threadId: string }) {
 }
 
 function TicketMessageBubble({ message }: { message: UIMessageLike }) {
-  const isUser = message.role === 'user'
-
   const text = message.parts
     .filter((p) => p.type === 'text')
     .map((p) => p.text ?? '')
@@ -783,64 +782,54 @@ function TicketMessageBubble({ message }: { message: UIMessageLike }) {
 
   if (!text) return null
 
-  // Detect admin messages (prefixed with role label in brackets)
-  const adminPrefixMatch = text.match(
-    /^\[(Coordinador\(a\) Administrativo\(a\)|Auxiliar Operativo)\]:\s*/,
-  )
-  const isAdminMessage = !!adminPrefixMatch && !isUser
-  const displayText = adminPrefixMatch
-    ? text.slice(adminPrefixMatch[0].length)
-    : text
-  const adminLabel = adminPrefixMatch ? adminPrefixMatch[1] : null
+  // Detect staff messages: role=user with [STAFF:RoleLabel]: prefix
+  const staffMatch = text.match(/^\[STAFF:(.+?)\]:\s*/)
+  const isStaff = !!staffMatch
+  const isResident = message.role === 'user' && !isStaff
 
-  // Determine bubble label
+  const displayText = staffMatch ? text.slice(staffMatch[0].length) : text
+  const staffLabel = staffMatch ? staffMatch[1] : null
+
   let senderLabel: string
-  if (isUser) {
+  if (isResident) {
     senderLabel = 'Residente'
-  } else if (isAdminMessage && adminLabel) {
-    senderLabel = adminLabel
+  } else if (isStaff && staffLabel) {
+    senderLabel = staffLabel
   } else {
     senderLabel = 'Asistente Synnova'
   }
 
   return (
-    <div className={cn('flex items-start gap-2', isUser && 'flex-row-reverse')}>
+    <div
+      className={cn('flex items-start gap-2', isResident && 'flex-row-reverse')}
+    >
       <div
         className={cn(
           'flex size-7 shrink-0 items-center justify-center rounded-full',
-          isUser
+          isResident
             ? 'bg-primary text-primary-foreground'
-            : isAdminMessage
+            : isStaff
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400'
               : 'bg-muted text-muted-foreground',
         )}
       >
-        {isUser ? (
+        {isResident ? (
           <User className="h-3.5 w-3.5" />
-        ) : isAdminMessage ? (
-          <User className="h-3.5 w-3.5" />
+        ) : isStaff ? (
+          <Shield className="h-3.5 w-3.5" />
         ) : (
           <Bot className="h-3.5 w-3.5" />
         )}
       </div>
       <div className="flex max-w-[80%] flex-col gap-0.5">
-        <p
-          className={cn(
-            'text-[10px]',
-            isUser
-              ? 'text-right text-muted-foreground'
-              : 'text-muted-foreground',
-          )}
-        >
-          {senderLabel}
-        </p>
+        <p className="text-[10px] text-muted-foreground">{senderLabel}</p>
         <div
           className={cn(
             'rounded-lg px-3 py-2 text-sm',
-            isUser
+            isResident
               ? 'bg-primary text-primary-foreground'
-              : isAdminMessage
-                ? 'bg-blue-50 text-foreground dark:bg-blue-950/20'
+              : isStaff
+                ? 'border border-blue-200 bg-blue-50 text-foreground dark:border-blue-800 dark:bg-blue-950/20'
                 : 'bg-muted text-foreground',
           )}
         >
