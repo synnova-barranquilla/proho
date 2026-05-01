@@ -69,20 +69,30 @@ export const handleResidentMessage = internalAction({
         status: 'active' as const,
       }
     } else {
-      // Check if conversation is escalated — send static acknowledgment
+      // Check if conversation is escalated — save user message + static ack, no bot
       if (conversation.status === 'escalated') {
+        await saveMessage(ctx, components.agent, {
+          threadId: conversation.threadId,
+          message: { role: 'user', content: args.content },
+        })
+
         const ticket = await ctx.runQuery(
           internal.communications.helpers.getTicketByConversation,
           { conversationId: conversation._id },
         )
 
         if (ticket) {
-          await ctx.runAction(
-            internal.communications.actions.sendStaticAcknowledgment,
-            {
-              conversationId: conversation._id,
-              publicId: ticket.publicId,
+          await saveMessage(ctx, components.agent, {
+            threadId: conversation.threadId,
+            message: {
+              role: 'assistant',
+              content: `Tu caso #${ticket.publicId} ya está siendo atendido por el equipo. Tu mensaje fue recibido y lo verán pronto.`,
             },
+          })
+
+          await ctx.runMutation(
+            internal.communications.helpers.updateConversationTimestamp,
+            { conversationId: conversation._id },
           )
         }
         return
