@@ -5,9 +5,10 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { useUIMessages } from '@convex-dev/agent/react'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
-import { Bot, MessageSquarePlus, Paperclip, Send, User } from 'lucide-react'
+import { Bot, MessageSquarePlus, Paperclip, Send } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Avatar, AvatarFallback } from '#/components/ui/avatar'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
@@ -265,14 +266,11 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
         {/* Optimistic user message (before thread exists) */}
         {optimisticUserMsg && (
           <div className={cn('flex items-start gap-2', 'flex-row-reverse')}>
-            <div
-              className={cn(
-                'flex size-7 shrink-0 items-center justify-center rounded-full',
-                'bg-primary text-primary-foreground',
-              )}
-            >
-              <User className="h-3.5 w-3.5" />
-            </div>
+            <Avatar size="sm">
+              <AvatarFallback className="bg-primary text-[10px] font-semibold text-primary-foreground">
+                TU
+              </AvatarFallback>
+            </Avatar>
             <div
               className={cn(
                 'max-w-[80%] rounded-lg px-3 py-2 text-sm',
@@ -363,26 +361,40 @@ function MessageBubble({ message }: { message: UIMessageLike }) {
     senderLabel = 'Asistente Synnova'
   }
 
+  const initials = isStaff
+    ? (staffLabel ?? 'AD')
+        .split(/\s+/)
+        .map((w) => w[0])
+        .join('')
+        .slice(0, 2)
+    : isResident
+      ? 'TU'
+      : 'SY'
+
   return (
     <div
       className={cn('flex items-start gap-2', isResident && 'flex-row-reverse')}
     >
-      <div
-        className={cn(
-          'flex size-7 shrink-0 items-center justify-center rounded-full',
-          isResident
-            ? 'bg-primary text-primary-foreground'
-            : isStaff
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400'
-              : 'bg-muted text-muted-foreground',
-        )}
-      >
-        {isResident ? (
-          <User className="h-3.5 w-3.5" />
-        ) : (
-          <Bot className="h-3.5 w-3.5" />
-        )}
-      </div>
+      <Avatar size="sm">
+        <AvatarFallback
+          className={cn(
+            'text-[10px] font-semibold',
+            isResident
+              ? 'bg-primary text-primary-foreground'
+              : isStaff
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                : 'bg-muted text-muted-foreground',
+          )}
+        >
+          {isResident ? (
+            initials
+          ) : isStaff ? (
+            initials
+          ) : (
+            <Bot className="h-3 w-3" />
+          )}
+        </AvatarFallback>
+      </Avatar>
       <div className="flex max-w-[80%] flex-col gap-0.5">
         <p className="text-[10px] text-muted-foreground">{senderLabel}</p>
         <div

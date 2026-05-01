@@ -18,15 +18,14 @@ import {
   Paperclip,
   RefreshCw,
   Send,
-  Shield,
   Sparkles,
   StickyNote,
   Tag,
-  User,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Avatar, AvatarFallback } from '#/components/ui/avatar'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
@@ -803,24 +802,30 @@ function TicketMessageBubble({ message }: { message: UIMessageLike }) {
     <div
       className={cn('flex items-start gap-2', isResident && 'flex-row-reverse')}
     >
-      <div
-        className={cn(
-          'flex size-7 shrink-0 items-center justify-center rounded-full',
-          isResident
-            ? 'bg-primary text-primary-foreground'
-            : isStaff
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400'
-              : 'bg-muted text-muted-foreground',
-        )}
-      >
-        {isResident ? (
-          <User className="h-3.5 w-3.5" />
-        ) : isStaff ? (
-          <Shield className="h-3.5 w-3.5" />
-        ) : (
-          <Bot className="h-3.5 w-3.5" />
-        )}
-      </div>
+      <Avatar size="sm">
+        <AvatarFallback
+          className={cn(
+            'text-[10px] font-semibold',
+            isResident
+              ? 'bg-primary text-primary-foreground'
+              : isStaff
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                : 'bg-muted text-muted-foreground',
+          )}
+        >
+          {isResident ? (
+            'RE'
+          ) : isStaff ? (
+            (staffLabel ?? 'AD')
+              .split(/\s+/)
+              .map((w) => w[0])
+              .join('')
+              .slice(0, 2)
+          ) : (
+            <Bot className="h-3 w-3" />
+          )}
+        </AvatarFallback>
+      </Avatar>
       <div className="flex max-w-[80%] flex-col gap-0.5">
         <p className="text-[10px] text-muted-foreground">{senderLabel}</p>
         <div
