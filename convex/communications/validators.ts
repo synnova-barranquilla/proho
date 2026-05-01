@@ -67,7 +67,7 @@ export const ticketFields = {
   assignedUserId: v.optional(v.id('users')),
   initialDescription: v.optional(v.string()),
   summary: v.optional(v.string()),
-  createdByUserId: v.optional(v.id('users')),
+  createdByUserId: v.id('users'),
   closedByUserId: v.optional(v.id('users')),
   closedAt: v.optional(v.number()),
   reopenCount: v.number(),

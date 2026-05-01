@@ -264,9 +264,20 @@ export const escalateConversation = internalMutation({
       updatedAt: Date.now(),
     })
 
-    // Get resident to find unit
+    // Get resident to find unit + resolve userId via membership
     const resident = await ctx.db.get(args.residentId)
-    if (!resident) return
+    if (!resident) return null
+
+    const membership = await ctx.db
+      .query('complexMemberships')
+      .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field('residentId'), args.residentId),
+          q.eq(q.field('active'), true),
+        ),
+      )
+      .first()
 
     // Get complex config for sequence
     const config = await ctx.db
@@ -341,7 +352,7 @@ export const escalateConversation = internalMutation({
       categories: args.categories,
       assignedRole: bestRole,
       initialDescription: args.summary,
-      createdByUserId: undefined,
+      createdByUserId: membership!.userId,
       reopenCount: 0,
       flaggedAbusive: false,
       updatedAt: now,
