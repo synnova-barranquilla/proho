@@ -146,32 +146,47 @@ export const handleResidentMessage = internalAction({
               priority: string
             }
             if (output.escalated) {
-              const escalationResult = await ctx.runMutation(
-                internal.communications.helpers.escalateConversation,
-                {
-                  complexId: args.complexId,
-                  residentId: args.residentId,
-                  conversationId: conversation._id,
-                  summary: output.summary || 'Escalado por el asistente',
-                  categories:
-                    output.categories.length > 0
-                      ? output.categories
-                      : ['other'],
-                  priority: output.priority as 'high' | 'medium' | 'low',
-                },
-              )
+              try {
+                const escalationResult = await ctx.runMutation(
+                  internal.communications.helpers.escalateConversation,
+                  {
+                    complexId: args.complexId,
+                    residentId: args.residentId,
+                    conversationId: conversation._id,
+                    summary: output.summary || 'Escalado por el asistente',
+                    categories:
+                      output.categories.length > 0
+                        ? output.categories
+                        : ['other'],
+                    priority: output.priority as 'high' | 'medium' | 'low',
+                  },
+                )
 
-              if (escalationResult) {
-                const roleLabel =
-                  escalationResult.assignedRole === 'AUXILIAR'
-                    ? 'Auxiliar Operativo'
-                    : 'Coordinador(a) Administrativo(a)'
+                if (escalationResult) {
+                  const roleLabel =
+                    escalationResult.assignedRole === 'AUXILIAR'
+                      ? 'Auxiliar Operativo'
+                      : 'Coordinador(a) Administrativo(a)'
 
+                  await saveMessage(ctx, components.agent, {
+                    threadId,
+                    message: {
+                      role: 'assistant',
+                      content: `Tu caso ha sido registrado con el número ${escalationResult.publicId} y asignado al ${roleLabel}. Te responderá pronto. A partir de ahora, las respuestas las recibirás directamente del equipo.`,
+                    },
+                  })
+                }
+              } catch (escalationError) {
+                console.error(
+                  '[handleResidentMessage] escalation failed:',
+                  escalationError,
+                )
                 await saveMessage(ctx, components.agent, {
                   threadId,
                   message: {
                     role: 'assistant',
-                    content: `Tu caso ha sido registrado con el número ${escalationResult.publicId} y asignado al ${roleLabel}. Te responderá pronto. A partir de ahora, las respuestas las recibirás directamente del equipo.`,
+                    content:
+                      'Hubo un problema al crear tu caso de soporte. Por favor intenta de nuevo.',
                   },
                 })
               }

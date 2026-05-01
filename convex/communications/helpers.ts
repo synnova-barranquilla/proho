@@ -341,7 +341,7 @@ export const escalateConversation = internalMutation({
       categories: args.categories,
       assignedRole: bestRole,
       initialDescription: args.summary,
-      createdByUserId: resident._id as any,
+      createdByUserId: undefined,
       reopenCount: 0,
       flaggedAbusive: false,
       updatedAt: now,
