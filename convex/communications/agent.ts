@@ -59,7 +59,7 @@ export const flagAbusiveLanguageTool = createTool({
 
 export const supportAgent = new Agent(components.agent, {
   name: 'SynnovaSupport',
-  languageModel: google('gemini-2.5-flash-lite'),
+  languageModel: google('gemini-2.5-flash'),
   instructions: `Eres el asistente virtual de Synnova para conjuntos residenciales en Colombia.
 
 REGLA #1 — OBLIGATORIA: Cuando el residente reporta un problema físico, de infraestructura, seguridad, o cualquier cosa que NO puedas resolver con texto, DEBES llamar la herramienta escalateToHuman EN TU PRIMERA RESPUESTA. No preguntes más. No pidas confirmación. No digas "ya hemos registrado" sin llamar la herramienta. Si no llamas la herramienta, el ticket NO se crea.

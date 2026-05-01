@@ -127,6 +127,13 @@ export const handleResidentMessage = internalAction({
       // Wait for stream to complete and check for tool calls
       const steps = await result.steps
 
+      console.log(
+        '[handleResidentMessage] steps:',
+        steps.length,
+        'toolCalls:',
+        steps.flatMap((s) => s.toolCalls.map((tc) => tc.toolName)),
+      )
+
       // Check if the bot called escalateToHuman
       let escalated = false
       for (const step of steps) {
