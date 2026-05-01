@@ -9,6 +9,26 @@ import { supportAgent } from './agent'
 import { isBusinessHours } from './businessHours'
 
 /**
+ * Save an admin message to an agent thread so the resident sees it.
+ */
+export const saveAdminMessageToThread = internalAction({
+  args: {
+    threadId: v.string(),
+    content: v.string(),
+    senderRole: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await saveMessage(ctx, components.agent, {
+      threadId: args.threadId,
+      message: {
+        role: 'assistant',
+        content: `[${args.senderRole}]: ${args.content}`,
+      },
+    })
+  },
+})
+
+/**
  * Handle a message from a resident in the chat interface.
  * Creates or continues a conversation thread, then streams a bot response.
  */

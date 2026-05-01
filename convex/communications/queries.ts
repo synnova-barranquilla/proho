@@ -386,6 +386,16 @@ export const listThreadMessages = query({
   },
 })
 
+export const getConversationByTicket = query({
+  args: { ticketId: v.id('tickets') },
+  handler: async (ctx, args) => {
+    await requireUser(ctx)
+    const ticket = await ctx.db.get(args.ticketId)
+    if (!ticket?.conversationId) return null
+    return await ctx.db.get(ticket.conversationId)
+  },
+})
+
 export const listConversations = query({
   args: {
     complexId: v.id('complexes'),

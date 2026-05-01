@@ -576,6 +576,65 @@ export const addTicketNote = mutation({
   },
 })
 
+export const sendAdminMessage = mutation({
+  args: {
+    ticketId: v.id('tickets'),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const ticket = await ctx.db.get(args.ticketId)
+    if (!ticket) {
+      throwConvexError(ERROR_CODES.TICKET_NOT_FOUND, 'Ticket not found')
+    }
+
+    const { membership } = await requireCommsAccess(ctx, ticket.complexId, {
+      allowedRoles: [...STAFF_ROLES],
+    })
+
+    if (!ticket.conversationId) {
+      throwConvexError(
+        ERROR_CODES.VALIDATION_ERROR,
+        'No conversation linked to this ticket',
+      )
+    }
+
+    const conversation = await ctx.db.get(ticket.conversationId)
+    if (!conversation) {
+      throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Conversation not found')
+    }
+
+    // Determine sender role label
+    const senderRole =
+      membership?.role === 'AUXILIAR'
+        ? 'Auxiliar Operativo'
+        : 'Coordinador(a) Administrativo(a)'
+
+    // Schedule internal action to save the message to the agent thread
+    await ctx.scheduler.runAfter(
+      0,
+      internal.communications.actions.saveAdminMessageToThread,
+      {
+        threadId: conversation.threadId,
+        content: args.content,
+        senderRole,
+      },
+    )
+
+    // Update ticket status to open_waiting_resident
+    if (
+      ticket.status === 'open_waiting_admin' ||
+      ticket.status === 'reopened'
+    ) {
+      await ctx.db.patch(args.ticketId, {
+        status: 'open_waiting_resident',
+        updatedAt: Date.now(),
+      })
+    }
+
+    return { success: true }
+  },
+})
+
 export const closeConversation = mutation({
   args: {
     complexId: v.id('complexes'),

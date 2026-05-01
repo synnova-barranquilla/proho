@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 
+import { useUIMessages } from '@convex-dev/agent/react'
 import {
   convexQuery,
   useConvexAction,
@@ -10,13 +11,17 @@ import {
 import { ConvexError } from 'convex/values'
 import {
   ArrowLeft,
+  Bot,
   Clock,
   Loader2,
+  MessageSquare,
   Paperclip,
   RefreshCw,
   Send,
   Sparkles,
+  StickyNote,
   Tag,
+  User,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -101,6 +106,8 @@ export function TicketDetailPanel({
   const [suggestion, setSuggestion] = useState('')
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [showSuggestion, setShowSuggestion] = useState(false)
+  const [replyContent, setReplyContent] = useState('')
+  const [inputMode, setInputMode] = useState<'reply' | 'note'>('reply')
 
   const { data: ticket } = useSuspenseQuery(
     convexQuery(api.communications.queries.getTicket, { ticketId }),
@@ -113,6 +120,15 @@ export function TicketDetailPanel({
   const { data: events } = useSuspenseQuery(
     convexQuery(api.communications.queries.listTicketEvents, { ticketId }),
   )
+
+  // Load conversation for thread messages
+  const { data: conversation } = useQuery(
+    convexQuery(api.communications.queries.getConversationByTicket, {
+      ticketId,
+    }),
+  )
+
+  const threadId = conversation?.threadId ?? null
 
   const closeTicketFn = useConvexMutation(
     api.communications.mutations.closeTicket,
@@ -139,6 +155,11 @@ export function TicketDetailPanel({
   )
   const addNoteMut = useMutation({ mutationFn: addNoteFn })
 
+  const sendAdminMessageFn = useConvexMutation(
+    api.communications.mutations.sendAdminMessage,
+  )
+  const sendAdminMut = useMutation({ mutationFn: sendAdminMessageFn })
+
   const suggestResponseFn = useConvexAction(
     api.communications.actions.suggestResponse,
   )
@@ -159,6 +180,8 @@ export function TicketDetailPanel({
     ticket.status === 'closed_by_bot' ||
     ticket.status === 'closed_by_admin' ||
     ticket.status === 'closed_by_inactivity'
+
+  const hasConversation = !!ticket.conversationId && !!threadId
 
   const handleClose = async () => {
     try {
@@ -240,6 +263,25 @@ export function TicketDetailPanel({
     }
   }
 
+  const handleSendReply = async () => {
+    if (!replyContent.trim()) return
+    try {
+      await sendAdminMut.mutateAsync({
+        ticketId,
+        content: replyContent,
+      })
+      setReplyContent('')
+      toast.success('Mensaje enviado al residente')
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error al enviar mensaje')
+      } else {
+        toast.error('Error inesperado')
+      }
+    }
+  }
+
   const handleSuggestResponse = async () => {
     setIsSuggesting(true)
     setShowSuggestion(true)
@@ -267,13 +309,27 @@ export function TicketDetailPanel({
 
   const handleUseSuggestion = () => {
     if (suggestion.trim()) {
-      setNoteContent(suggestion)
+      setReplyContent(suggestion)
+      setInputMode('reply')
       setShowSuggestion(false)
       setSuggestion('')
     }
   }
 
   const sortedNotes = [...notes].sort((a, b) => a.createdAt - b.createdAt)
+
+  const handleSubmitInput = () => {
+    if (inputMode === 'reply') {
+      handleSendReply()
+    } else {
+      handleAddNote()
+    }
+  }
+
+  const inputValue = inputMode === 'reply' ? replyContent : noteContent
+  const setInputValue = inputMode === 'reply' ? setReplyContent : setNoteContent
+  const isInputPending =
+    inputMode === 'reply' ? sendAdminMut.isPending : addNoteMut.isPending
 
   return (
     <div className="flex flex-col gap-4">
@@ -288,27 +344,44 @@ export function TicketDetailPanel({
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Descripción</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {ticket.initialDescription ? (
-                <p className="text-sm whitespace-pre-wrap">
-                  {ticket.initialDescription}
-                </p>
-              ) : ticket.conversationId ? (
-                <p className="text-sm text-muted-foreground">
-                  Ticket creado desde conversación de chat.
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Sin conversación asociada.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          {/* Conversation thread or description */}
+          {hasConversation ? (
+            <Card size="sm" className="flex flex-col">
+              <CardHeader>
+                <CardTitle>Conversacion</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 p-0">
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  }
+                >
+                  <ThreadMessages threadId={threadId} />
+                </Suspense>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card size="sm">
+              <CardHeader>
+                <CardTitle>Descripcion</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {ticket.initialDescription ? (
+                  <p className="text-sm whitespace-pre-wrap">
+                    {ticket.initialDescription}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Sin descripcion disponible.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
+          {/* Notes section */}
           <Card size="sm">
             <CardHeader>
               <CardTitle>Notas internas</CardTitle>
@@ -316,7 +389,7 @@ export function TicketDetailPanel({
             <CardContent>
               {sortedNotes.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No hay notas aún.
+                  No hay notas aun.
                 </p>
               ) : (
                 <div className="flex flex-col gap-3">
@@ -335,24 +408,57 @@ export function TicketDetailPanel({
             </CardContent>
           </Card>
 
-          <div className="flex gap-2">
-            <Textarea
-              value={noteContent}
-              onChange={(e) => setNoteContent(e.target.value)}
-              placeholder="Agregar nota interna..."
-              className="min-h-16 flex-1"
-            />
-            <div className="flex flex-col gap-1">
-              <Button
-                size="icon-sm"
-                onClick={handleAddNote}
-                disabled={!noteContent.trim() || addNoteMut.isPending}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-              <Button size="icon-sm" variant="ghost" disabled>
-                <Paperclip className="h-4 w-4" />
-              </Button>
+          {/* Input area with mode toggle */}
+          <div className="flex flex-col gap-2">
+            {hasConversation && (
+              <div className="flex gap-1">
+                <Button
+                  size="sm"
+                  variant={inputMode === 'reply' ? 'default' : 'outline'}
+                  onClick={() => setInputMode('reply')}
+                >
+                  <MessageSquare className="mr-1 h-3.5 w-3.5" />
+                  Responder al residente
+                </Button>
+                <Button
+                  size="sm"
+                  variant={inputMode === 'note' ? 'default' : 'outline'}
+                  onClick={() => setInputMode('note')}
+                >
+                  <StickyNote className="mr-1 h-3.5 w-3.5" />
+                  Nota interna
+                </Button>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Textarea
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSubmitInput()
+                  }
+                }}
+                placeholder={
+                  inputMode === 'reply'
+                    ? 'Responder al residente...'
+                    : 'Agregar nota interna...'
+                }
+                className="min-h-16 flex-1"
+              />
+              <div className="flex flex-col gap-1">
+                <Button
+                  size="icon-sm"
+                  onClick={handleSubmitInput}
+                  disabled={!inputValue.trim() || isInputPending}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+                <Button size="icon-sm" variant="ghost" disabled>
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -386,7 +492,7 @@ export function TicketDetailPanel({
                   </span>
                 </DetailRow>
 
-                <DetailRow label="Categorías">
+                <DetailRow label="Categorias">
                   <div className="flex flex-wrap gap-1">
                     {ticket.categories.map((cat) => (
                       <Badge key={cat} variant="secondary">
@@ -497,7 +603,7 @@ export function TicketDetailPanel({
                   className="w-full"
                 >
                   <Clock className="mr-2 h-4 w-4" />
-                  {showAudit ? 'Ocultar auditoría' : 'Auditoría'}
+                  {showAudit ? 'Ocultar auditoria' : 'Auditoria'}
                 </Button>
 
                 <Button
@@ -541,7 +647,7 @@ export function TicketDetailPanel({
                         onClick={handleUseSuggestion}
                         disabled={!suggestion.trim()}
                       >
-                        Usar como nota
+                        Usar como respuesta
                       </Button>
                       <Button
                         size="sm"
@@ -572,7 +678,7 @@ export function TicketDetailPanel({
           {showAudit && (
             <Card size="sm">
               <CardHeader>
-                <CardTitle>Auditoría</CardTitle>
+                <CardTitle>Auditoria</CardTitle>
               </CardHeader>
               <CardContent>
                 {events.length === 0 ? (
@@ -592,7 +698,7 @@ export function TicketDetailPanel({
                         <span className="font-medium">{evt.type}</span>
                         {evt.fromValue && evt.toValue && (
                           <span className="text-muted-foreground">
-                            {evt.fromValue} → {evt.toValue}
+                            {evt.fromValue} &rarr; {evt.toValue}
                           </span>
                         )}
                       </div>
@@ -601,6 +707,146 @@ export function TicketDetailPanel({
                 )}
               </CardContent>
             </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface UIMessageLike {
+  key: string
+  role: 'user' | 'assistant' | 'system'
+  parts: Array<{ type: string; text?: string }>
+  status: string
+}
+
+function ThreadMessages({ threadId }: { threadId: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const { results: messages } = useUIMessages(
+    api.communications.queries.listThreadMessages,
+    { threadId },
+    { initialNumItems: 50, stream: true },
+  )
+
+  // Auto-scroll on new messages / streaming chunks
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const scrollToBottom = () => {
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight
+      })
+    }
+
+    scrollToBottom()
+
+    const observer = new MutationObserver(scrollToBottom)
+    observer.observe(el, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    })
+
+    return () => observer.disconnect()
+  }, [threadId])
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+        No hay mensajes en la conversacion.
+      </div>
+    )
+  }
+
+  return (
+    <div
+      ref={scrollRef}
+      className="flex max-h-96 flex-col gap-3 overflow-y-auto px-4 py-3"
+    >
+      {messages.map((msg) => (
+        <TicketMessageBubble key={msg.key} message={msg as UIMessageLike} />
+      ))}
+    </div>
+  )
+}
+
+function TicketMessageBubble({ message }: { message: UIMessageLike }) {
+  const isUser = message.role === 'user'
+
+  const text = message.parts
+    .filter((p) => p.type === 'text')
+    .map((p) => p.text ?? '')
+    .join('')
+
+  if (!text) return null
+
+  // Detect admin messages (prefixed with role label in brackets)
+  const adminPrefixMatch = text.match(
+    /^\[(Coordinador\(a\) Administrativo\(a\)|Auxiliar Operativo)\]:\s*/,
+  )
+  const isAdminMessage = !!adminPrefixMatch && !isUser
+  const displayText = adminPrefixMatch
+    ? text.slice(adminPrefixMatch[0].length)
+    : text
+  const adminLabel = adminPrefixMatch ? adminPrefixMatch[1] : null
+
+  // Determine bubble label
+  let senderLabel: string
+  if (isUser) {
+    senderLabel = 'Residente'
+  } else if (isAdminMessage && adminLabel) {
+    senderLabel = adminLabel
+  } else {
+    senderLabel = 'Asistente Synnova'
+  }
+
+  return (
+    <div className={cn('flex items-start gap-2', isUser && 'flex-row-reverse')}>
+      <div
+        className={cn(
+          'flex size-7 shrink-0 items-center justify-center rounded-full',
+          isUser
+            ? 'bg-primary text-primary-foreground'
+            : isAdminMessage
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400'
+              : 'bg-muted text-muted-foreground',
+        )}
+      >
+        {isUser ? (
+          <User className="h-3.5 w-3.5" />
+        ) : isAdminMessage ? (
+          <User className="h-3.5 w-3.5" />
+        ) : (
+          <Bot className="h-3.5 w-3.5" />
+        )}
+      </div>
+      <div className="flex max-w-[80%] flex-col gap-0.5">
+        <p
+          className={cn(
+            'text-[10px]',
+            isUser
+              ? 'text-right text-muted-foreground'
+              : 'text-muted-foreground',
+          )}
+        >
+          {senderLabel}
+        </p>
+        <div
+          className={cn(
+            'rounded-lg px-3 py-2 text-sm',
+            isUser
+              ? 'bg-primary text-primary-foreground'
+              : isAdminMessage
+                ? 'bg-blue-50 text-foreground dark:bg-blue-950/20'
+                : 'bg-muted text-foreground',
+          )}
+        >
+          <p className="whitespace-pre-wrap">{displayText}</p>
+          {message.status === 'streaming' && (
+            <span className="inline-block h-3 w-1 animate-pulse bg-current" />
           )}
         </div>
       </div>
