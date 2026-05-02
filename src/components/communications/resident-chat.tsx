@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 
 import { useUIMessages } from '@convex-dev/agent/react'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
@@ -8,6 +8,9 @@ import { ConvexError } from 'convex/values'
 import {
   ArrowLeft,
   Bot,
+  Download,
+  FileText,
+  Loader2,
   MessageSquarePlus,
   Paperclip,
   Send,
@@ -27,6 +30,7 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { Skeleton } from '#/components/ui/skeleton'
+import { useUploadThing } from '#/lib/uploadthing'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -255,6 +259,7 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
                   complexId={complexId}
                   threadId={selectedThreadId}
                   conversationStatus={selectedConv.status}
+                  conversationId={selectedConv._id}
                 />
               ) : (
                 <ReadOnlyThreadView threadId={selectedThreadId} />
@@ -498,22 +503,33 @@ function ActiveChatView({
   complexId,
   threadId,
   conversationStatus: _conversationStatus,
+  conversationId,
 }: {
   complexId: Id<'complexes'>
   threadId: string
   conversationStatus: string
+  conversationId: Id<'conversations'>
 }) {
   const [input, setInput] = useState('')
   const [optimisticUserMsg, setOptimisticUserMsg] = useState<string | null>(
     null,
   )
   const scrollRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { results: messages } = useUIMessages(
     api.communications.queries.listThreadMessages,
     { threadId },
     { initialNumItems: 50, stream: true },
   )
+
+  // Load attachments for this conversation
+  const { data: attachments } = useQuery(
+    convexQuery(api.communications.queries.listAttachmentsByConversation, {
+      conversationId,
+    }),
+  )
+  const attachmentMap = new Map((attachments ?? []).map((a) => [a.fileKey, a]))
 
   const hasMessages = messages.length > 0 || optimisticUserMsg !== null
 
@@ -569,6 +585,56 @@ function ActiveChatView({
     api.communications.mutations.sendResidentMessage,
   )
   const sendMut = useMutation({ mutationFn: sendResidentMessageFn })
+
+  const saveAttachmentFn = useConvexMutation(
+    api.communications.attachmentMutations.saveAttachment,
+  )
+  const saveAttachmentMut = useMutation({ mutationFn: saveAttachmentFn })
+
+  const { startUpload, isUploading } = useUploadThing('chatAttachment', {
+    onClientUploadComplete: async (res) => {
+      for (const file of res) {
+        const mimeType = file.type || 'application/octet-stream'
+
+        // Save attachment record in Convex
+        await saveAttachmentMut.mutateAsync({
+          complexId,
+          conversationId,
+          fileName: file.name,
+          fileUrl: file.ufsUrl,
+          fileKey: file.key,
+          mimeType,
+          size: file.size,
+        })
+
+        // Save a marker message in the thread so it appears in chat
+        const attachmentMeta = JSON.stringify({
+          fileName: file.name,
+          fileUrl: file.ufsUrl,
+          fileKey: file.key,
+          mimeType,
+        })
+        await sendMut.mutateAsync({
+          complexId,
+          content: `[ATTACHMENT:${attachmentMeta}]`,
+        })
+      }
+    },
+    onUploadError: (err) => {
+      toast.error(`Error al subir archivo: ${err.message}`)
+    },
+  })
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? [])
+      if (files.length === 0) return
+      startUpload(files)
+      // Reset input so the same file can be selected again
+      e.target.value = ''
+    },
+    [startUpload],
+  )
 
   const handleSend = useCallback(
     async (text: string, quickActionId?: Id<'quickActions'>) => {
@@ -640,7 +706,11 @@ function ActiveChatView({
         )}
 
         {messages.map((msg) => (
-          <MessageBubble key={msg.key} message={msg} />
+          <MessageBubble
+            key={msg.key}
+            message={msg}
+            attachmentMap={attachmentMap}
+          />
         ))}
 
         {/* Optimistic user message */}
@@ -667,18 +737,35 @@ function ActiveChatView({
         )}
       </div>
 
+      {/* Upload progress indicator */}
+      {isUploading && (
+        <div className="flex items-center gap-2 border-t bg-muted/50 px-4 py-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Subiendo archivo...
+        </div>
+      )}
+
       {/* Chat input */}
       <form
         onSubmit={handleSubmit}
         className="flex items-end gap-2 border-t px-4 py-3"
       >
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          multiple
+          accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+          onChange={handleFileSelect}
+        />
         <Button
           type="button"
           variant="ghost"
           size="icon-sm"
-          disabled
+          disabled={isUploading}
           className="shrink-0"
-          title="Los adjuntos no se envian al asistente"
+          title="Adjuntar archivo"
+          onClick={() => fileInputRef.current?.click()}
         >
           <Paperclip className="h-4 w-4" />
         </Button>
@@ -750,13 +837,94 @@ interface UIMessageLike {
   status: string
 }
 
-function MessageBubble({ message }: { message: UIMessageLike }) {
+// ---------------------------------------------------------------------------
+// Attachment parsing & rendering
+// ---------------------------------------------------------------------------
+
+interface AttachmentMeta {
+  fileName: string
+  fileUrl: string
+  fileKey: string
+  mimeType: string
+}
+
+function parseAttachment(text: string): AttachmentMeta | null {
+  const match = text.match(/^\[ATTACHMENT:(.+)\]$/)
+  if (!match) return null
+  try {
+    return JSON.parse(match[1]) as AttachmentMeta
+  } catch {
+    return null
+  }
+}
+
+function AttachmentContent({ meta }: { meta: AttachmentMeta }) {
+  const isImage = meta.mimeType.startsWith('image/')
+  const isVideo = meta.mimeType.startsWith('video/')
+
+  if (isImage) {
+    return (
+      <a href={meta.fileUrl} target="_blank" rel="noopener noreferrer">
+        <img
+          src={meta.fileUrl}
+          alt={meta.fileName}
+          className="max-h-48 max-w-full rounded-md object-cover"
+          loading="lazy"
+        />
+        <p className="mt-1 text-xs opacity-70">{meta.fileName}</p>
+      </a>
+    )
+  }
+
+  if (isVideo) {
+    return (
+      <div className="flex flex-col gap-1">
+        <video
+          src={meta.fileUrl}
+          controls
+          className="max-h-48 max-w-full rounded-md"
+          preload="metadata"
+        />
+        <p className="text-xs opacity-70">{meta.fileName}</p>
+      </div>
+    )
+  }
+
+  // Generic file download link
+  return (
+    <a
+      href={meta.fileUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 rounded-md border bg-background/50 px-3 py-2"
+    >
+      <FileText className="h-5 w-5 shrink-0" />
+      <span className="min-w-0 flex-1 truncate text-sm">{meta.fileName}</span>
+      <Download className="h-4 w-4 shrink-0 opacity-60" />
+    </a>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// MessageBubble
+// ---------------------------------------------------------------------------
+
+function MessageBubble({
+  message,
+  attachmentMap: _attachmentMap,
+}: {
+  message: UIMessageLike
+  attachmentMap?: Map<string, unknown>
+}) {
   const text = message.parts
     .filter((p) => p.type === 'text')
     .map((p) => p.text ?? '')
     .join('')
 
   if (!text) return null
+
+  // Check if this is an attachment message
+  const attachmentMeta = parseAttachment(text)
 
   // Detect staff messages: role=user with [STAFF:RoleLabel]: prefix
   const staffMatch = text.match(/^\[STAFF:(.+?)\]:\s*/)
@@ -820,7 +988,11 @@ function MessageBubble({ message }: { message: UIMessageLike }) {
                 : 'bg-muted text-foreground',
           )}
         >
-          <p className="whitespace-pre-wrap">{displayText}</p>
+          {attachmentMeta ? (
+            <AttachmentContent meta={attachmentMeta} />
+          ) : (
+            <p className="whitespace-pre-wrap">{displayText}</p>
+          )}
           {message.status === 'streaming' && (
             <span className="inline-block h-3 w-1 animate-pulse bg-current" />
           )}

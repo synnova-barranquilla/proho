@@ -107,6 +107,18 @@ export const categoryFields = {
   displayOrder: v.number(),
 }
 
+export const attachmentFields = {
+  complexId: v.id('complexes'),
+  conversationId: v.id('conversations'),
+  uploadedByUserId: v.id('users'),
+  fileName: v.string(),
+  fileUrl: v.string(),
+  fileKey: v.string(),
+  mimeType: v.string(),
+  size: v.number(),
+  createdAt: v.number(),
+}
+
 export const quickActionFields = {
   complexId: v.union(v.id('complexes'), v.literal('_platform')),
   label: v.string(),

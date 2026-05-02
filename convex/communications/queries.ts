@@ -510,6 +510,73 @@ export const getConversationByTicket = query({
   },
 })
 
+export const listAttachmentsByConversation = query({
+  args: { conversationId: v.id('conversations') },
+  handler: async (ctx, args) => {
+    await requireUser(ctx)
+    return ctx.db
+      .query('attachments')
+      .withIndex('by_conversation', (q) =>
+        q.eq('conversationId', args.conversationId),
+      )
+      .collect()
+  },
+})
+
+export const listAttachmentsByComplex = query({
+  args: { complexId: v.id('complexes') },
+  handler: async (ctx, args) => {
+    await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: [...STAFF_ROLES],
+    })
+
+    const attachments = await ctx.db
+      .query('attachments')
+      .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
+      .order('desc')
+      .collect()
+
+    // Enrich with conversation + user info
+    const conversationIds = [
+      ...new Set(attachments.map((a) => a.conversationId)),
+    ]
+    const conversations = await Promise.all(
+      conversationIds.map((id) => ctx.db.get(id)),
+    )
+    const convMap = new Map(
+      conversations.filter(Boolean).map((c) => [c!._id, c!]),
+    )
+
+    const userIds = [...new Set(attachments.map((a) => a.uploadedByUserId))]
+    const users = await Promise.all(userIds.map((id) => ctx.db.get(id)))
+    const userMap = new Map(users.filter(Boolean).map((u) => [u!._id, u!]))
+
+    // Get resident info from conversations
+    const residentIds = [
+      ...new Set(conversations.filter(Boolean).map((c) => c!.residentId)),
+    ]
+    const residents = await Promise.all(residentIds.map((id) => ctx.db.get(id)))
+    const residentMap = new Map(
+      residents.filter(Boolean).map((r) => [r!._id, r!]),
+    )
+
+    return attachments.map((a) => {
+      const conv = convMap.get(a.conversationId)
+      const user = userMap.get(a.uploadedByUserId)
+      const resident = conv ? (residentMap.get(conv.residentId) ?? null) : null
+      return {
+        ...a,
+        uploadedByName: user
+          ? `${user.firstName} ${user.lastName || ''}`.trim() || user.email
+          : null,
+        residentName: resident
+          ? `${resident.firstName} ${resident.lastName}`
+          : null,
+      }
+    })
+  },
+})
+
 export const listConversations = query({
   args: {
     complexId: v.id('complexes'),

@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from 'convex/server'
 
 import { accessRecordFields } from './accessRecords/validators'
 import {
+  attachmentFields,
   categoryFields,
   conversationFields,
   quickActionFields,
@@ -105,4 +106,8 @@ export default defineSchema({
     'isEnabled',
     'displayOrder',
   ]),
+
+  attachments: defineTable(attachmentFields)
+    .index('by_conversation', ['conversationId', 'createdAt'])
+    .index('by_complex', ['complexId', 'createdAt']),
 })

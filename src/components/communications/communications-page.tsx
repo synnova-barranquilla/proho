@@ -4,19 +4,21 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { useEffectiveComplexRole } from '#/lib/complex-role'
 import { cn } from '#/lib/utils'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { AttachmentsTab } from './attachments-tab'
 import { CategoriesManager } from './categories-manager'
 import { QuickActionsManager } from './quick-actions-manager'
 import { ResidentChat } from './resident-chat'
 import { StaffConversationsTab } from './staff-conversations-tab'
 import { StaffTicketsTab } from './staff-tickets-tab'
 
-type Tab = 'tickets' | 'conversaciones' | 'categorias' | 'acciones'
+type Tab = 'tickets' | 'conversaciones' | 'adjuntos' | 'categorias' | 'acciones'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'tickets', label: 'Tickets' },
   { id: 'conversaciones', label: 'Conversaciones' },
-  { id: 'categorias', label: 'Categorías' },
-  { id: 'acciones', label: 'Acciones rápidas' },
+  { id: 'adjuntos', label: 'Adjuntos' },
+  { id: 'categorias', label: 'Categorias' },
+  { id: 'acciones', label: 'Acciones rapidas' },
 ]
 
 interface CommunicationsPageProps {
@@ -86,6 +88,7 @@ function StaffView({ complexId }: { complexId: Id<'complexes'> }) {
           {activeTab === 'conversaciones' && (
             <StaffConversationsTab complexId={complexId} />
           )}
+          {activeTab === 'adjuntos' && <AttachmentsTab complexId={complexId} />}
           {activeTab === 'categorias' && (
             <CategoriesManager complexId={complexId} />
           )}

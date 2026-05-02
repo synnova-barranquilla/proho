@@ -13,6 +13,9 @@ import {
   ArrowLeft,
   Bot,
   Clock,
+  Download,
+  FileText,
+  Image,
   Loader2,
   MessageSquare,
   Paperclip,
@@ -21,6 +24,7 @@ import {
   Sparkles,
   StickyNote,
   Tag,
+  Video,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -666,14 +670,25 @@ export function TicketDetailPanel({
             </Card>
           )}
 
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Adjuntos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Sin adjuntos.</p>
-            </CardContent>
-          </Card>
+          {ticket.conversationId && (
+            <Suspense
+              fallback={
+                <Card size="sm">
+                  <CardHeader>
+                    <CardTitle>Adjuntos</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Cargando...
+                    </div>
+                  </CardContent>
+                </Card>
+              }
+            >
+              <TicketAttachments conversationId={ticket.conversationId} />
+            </Suspense>
+          )}
 
           {showAudit && (
             <Card size="sm">
@@ -773,6 +788,23 @@ function ThreadMessages({ threadId }: { threadId: string }) {
   )
 }
 
+interface AttachmentMeta {
+  fileName: string
+  fileUrl: string
+  fileKey: string
+  mimeType: string
+}
+
+function parseAttachmentMeta(text: string): AttachmentMeta | null {
+  const match = text.match(/^\[ATTACHMENT:(.+)\]$/)
+  if (!match) return null
+  try {
+    return JSON.parse(match[1]) as AttachmentMeta
+  } catch {
+    return null
+  }
+}
+
 function TicketMessageBubble({ message }: { message: UIMessageLike }) {
   const text = message.parts
     .filter((p) => p.type === 'text')
@@ -780,6 +812,8 @@ function TicketMessageBubble({ message }: { message: UIMessageLike }) {
     .join('')
 
   if (!text) return null
+
+  const attachmentMeta = parseAttachmentMeta(text)
 
   // Detect staff messages: role=user with [STAFF:RoleLabel]: prefix
   const staffMatch = text.match(/^\[STAFF:(.+?)\]:\s*/)
@@ -838,13 +872,133 @@ function TicketMessageBubble({ message }: { message: UIMessageLike }) {
                 : 'bg-muted text-foreground',
           )}
         >
-          <p className="whitespace-pre-wrap">{displayText}</p>
+          {attachmentMeta ? (
+            <TicketAttachmentInline meta={attachmentMeta} />
+          ) : (
+            <p className="whitespace-pre-wrap">{displayText}</p>
+          )}
           {message.status === 'streaming' && (
             <span className="inline-block h-3 w-1 animate-pulse bg-current" />
           )}
         </div>
       </div>
     </div>
+  )
+}
+
+function TicketAttachmentInline({ meta }: { meta: AttachmentMeta }) {
+  const isImage = meta.mimeType.startsWith('image/')
+  const isVideo = meta.mimeType.startsWith('video/')
+
+  if (isImage) {
+    return (
+      <a href={meta.fileUrl} target="_blank" rel="noopener noreferrer">
+        <img
+          src={meta.fileUrl}
+          alt={meta.fileName}
+          className="max-h-40 max-w-full rounded-md object-cover"
+          loading="lazy"
+        />
+        <p className="mt-1 text-xs opacity-70">{meta.fileName}</p>
+      </a>
+    )
+  }
+
+  if (isVideo) {
+    return (
+      <div className="flex flex-col gap-1">
+        <video
+          src={meta.fileUrl}
+          controls
+          className="max-h-40 max-w-full rounded-md"
+          preload="metadata"
+        />
+        <p className="text-xs opacity-70">{meta.fileName}</p>
+      </div>
+    )
+  }
+
+  return (
+    <a
+      href={meta.fileUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 rounded-md border bg-background/50 px-3 py-2"
+    >
+      <FileText className="h-5 w-5 shrink-0" />
+      <span className="min-w-0 flex-1 truncate text-sm">{meta.fileName}</span>
+      <Download className="h-4 w-4 shrink-0 opacity-60" />
+    </a>
+  )
+}
+
+function TicketAttachments({
+  conversationId,
+}: {
+  conversationId: Id<'conversations'>
+}) {
+  const { data: attachments } = useSuspenseQuery(
+    convexQuery(api.communications.queries.listAttachmentsByConversation, {
+      conversationId,
+    }),
+  )
+
+  return (
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle>Adjuntos</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {attachments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Sin adjuntos.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {attachments.map((att) => {
+              const isImage = att.mimeType.startsWith('image/')
+              const isVideo = att.mimeType.startsWith('video/')
+              const Icon = isImage ? Image : isVideo ? Video : FileText
+
+              return (
+                <a
+                  key={att._id}
+                  href={att.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-md border p-2 transition-colors hover:bg-muted/50"
+                >
+                  {isImage ? (
+                    <img
+                      src={att.fileUrl}
+                      alt={att.fileName}
+                      className="h-10 w-10 shrink-0 rounded object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted">
+                      <Icon className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {att.fileName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(att.createdAt).toLocaleString('es-CO', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                  <Download className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </a>
+              )
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
