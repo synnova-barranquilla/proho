@@ -5,16 +5,18 @@ import { useEffectiveComplexRole } from '#/lib/complex-role'
 import { cn } from '#/lib/utils'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { CategoriesManager } from './categories-manager'
+import { QuickActionsManager } from './quick-actions-manager'
 import { ResidentChat } from './resident-chat'
 import { StaffConversationsTab } from './staff-conversations-tab'
 import { StaffTicketsTab } from './staff-tickets-tab'
 
-type Tab = 'tickets' | 'conversaciones' | 'categorias'
+type Tab = 'tickets' | 'conversaciones' | 'categorias' | 'acciones'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'tickets', label: 'Tickets' },
   { id: 'conversaciones', label: 'Conversaciones' },
   { id: 'categorias', label: 'Categorías' },
+  { id: 'acciones', label: 'Acciones rápidas' },
 ]
 
 interface CommunicationsPageProps {
@@ -86,6 +88,9 @@ function StaffView({ complexId }: { complexId: Id<'complexes'> }) {
           )}
           {activeTab === 'categorias' && (
             <CategoriesManager complexId={complexId} />
+          )}
+          {activeTab === 'acciones' && (
+            <QuickActionsManager complexId={complexId} />
           )}
         </Suspense>
       </div>
