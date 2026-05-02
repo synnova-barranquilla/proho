@@ -4,7 +4,7 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '#/components/ui/badge'
@@ -137,7 +137,7 @@ export function CategoriesManager({ complexId }: CategoriesManagerProps) {
                   category={cat}
                   isSystem
                   onToggle={(enabled) => handleToggle(cat._id, enabled)}
-                  onEdit={() => setEditingId(cat._id)}
+                  onClick={() => setEditingId(cat._id)}
                   onDelete={() => {}}
                   isToggling={toggleMut.isPending}
                 />
@@ -172,7 +172,7 @@ export function CategoriesManager({ complexId }: CategoriesManagerProps) {
                   category={cat}
                   isSystem={false}
                   onToggle={(enabled) => handleToggle(cat._id, enabled)}
-                  onEdit={() => setEditingId(cat._id)}
+                  onClick={() => setEditingId(cat._id)}
                   onDelete={() => handleDelete(cat._id)}
                   isToggling={toggleMut.isPending}
                 />
@@ -218,14 +218,14 @@ function CategoryRow({
   category,
   isSystem,
   onToggle,
-  onEdit,
+  onClick,
   onDelete,
   isToggling,
 }: {
   category: CategoryDoc
   isSystem: boolean
   onToggle: (enabled: boolean) => void
-  onEdit: () => void
+  onClick: () => void
   onDelete: () => void
   isToggling: boolean
 }) {
@@ -236,48 +236,47 @@ function CategoryRow({
         !category.isEnabled && 'opacity-50',
       )}
     >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{category.label}</span>
-          <span
-            className={cn(
-              'inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium',
-              PRIORITY_VARIANTS[category.priority],
-            )}
-          >
-            {PRIORITY_LABELS[category.priority]}
-          </span>
-          <Badge variant="outline" className="text-[10px]">
-            {ROLE_LABELS[category.assignedRole] ?? category.assignedRole}
-          </Badge>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex flex-1 min-w-0 cursor-pointer items-start text-left hover:opacity-80"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{category.label}</span>
+            <span
+              className={cn(
+                'inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium',
+                PRIORITY_VARIANTS[category.priority],
+              )}
+            >
+              {PRIORITY_LABELS[category.priority]}
+            </span>
+            <Badge variant="outline" className="text-[10px]">
+              {ROLE_LABELS[category.assignedRole] ?? category.assignedRole}
+            </Badge>
+          </div>
+          {category.keywords.length > 0 && (
+            <p className="mt-0.5 text-xs text-muted-foreground truncate">
+              {category.keywords.join(', ')}
+            </p>
+          )}
         </div>
-        {category.keywords.length > 0 && (
-          <p className="mt-0.5 text-xs text-muted-foreground truncate">
-            {category.keywords.join(', ')}
-          </p>
-        )}
-      </div>
+      </button>
 
       <div className="flex shrink-0 items-center gap-1">
         {!isSystem && (
-          <>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={onEdit}
-              title="Editar"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={onDelete}
-              title="Eliminar"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-destructive" />
-            </Button>
-          </>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete()
+            }}
+            title="Eliminar"
+          >
+            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+          </Button>
         )}
         <Switch
           checked={category.isEnabled}
@@ -302,6 +301,8 @@ function CategoryDialog({
   category: CategoryDoc | null
 }) {
   const isEdit = category !== null && !category.isSystem
+  const isReadOnly = category !== null && category.isSystem
+  const isCreate = category === null
 
   const [label, setLabel] = useState(category?.label ?? '')
   const [key, setKey] = useState(category?.key ?? '')
@@ -371,12 +372,22 @@ function CategoryDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? 'Editar categoría' : 'Nueva categoría'}
+            {isReadOnly
+              ? 'Detalle de categoría'
+              : isEdit
+                ? 'Editar categoría'
+                : 'Nueva categoría'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogBody>
             <FieldGroup>
+              {isReadOnly && (
+                <Field>
+                  <FieldLabel>Clave</FieldLabel>
+                  <Input value={category.key} disabled />
+                </Field>
+              )}
               <Field>
                 <FieldLabel>Nombre</FieldLabel>
                 <Input
@@ -384,9 +395,10 @@ function CategoryDialog({
                   onChange={(e) => setLabel(e.target.value)}
                   placeholder="Ej: Ruido excesivo"
                   required
+                  disabled={isReadOnly}
                 />
               </Field>
-              {!isEdit && (
+              {isCreate && (
                 <Field>
                   <FieldLabel>
                     Clave{' '}
@@ -404,34 +416,45 @@ function CategoryDialog({
               <div className="grid grid-cols-2 gap-4">
                 <Field>
                   <FieldLabel>Prioridad</FieldLabel>
-                  <Select
-                    value={priority}
-                    onValueChange={(v) => v && setPriority(v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue>{PRIORITY_LABELS[priority]}</SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="high">Alta</SelectItem>
-                      <SelectItem value="medium">Media</SelectItem>
-                      <SelectItem value="low">Baja</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {isReadOnly ? (
+                    <Input value={PRIORITY_LABELS[priority]} disabled />
+                  ) : (
+                    <Select
+                      value={priority}
+                      onValueChange={(v) => v && setPriority(v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue>{PRIORITY_LABELS[priority]}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="high">Alta</SelectItem>
+                        <SelectItem value="medium">Media</SelectItem>
+                        <SelectItem value="low">Baja</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </Field>
                 <Field>
                   <FieldLabel>Asignar a</FieldLabel>
-                  <Select
-                    value={assignedRole}
-                    onValueChange={(v) => v && setAssignedRole(v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue>{ROLE_LABELS[assignedRole]}</SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="AUXILIAR">Auxiliar Op.</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {isReadOnly ? (
+                    <Input
+                      value={ROLE_LABELS[assignedRole] ?? assignedRole}
+                      disabled
+                    />
+                  ) : (
+                    <Select
+                      value={assignedRole}
+                      onValueChange={(v) => v && setAssignedRole(v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue>{ROLE_LABELS[assignedRole]}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
+                        <SelectItem value="AUXILIAR">Auxiliar Op.</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </Field>
               </div>
               <Field>
@@ -445,15 +468,24 @@ function CategoryDialog({
                   value={keywordsText}
                   onChange={(e) => setKeywordsText(e.target.value)}
                   placeholder="ej: ruido, musica, fiesta, bulla"
+                  disabled={isReadOnly}
                 />
               </Field>
             </FieldGroup>
           </DialogBody>
           <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
-            <Button type="submit" disabled={isPending || !label.trim()}>
-              {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
-            </Button>
+            {isReadOnly ? (
+              <DialogClose render={<Button variant="outline">Cerrar</Button>} />
+            ) : (
+              <>
+                <DialogClose
+                  render={<Button variant="outline">Cancelar</Button>}
+                />
+                <Button type="submit" disabled={isPending || !label.trim()}>
+                  {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>
