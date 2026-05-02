@@ -26,7 +26,7 @@ export const currentFocus = {
   done: 0,
   total: 13,
 }
-export const lastUpdated = 'April 29, 2026'
+export const lastUpdated = 'May 2, 2026'
 
 export const milestones: Milestone[] = [
   {
