@@ -5,7 +5,14 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { useUIMessages } from '@convex-dev/agent/react'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
-import { Bot, MessageSquarePlus, Paperclip, Send } from 'lucide-react'
+import {
+  ArrowLeft,
+  Bot,
+  Clock,
+  MessageSquarePlus,
+  Paperclip,
+  Send,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Avatar, AvatarFallback } from '#/components/ui/avatar'
@@ -326,6 +333,132 @@ function ChatBody({ complexId }: { complexId: Id<'complexes'> }) {
           <Send className="h-4 w-4" />
         </Button>
       </form>
+
+      {/* Past conversations */}
+      <Suspense fallback={null}>
+        <PastConversations complexId={complexId} activeThreadId={threadId} />
+      </Suspense>
+    </div>
+  )
+}
+
+const CONV_STATUS_LABELS: Record<string, string> = {
+  active: 'Activa',
+  escalated: 'Escalada',
+  resolved_by_bot: 'Resuelta',
+  closed_by_inactivity: 'Cerrada',
+}
+
+function PastConversations({
+  complexId,
+  activeThreadId,
+}: {
+  complexId: Id<'complexes'>
+  activeThreadId: string | null
+}) {
+  const [viewingThreadId, setViewingThreadId] = useState<string | null>(null)
+
+  const { data: conversations } = useSuspenseQuery(
+    convexQuery(api.communications.queries.listMyConversations, { complexId }),
+  )
+
+  const pastConversations = conversations.filter(
+    (c) => c.threadId !== activeThreadId,
+  )
+
+  if (pastConversations.length === 0) return null
+
+  if (viewingThreadId) {
+    const conv = pastConversations.find((c) => c.threadId === viewingThreadId)
+    return (
+      <div className="mt-4 border-t pt-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setViewingThreadId(null)}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <p className="text-sm font-medium">Conversación anterior</p>
+            {conv && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {new Date(conv.createdAt).toLocaleDateString('es-CO')}
+                </span>
+                {conv.ticket && (
+                  <span className="text-xs text-muted-foreground">
+                    · Ticket {conv.ticket.publicId}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+          <PastConversationThread threadId={viewingThreadId} />
+        </Suspense>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-4 border-t pt-4">
+      <p className="mb-2 text-sm font-medium text-muted-foreground">
+        <Clock className="mr-1 inline-block h-3.5 w-3.5" />
+        Conversaciones anteriores
+      </p>
+      <div className="flex flex-col gap-1">
+        {pastConversations.map((conv) => (
+          <button
+            key={conv._id}
+            type="button"
+            onClick={() => setViewingThreadId(conv.threadId)}
+            className="flex items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">
+                {new Date(conv.createdAt).toLocaleDateString('es-CO')}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {CONV_STATUS_LABELS[conv.status] ?? conv.status}
+              </span>
+              {conv.ticket && (
+                <span className="text-xs font-mono text-muted-foreground">
+                  {conv.ticket.publicId}
+                </span>
+              )}
+            </div>
+            <ArrowLeft className="h-3.5 w-3.5 rotate-180 text-muted-foreground" />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PastConversationThread({ threadId }: { threadId: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const { results: messages } = useUIMessages(
+    api.communications.queries.listThreadMessages,
+    { threadId },
+    { initialNumItems: 50, stream: false },
+  )
+
+  return (
+    <div
+      ref={scrollRef}
+      className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto rounded-lg border bg-muted/20 p-4"
+    >
+      {messages.length === 0 ? (
+        <p className="py-4 text-center text-sm text-muted-foreground">
+          Sin mensajes.
+        </p>
+      ) : (
+        messages.map((msg) => <MessageBubble key={msg.key} message={msg} />)
+      )}
     </div>
   )
 }

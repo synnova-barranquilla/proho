@@ -407,6 +407,45 @@ export const getMyActiveConversation = query({
   },
 })
 
+export const listMyConversations = query({
+  args: {
+    complexId: v.id('complexes'),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: ['OWNER', 'TENANT', 'LESSEE'],
+    })
+
+    const residentId = membership?.residentId
+    if (!residentId) return []
+
+    const conversations = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', residentId),
+      )
+      .collect()
+
+    const tickets = await ctx.db
+      .query('tickets')
+      .withIndex('by_resident', (q) => q.eq('residentId', residentId))
+      .collect()
+
+    const ticketByConv = new Map(
+      tickets
+        .filter((t) => t.conversationId)
+        .map((t) => [t.conversationId!, t]),
+    )
+
+    return conversations
+      .map((c) => ({
+        ...c,
+        ticket: ticketByConv.get(c._id) ?? null,
+      }))
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+  },
+})
+
 export const listThreadMessages = query({
   args: {
     threadId: v.string(),
