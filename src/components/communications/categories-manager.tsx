@@ -52,6 +52,19 @@ const ROLE_LABELS: Record<string, string> = {
   AUXILIAR: 'Auxiliar Op.',
 }
 
+const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 }
+
+function sortCategories<T extends { priority: string; label: string }>(
+  cats: T[],
+): T[] {
+  return [...cats].sort((a, b) => {
+    const pa = PRIORITY_ORDER[a.priority] ?? 3
+    const pb = PRIORITY_ORDER[b.priority] ?? 3
+    if (pa !== pb) return pa - pb
+    return a.label.localeCompare(b.label, 'es')
+  })
+}
+
 interface CategoriesManagerProps {
   complexId: Id<'complexes'>
 }
@@ -132,7 +145,7 @@ export function CategoriesManager({ complexId }: CategoriesManagerProps) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col divide-y">
-              {data.platform.map((cat) => (
+              {sortCategories(data.platform).map((cat) => (
                 <CategoryRow
                   key={cat._id}
                   category={cat}
@@ -167,7 +180,7 @@ export function CategoriesManager({ complexId }: CategoriesManagerProps) {
             </p>
           ) : (
             <div className="flex flex-col divide-y">
-              {data.custom.map((cat) => (
+              {sortCategories(data.custom).map((cat) => (
                 <CategoryRow
                   key={cat._id}
                   category={cat}
