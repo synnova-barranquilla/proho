@@ -20,6 +20,7 @@ import type * as accessRecords_validators from '../accessRecords/validators.js'
 import type * as auth_mutations from '../auth/mutations.js'
 import type * as communications_actions from '../communications/actions.js'
 import type * as communications_agent from '../communications/agent.js'
+import type * as communications_attachmentMutations from '../communications/attachmentMutations.js'
 import type * as communications_businessHours from '../communications/businessHours.js'
 import type * as communications_categoryMutations from '../communications/categoryMutations.js'
 import type * as communications_helpers from '../communications/helpers.js'
@@ -75,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   'auth/mutations': typeof auth_mutations
   'communications/actions': typeof communications_actions
   'communications/agent': typeof communications_agent
+  'communications/attachmentMutations': typeof communications_attachmentMutations
   'communications/businessHours': typeof communications_businessHours
   'communications/categoryMutations': typeof communications_categoryMutations
   'communications/helpers': typeof communications_helpers

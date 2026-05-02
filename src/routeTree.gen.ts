@@ -30,6 +30,7 @@ import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from '
 import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
 import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as ApiUploadthingRouteImport } from './routes/api/uploadthing'
 import { Route as CuentaDesactivadaRouteImport } from './routes/cuenta-desactivada'
 import { Route as ErrorAuthRouteImport } from './routes/error-auth'
 import { Route as IndexRouteImport } from './routes/index'
@@ -106,6 +107,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUploadthingRoute = ApiUploadthingRouteImport.update({
+  id: '/api/uploadthing',
+  path: '/api/uploadthing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSeleccionarConjuntoRoute =
@@ -236,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/c/$complexSlug': typeof AuthenticatedCComplexSlugRouteRouteWithChildren
   '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/progress': typeof ProgressRoute
   '/tunnel': typeof TunnelRoute
   '/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
   '/super-admin/usuarios': typeof AuthenticatedSuperAdminUsuariosRoute
@@ -301,6 +309,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteRouteWithChildren
   '/_authenticated/seleccionar-conjunto': typeof AuthenticatedSeleccionarConjuntoRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/_authenticated/c/$complexSlug': typeof AuthenticatedCComplexSlugRouteRouteWithChildren
   '/_authenticated/admin/equipo': typeof AuthenticatedAdminEquipoRoute
   '/_authenticated/super-admin/conjuntos': typeof AuthenticatedSuperAdminConjuntosRoute
@@ -336,6 +345,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/super-admin'
     | '/seleccionar-conjunto'
+    | '/api/uploadthing'
     | '/c/$complexSlug'
     | '/admin/equipo'
     | '/super-admin/conjuntos'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/tunnel'
     | '/seleccionar-conjunto'
+    | '/api/uploadthing'
     | '/admin/equipo'
     | '/super-admin/conjuntos'
     | '/super-admin/usuarios'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/super-admin'
     | '/_authenticated/seleccionar-conjunto'
+    | '/api/uploadthing'
     | '/_authenticated/c/$complexSlug'
     | '/_authenticated/admin/equipo'
     | '/_authenticated/super-admin/conjuntos'
@@ -432,6 +444,7 @@ export interface RootRouteChildren {
   OrganizacionInactivaRoute: typeof OrganizacionInactivaRoute
   ProgressRoute: typeof ProgressRoute
   TunnelRoute: typeof TunnelRoute
+  ApiUploadthingRoute: typeof ApiUploadthingRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
 }
 
@@ -526,6 +539,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/uploadthing': {
+      id: '/api/uploadthing'
+      path: '/api/uploadthing'
+      fullPath: '/api/uploadthing'
+      preLoaderRoute: typeof ApiUploadthingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/seleccionar-conjunto': {
@@ -771,6 +791,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrganizacionInactivaRoute: OrganizacionInactivaRoute,
   ProgressRoute: ProgressRoute,
   TunnelRoute: TunnelRoute,
+  ApiUploadthingRoute: ApiUploadthingRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
