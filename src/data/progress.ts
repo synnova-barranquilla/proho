@@ -23,8 +23,8 @@ export type Milestone = {
 export const currentFocus = {
   phaseId: 'W3',
   phaseName: 'Notifications + Config UI + Polish',
-  done: 0,
-  total: 13,
+  done: 6,
+  total: 17,
 }
 export const lastUpdated = 'May 2, 2026'
 
@@ -1271,12 +1271,32 @@ export const milestones: Milestone[] = [
           {
             id: 'W3.12',
             name: 'Config UI: categories CRUD',
-            status: 'pending',
+            status: 'done',
           },
           {
             id: 'W3.13',
             name: 'Config UI: quick actions CRUD',
-            status: 'pending',
+            status: 'done',
+          },
+          {
+            id: 'W3.14',
+            name: 'File attachments (UploadThing + adjuntos tab)',
+            status: 'done',
+          },
+          {
+            id: 'W3.15',
+            name: 'Clickable conversations tab with thread detail',
+            status: 'done',
+          },
+          {
+            id: 'W3.16',
+            name: 'Two-column resident chat layout with conversation sidebar',
+            status: 'done',
+          },
+          {
+            id: 'W3.17',
+            name: 'Admin reply to resident in ticket thread',
+            status: 'done',
           },
         ],
       },
