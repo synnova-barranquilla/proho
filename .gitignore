@@ -18,3 +18,8 @@ graphify-out/
 
 # Dev notes (synced to Obsidian vault)
 docs/dev-notes/
+
+# Local dev tooling
+.claude/hooks/
+.graphifyignore
+.mcp.json
