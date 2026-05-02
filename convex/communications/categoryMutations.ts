@@ -37,7 +37,7 @@ const DEFAULT_CATEGORIES: Array<{
     key: 'security_cameras',
     label: 'Cámaras de seguridad',
     priority: 'high',
-    assignedRole: 'ADMIN',
+    assignedRole: 'AUXILIAR',
     keywords: ['cámara', 'seguridad', 'vigilancia', 'video'],
   },
   {
