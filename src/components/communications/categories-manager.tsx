@@ -4,7 +4,7 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
-import { Plus, Trash2 } from 'lucide-react'
+import { Minus, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '#/components/ui/badge'
@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { Switch } from '#/components/ui/switch'
+import { slugify } from '#/lib/slug'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -305,14 +306,28 @@ function CategoryDialog({
   const isCreate = category === null
 
   const [label, setLabel] = useState(category?.label ?? '')
-  const [key, setKey] = useState(category?.key ?? '')
   const [priority, setPriority] = useState(category?.priority ?? 'medium')
   const [assignedRole, setAssignedRole] = useState(
     category?.assignedRole ?? 'ADMIN',
   )
-  const [keywordsText, setKeywordsText] = useState(
-    category?.keywords.join(', ') ?? '',
+  const [keywords, setKeywords] = useState<string[]>(
+    category && category.keywords.length > 0 ? category.keywords : [''],
   )
+
+  const generatedKey = slugify(label)
+
+  const handleKeywordChange = (index: number, value: string) => {
+    setKeywords((prev) => prev.map((k, i) => (i === index ? value : k)))
+  }
+
+  const addKeyword = () => {
+    setKeywords((prev) => [...prev, ''])
+  }
+
+  const removeKeyword = (index: number) => {
+    if (keywords.length <= 1) return
+    setKeywords((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const createFn = useConvexMutation(
     api.communications.categoryMutations.createCategory,
@@ -326,12 +341,15 @@ function CategoryDialog({
 
   const isPending = createMut.isPending || updateMut.isPending
 
+  const cleanKeywords = keywords.map((k) => k.trim()).filter(Boolean)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const keywords = keywordsText
-      .split(',')
-      .map((k) => k.trim())
-      .filter(Boolean)
+
+    if (cleanKeywords.length === 0) {
+      toast.error('Agrega al menos una palabra clave')
+      return
+    }
 
     try {
       if (isEdit) {
@@ -340,19 +358,17 @@ function CategoryDialog({
           label: label.trim(),
           priority: priority as 'high' | 'medium' | 'low',
           assignedRole: assignedRole as 'ADMIN' | 'AUXILIAR',
-          keywords,
+          keywords: cleanKeywords,
         })
         toast.success('Categoría actualizada')
       } else {
-        const slug =
-          key.trim() || label.trim().toLowerCase().replace(/\s+/g, '_')
         await createMut.mutateAsync({
           complexId,
-          key: slug,
+          key: generatedKey,
           label: label.trim(),
           priority: priority as 'high' | 'medium' | 'low',
           assignedRole: assignedRole as 'ADMIN' | 'AUXILIAR',
-          keywords,
+          keywords: cleanKeywords,
         })
         toast.success('Categoría creada')
       }
@@ -382,12 +398,6 @@ function CategoryDialog({
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogBody>
             <FieldGroup>
-              {isReadOnly && (
-                <Field>
-                  <FieldLabel>Clave</FieldLabel>
-                  <Input value={category.key} disabled />
-                </Field>
-              )}
               <Field>
                 <FieldLabel>Nombre</FieldLabel>
                 <Input
@@ -398,21 +408,14 @@ function CategoryDialog({
                   disabled={isReadOnly}
                 />
               </Field>
-              {isCreate && (
-                <Field>
-                  <FieldLabel>
-                    Clave{' '}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      (se genera automáticamente si se deja vacío)
-                    </span>
-                  </FieldLabel>
-                  <Input
-                    value={key}
-                    onChange={(e) => setKey(e.target.value)}
-                    placeholder="ej: ruido_excesivo"
-                  />
-                </Field>
-              )}
+              <Field>
+                <FieldLabel>Clave</FieldLabel>
+                <Input
+                  value={isCreate ? generatedKey : category.key}
+                  disabled
+                  className="font-mono text-xs"
+                />
+              </Field>
               <div className="grid grid-cols-2 gap-4">
                 <Field>
                   <FieldLabel>Prioridad</FieldLabel>
@@ -458,18 +461,42 @@ function CategoryDialog({
                 </Field>
               </div>
               <Field>
-                <FieldLabel>
-                  Palabras clave{' '}
-                  <span className="text-xs font-normal text-muted-foreground">
-                    (separadas por coma)
-                  </span>
-                </FieldLabel>
-                <Input
-                  value={keywordsText}
-                  onChange={(e) => setKeywordsText(e.target.value)}
-                  placeholder="ej: ruido, musica, fiesta, bulla"
-                  disabled={isReadOnly}
-                />
+                <FieldLabel>Palabras clave</FieldLabel>
+                <div className="flex flex-col gap-2">
+                  {keywords.map((kw, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input
+                        value={kw}
+                        onChange={(e) => handleKeywordChange(i, e.target.value)}
+                        placeholder={`Palabra clave ${i + 1}`}
+                        disabled={isReadOnly}
+                        className="flex-1"
+                      />
+                      {!isReadOnly && keywords.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => removeKeyword(i)}
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  {!isReadOnly && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addKeyword}
+                      className="self-start"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Agregar palabra clave
+                    </Button>
+                  )}
+                </div>
               </Field>
             </FieldGroup>
           </DialogBody>
