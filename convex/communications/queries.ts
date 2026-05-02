@@ -455,9 +455,18 @@ export const listConversations = query({
 
     const residentMap = new Map(residents.map((r) => [r._id, r]))
 
-    return conversations.map((c) => ({
-      ...c,
-      resident: residentMap.get(c.residentId) ?? null,
-    }))
+    const units = await ctx.db
+      .query('units')
+      .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+      .collect()
+    const unitMap = new Map(units.map((u) => [u._id, u]))
+
+    return conversations
+      .map((c) => {
+        const resident = residentMap.get(c.residentId) ?? null
+        const unit = resident ? (unitMap.get(resident.unitId) ?? null) : null
+        return { ...c, resident, unit }
+      })
+      .sort((a, b) => b.updatedAt - a.updatedAt)
   },
 })
