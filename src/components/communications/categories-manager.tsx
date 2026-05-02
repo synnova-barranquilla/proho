@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
@@ -316,16 +316,48 @@ function CategoryDialog({
 
   const generatedKey = slugify(label)
 
+  const keywordInputsRef = useRef<Map<number, HTMLInputElement>>(new Map())
+  const addButtonRef = useRef<HTMLButtonElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const setKeywordRef = useCallback(
+    (index: number, el: HTMLInputElement | null) => {
+      if (el) {
+        keywordInputsRef.current.set(index, el)
+      } else {
+        keywordInputsRef.current.delete(index)
+      }
+    },
+    [],
+  )
+
   const handleKeywordChange = (index: number, value: string) => {
     setKeywords((prev) => prev.map((k, i) => (i === index ? value : k)))
+
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      addButtonRef.current?.focus()
+    }, 1000)
   }
 
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
+
   const addKeyword = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    const newIndex = keywords.length
     setKeywords((prev) => [...prev, ''])
+    requestAnimationFrame(() => {
+      keywordInputsRef.current.get(newIndex)?.focus()
+    })
   }
 
   const removeKeyword = (index: number) => {
     if (keywords.length <= 1) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     setKeywords((prev) => prev.filter((_, i) => i !== index))
   }
 
@@ -466,8 +498,13 @@ function CategoryDialog({
                   {keywords.map((kw, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <Input
+                        ref={(el) => setKeywordRef(i, el)}
                         value={kw}
                         onChange={(e) => handleKeywordChange(i, e.target.value)}
+                        onFocus={() => {
+                          if (debounceRef.current)
+                            clearTimeout(debounceRef.current)
+                        }}
                         placeholder={`Palabra clave ${i + 1}`}
                         disabled={isReadOnly}
                         className="flex-1"
@@ -486,6 +523,7 @@ function CategoryDialog({
                   ))}
                   {!isReadOnly && (
                     <Button
+                      ref={addButtonRef}
                       type="button"
                       variant="outline"
                       size="sm"
