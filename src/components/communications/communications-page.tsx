@@ -4,15 +4,17 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { useEffectiveComplexRole } from '#/lib/complex-role'
 import { cn } from '#/lib/utils'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { CategoriesManager } from './categories-manager'
 import { ResidentChat } from './resident-chat'
 import { StaffConversationsTab } from './staff-conversations-tab'
 import { StaffTicketsTab } from './staff-tickets-tab'
 
-type Tab = 'tickets' | 'conversaciones'
+type Tab = 'tickets' | 'conversaciones' | 'categorias'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'tickets', label: 'Tickets' },
   { id: 'conversaciones', label: 'Conversaciones' },
+  { id: 'categorias', label: 'Categorías' },
 ]
 
 interface CommunicationsPageProps {
@@ -81,6 +83,9 @@ function StaffView({ complexId }: { complexId: Id<'complexes'> }) {
           {activeTab === 'tickets' && <StaffTicketsTab complexId={complexId} />}
           {activeTab === 'conversaciones' && (
             <StaffConversationsTab complexId={complexId} />
+          )}
+          {activeTab === 'categorias' && (
+            <CategoriesManager complexId={complexId} />
           )}
         </Suspense>
       </div>

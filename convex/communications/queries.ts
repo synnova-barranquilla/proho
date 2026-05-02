@@ -270,6 +270,44 @@ export const getActiveConversation = query({
   },
 })
 
+export const listAllCategories = query({
+  args: {
+    complexId: v.id('complexes'),
+  },
+  handler: async (ctx, args) => {
+    await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: [...STAFF_ROLES],
+    })
+
+    const [platform, custom] = await Promise.all([
+      ctx.db
+        .query('categories')
+        .withIndex('by_complex', (q) =>
+          q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+        )
+        .collect(),
+      ctx.db
+        .query('categories')
+        .filter((q) => q.eq(q.field('complexId'), args.complexId))
+        .collect(),
+    ])
+
+    const disabledPlatform = await ctx.db
+      .query('categories')
+      .withIndex('by_complex', (q) =>
+        q.eq('complexId', '_platform' as any).eq('isEnabled', false),
+      )
+      .collect()
+
+    return {
+      platform: [...platform, ...disabledPlatform].sort(
+        (a, b) => a.displayOrder - b.displayOrder,
+      ),
+      custom: custom.sort((a, b) => a.displayOrder - b.displayOrder),
+    }
+  },
+})
+
 export const listCategories = query({
   args: {
     complexId: v.id('complexes'),
