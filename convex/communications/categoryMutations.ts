@@ -86,15 +86,29 @@ const DEFAULT_CATEGORIES: Array<{
     key: 'social_area_reservations',
     label: 'Reservas zonas sociales',
     priority: 'medium',
-    assignedRole: 'AUXILIAR',
-    keywords: ['reserva', 'salón', 'zona social', 'bbq'],
+    assignedRole: 'ADMIN',
+    keywords: ['reserva', 'salón', 'zona social', 'bbq', 'coworking', 'salon'],
   },
   {
     key: 'moving',
     label: 'Mudanzas',
     priority: 'medium',
-    assignedRole: 'AUXILIAR',
+    assignedRole: 'ADMIN',
     keywords: ['mudanza', 'trasteo', 'traslado'],
+  },
+  {
+    key: 'damage_inquiry',
+    label: 'Duda sobre daño',
+    priority: 'high',
+    assignedRole: 'ADMIN',
+    keywords: [
+      'daño',
+      'responsabilidad',
+      'quién paga',
+      'reparación',
+      'culpa',
+      'responsable',
+    ],
   },
   {
     key: 'service_cut_paid',
@@ -156,6 +170,30 @@ const DEFAULT_QUICK_ACTIONS: Array<{
     suggestedPriority: 'low',
   },
 ]
+
+export const patchPlatformCategories = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query('categories').collect()
+
+    for (const cat of all) {
+      if (cat.complexId !== ('_platform' as any)) continue
+
+      const def = DEFAULT_CATEGORIES.find((d) => d.key === cat.key)
+      if (!def) continue
+
+      if (
+        cat.assignedRole !== def.assignedRole ||
+        JSON.stringify(cat.keywords) !== JSON.stringify(def.keywords)
+      ) {
+        await ctx.db.patch(cat._id, {
+          assignedRole: def.assignedRole,
+          keywords: def.keywords,
+        })
+      }
+    }
+  },
+})
 
 export const seedPlatformDefaults = internalMutation({
   args: {},
