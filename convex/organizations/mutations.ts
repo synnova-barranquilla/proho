@@ -100,8 +100,8 @@ export const onboardTenant = mutation({
     })
 
     // 2. Create the pending invitation for the initial admin.
-    // F4: marcamos isOrgOwnerOnAccept=true para que al aceptar, el primer
-    // ADMIN de la org se cree como owner (ve todos los conjuntos automáticamente).
+    // isOrgOwnerOnAccept=true ensures the first ADMIN is created as an owner
+    // on acceptance (owners see all complexes in their org automatically).
     const now = Date.now()
     const invitationId = await ctx.db.insert('invitations', {
       email: args.adminEmail,

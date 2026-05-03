@@ -35,7 +35,7 @@ export const Route = createFileRoute('/_authenticated/seleccionar-conjunto')({
       {},
     )
 
-    // Si solo hay un conjunto accesible, redirect directo.
+    // Skip the picker when the user only has access to one complex.
     if (conjuntos.length === 1) {
       throw redirect({
         to: '/c/$complexSlug',

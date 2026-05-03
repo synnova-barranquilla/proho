@@ -193,7 +193,6 @@ export const remove = mutation({
       allowedRoles: ['ADMIN'],
     })
 
-    // Block if there are associated residents or vehicles
     const [residents, vehicles] = await Promise.all([
       ctx.db
         .query('residents')

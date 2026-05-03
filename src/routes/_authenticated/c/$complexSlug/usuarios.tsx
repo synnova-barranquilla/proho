@@ -8,7 +8,7 @@ import { ConvexError } from 'convex/values'
 import { UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { InviteComplexUserDialog } from '#/components/admin/usuarios/invite-complex-user-dialog'
+import { InviteComplexUserDialog } from '#/components/admin/users/invite-complex-user-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
@@ -119,7 +119,7 @@ function MembershipsTable({ complexId }: { complexId: Id<'complexes'> }) {
     }
   }
 
-  // Filtrar los ADMINs (esos se gestionan en /admin/equipo)
+  // ADMINs are managed separately at /admin/equipo
   const rows = memberships.filter((m) => m.role !== 'ADMIN')
 
   if (rows.length === 0) {

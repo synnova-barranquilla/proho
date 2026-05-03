@@ -9,7 +9,7 @@ import type { SearchableSelectOption } from '#/components/ui/searchable-select'
  *   ("1", "302")     → ["1302", "t1302", "302"]
  *   ("Norte", "205") → ["norte205", "tnorte205", "205"]
  */
-function buildUnidadAliases(tower: string, number: string): string[] {
+function buildUnitAliases(tower: string, number: string): string[] {
   const t = tower.toLowerCase().replace(/\s+/g, '')
   const n = number.toLowerCase().replace(/\s+/g, '')
   return [`${t}${n}`, `t${t}${n}`, n]
@@ -19,12 +19,12 @@ function buildUnidadAliases(tower: string, number: string): string[] {
  * Maps an array of units to SearchableSelectOption[] with search aliases.
  * Centralizes the label format ("Torre X — Y") and alias generation.
  */
-export function buildUnidadOptions(
-  unidades: Array<{ _id: string; tower: string; number: string }>,
+export function buildUnitOptions(
+  units: Array<{ _id: string; tower: string; number: string }>,
 ): SearchableSelectOption[] {
-  return unidades.map((u) => ({
+  return units.map((u) => ({
     value: u._id,
     label: `Torre ${u.tower} — ${u.number}`,
-    searchAliases: buildUnidadAliases(u.tower, u.number),
+    searchAliases: buildUnitAliases(u.tower, u.number),
   }))
 }

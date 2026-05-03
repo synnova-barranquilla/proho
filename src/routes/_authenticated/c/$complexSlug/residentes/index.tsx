@@ -7,7 +7,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { convexQuery } from '@convex-dev/react-query'
 import { Plus } from 'lucide-react'
 
-import { ResidenteDialog } from '#/components/admin/residentes/residente-dialog'
+import { ResidentDialog } from '#/components/admin/residents/resident-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { DataTable } from '#/components/ui/data-table'
@@ -37,13 +37,13 @@ export const Route = createFileRoute(
   component: ResidentesPage,
 })
 
-type ResidenteRow = Doc<'residents'> & { unit: Doc<'units'> | null }
+type ResidentRow = Doc<'residents'> & { unit: Doc<'units'> | null }
 
 function ResidentesPage() {
   const { complexId, complexSlug } = Route.useRouteContext()
   const isAdmin = useIsComplexAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<ResidenteRow | null>(null)
+  const [editing, setEditing] = useState<ResidentRow | null>(null)
 
   if (!isAdmin) {
     return <Navigate to="/c/$complexSlug" params={{ complexSlug }} />
@@ -80,14 +80,14 @@ function ResidentesPage() {
         />
       </Suspense>
 
-      <ResidenteDialog
+      <ResidentDialog
         open={dialogOpen}
         onOpenChange={(open) => {
           setDialogOpen(open)
           if (!open) setEditing(null)
         }}
         complexId={complexId}
-        residente={editing}
+        resident={editing}
       />
     </div>
   )
@@ -100,13 +100,13 @@ function ResidentesTable({
 }: {
   complexId: Id<'complexes'>
   isAdmin: boolean
-  onEdit: (r: ResidenteRow) => void
+  onEdit: (r: ResidentRow) => void
 }) {
   const { data: residentes } = useSuspenseQuery(
     convexQuery(api.residents.queries.listByComplex, { complexId }),
   )
 
-  const columns: ColumnDef<ResidenteRow>[] = [
+  const columns: ColumnDef<ResidentRow>[] = [
     {
       id: 'nombre',
       header: 'Nombre',
@@ -176,7 +176,7 @@ function ResidentesTable({
               headClassName: 'text-right',
               cellClassName: 'text-right',
             },
-            cell: ({ row }: { row: { original: ResidenteRow } }) => (
+            cell: ({ row }: { row: { original: ResidentRow } }) => (
               <Button
                 variant="outline"
                 size="sm"
@@ -185,7 +185,7 @@ function ResidentesTable({
                 Editar
               </Button>
             ),
-          } satisfies ColumnDef<ResidenteRow>,
+          } satisfies ColumnDef<ResidentRow>,
         ]
       : []),
   ]
@@ -193,7 +193,7 @@ function ResidentesTable({
   return (
     <DataTable
       columns={columns}
-      data={residentes as ResidenteRow[]}
+      data={residentes as ResidentRow[]}
       emptyMessage={
         isAdmin
           ? 'No hay residentes. Crea el primero con el botón "Nuevo residente".'

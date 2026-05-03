@@ -6,7 +6,12 @@ import { mutation, type MutationCtx } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
 import { RECURRENCE_LOOKBACK_MS } from '../lib/constants'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { ALL_COMMS_ROLES, CLOSED_STATUSES, STAFF_ROLES } from './constants'
+import {
+  ALL_COMMS_ROLES,
+  CLOSED_STATUSES,
+  PRIORITY_RANK,
+  STAFF_ROLES,
+} from './constants'
 import {
   PLATFORM_COMPLEX_ID,
   ticketOrigins,
@@ -70,8 +75,6 @@ async function resolveAssignedRole(
   complexId: Id<'complexes'>,
   categories: string[],
 ): Promise<AssignedRole> {
-  const priorityRank = { high: 3, medium: 2, low: 1 } as const
-
   const allCategories = await ctx.db
     .query('categories')
     .withIndex('by_complex', (q) =>
@@ -97,7 +100,7 @@ async function resolveAssignedRole(
 
   for (const cat of merged) {
     if (categories.includes(cat.key)) {
-      const rank = priorityRank[cat.priority]
+      const rank = PRIORITY_RANK[cat.priority]
       if (rank > bestPriority) {
         bestPriority = rank
         bestRole = cat.assignedRole

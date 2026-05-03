@@ -13,7 +13,7 @@ import {
   type ImportResult,
   type ValidatedRow,
 } from '#/components/admin/bulk-import-dialog'
-import { UnidadDialog } from '#/components/admin/unidades/unidad-dialog'
+import { UnitDialog } from '#/components/admin/units/unit-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
@@ -58,9 +58,9 @@ function UnidadesPage() {
     return <Navigate to="/c/$complexSlug" params={{ complexSlug }} />
   }
 
-  const VALID_TIPOS = new Set(['APARTMENT', 'HOUSE', 'COMMERCIAL'])
+  const VALID_UNIT_TYPES = new Set(['APARTMENT', 'HOUSE', 'COMMERCIAL'])
 
-  const validateUnidadRow = (
+  const validateUnitRow = (
     row: Record<string, string>,
     rowIndex: number,
   ): ValidatedRow<{
@@ -70,14 +70,14 @@ function UnidadesPage() {
   }> => {
     const tower = (row['torre'] || '').trim().toUpperCase()
     const number = (row['numero'] || '').trim()
-    const tipoRaw = (row['tipo'] || 'APARTMENT').trim().toUpperCase()
+    const typeRaw = (row['tipo'] || 'APARTMENT').trim().toUpperCase()
     const raw = row
 
     if (!tower || !number) {
       return { rowIndex, valid: false, error: 'Torre y número requeridos', raw }
     }
-    if (!VALID_TIPOS.has(tipoRaw)) {
-      return { rowIndex, valid: false, error: `Tipo inválido: ${tipoRaw}`, raw }
+    if (!VALID_UNIT_TYPES.has(typeRaw)) {
+      return { rowIndex, valid: false, error: `Tipo inválido: ${typeRaw}`, raw }
     }
 
     return {
@@ -86,13 +86,13 @@ function UnidadesPage() {
       data: {
         tower,
         number,
-        type: tipoRaw as 'APARTMENT' | 'HOUSE' | 'COMMERCIAL',
+        type: typeRaw as 'APARTMENT' | 'HOUSE' | 'COMMERCIAL',
       },
       raw,
     }
   }
 
-  const handleUnidadImport = async (
+  const handleUnitImport = async (
     rows: Array<{
       tower: string
       number: string
@@ -139,14 +139,14 @@ function UnidadesPage() {
         />
       </Suspense>
 
-      <UnidadDialog
+      <UnitDialog
         open={dialogOpen}
         onOpenChange={(open) => {
           setDialogOpen(open)
           if (!open) setEditing(null)
         }}
         complexId={complexId}
-        unidad={editing}
+        unit={editing}
       />
 
       <BulkImportDialog
@@ -154,8 +154,8 @@ function UnidadesPage() {
         onOpenChange={setImportOpen}
         title="Importar unidades"
         expectedColumns={['torre', 'numero', 'tipo']}
-        validateRow={validateUnidadRow}
-        onImport={handleUnidadImport}
+        validateRow={validateUnitRow}
+        onImport={handleUnitImport}
       />
     </div>
   )

@@ -12,12 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { MS_PER_DAY } from '../../../convex/lib/constants'
-import { normalizePlaca } from '../../../convex/lib/placa'
-import { NoEncontradoDialog } from './no-encontrado-dialog'
-import { PlacaSearchBar } from './placa-search-bar'
+import { normalizePlate } from '../../../convex/lib/plate'
+import { NotFoundDialog } from './no-encontrado-dialog'
+import { PlateSearchBar } from './plate-search-bar'
+import { AccessRecordsTable } from './records-table'
 import type { RegistroActivo } from './types'
 import { useControlAcceso } from './use-control-acceso'
-import { RegistrosRecientesTable } from './vehiculos-activos-table'
 import { ViolacionesDialog } from './violaciones-dialog'
 import { YaDentroDialog } from './ya-dentro-dialog'
 
@@ -45,8 +45,8 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
   )
 
   const carrosDentro = activos.filter((r) => {
-    const tipo = r.vehicle?.type ?? r.visitorVehicleType ?? 'CAR'
-    return tipo !== 'MOTORCYCLE'
+    const vehicleType = r.vehicle?.type ?? r.visitorVehicleType ?? 'CAR'
+    return vehicleType !== 'MOTORCYCLE'
   }).length
   const motosDentro = activos.filter(
     (r) => (r.vehicle?.type ?? r.visitorVehicleType) === 'MOTORCYCLE',
@@ -55,40 +55,40 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
   const motosCapacidad = config?.motoParkingSlots ?? 0
   const permanenciaDias = config?.ruleMaxStayDays ?? 0
 
-  const registrarIngresoFn = useConvexMutation(
+  const registerEntryFn = useConvexMutation(
     api.accessRecords.mutations.registerEntry,
   )
-  const registrarIngresoMut = useMutation({ mutationFn: registrarIngresoFn })
+  const registerEntryMut = useMutation({ mutationFn: registerEntryFn })
 
-  const handlePlacaSubmit = useCallback(
-    async (placa: string) => {
-      const placaNorm = normalizePlaca(placa)
+  const handlePlateSubmit = useCallback(
+    async (plate: string) => {
+      const plateNorm = normalizePlate(plate)
 
-      const yaAdentro = activos.find(
-        (r: RegistroActivo) => r.normalizedPlate === placaNorm,
+      const alreadyInside = activos.find(
+        (r: RegistroActivo) => r.normalizedPlate === plateNorm,
       )
-      if (yaAdentro) {
-        dispatch({ type: 'RESULTADO_YA_DENTRO', registro: yaAdentro })
+      if (alreadyInside) {
+        dispatch({ type: 'RESULTADO_YA_DENTRO', registro: alreadyInside })
         return
       }
 
-      dispatch({ type: 'BUSCAR_PLACA', placa: placaNorm })
+      dispatch({ type: 'BUSCAR_PLACA', placa: plateNorm })
 
       try {
-        const result = await registrarIngresoMut.mutateAsync({
+        const result = await registerEntryMut.mutateAsync({
           complexId,
-          rawPlate: placa,
+          rawPlate: plate,
         })
 
         if ('found' in result && !result.found) {
-          dispatch({ type: 'RESULTADO_NO_ENCONTRADO', placaRaw: placa })
+          dispatch({ type: 'RESULTADO_NO_ENCONTRADO', placaRaw: plate })
           return
         }
 
         if ('requiresJustification' in result && result.requiresJustification) {
           dispatch({
             type: 'RESULTADO_VIOLACIONES',
-            placaRaw: placa,
+            placaRaw: plate,
             violations: result.violations,
             vehicleId: '' as Id<'vehicles'>,
             unidadInfo: '',
@@ -110,7 +110,7 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
         dispatch({ type: 'VOLVER_IDLE' })
       }
     },
-    [activos, complexId, dispatch, registrarIngresoMut],
+    [activos, complexId, dispatch, registerEntryMut],
   )
 
   const handleVolver = useCallback(() => {
@@ -146,9 +146,9 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
             onToggle={() => setPermanenciaOpen((o) => !o)}
             badge={permanenciaExcedida.length > 0 ? 'destructive' : undefined}
           >
-            <RegistrosRecientesTable
+            <AccessRecordsTable
               variant="activos"
-              registros={permanenciaExcedida.map((r) => ({
+              records={permanenciaExcedida.map((r) => ({
                 _id: `${r._id}-entrada`,
                 event: 'ENTRADA' as const,
                 eventAt: r.enteredAt ?? r._creationTime,
@@ -169,9 +169,9 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
           onToggle={() => setVisitantesOpen((o) => !o)}
           badge={visitantesDentro.length > 0 ? 'warning' : undefined}
         >
-          <RegistrosRecientesTable
+          <AccessRecordsTable
             variant="activos"
-            registros={visitantesDentro.map((r) => ({
+            records={visitantesDentro.map((r) => ({
               _id: `${r._id}-entrada`,
               event: 'ENTRADA' as const,
               eventAt: r.enteredAt ?? r._creationTime,
@@ -190,7 +190,7 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
           open={recientesOpen}
           onToggle={() => setRecientesOpen((o) => !o)}
         >
-          <RegistrosRecientesTable registros={recientes} />
+          <AccessRecordsTable records={recientes} />
         </CollapsibleTable>
       </div>
 
@@ -211,10 +211,10 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
             <span className="text-xs text-muted-foreground">motos</span>
           </div>
         </div>
-        <PlacaSearchBar
-          onSubmit={handlePlacaSubmit}
-          isProcesando={state.screen === 'PROCESANDO'}
-          vehiculos={vehiculos}
+        <PlateSearchBar
+          onSubmit={handlePlateSubmit}
+          isProcessing={state.screen === 'PROCESANDO'}
+          vehicles={vehiculos}
         />
       </div>
 
@@ -223,10 +223,10 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
           open
           onClose={handleVolver}
           complexId={complexId}
-          placa={state.placa}
-          placaRaw={state.placaRaw}
+          plate={state.placa}
+          plateRaw={state.placaRaw}
           violations={state.violations}
-          unidadInfo={state.unidadInfo}
+          unitInfo={state.unidadInfo}
         />
       )}
 
@@ -240,12 +240,12 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
       )}
 
       {state.screen === 'NO_ENCONTRADO' && (
-        <NoEncontradoDialog
+        <NotFoundDialog
           open
           onClose={handleVolver}
           complexId={complexId}
-          placa={state.placa}
-          placaRaw={state.placaRaw}
+          plate={state.placa}
+          plateRaw={state.placaRaw}
         />
       )}
     </div>

@@ -23,46 +23,45 @@ import type { Id } from '../../../convex/_generated/dataModel'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
 import { VIOLATION_LABELS_LONG as VIOLATION_LABELS } from './types'
 
-interface ViolacionesDialogProps {
+interface ViolationsDialogProps {
   open: boolean
   onClose: () => void
   complexId: Id<'complexes'>
-  placa: string
-  placaRaw: string
+  plate: string
+  plateRaw: string
   violations: RuleViolation[]
-  unidadInfo: string
+  unitInfo: string
 }
 
 export function ViolacionesDialog({
   open,
   onClose,
   complexId,
-  placa,
-  placaRaw,
+  plate,
+  plateRaw,
   violations,
-  unidadInfo,
-}: ViolacionesDialogProps) {
+  unitInfo,
+}: ViolationsDialogProps) {
   const [justification, setJustification] = useState('')
   const [observations, setObservations] = useState('')
 
-  const registrarIngresoFn = useConvexMutation(
+  const registerEntryFn = useConvexMutation(
     api.accessRecords.mutations.registerEntry,
   )
-  const registrarIngresoMut = useMutation({ mutationFn: registrarIngresoFn })
+  const registerEntryMut = useMutation({ mutationFn: registerEntryFn })
 
-  const registrarRechazoFn = useConvexMutation(
+  const registerRejectionFn = useConvexMutation(
     api.accessRecords.mutations.registerRejection,
   )
-  const registrarRechazoMut = useMutation({ mutationFn: registrarRechazoFn })
+  const registerRejectionMut = useMutation({ mutationFn: registerRejectionFn })
 
-  const isPending =
-    registrarIngresoMut.isPending || registrarRechazoMut.isPending
+  const isPending = registerEntryMut.isPending || registerRejectionMut.isPending
 
   const handlePermitir = async () => {
     try {
-      await registrarIngresoMut.mutateAsync({
+      await registerEntryMut.mutateAsync({
         complexId,
-        rawPlate: placaRaw,
+        rawPlate: plateRaw,
         forcePermitted: true,
         justification,
         observations: observations.trim() || undefined,
@@ -81,9 +80,9 @@ export function ViolacionesDialog({
 
   const handleRechazar = async () => {
     try {
-      await registrarRechazoMut.mutateAsync({
+      await registerRejectionMut.mutateAsync({
         complexId,
-        rawPlate: placaRaw,
+        rawPlate: plateRaw,
         type: 'RESIDENT',
         engineDecision: violations,
       })
@@ -114,11 +113,11 @@ export function ViolacionesDialog({
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <span className="font-mono text-lg font-medium">
-                {formatPlaca(placa)}
+                {formatPlaca(plate)}
               </span>
-              {unidadInfo && (
+              {unitInfo && (
                 <span className="text-sm text-muted-foreground">
-                  {unidadInfo}
+                  {unitInfo}
                 </span>
               )}
             </div>
@@ -173,7 +172,7 @@ export function ViolacionesDialog({
             disabled={isPending || !justification.trim()}
             className="bg-amber-600 hover:bg-amber-700"
           >
-            {registrarIngresoMut.isPending ? 'Registrando...' : 'Permitir'}
+            {registerEntryMut.isPending ? 'Registrando...' : 'Permitir'}
           </Button>
         </DialogFooter>
       </DialogContent>

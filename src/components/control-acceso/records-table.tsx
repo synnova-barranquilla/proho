@@ -4,45 +4,33 @@ import { Bike, Car, LogIn, LogOut, type LucideIcon } from 'lucide-react'
 
 import { Badge } from '#/components/ui/badge'
 import { PaginatedDataTable } from '#/components/ui/paginated-data-table'
+import { formatAccessTime } from '#/lib/date'
 import { formatDuracion, formatPlaca } from '#/lib/formatters'
 import { RECORD_TYPE_LABELS, type RegistroReciente } from './types'
 
-interface RegistrosRecientesTableProps {
-  registros: RegistroReciente[]
+interface AccessRecordsTableProps {
+  records: RegistroReciente[]
   variant?: 'recientes' | 'activos'
 }
 
-const TIPO_VEHICULO_ICON: Record<string, LucideIcon> = {
+const VEHICLE_TYPE_ICON: Record<string, LucideIcon> = {
   CAR: Car,
   MOTORCYCLE: Bike,
   OTHER: Car,
 }
 
-const TIPO_REGISTRO_LABEL = RECORD_TYPE_LABELS
+const RECORD_TYPE_LABEL = RECORD_TYPE_LABELS
 
-const TIPO_REGISTRO_VARIANT: Record<
-  string,
-  'default' | 'secondary' | 'outline'
-> = {
-  RESIDENT: 'default',
-  VISITOR: 'secondary',
-  ADMIN_VISIT: 'outline',
-}
-
-function formatHora(timestamp: number): string {
-  const date = new Date(timestamp)
-  return date.toLocaleString('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
-}
+const RECORD_TYPE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> =
+  {
+    RESIDENT: 'default',
+    VISITOR: 'secondary',
+    ADMIN_VISIT: 'outline',
+  }
 
 const sharedColumns: ColumnDef<RegistroReciente, unknown>[] = [
   {
-    accessorKey: 'placaNormalizada',
+    accessorKey: 'normalizedPlate',
     header: 'Placa',
     cell: ({ row }) => (
       <span className="font-mono text-base font-medium">
@@ -51,20 +39,20 @@ const sharedColumns: ColumnDef<RegistroReciente, unknown>[] = [
     ),
   },
   {
-    id: 'tipoVehiculo',
+    id: 'vehicleType',
     header: 'Vehículo',
     enableSorting: false,
     cell: ({ row }) => {
-      const tipo =
+      const type =
         row.original.visitorVehicleType ?? row.original.vehicle?.type ?? 'CAR'
-      const Icon = TIPO_VEHICULO_ICON[tipo] ?? Car
+      const Icon = VEHICLE_TYPE_ICON[type] ?? Car
       return (
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <Icon className="h-4 w-4" />
           <span className="text-sm">
-            {tipo === 'MOTORCYCLE'
+            {type === 'MOTORCYCLE'
               ? 'Moto'
-              : tipo === 'OTHER'
+              : type === 'OTHER'
                 ? 'Otro'
                 : 'Carro'}
           </span>
@@ -76,13 +64,13 @@ const sharedColumns: ColumnDef<RegistroReciente, unknown>[] = [
     accessorKey: 'type',
     header: 'Registro',
     cell: ({ row }) => (
-      <Badge variant={TIPO_REGISTRO_VARIANT[row.original.type] ?? 'default'}>
-        {TIPO_REGISTRO_LABEL[row.original.type] ?? row.original.type}
+      <Badge variant={RECORD_TYPE_VARIANT[row.original.type] ?? 'default'}>
+        {RECORD_TYPE_LABEL[row.original.type] ?? row.original.type}
       </Badge>
     ),
   },
   {
-    id: 'unidad',
+    id: 'unit',
     header: 'Unidad',
     cell: ({ row }) => {
       const u = row.original.unit
@@ -96,10 +84,10 @@ const sharedColumns: ColumnDef<RegistroReciente, unknown>[] = [
   },
 ]
 
-const activosColumns: ColumnDef<RegistroReciente, unknown>[] = [
+const activeColumns: ColumnDef<RegistroReciente, unknown>[] = [
   ...sharedColumns,
   {
-    id: 'duracion',
+    id: 'duration',
     header: 'Duración',
     cell: ({ row }) => (
       <span className="text-sm tabular-nums text-muted-foreground">
@@ -108,57 +96,57 @@ const activosColumns: ColumnDef<RegistroReciente, unknown>[] = [
     ),
   },
   {
-    id: 'ingreso',
+    id: 'entryTime',
     header: 'Ingreso',
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {formatHora(row.original.eventAt)}
+        {formatAccessTime(row.original.eventAt)}
       </span>
     ),
   },
 ]
 
-const recientesColumns: ColumnDef<RegistroReciente, unknown>[] = [
+const recentColumns: ColumnDef<RegistroReciente, unknown>[] = [
   ...sharedColumns,
   {
-    id: 'evento',
+    id: 'event',
     header: 'Evento',
     enableSorting: false,
     cell: ({ row }) => {
-      const esSalida = row.original.event === 'SALIDA'
+      const isExit = row.original.event === 'SALIDA'
       return (
         <span
-          className={`flex items-center gap-1.5 text-sm ${esSalida ? 'text-amber-600' : 'text-green-600'}`}
+          className={`flex items-center gap-1.5 text-sm ${isExit ? 'text-amber-600' : 'text-green-600'}`}
         >
-          {esSalida ? (
+          {isExit ? (
             <LogOut className="h-3.5 w-3.5" />
           ) : (
             <LogIn className="h-3.5 w-3.5" />
           )}
-          {esSalida ? 'Salida' : 'Entrada'}
+          {isExit ? 'Salida' : 'Entrada'}
         </span>
       )
     },
   },
   {
-    id: 'hora',
+    id: 'time',
     header: 'Hora',
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {formatHora(row.original.eventAt)}
+        {formatAccessTime(row.original.eventAt)}
       </span>
     ),
   },
 ]
 
-export function RegistrosRecientesTable({
-  registros,
+export function AccessRecordsTable({
+  records,
   variant = 'recientes',
-}: RegistrosRecientesTableProps) {
+}: AccessRecordsTableProps) {
   return (
     <PaginatedDataTable
-      columns={variant === 'activos' ? activosColumns : recientesColumns}
-      data={registros}
+      columns={variant === 'activos' ? activeColumns : recentColumns}
+      data={records}
       pageSize={5}
       emptyMessage={
         variant === 'recientes'
@@ -168,3 +156,6 @@ export function RegistrosRecientesTable({
     />
   )
 }
+
+/** @deprecated Use `AccessRecordsTable` */
+export const RegistrosRecientesTable = AccessRecordsTable

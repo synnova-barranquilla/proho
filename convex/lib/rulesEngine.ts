@@ -10,10 +10,10 @@ import { MS_PER_DAY } from './constants'
 
 export type { VehicleTipo }
 
-export interface VehiculoAdentro {
-  tipo: VehicleTipo
-  placaNormalizada: string
-  entradaEn?: number
+export interface VehicleInside {
+  vehicleType: VehicleTipo
+  normalizedPlate: string
+  enteredAt?: number
 }
 
 export interface RuleConfig {
@@ -23,28 +23,28 @@ export interface RuleConfig {
   ruleEntryOverCapacity: boolean
 }
 
-export interface OcupacionSnapshot {
-  carros: number
-  motos: number
+export interface OccupancySnapshot {
+  cars: number
+  motorcycles: number
 }
 
 export interface RuleInput {
   /** Access record type */
-  tipo: 'RESIDENT' | 'VISITOR' | 'ADMIN_VISIT'
+  recordType: 'RESIDENT' | 'VISITOR' | 'ADMIN_VISIT'
   /** Type of the vehicle attempting to enter */
-  vehiculoTipo?: VehicleTipo
+  vehicleType?: VehicleTipo
   /** Whether the vehicle's unit is in arrears */
-  unidadEnMora?: boolean
+  unitInArrears?: boolean
   /** Vehicles from the same unit currently inside the complex */
-  vehiculosUnidadAdentro: VehiculoAdentro[]
+  vehiclesUnitInside: VehicleInside[]
   /** Current occupancy of the entire complex (for overcapacity) */
-  ocupacion: OcupacionSnapshot
+  occupancy: OccupancySnapshot
   /** Configured capacity of the complex (0 = unlimited) */
-  capacidad: OcupacionSnapshot
+  capacity: OccupancySnapshot
   /** Rules configuration of the complex */
   config: RuleConfig
   /** Current timestamp (for stay duration calculation) */
-  ahora: number
+  now: number
 }
 
 export type RuleViolation =
@@ -57,63 +57,65 @@ export type RuleViolation =
 
 export interface RuleResult {
   violations: RuleViolation[]
-  requiresJustificacion: boolean
+  requiresJustification: boolean
 }
 
 export function evaluateRules(input: RuleInput): RuleResult {
   const violations: RuleViolation[] = []
 
-  // R4: Overcapacity — applies to RESIDENTE and VISITANTE. VISITA_ADMIN is exempt.
+  // R4: Overcapacity — applies to RESIDENT and VISITOR. ADMIN_VISIT is exempt.
   if (
     input.config.ruleEntryOverCapacity &&
-    input.vehiculoTipo &&
-    (input.tipo === 'RESIDENT' || input.tipo === 'VISITOR')
+    input.vehicleType &&
+    (input.recordType === 'RESIDENT' || input.recordType === 'VISITOR')
   ) {
-    const esCarro = input.vehiculoTipo !== 'MOTORCYCLE'
-    const ocupacion = esCarro ? input.ocupacion.carros : input.ocupacion.motos
-    const capacidad = esCarro ? input.capacidad.carros : input.capacidad.motos
-    if (capacidad > 0 && ocupacion >= capacidad) {
-      violations.push(esCarro ? 'SOBRECUPO_CARROS' : 'SOBRECUPO_MOTOS')
+    const isCar = input.vehicleType !== 'MOTORCYCLE'
+    const currentOccupancy = isCar
+      ? input.occupancy.cars
+      : input.occupancy.motorcycles
+    const maxCapacity = isCar ? input.capacity.cars : input.capacity.motorcycles
+    if (maxCapacity > 0 && currentOccupancy >= maxCapacity) {
+      violations.push(isCar ? 'SOBRECUPO_CARROS' : 'SOBRECUPO_MOTOS')
     }
   }
 
   // Resident-only rules only apply to residents
-  if (input.tipo !== 'RESIDENT') {
+  if (input.recordType !== 'RESIDENT') {
     return {
       violations,
-      requiresJustificacion: violations.length > 0,
+      requiresJustification: violations.length > 0,
     }
   }
 
   // R1: Entry in arrears
-  if (input.config.ruleEntryInArrears && input.unidadEnMora) {
+  if (input.config.ruleEntryInArrears && input.unitInArrears) {
     violations.push('MORA')
   }
 
   // R2: Duplicate vehicle per unit
-  if (input.config.ruleDuplicateVehicle && input.vehiculoTipo) {
-    const carrosAdentro = input.vehiculosUnidadAdentro.filter(
-      (v) => v.tipo === 'CAR' || v.tipo === 'OTHER',
+  if (input.config.ruleDuplicateVehicle && input.vehicleType) {
+    const carsInside = input.vehiclesUnitInside.filter(
+      (v) => v.vehicleType === 'CAR' || v.vehicleType === 'OTHER',
     )
-    const motosAdentro = input.vehiculosUnidadAdentro.filter(
-      (v) => v.tipo === 'MOTORCYCLE',
+    const motorcyclesInside = input.vehiclesUnitInside.filter(
+      (v) => v.vehicleType === 'MOTORCYCLE',
     )
 
-    if (input.vehiculoTipo === 'CAR' || input.vehiculoTipo === 'OTHER') {
+    if (input.vehicleType === 'CAR' || input.vehicleType === 'OTHER') {
       // If there's already a car/other inside -> duplicate
-      if (carrosAdentro.length > 0) {
+      if (carsInside.length > 0) {
         violations.push('VEHICULO_DUPLICADO')
       }
       // If there's a moto inside and a car enters -> also duplicate (vehicle already present)
-      else if (motosAdentro.length > 0) {
+      else if (motorcyclesInside.length > 0) {
         violations.push('VEHICULO_DUPLICADO')
       }
     } else {
-      // vehiculoTipo === 'MOTORCYCLE'
-      if (motosAdentro.length > 0) {
+      // vehicleType === 'MOTORCYCLE'
+      if (motorcyclesInside.length > 0) {
         // Already a moto -> duplicate
         violations.push('VEHICULO_DUPLICADO')
-      } else if (carrosAdentro.length > 0) {
+      } else if (carsInside.length > 0) {
         // There's a car and a moto enters -> permitted with confirmation
         violations.push('MOTO_ADICIONAL')
       }
@@ -122,17 +124,23 @@ export function evaluateRules(input: RuleInput): RuleResult {
 
   // R3: Maximum stay exceeded
   if (input.config.ruleMaxStayDays > 0) {
-    const limiteMs = input.config.ruleMaxStayDays * MS_PER_DAY
-    const excedido = input.vehiculosUnidadAdentro.some(
-      (v) => v.entradaEn != null && input.ahora - v.entradaEn > limiteMs,
+    const limitMs = input.config.ruleMaxStayDays * MS_PER_DAY
+    const exceeded = input.vehiclesUnitInside.some(
+      (v) => v.enteredAt != null && input.now - v.enteredAt > limitMs,
     )
-    if (excedido) {
+    if (exceeded) {
       violations.push('PERMANENCIA_EXCEDIDA')
     }
   }
 
   return {
     violations,
-    requiresJustificacion: violations.length > 0,
+    requiresJustification: violations.length > 0,
   }
 }
+
+// Backwards-compatible aliases for callers that haven't been updated
+/** @deprecated Use `VehicleInside` */
+export type VehiculoAdentro = VehicleInside
+/** @deprecated Use `OccupancySnapshot` */
+export type OcupacionSnapshot = OccupancySnapshot

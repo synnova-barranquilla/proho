@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { useSearch } from '@tanstack/react-router'
 
-type ThemeMode = 'light' | 'dark'
+import type { ThemeMode } from '#/hooks/use-theme'
 
 function getQueryTheme(): ThemeMode | null {
   if (typeof window === 'undefined') return null

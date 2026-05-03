@@ -19,7 +19,7 @@ export const setUserActive = mutation({
   handler: async (ctx, args) => {
     const caller = await requireOrgRole(ctx, ['ADMIN', 'SUPER_ADMIN'])
 
-    // SUPER_ADMIN puede siempre; ADMINs solo owners
+    // SUPER_ADMIN can always; ADMINs only if they are an owner
     if (caller.orgRole === 'ADMIN' && caller.isOrgOwner !== true) {
       throwConvexError(
         ERROR_CODES.FORBIDDEN,

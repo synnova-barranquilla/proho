@@ -6,11 +6,17 @@ export const documentType = v.union(
   v.literal('PA'),
 )
 
+/** TS-level document type derived from the Convex validator. */
+export type DocumentType = 'CC' | 'CE' | 'PA'
+
 export const residentTypes = v.union(
   v.literal('OWNER'),
   v.literal('LESSEE'),
   v.literal('TENANT'),
 )
+
+/** TS-level resident type derived from the Convex validator. */
+export type ResidentType = 'OWNER' | 'LESSEE' | 'TENANT'
 
 export const residentFields = {
   complexId: v.id('complexes'),

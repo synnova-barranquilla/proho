@@ -19,7 +19,6 @@ export const listByComplex = query({
       .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
       .collect()
 
-    // Group by tower
     const map = new Map<string, typeof units>()
     for (const u of units) {
       const arr = map.get(u.tower) ?? []

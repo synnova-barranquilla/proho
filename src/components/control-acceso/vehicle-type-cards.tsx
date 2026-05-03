@@ -1,20 +1,20 @@
 import { Bike, Car } from 'lucide-react'
 
 import { cn } from '#/lib/utils'
-import type { PlacaTipo } from '../../../convex/lib/placa'
+import type { PlateType } from '../../../convex/lib/plate'
 
 /** UI alias — selectable vehicle types match the plate-detection domain type. */
-export type TipoVehiculoSelectable = PlacaTipo
+export type SelectableVehicleType = PlateType
 
-interface TipoVehiculoCardsProps {
-  value: TipoVehiculoSelectable
-  onValueChange: (value: TipoVehiculoSelectable) => void
+interface VehicleTypeCardsProps {
+  value: SelectableVehicleType
+  onValueChange: (value: SelectableVehicleType) => void
   disabled?: boolean
   className?: string
 }
 
 const OPTIONS: Array<{
-  value: TipoVehiculoSelectable
+  value: SelectableVehicleType
   label: string
   Icon: typeof Car
 }> = [
@@ -22,12 +22,12 @@ const OPTIONS: Array<{
   { value: 'MOTORCYCLE', label: 'Moto', Icon: Bike },
 ]
 
-export function TipoVehiculoCards({
+export function VehicleTypeCards({
   value,
   onValueChange,
   disabled,
   className,
-}: TipoVehiculoCardsProps) {
+}: VehicleTypeCardsProps) {
   return (
     <div
       role="radiogroup"

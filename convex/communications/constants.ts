@@ -13,3 +13,5 @@ export const CLOSED_STATUSES = [
   'closed_by_admin',
   'closed_by_inactivity',
 ] as const
+
+export const PRIORITY_RANK = { high: 3, medium: 2, low: 1 } as const

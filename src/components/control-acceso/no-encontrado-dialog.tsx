@@ -20,81 +20,79 @@ import { Field, FieldLabel } from '#/components/ui/field'
 import { SearchableSelect } from '#/components/ui/searchable-select'
 import { Textarea } from '#/components/ui/textarea'
 import { formatPlaca } from '#/lib/formatters'
-import { buildUnidadOptions } from '#/lib/unidad-search'
+import { buildUnitOptions } from '#/lib/unit-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-import {
-  detectPlacaTipo,
-  isPlacaValidaParaTipo,
-} from '../../../convex/lib/placa'
+import { detectPlateType, isValidPlateForType } from '../../../convex/lib/plate'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
-import { RegistrarResidenteSheet } from './registrar-residente-sheet'
-import {
-  TipoVehiculoCards,
-  type TipoVehiculoSelectable,
-} from './tipo-vehiculo-cards'
+import { RegisterResidentSheet } from './register-resident-sheet'
 import { VIOLATION_LABELS_LONG as VIOLATION_LABELS } from './types'
+import {
+  VehicleTypeCards,
+  type SelectableVehicleType,
+} from './vehicle-type-cards'
 
 type SubScreen = 'OPTIONS' | 'VISITOR' | 'VIOLACIONES' | 'RESIDENT'
 
-interface PendingVisitante {
-  tipo: 'VISITOR' | 'ADMIN_VISIT'
+interface PendingVisitor {
+  type: 'VISITOR' | 'ADMIN_VISIT'
   unitId?: Id<'units'>
-  vehiculoTipo: TipoVehiculoSelectable
+  vehicleType: SelectableVehicleType
 }
 
-interface NoEncontradoDialogProps {
+interface NotFoundDialogProps {
   open: boolean
   onClose: () => void
   complexId: Id<'complexes'>
-  placa: string
-  placaRaw: string
+  plate: string
+  plateRaw: string
 }
 
-export function NoEncontradoDialog({
+export function NotFoundDialog({
   open,
   onClose,
   complexId,
-  placa,
-  placaRaw,
-}: NoEncontradoDialogProps) {
+  plate,
+  plateRaw,
+}: NotFoundDialogProps) {
   const [subScreen, setSubScreen] = useState<SubScreen>('OPTIONS')
-  const [selectedUnidadId, setSelectedUnidadId] = useState<string>('')
-  const [tipo, setTipo] = useState<TipoVehiculoSelectable>(
-    detectPlacaTipo(placa) ?? 'CAR',
+  const [selectedUnitId, setSelectedUnitId] = useState<string>('')
+  const [vehicleType, setVehicleType] = useState<SelectableVehicleType>(
+    detectPlateType(plate) ?? 'CAR',
   )
-  const [pending, setPending] = useState<PendingVisitante | null>(null)
+  const [pending, setPending] = useState<PendingVisitor | null>(null)
   const [violations, setViolations] = useState<RuleViolation[]>([])
   const [justification, setJustification] = useState('')
   const [observations, setObservations] = useState('')
 
-  // Auto-switch tipo cuando cambia la placa (e.g., usuario regresa con otro valor).
+  // Auto-switch vehicle type when plate changes (e.g. user navigates back with a different value).
   useEffect(() => {
-    const detected = detectPlacaTipo(placa)
-    if (detected) setTipo(detected)
-  }, [placa])
+    const detected = detectPlateType(plate)
+    if (detected) setVehicleType(detected)
+  }, [plate])
 
-  const placaValida = placa.length === 6 && isPlacaValidaParaTipo(placa, tipo)
+  const isPlateValid =
+    plate.length === 6 && isValidPlateForType(plate, vehicleType)
 
-  const { data: unidadesData } = useSuspenseQuery(
+  const { data: unitsData } = useSuspenseQuery(
     convexQuery(api.units.queries.listByComplex, { complexId }),
   )
-  const unidades = unidadesData.towers.flatMap(
+  const units = unitsData.towers.flatMap(
     (t: { units: Array<{ _id: string; tower: string; number: string }> }) =>
       t.units,
   )
-  const unidadOptions = buildUnidadOptions(unidades)
+  const unitOptions = buildUnitOptions(units)
 
-  const registrarVisitanteFn = useConvexMutation(
+  const registerVisitorFn = useConvexMutation(
     api.accessRecords.mutations.registerVisitor,
   )
-  const registrarVisitanteMut = useMutation({
-    mutationFn: registrarVisitanteFn,
+  const registerVisitorMut = useMutation({
+    mutationFn: registerVisitorFn,
   })
 
   const resetAll = () => {
     setSubScreen('OPTIONS')
-    setSelectedUnidadId('')
+    setSelectedUnitId('')
     setPending(null)
     setViolations([])
     setJustification('')
@@ -106,16 +104,16 @@ export function NoEncontradoDialog({
     onClose()
   }
 
-  const submitVisitante = async (
-    req: PendingVisitante,
+  const submitVisitor = async (
+    req: PendingVisitor,
     overrides?: { justification?: string; observations?: string },
   ) => {
     try {
-      const result = await registrarVisitanteMut.mutateAsync({
+      const result = await registerVisitorMut.mutateAsync({
         complexId,
-        rawPlate: placaRaw,
-        type: req.tipo,
-        vehicleType: req.vehiculoTipo,
+        rawPlate: plateRaw,
+        type: req.type,
+        vehicleType: req.vehicleType,
         unitId: req.unitId,
         ...(overrides?.justification
           ? {
@@ -134,7 +132,7 @@ export function NoEncontradoDialog({
       }
 
       toast.success(
-        req.tipo === 'ADMIN_VISIT'
+        req.type === 'ADMIN_VISIT'
           ? 'Visita administrativa registrada'
           : 'Visitante registrado',
       )
@@ -149,36 +147,36 @@ export function NoEncontradoDialog({
     }
   }
 
-  const handleVisitaAdmin = () => {
-    if (!placaValida) return
-    void submitVisitante({ tipo: 'ADMIN_VISIT', vehiculoTipo: tipo })
+  const handleAdminVisit = () => {
+    if (!isPlateValid) return
+    void submitVisitor({ type: 'ADMIN_VISIT', vehicleType })
   }
 
-  const handleVisitanteConfirmar = () => {
-    if (!selectedUnidadId || !placaValida) {
-      if (!selectedUnidadId) toast.error('Selecciona una unidad de destino')
+  const handleVisitorConfirm = () => {
+    if (!selectedUnitId || !isPlateValid) {
+      if (!selectedUnitId) toast.error('Selecciona una unidad de destino')
       return
     }
-    void submitVisitante({
-      tipo: 'VISITOR',
-      vehiculoTipo: tipo,
-      unitId: selectedUnidadId as Id<'units'>,
+    void submitVisitor({
+      type: 'VISITOR',
+      vehicleType,
+      unitId: selectedUnitId as Id<'units'>,
     })
   }
 
-  const handleConfirmarJustificacion = () => {
+  const handleConfirmJustification = () => {
     if (!pending) return
     if (!justification.trim()) {
       toast.error('Justificación obligatoria')
       return
     }
-    void submitVisitante(pending, {
+    void submitVisitor(pending, {
       justification,
       observations,
     })
   }
 
-  const isPending = registrarVisitanteMut.isPending
+  const isPending = registerVisitorMut.isPending
 
   const dialogOpen = open && subScreen !== 'RESIDENT'
   const sheetOpen = open && subScreen === 'RESIDENT'
@@ -198,7 +196,7 @@ export function NoEncontradoDialog({
               <DialogTitle>Vehículo no registrado</DialogTitle>
             </div>
             <p className="mt-1 font-mono text-lg font-medium">
-              {formatPlaca(placa)}
+              {formatPlaca(plate)}
             </p>
           </DialogHeader>
           <DialogBody>
@@ -208,7 +206,10 @@ export function NoEncontradoDialog({
                   <label className="text-sm font-medium">
                     Tipo de vehículo
                   </label>
-                  <TipoVehiculoCards value={tipo} onValueChange={setTipo} />
+                  <VehicleTypeCards
+                    value={vehicleType}
+                    onValueChange={setVehicleType}
+                  />
                 </div>
 
                 <div className="flex flex-col gap-3">
@@ -216,7 +217,7 @@ export function NoEncontradoDialog({
                     type="button"
                     className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
                     onClick={() => setSubScreen('VISITOR')}
-                    disabled={!placaValida}
+                    disabled={!isPlateValid}
                   >
                     <UserRound className="h-6 w-6 shrink-0 text-muted-foreground" />
                     <div>
@@ -230,8 +231,8 @@ export function NoEncontradoDialog({
                   <button
                     type="button"
                     className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={handleVisitaAdmin}
-                    disabled={isPending || !placaValida}
+                    onClick={handleAdminVisit}
+                    disabled={isPending || !isPlateValid}
                   >
                     <Building2 className="h-6 w-6 shrink-0 text-muted-foreground" />
                     <div>
@@ -246,7 +247,7 @@ export function NoEncontradoDialog({
                     type="button"
                     className="flex min-h-14 items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
                     onClick={() => setSubScreen('RESIDENT')}
-                    disabled={!placaValida}
+                    disabled={!isPlateValid}
                   >
                     <Car className="h-6 w-6 shrink-0 text-muted-foreground" />
                     <div>
@@ -267,9 +268,9 @@ export function NoEncontradoDialog({
                     Unidad de destino
                   </label>
                   <SearchableSelect
-                    value={selectedUnidadId}
-                    onValueChange={setSelectedUnidadId}
-                    options={unidadOptions}
+                    value={selectedUnitId}
+                    onValueChange={setSelectedUnitId}
+                    options={unitOptions}
                     placeholder="Selecciona una unidad"
                     searchPlaceholder="Buscar por torre o número..."
                   />
@@ -323,15 +324,15 @@ export function NoEncontradoDialog({
                   variant="outline"
                   onClick={() => {
                     setSubScreen('OPTIONS')
-                    setSelectedUnidadId('')
+                    setSelectedUnitId('')
                   }}
                   disabled={isPending}
                 >
                   Atrás
                 </Button>
                 <Button
-                  onClick={handleVisitanteConfirmar}
-                  disabled={isPending || !selectedUnidadId || !placaValida}
+                  onClick={handleVisitorConfirm}
+                  disabled={isPending || !selectedUnitId || !isPlateValid}
                 >
                   {isPending ? 'Registrando...' : 'Confirmar visitante'}
                 </Button>
@@ -343,7 +344,7 @@ export function NoEncontradoDialog({
                   variant="outline"
                   onClick={() => {
                     setSubScreen(
-                      pending?.tipo === 'VISITOR' ? 'VISITOR' : 'OPTIONS',
+                      pending?.type === 'VISITOR' ? 'VISITOR' : 'OPTIONS',
                     )
                     setViolations([])
                     setJustification('')
@@ -354,7 +355,7 @@ export function NoEncontradoDialog({
                   Atrás
                 </Button>
                 <Button
-                  onClick={handleConfirmarJustificacion}
+                  onClick={handleConfirmJustification}
                   disabled={isPending || !justification.trim()}
                 >
                   {isPending ? 'Registrando...' : 'Permitir con justificación'}
@@ -365,7 +366,7 @@ export function NoEncontradoDialog({
         </DialogContent>
       </Dialog>
 
-      <RegistrarResidenteSheet
+      <RegisterResidentSheet
         open={sheetOpen}
         onClose={() => setSubScreen('OPTIONS')}
         onSuccess={() => {
@@ -373,9 +374,9 @@ export function NoEncontradoDialog({
           onClose()
         }}
         complexId={complexId}
-        placa={placa}
-        placaRaw={placaRaw}
-        initialTipo={tipo}
+        plate={plate}
+        plateRaw={plateRaw}
+        initialVehicleType={vehicleType}
       />
     </>
   )

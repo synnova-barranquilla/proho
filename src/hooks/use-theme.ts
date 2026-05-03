@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-type ThemeMode = 'light' | 'dark'
+export type ThemeMode = 'light' | 'dark'
 
 function applyThemeMode(mode: ThemeMode) {
   const root = document.documentElement

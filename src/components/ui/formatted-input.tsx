@@ -9,7 +9,7 @@ import {
   parsePhone,
   parsePlaca,
 } from '#/lib/formatters'
-import { isPlacaValida } from '../../../convex/lib/placa'
+import { isValidPlate, PLATE_LENGTH } from '../../../convex/lib/plate'
 
 /**
  * Wrappers around <Input> that auto-format Colombian domain fields as the
@@ -72,10 +72,10 @@ export function PlacaInput({
   onValidChange,
   ...rest
 }: PlacaInputProps) {
-  const valid = isPlacaValida(value)
-  // Solo mostrar estado inválido cuando el usuario terminó de tipear (6 chars).
+  const valid = isValidPlate(value)
+  // Solo mostrar estado inválido cuando el usuario terminó de tipear.
   // Evita marcar en rojo mientras todavía están escribiendo.
-  const showInvalid = value.length === 6 && !valid
+  const showInvalid = value.length === PLATE_LENGTH && !valid
 
   React.useEffect(() => {
     onValidChange?.(valid)

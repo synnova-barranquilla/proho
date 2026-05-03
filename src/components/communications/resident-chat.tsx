@@ -44,10 +44,6 @@ import {
   type UIMessageLike,
 } from './types'
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 interface ResidentChatProps {
   complexId: Id<'complexes'>
 }
@@ -61,10 +57,6 @@ interface ConversationItem {
   ticket: { publicId: string } | null
 }
 
-// ---------------------------------------------------------------------------
-// Root
-// ---------------------------------------------------------------------------
-
 export function ResidentChat({ complexId }: ResidentChatProps) {
   return (
     <Suspense fallback={<ChatSkeleton />}>
@@ -72,10 +64,6 @@ export function ResidentChat({ complexId }: ResidentChatProps) {
     </Suspense>
   )
 }
-
-// ---------------------------------------------------------------------------
-// Two-column layout
-// ---------------------------------------------------------------------------
 
 function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
   const { data: activeConversation } = useSuspenseQuery(
@@ -259,10 +247,6 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Conversation list sidebar
-// ---------------------------------------------------------------------------
-
 function ConversationList({
   conversations,
   activeThreadId,
@@ -333,10 +317,6 @@ function ConversationList({
     </div>
   )
 }
-
-// ---------------------------------------------------------------------------
-// Empty state (no conversation selected)
-// ---------------------------------------------------------------------------
 
 function EmptyState({
   complexId,
@@ -479,10 +459,6 @@ function EmptyState({
     </div>
   )
 }
-
-// ---------------------------------------------------------------------------
-// Active chat view (with input, streaming, optimistic messages)
-// ---------------------------------------------------------------------------
 
 function ActiveChatView({
   complexId,
@@ -780,10 +756,6 @@ function ActiveChatView({
   )
 }
 
-// ---------------------------------------------------------------------------
-// Read-only thread view (closed / resolved conversations)
-// ---------------------------------------------------------------------------
-
 function ReadOnlyThreadView({ threadId }: { threadId: string }) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -808,14 +780,6 @@ function ReadOnlyThreadView({ threadId }: { threadId: string }) {
     </div>
   )
 }
-
-// ---------------------------------------------------------------------------
-// MessageBubble
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Attachment parsing & rendering
-// ---------------------------------------------------------------------------
 
 function AttachmentContent({ meta }: { meta: AttachmentMeta }) {
   const isImage = meta.mimeType.startsWith('image/')
@@ -863,10 +827,6 @@ function AttachmentContent({ meta }: { meta: AttachmentMeta }) {
     </a>
   )
 }
-
-// ---------------------------------------------------------------------------
-// MessageBubble
-// ---------------------------------------------------------------------------
 
 function MessageBubble({
   message,
@@ -960,10 +920,6 @@ function MessageBubble({
     </div>
   )
 }
-
-// ---------------------------------------------------------------------------
-// Skeleton
-// ---------------------------------------------------------------------------
 
 function ChatSkeleton() {
   return (

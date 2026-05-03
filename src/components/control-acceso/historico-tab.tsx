@@ -15,10 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { formatAccessTime } from '#/lib/date'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-import { normalizePlaca } from '../../../convex/lib/placa'
+import { normalizePlate } from '../../../convex/lib/plate'
 import {
   PERIODO_OPTIONS,
   RECORD_TYPE_LABELS,
@@ -28,16 +29,6 @@ import {
 const DECISION_LABELS: Record<string, string> = {
   ALLOWED: 'Permitido',
   REJECTED: 'Rechazado',
-}
-
-function formatDateTime(ts: number | undefined): string {
-  if (ts == null) return '—'
-  return new Date(ts).toLocaleString('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 const columns: ColumnDef<RegistroActivo, unknown>[] = [
@@ -77,14 +68,16 @@ const columns: ColumnDef<RegistroActivo, unknown>[] = [
     id: 'entrada',
     header: 'Entrada',
     cell: ({ row }) => (
-      <span className="text-sm">{formatDateTime(row.original.enteredAt)}</span>
+      <span className="text-sm">
+        {formatAccessTime(row.original.enteredAt)}
+      </span>
     ),
   },
   {
     id: 'salida',
     header: 'Salida',
     cell: ({ row }) => (
-      <span className="text-sm">{formatDateTime(row.original.exitedAt)}</span>
+      <span className="text-sm">{formatAccessTime(row.original.exitedAt)}</span>
     ),
   },
   {
@@ -121,8 +114,8 @@ interface HistoricoTabProps {
 
 export function HistoricoTab({ complexId }: HistoricoTabProps) {
   const [periodo, setPeriodo] = useState('7d')
-  const [placaFilter, setPlacaFilter] = useState('')
-  const [tipoFilter, setTipoFilter] = useState('todos')
+  const [plateFilter, setPlateFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState('todos')
   const [decisionFilter, setDecisionFilter] = useState('todos')
 
   const periodoMs = PERIODO_OPTIONS.find((p) => p.value === periodo)?.ms ?? 0
@@ -137,13 +130,13 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
   const filtered = useMemo(() => {
     let result = registros
 
-    if (placaFilter.trim()) {
-      const norm = normalizePlaca(placaFilter)
+    if (plateFilter.trim()) {
+      const norm = normalizePlate(plateFilter)
       result = result.filter((r) => r.normalizedPlate.includes(norm))
     }
 
-    if (tipoFilter !== 'todos') {
-      result = result.filter((r) => r.type === tipoFilter)
+    if (typeFilter !== 'todos') {
+      result = result.filter((r) => r.type === typeFilter)
     }
 
     if (decisionFilter !== 'todos') {
@@ -151,7 +144,7 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
     }
 
     return result
-  }, [registros, placaFilter, tipoFilter, decisionFilter])
+  }, [registros, plateFilter, typeFilter, decisionFilter])
 
   return (
     <div className="flex flex-col gap-4">
@@ -170,13 +163,13 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
         </Select>
 
         <Input
-          value={placaFilter}
-          onChange={(e) => setPlacaFilter(e.target.value)}
+          value={plateFilter}
+          onChange={(e) => setPlateFilter(e.target.value)}
           placeholder="Filtrar por placa..."
           className="w-[160px]"
         />
 
-        <Select value={tipoFilter} onValueChange={(v) => v && setTipoFilter(v)}>
+        <Select value={typeFilter} onValueChange={(v) => v && setTypeFilter(v)}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Tipo">
               {
@@ -185,7 +178,7 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
                   RESIDENT: 'Residente',
                   VISITOR: 'Visitante',
                   ADMIN_VISIT: 'Visita admin',
-                }[tipoFilter]
+                }[typeFilter]
               }
             </SelectValue>
           </SelectTrigger>

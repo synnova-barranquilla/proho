@@ -13,8 +13,6 @@ import type {
 export type TicketPriority = _TicketPriority
 export type AssignedRole = _AssignedRole
 
-// -- Ticket status ----------------------------------------------------------
-
 export type TicketStatus =
   | 'open_waiting_admin'
   | 'open_waiting_resident'
@@ -58,8 +56,6 @@ export const STATUS_VARIANTS: Record<string, string> = {
     'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
 } satisfies Record<TicketStatus, string>
 
-// -- Conversation status ----------------------------------------------------
-
 export const CONV_STATUS_LABELS: Record<string, string> = {
   active: 'Activa',
   escalated: 'Escalada',
@@ -77,8 +73,6 @@ export const CONV_STATUS_VARIANTS: Record<string, string> = {
   closed_by_inactivity:
     'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
 } satisfies Record<ConversationStatus, string>
-
-// -- Priority ---------------------------------------------------------------
 
 export const PRIORITY_LABELS: Record<string, string> = {
   high: 'Alta',
@@ -103,14 +97,10 @@ export const PRIORITY_CONFIG: {
   { key: 'low', label: 'Baja', badgeClass: 'bg-gray-400 text-white' },
 ]
 
-// -- Origin -----------------------------------------------------------------
-
 export const ORIGIN_LABELS: Record<string, string> = {
   digital: 'Digital',
   in_person: 'Presencial',
 } satisfies Record<TicketOrigin, string>
-
-// -- Utility: relative time (Spanish) ---------------------------------------
 
 export function timeAgo(ts: number): string {
   const diff = Date.now() - ts
@@ -123,16 +113,12 @@ export function timeAgo(ts: number): string {
   return `${days}d`
 }
 
-// -- Chat message types -----------------------------------------------------
-
 export interface UIMessageLike {
   key: string
   role: 'user' | 'assistant' | 'system'
   parts: Array<{ type: string; text?: string }>
   status: string
 }
-
-// -- Attachment parsing -----------------------------------------------------
 
 export interface AttachmentMeta {
   fileName: string

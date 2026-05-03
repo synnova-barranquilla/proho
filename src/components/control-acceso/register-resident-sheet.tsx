@@ -19,78 +19,80 @@ import {
   SheetTitle,
 } from '#/components/ui/sheet'
 import { Textarea } from '#/components/ui/textarea'
-import { buildUnidadOptions } from '#/lib/unidad-search'
+import { buildUnitOptions } from '#/lib/unit-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import {
-  detectPlacaTipo,
-  isPlacaValidaParaTipo,
-  PLACA_FORMAT_HINT,
-} from '../../../convex/lib/placa'
+  detectPlateType,
+  isValidPlateForType,
+  PLATE_FORMAT_HINT,
+  PLATE_LENGTH,
+} from '../../../convex/lib/plate'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
-import {
-  TipoVehiculoCards,
-  type TipoVehiculoSelectable,
-} from './tipo-vehiculo-cards'
 import { VIOLATION_LABELS_LONG as VIOLATION_LABELS } from './types'
+import {
+  VehicleTypeCards,
+  type SelectableVehicleType,
+} from './vehicle-type-cards'
 
-interface RegistrarResidenteSheetProps {
+interface RegisterResidentSheetProps {
   open: boolean
   onClose: () => void
   onSuccess?: () => void
   complexId: Id<'complexes'>
-  placa: string
-  placaRaw: string
-  initialTipo?: TipoVehiculoSelectable
+  plate: string
+  plateRaw: string
+  initialVehicleType?: SelectableVehicleType
 }
 
-export function RegistrarResidenteSheet({
+export function RegisterResidentSheet({
   open,
   onClose,
   onSuccess,
   complexId,
-  placa,
-  placaRaw,
-  initialTipo,
-}: RegistrarResidenteSheetProps) {
-  const [selectedUnidadId, setSelectedUnidadId] = useState<string>('')
-  const [tipo, setTipo] = useState<TipoVehiculoSelectable>(
-    initialTipo ?? detectPlacaTipo(placa) ?? 'CAR',
+  plate,
+  plateRaw,
+  initialVehicleType,
+}: RegisterResidentSheetProps) {
+  const [selectedUnitId, setSelectedUnitId] = useState<string>('')
+  const [vehicleType, setVehicleType] = useState<SelectableVehicleType>(
+    initialVehicleType ?? detectPlateType(plate) ?? 'CAR',
   )
-  const [propietario, setPropietario] = useState('')
+  const [ownerName, setOwnerName] = useState('')
   const [violations, setViolations] = useState<RuleViolation[]>([])
   const [justification, setJustification] = useState('')
   const [observations, setObservations] = useState('')
   const [showViolations, setShowViolations] = useState(false)
 
-  // Mantener tipo sincronizado si la placa cambia (no debería ocurrir aquí,
-  // pero protege ante reusos del componente).
+  // Keep vehicle type in sync if the plate changes (shouldn't happen here,
+  // but guards against component reuse).
   useEffect(() => {
-    const detected = detectPlacaTipo(placa)
-    if (detected) setTipo(detected)
-  }, [placa])
+    const detected = detectPlateType(plate)
+    if (detected) setVehicleType(detected)
+  }, [plate])
 
-  const placaValida = placa.length === 6 && isPlacaValidaParaTipo(placa, tipo)
-  const showPlacaError = placa.length === 6 && !placaValida
+  const isPlateValid =
+    plate.length === PLATE_LENGTH && isValidPlateForType(plate, vehicleType)
+  const showPlateError = plate.length === PLATE_LENGTH && !isPlateValid
 
-  const { data: unidadesData } = useSuspenseQuery(
+  const { data: unitsData } = useSuspenseQuery(
     convexQuery(api.units.queries.listByComplex, { complexId }),
   )
-  const unidades = unidadesData.towers.flatMap(
+  const units = unitsData.towers.flatMap(
     (t: { units: Array<{ _id: string; tower: string; number: string }> }) =>
       t.units,
   )
-  const unidadOptions = buildUnidadOptions(unidades)
+  const unitOptions = buildUnitOptions(units)
 
-  const registrarFn = useConvexMutation(
+  const registerFn = useConvexMutation(
     api.accessRecords.mutations.registerNewResident,
   )
-  const registrarMut = useMutation({ mutationFn: registrarFn })
+  const registerMut = useMutation({ mutationFn: registerFn })
 
   const handleClose = () => {
-    setSelectedUnidadId('')
-    setTipo(initialTipo ?? detectPlacaTipo(placa) ?? 'CAR')
-    setPropietario('')
+    setSelectedUnitId('')
+    setVehicleType(initialVehicleType ?? detectPlateType(plate) ?? 'CAR')
+    setOwnerName('')
     setViolations([])
     setJustification('')
     setObservations('')
@@ -108,22 +110,22 @@ export function RegistrarResidenteSheet({
   }
 
   const handleMutation = async (extras: {
-    soloRegistrar?: boolean
-    forzarPermitido?: boolean
+    registerOnly?: boolean
+    forcePermitted?: boolean
   }) => {
-    if (!selectedUnidadId) {
+    if (!selectedUnitId) {
       toast.error('Selecciona una unidad')
       return
     }
     try {
-      const result = await registrarMut.mutateAsync({
+      const result = await registerMut.mutateAsync({
         complexId,
-        rawPlate: placaRaw,
-        unitId: selectedUnidadId as Id<'units'>,
-        vehicleType: tipo,
-        ownerName: propietario.trim() || undefined,
-        ...(extras.soloRegistrar ? { registerOnly: true } : {}),
-        ...(extras.forzarPermitido
+        rawPlate: plateRaw,
+        unitId: selectedUnitId as Id<'units'>,
+        vehicleType,
+        ownerName: ownerName.trim() || undefined,
+        ...(extras.registerOnly ? { registerOnly: true } : {}),
+        ...(extras.forcePermitted
           ? {
               forcePermitted: true,
               justification: justification.trim(),
@@ -156,21 +158,21 @@ export function RegistrarResidenteSheet({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (showViolations) {
-      void handleMutation({ forzarPermitido: true })
+      void handleMutation({ forcePermitted: true })
     } else {
       void handleMutation({})
     }
   }
 
-  const handleSoloRegistrar = () => {
-    void handleMutation({ soloRegistrar: true })
+  const handleRegisterOnly = () => {
+    void handleMutation({ registerOnly: true })
   }
 
-  const isPending = registrarMut.isPending
+  const isPending = registerMut.isPending
   const disableSubmit =
     isPending ||
-    !selectedUnidadId ||
-    !placaValida ||
+    !selectedUnitId ||
+    !isPlateValid ||
     (showViolations && !justification.trim())
 
   return (
@@ -187,34 +189,37 @@ export function RegistrarResidenteSheet({
             <Field>
               <FieldLabel>Placa</FieldLabel>
               <PlacaInput
-                value={placa}
+                value={plate}
                 onChange={() => {}}
-                aria-invalid={showPlacaError}
+                aria-invalid={showPlateError}
                 disabled
               />
-              {showPlacaError && (
-                <p className="text-sm text-destructive">{PLACA_FORMAT_HINT}</p>
+              {showPlateError && (
+                <p className="text-sm text-destructive">{PLATE_FORMAT_HINT}</p>
               )}
             </Field>
             <Field>
               <FieldLabel>Unidad</FieldLabel>
               <SearchableSelect
-                value={selectedUnidadId}
-                onValueChange={setSelectedUnidadId}
-                options={unidadOptions}
+                value={selectedUnitId}
+                onValueChange={setSelectedUnitId}
+                options={unitOptions}
                 placeholder="Selecciona una unidad"
                 searchPlaceholder="Buscar por torre o número..."
               />
             </Field>
             <Field>
               <FieldLabel>Tipo de vehículo</FieldLabel>
-              <TipoVehiculoCards value={tipo} onValueChange={setTipo} />
+              <VehicleTypeCards
+                value={vehicleType}
+                onValueChange={setVehicleType}
+              />
             </Field>
             <Field>
               <FieldLabel>Propietario (opcional)</FieldLabel>
               <Input
-                value={propietario}
-                onChange={(e) => setPropietario(e.target.value)}
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
                 placeholder="Nombre del propietario"
               />
             </Field>
@@ -265,8 +270,8 @@ export function RegistrarResidenteSheet({
               <Button
                 variant="outline"
                 type="button"
-                onClick={handleSoloRegistrar}
-                disabled={isPending || !selectedUnidadId || !placaValida}
+                onClick={handleRegisterOnly}
+                disabled={isPending || !selectedUnitId || !isPlateValid}
               >
                 Solo registrar
               </Button>

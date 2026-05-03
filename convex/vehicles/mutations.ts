@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { isPlacaValida, normalizePlaca, requireValidPlate } from '../lib/placa'
+import { isValidPlate, normalizePlate, requireValidPlate } from '../lib/plate'
 import { vehicleTypes } from './validators'
 
 export const create = mutation({
@@ -22,7 +22,7 @@ export const create = mutation({
       allowedRoles: ['ADMIN'],
     })
 
-    const plate = normalizePlaca(args.plate)
+    const plate = normalizePlate(args.plate)
     requireValidPlate(plate)
 
     // Plate unique per complex
@@ -77,7 +77,7 @@ export const update = mutation({
       }
     }
 
-    const plate = normalizePlaca(args.plate)
+    const plate = normalizePlate(args.plate)
     requireValidPlate(plate)
 
     if (plate !== vehicle.plate) {
@@ -131,13 +131,13 @@ export const bulkImport = mutation({
       const row = args.rows[i]
       const tower = row.tower.trim().toUpperCase()
       const number = row.number.trim()
-      const plate = normalizePlaca(row.plate)
+      const plate = normalizePlate(row.plate)
 
       if (!tower || !number) {
         errors.push({ row: i + 1, message: 'Torre y número son obligatorios' })
         continue
       }
-      if (!plate || !isPlacaValida(plate)) {
+      if (!plate || !isValidPlate(plate)) {
         errors.push({ row: i + 1, message: `Placa inválida: ${row.plate}` })
         continue
       }

@@ -98,7 +98,6 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
     },
   })
 
-  // Reset form state when closing.
   const handleOpenChange = useCallback(
     (next: boolean) => {
       if (!next) {

@@ -5,7 +5,7 @@ import {
   evaluateRules,
   type RuleConfig,
   type RuleInput,
-  type VehiculoAdentro,
+  type VehicleInside,
 } from './rulesEngine'
 
 const ALL_RULES_ON: RuleConfig = {
@@ -26,25 +26,25 @@ const NOW = Date.now()
 
 function makeInput(overrides: Partial<RuleInput> = {}): RuleInput {
   return {
-    tipo: 'RESIDENT',
-    vehiculoTipo: 'CAR',
-    unidadEnMora: false,
-    vehiculosUnidadAdentro: [],
-    ocupacion: { carros: 0, motos: 0 },
-    capacidad: { carros: 0, motos: 0 },
+    recordType: 'RESIDENT',
+    vehicleType: 'CAR',
+    unitInArrears: false,
+    vehiclesUnitInside: [],
+    occupancy: { cars: 0, motorcycles: 0 },
+    capacity: { cars: 0, motorcycles: 0 },
     config: ALL_RULES_ON,
-    ahora: NOW,
+    now: NOW,
     ...overrides,
   }
 }
 
-function makeVehiculo(
-  overrides: Partial<VehiculoAdentro> = {},
-): VehiculoAdentro {
+function makeVehicleInside(
+  overrides: Partial<VehicleInside> = {},
+): VehicleInside {
   return {
-    tipo: 'CAR',
-    placaNormalizada: 'ABC123',
-    entradaEn: NOW - 1000,
+    vehicleType: 'CAR',
+    normalizedPlate: 'ABC123',
+    enteredAt: NOW - 1000,
     ...overrides,
   }
 }
@@ -55,38 +55,38 @@ describe('evaluateRules', () => {
   it('no violations when all rules are off', () => {
     const result = evaluateRules(
       makeInput({
-        unidadEnMora: true,
-        vehiculosUnidadAdentro: [makeVehiculo()],
+        unitInArrears: true,
+        vehiclesUnitInside: [makeVehicleInside()],
         config: ALL_RULES_OFF,
       }),
     )
     expect(result.violations).toEqual([])
-    expect(result.requiresJustificacion).toBe(false)
+    expect(result.requiresJustification).toBe(false)
   })
 
   it('no violations when no rules triggered', () => {
     const result = evaluateRules(makeInput())
     expect(result.violations).toEqual([])
-    expect(result.requiresJustificacion).toBe(false)
+    expect(result.requiresJustification).toBe(false)
   })
 
   // --- R1: Arrears ---
 
   it('R1: arrears active + unit in arrears -> MORA violation', () => {
-    const result = evaluateRules(makeInput({ unidadEnMora: true }))
+    const result = evaluateRules(makeInput({ unitInArrears: true }))
     expect(result.violations).toContain('MORA')
-    expect(result.requiresJustificacion).toBe(true)
+    expect(result.requiresJustification).toBe(true)
   })
 
   it('R1: arrears active + unit NOT in arrears -> no violation', () => {
-    const result = evaluateRules(makeInput({ unidadEnMora: false }))
+    const result = evaluateRules(makeInput({ unitInArrears: false }))
     expect(result.violations).not.toContain('MORA')
   })
 
   it('R1: arrears rule off + unit in arrears -> no violation', () => {
     const result = evaluateRules(
       makeInput({
-        unidadEnMora: true,
+        unitInArrears: true,
         config: { ...ALL_RULES_ON, ruleEntryInArrears: false },
       }),
     )
@@ -98,8 +98,8 @@ describe('evaluateRules', () => {
   it('R2: carro inside + new carro -> VEHICULO_DUPLICADO', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'CAR',
-        vehiculosUnidadAdentro: [makeVehiculo({ tipo: 'CAR' })],
+        vehicleType: 'CAR',
+        vehiclesUnitInside: [makeVehicleInside({ vehicleType: 'CAR' })],
       }),
     )
     expect(result.violations).toContain('VEHICULO_DUPLICADO')
@@ -108,8 +108,8 @@ describe('evaluateRules', () => {
   it('R2: moto inside + new moto -> VEHICULO_DUPLICADO', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'MOTORCYCLE',
-        vehiculosUnidadAdentro: [makeVehiculo({ tipo: 'MOTORCYCLE' })],
+        vehicleType: 'MOTORCYCLE',
+        vehiclesUnitInside: [makeVehicleInside({ vehicleType: 'MOTORCYCLE' })],
       }),
     )
     expect(result.violations).toContain('VEHICULO_DUPLICADO')
@@ -118,8 +118,8 @@ describe('evaluateRules', () => {
   it('R2: carro inside + new moto -> MOTO_ADICIONAL (not DUPLICADO)', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'MOTORCYCLE',
-        vehiculosUnidadAdentro: [makeVehiculo({ tipo: 'CAR' })],
+        vehicleType: 'MOTORCYCLE',
+        vehiclesUnitInside: [makeVehicleInside({ vehicleType: 'CAR' })],
       }),
     )
     expect(result.violations).toContain('MOTO_ADICIONAL')
@@ -129,8 +129,8 @@ describe('evaluateRules', () => {
   it('R2: moto inside + new carro -> VEHICULO_DUPLICADO', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'CAR',
-        vehiculosUnidadAdentro: [makeVehiculo({ tipo: 'MOTORCYCLE' })],
+        vehicleType: 'CAR',
+        vehiclesUnitInside: [makeVehicleInside({ vehicleType: 'MOTORCYCLE' })],
       }),
     )
     expect(result.violations).toContain('VEHICULO_DUPLICADO')
@@ -139,8 +139,8 @@ describe('evaluateRules', () => {
   it('R2: nothing inside + new carro -> no violation', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'CAR',
-        vehiculosUnidadAdentro: [],
+        vehicleType: 'CAR',
+        vehiclesUnitInside: [],
       }),
     )
     expect(result.violations).not.toContain('VEHICULO_DUPLICADO')
@@ -150,8 +150,8 @@ describe('evaluateRules', () => {
   it('R2: rule off -> no duplicate violation even with carro inside', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'CAR',
-        vehiculosUnidadAdentro: [makeVehiculo({ tipo: 'CAR' })],
+        vehicleType: 'CAR',
+        vehiclesUnitInside: [makeVehicleInside({ vehicleType: 'CAR' })],
         config: { ...ALL_RULES_ON, ruleDuplicateVehicle: false },
       }),
     )
@@ -163,8 +163,8 @@ describe('evaluateRules', () => {
   it('R3: vehicle inside > 30 days -> PERMANENCIA_EXCEDIDA', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculosUnidadAdentro: [
-          makeVehiculo({ entradaEn: NOW - 31 * MS_PER_DAY }),
+        vehiclesUnitInside: [
+          makeVehicleInside({ enteredAt: NOW - 31 * MS_PER_DAY }),
         ],
       }),
     )
@@ -174,8 +174,8 @@ describe('evaluateRules', () => {
   it('R3: vehicle inside < 30 days -> no violation', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculosUnidadAdentro: [
-          makeVehiculo({ entradaEn: NOW - 29 * MS_PER_DAY }),
+        vehiclesUnitInside: [
+          makeVehicleInside({ enteredAt: NOW - 29 * MS_PER_DAY }),
         ],
       }),
     )
@@ -185,8 +185,8 @@ describe('evaluateRules', () => {
   it('R3: custom limit 7 days, vehicle inside 8 days -> violation', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculosUnidadAdentro: [
-          makeVehiculo({ entradaEn: NOW - 8 * MS_PER_DAY }),
+        vehiclesUnitInside: [
+          makeVehicleInside({ enteredAt: NOW - 8 * MS_PER_DAY }),
         ],
         config: { ...ALL_RULES_ON, ruleMaxStayDays: 7 },
       }),
@@ -197,8 +197,8 @@ describe('evaluateRules', () => {
   it('R3: rule off (0 days) -> no violation even with old vehicle', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculosUnidadAdentro: [
-          makeVehiculo({ entradaEn: NOW - 365 * MS_PER_DAY }),
+        vehiclesUnitInside: [
+          makeVehicleInside({ enteredAt: NOW - 365 * MS_PER_DAY }),
         ],
         config: { ...ALL_RULES_ON, ruleMaxStayDays: 0 },
       }),
@@ -206,10 +206,10 @@ describe('evaluateRules', () => {
     expect(result.violations).not.toContain('PERMANENCIA_EXCEDIDA')
   })
 
-  it('R3: vehicle without entradaEn -> no violation', () => {
+  it('R3: vehicle without enteredAt -> no violation', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculosUnidadAdentro: [makeVehiculo({ entradaEn: undefined })],
+        vehiclesUnitInside: [makeVehicleInside({ enteredAt: undefined })],
       }),
     )
     expect(result.violations).not.toContain('PERMANENCIA_EXCEDIDA')
@@ -220,26 +220,26 @@ describe('evaluateRules', () => {
   it('multiple violations: arrears + duplicate', () => {
     const result = evaluateRules(
       makeInput({
-        unidadEnMora: true,
-        vehiculoTipo: 'CAR',
-        vehiculosUnidadAdentro: [makeVehiculo({ tipo: 'CAR' })],
+        unitInArrears: true,
+        vehicleType: 'CAR',
+        vehiclesUnitInside: [makeVehicleInside({ vehicleType: 'CAR' })],
       }),
     )
     expect(result.violations).toContain('MORA')
     expect(result.violations).toContain('VEHICULO_DUPLICADO')
     expect(result.violations).toHaveLength(2)
-    expect(result.requiresJustificacion).toBe(true)
+    expect(result.requiresJustification).toBe(true)
   })
 
   it('all three violations at once', () => {
     const result = evaluateRules(
       makeInput({
-        unidadEnMora: true,
-        vehiculoTipo: 'CAR',
-        vehiculosUnidadAdentro: [
-          makeVehiculo({
-            tipo: 'CAR',
-            entradaEn: NOW - 31 * MS_PER_DAY,
+        unitInArrears: true,
+        vehicleType: 'CAR',
+        vehiclesUnitInside: [
+          makeVehicleInside({
+            vehicleType: 'CAR',
+            enteredAt: NOW - 31 * MS_PER_DAY,
           }),
         ],
       }),
@@ -250,30 +250,30 @@ describe('evaluateRules', () => {
     expect(result.violations).toHaveLength(3)
   })
 
-  // --- Visitors and VISITA_ADMIN exempt ---
+  // --- Visitors and ADMIN_VISIT exempt ---
 
-  it('VISITANTE: no violations even with arrears + vehicles inside', () => {
+  it('VISITOR: no violations even with arrears + vehicles inside', () => {
     const result = evaluateRules(
       makeInput({
-        tipo: 'VISITOR',
-        unidadEnMora: true,
-        vehiculosUnidadAdentro: [makeVehiculo()],
+        recordType: 'VISITOR',
+        unitInArrears: true,
+        vehiclesUnitInside: [makeVehicleInside()],
       }),
     )
     expect(result.violations).toEqual([])
-    expect(result.requiresJustificacion).toBe(false)
+    expect(result.requiresJustification).toBe(false)
   })
 
-  it('VISITA_ADMIN: no violations', () => {
+  it('ADMIN_VISIT: no violations', () => {
     const result = evaluateRules(
       makeInput({
-        tipo: 'ADMIN_VISIT',
-        unidadEnMora: true,
-        vehiculosUnidadAdentro: [makeVehiculo()],
+        recordType: 'ADMIN_VISIT',
+        unitInArrears: true,
+        vehiclesUnitInside: [makeVehicleInside()],
       }),
     )
     expect(result.violations).toEqual([])
-    expect(result.requiresJustificacion).toBe(false)
+    expect(result.requiresJustification).toBe(false)
   })
 
   // --- R4: Overcapacity ---
@@ -281,45 +281,45 @@ describe('evaluateRules', () => {
   it('R4: carro resident + car cap full -> SOBRECUPO_CARROS', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'CAR',
-        ocupacion: { carros: 5, motos: 0 },
-        capacidad: { carros: 5, motos: 10 },
+        vehicleType: 'CAR',
+        occupancy: { cars: 5, motorcycles: 0 },
+        capacity: { cars: 5, motorcycles: 10 },
       }),
     )
     expect(result.violations).toContain('SOBRECUPO_CARROS')
-    expect(result.requiresJustificacion).toBe(true)
+    expect(result.requiresJustification).toBe(true)
   })
 
   it('R4: moto resident + moto cap full -> SOBRECUPO_MOTOS', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'MOTORCYCLE',
-        ocupacion: { carros: 0, motos: 3 },
-        capacidad: { carros: 10, motos: 3 },
+        vehicleType: 'MOTORCYCLE',
+        occupancy: { cars: 0, motorcycles: 3 },
+        capacity: { cars: 10, motorcycles: 3 },
       }),
     )
     expect(result.violations).toContain('SOBRECUPO_MOTOS')
   })
 
-  it('R4: VISITANTE also subject to overcapacity', () => {
+  it('R4: VISITOR also subject to overcapacity', () => {
     const result = evaluateRules(
       makeInput({
-        tipo: 'VISITOR',
-        vehiculoTipo: 'CAR',
-        ocupacion: { carros: 5, motos: 0 },
-        capacidad: { carros: 5, motos: 10 },
+        recordType: 'VISITOR',
+        vehicleType: 'CAR',
+        occupancy: { cars: 5, motorcycles: 0 },
+        capacity: { cars: 5, motorcycles: 10 },
       }),
     )
     expect(result.violations).toContain('SOBRECUPO_CARROS')
   })
 
-  it('R4: VISITA_ADMIN exempt from overcapacity', () => {
+  it('R4: ADMIN_VISIT exempt from overcapacity', () => {
     const result = evaluateRules(
       makeInput({
-        tipo: 'ADMIN_VISIT',
-        vehiculoTipo: 'CAR',
-        ocupacion: { carros: 5, motos: 0 },
-        capacidad: { carros: 5, motos: 10 },
+        recordType: 'ADMIN_VISIT',
+        vehicleType: 'CAR',
+        occupancy: { cars: 5, motorcycles: 0 },
+        capacity: { cars: 5, motorcycles: 10 },
       }),
     )
     expect(result.violations).not.toContain('SOBRECUPO_CARROS')
@@ -329,9 +329,9 @@ describe('evaluateRules', () => {
   it('R4: capacity=0 treated as unlimited', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'CAR',
-        ocupacion: { carros: 100, motos: 0 },
-        capacidad: { carros: 0, motos: 0 },
+        vehicleType: 'CAR',
+        occupancy: { cars: 100, motorcycles: 0 },
+        capacity: { cars: 0, motorcycles: 0 },
       }),
     )
     expect(result.violations).not.toContain('SOBRECUPO_CARROS')
@@ -340,9 +340,9 @@ describe('evaluateRules', () => {
   it('R4: rule disabled -> no overcapacity even when full', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'CAR',
-        ocupacion: { carros: 5, motos: 0 },
-        capacidad: { carros: 5, motos: 10 },
+        vehicleType: 'CAR',
+        occupancy: { cars: 5, motorcycles: 0 },
+        capacity: { cars: 5, motorcycles: 10 },
         config: { ...ALL_RULES_ON, ruleEntryOverCapacity: false },
       }),
     )
@@ -352,9 +352,9 @@ describe('evaluateRules', () => {
   it('R4: occupancy under capacity -> no overcapacity', () => {
     const result = evaluateRules(
       makeInput({
-        vehiculoTipo: 'CAR',
-        ocupacion: { carros: 4, motos: 0 },
-        capacidad: { carros: 5, motos: 10 },
+        vehicleType: 'CAR',
+        occupancy: { cars: 4, motorcycles: 0 },
+        capacity: { cars: 5, motorcycles: 10 },
       }),
     )
     expect(result.violations).not.toContain('SOBRECUPO_CARROS')

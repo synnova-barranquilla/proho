@@ -11,9 +11,9 @@ import { Check, Plus, Shield, UserMinus, UserPlus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-import { InviteOrgAdminDialog } from '#/components/admin/equipo/invite-org-admin-dialog'
-import { ManageAccessDialog } from '#/components/admin/equipo/manage-access-dialog'
 import { ComplexLayout } from '#/components/admin/layout'
+import { InviteOrgAdminDialog } from '#/components/admin/team/invite-org-admin-dialog'
+import { ManageAccessDialog } from '#/components/admin/team/manage-access-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
@@ -50,7 +50,7 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
   validateSearch: equipoSearchSchema,
   loaderDeps: ({ search }) => ({ from: search.from }),
   loader: async ({ context: { queryClient }, deps }) => {
-    // Guard: solo org owners pueden entrar
+    // Guard: only org owners (and SUPER_ADMIN) may enter
     const auth = await getAuth()
     if (!auth.user) throw redirect({ to: '/login' })
     const client = new ConvexHttpClient(CONVEX_URL)

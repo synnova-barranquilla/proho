@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 import { query } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
 import { MS_PER_DAY } from '../lib/constants'
-import { normalizePlaca } from '../lib/placa'
+import { normalizePlate } from '../lib/plate'
 
 /**
  * Vehicles currently inside the complex (exitedAt === undefined).
@@ -142,7 +142,7 @@ export const findActiveByPlate = query({
       allowedRoles: ['ADMIN', 'GUARD'],
     })
 
-    const plateNorm = normalizePlaca(args.plate)
+    const plateNorm = normalizePlate(args.plate)
 
     const records = await ctx.db
       .query('accessRecords')

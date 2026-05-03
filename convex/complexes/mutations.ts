@@ -71,7 +71,6 @@ export const create = mutation({
       active: true,
     })
 
-    // Insert config with sensible defaults.
     await ctx.db.insert('complexConfig', {
       complexId,
       ...complexConfigDefaults,

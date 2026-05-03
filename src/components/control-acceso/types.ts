@@ -85,6 +85,8 @@ export type ControlAccesoScreen =
       registro: RegistroActivo
     }
 
+// Action types — keep action/state field names stable since they are consumed
+// by the state machine; adding aliases here would create confusion.
 export type ControlAccesoAction =
   | { type: 'BUSCAR_PLACA'; placa: string }
   | {

@@ -12,7 +12,7 @@ import {
   type ImportResult,
   type ValidatedRow,
 } from '#/components/admin/bulk-import-dialog'
-import { VehiculoDialog } from '#/components/admin/vehiculos/vehiculo-dialog'
+import { VehicleDialog } from '#/components/admin/vehicles/vehicle-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { DataTable } from '#/components/ui/data-table'
@@ -23,10 +23,10 @@ import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
 import {
-  detectPlacaTipo,
-  isPlacaValida,
-  normalizePlaca,
-} from '../../../../../../convex/lib/placa'
+  detectPlateType,
+  isValidPlate,
+  normalizePlate,
+} from '../../../../../../convex/lib/plate'
 import type { VehicleTipo } from '../../../../../../convex/vehicles/validators'
 
 export const Route = createFileRoute(
@@ -48,9 +48,9 @@ export const Route = createFileRoute(
   component: VehiculosPage,
 })
 
-type VehiculoRow = Doc<'vehicles'> & { unit: Doc<'units'> | null }
+type VehicleRow = Doc<'vehicles'> & { unit: Doc<'units'> | null }
 
-type VehiculoImportRow = {
+type VehicleImportRow = {
   tower: string
   number: string
   plate: string
@@ -58,61 +58,61 @@ type VehiculoImportRow = {
   ownerName?: string
 }
 
-const VALID_VEHICULO_TIPOS = new Set(['CAR', 'MOTORCYCLE', 'OTHER'])
+const VALID_VEHICLE_TYPES = new Set(['CAR', 'MOTORCYCLE', 'OTHER'])
 
 function VehiculosPage() {
   const { complexId } = Route.useRouteContext()
   const isAdmin = useIsComplexAdmin()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
-  const [editing, setEditing] = useState<VehiculoRow | null>(null)
+  const [editing, setEditing] = useState<VehicleRow | null>(null)
 
   const bulkImportFn = useConvexMutation(api.vehicles.mutations.bulkImport)
   const bulkImportMut = useMutation({ mutationFn: bulkImportFn })
 
-  const validateVehiculoRow = (
+  const validateVehicleRow = (
     row: Record<string, string>,
     rowIndex: number,
-  ): ValidatedRow<VehiculoImportRow> => {
+  ): ValidatedRow<VehicleImportRow> => {
     const tower = (row['torre'] || '').trim().toUpperCase()
     const number = (row['numero'] || '').trim()
-    const placaRaw = (row['placa'] || '').trim()
-    const tipoRaw = (row['tipo'] || '').trim().toUpperCase()
+    const plateRaw = (row['placa'] || '').trim()
+    const typeRaw = (row['tipo'] || '').trim().toUpperCase()
     const ownerName = (row['propietarioNombre'] || '').trim() || undefined
     const raw = row
 
     if (!tower || !number) {
       return { rowIndex, valid: false, error: 'Torre y número requeridos', raw }
     }
-    if (!placaRaw) {
+    if (!plateRaw) {
       return { rowIndex, valid: false, error: 'Placa requerida', raw }
     }
-    const plate = normalizePlaca(placaRaw)
-    if (!isPlacaValida(plate)) {
+    const plate = normalizePlate(plateRaw)
+    if (!isValidPlate(plate)) {
       return {
         rowIndex,
         valid: false,
-        error: `Placa inválida: ${placaRaw}`,
+        error: `Placa inválida: ${plateRaw}`,
         raw,
       }
     }
 
-    const detectedTipo = detectPlacaTipo(plate)
-    const tipo =
-      tipoRaw && VALID_VEHICULO_TIPOS.has(tipoRaw)
-        ? (tipoRaw as VehicleTipo)
-        : (detectedTipo ?? 'CAR')
+    const detectedType = detectPlateType(plate)
+    const vehicleType =
+      typeRaw && VALID_VEHICLE_TYPES.has(typeRaw)
+        ? (typeRaw as VehicleTipo)
+        : (detectedType ?? 'CAR')
 
     return {
       rowIndex,
       valid: true,
-      data: { tower, number, plate, type: tipo, ownerName },
+      data: { tower, number, plate, type: vehicleType, ownerName },
       raw,
     }
   }
 
-  const handleVehiculoImport = async (
-    rows: VehiculoImportRow[],
+  const handleVehicleImport = async (
+    rows: VehicleImportRow[],
   ): Promise<ImportResult> => {
     return await bulkImportMut.mutateAsync({ complexId, rows })
   }
@@ -158,14 +158,14 @@ function VehiculosPage() {
 
       {isAdmin ? (
         <>
-          <VehiculoDialog
+          <VehicleDialog
             open={dialogOpen}
             onOpenChange={(open) => {
               setDialogOpen(open)
               if (!open) setEditing(null)
             }}
             complexId={complexId}
-            vehiculo={editing}
+            vehicle={editing}
           />
           <BulkImportDialog
             open={importOpen}
@@ -178,8 +178,8 @@ function VehiculosPage() {
               'tipo',
               'propietarioNombre',
             ]}
-            validateRow={validateVehiculoRow}
-            onImport={handleVehiculoImport}
+            validateRow={validateVehicleRow}
+            onImport={handleVehicleImport}
           />
         </>
       ) : null}
@@ -194,13 +194,13 @@ function VehiculosTable({
 }: {
   complexId: Id<'complexes'>
   isAdmin: boolean
-  onEdit: (v: VehiculoRow) => void
+  onEdit: (v: VehicleRow) => void
 }) {
   const { data } = useSuspenseQuery(
     convexQuery(api.vehicles.queries.listByComplex, { complexId }),
   )
 
-  const columns: ColumnDef<VehiculoRow>[] = [
+  const columns: ColumnDef<VehicleRow>[] = [
     {
       id: 'placa',
       header: 'Placa',
@@ -265,7 +265,7 @@ function VehiculosTable({
               headClassName: 'text-right',
               cellClassName: 'text-right',
             },
-            cell: ({ row }: { row: { original: VehiculoRow } }) => (
+            cell: ({ row }: { row: { original: VehicleRow } }) => (
               <Button
                 variant="outline"
                 size="sm"
@@ -274,7 +274,7 @@ function VehiculosTable({
                 Editar
               </Button>
             ),
-          } satisfies ColumnDef<VehiculoRow>,
+          } satisfies ColumnDef<VehicleRow>,
         ]
       : []),
   ]
@@ -282,7 +282,7 @@ function VehiculosTable({
   return (
     <DataTable
       columns={columns}
-      data={data as VehiculoRow[]}
+      data={data as VehicleRow[]}
       emptyMessage={
         isAdmin
           ? 'No hay vehículos registrados. Crea el primero con "Nuevo vehículo".'

@@ -5,13 +5,13 @@ import { mutation, type MutationCtx } from '../_generated/server'
 import { complexConfigDefaults } from '../complexConfig/validators'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { normalizePlaca, requireValidPlate } from '../lib/placa'
+import { normalizePlate, requireValidPlate } from '../lib/plate'
 import {
   evaluateRules,
-  type OcupacionSnapshot,
+  type OccupancySnapshot,
   type RuleConfig,
+  type VehicleInside,
   type VehicleTipo,
-  type VehiculoAdentro,
 } from '../lib/rulesEngine'
 import { vehicleTypes } from '../vehicles/validators'
 import { accessRecordTypes } from './validators'
@@ -23,13 +23,11 @@ const DEFAULT_RULE_CONFIG: RuleConfig = {
   ruleEntryOverCapacity: complexConfigDefaults.ruleEntryOverCapacity,
 }
 
-// --- Helpers ---
-
 async function getVehiclesUnitInside(
   ctx: MutationCtx,
   complexId: Id<'complexes'>,
   unitId: Id<'units'>,
-): Promise<VehiculoAdentro[]> {
+): Promise<VehicleInside[]> {
   const records = await ctx.db
     .query('accessRecords')
     .withIndex('by_complex_and_unit', (q) =>
@@ -39,13 +37,13 @@ async function getVehiclesUnitInside(
 
   const active = records.filter((r) => r.exitedAt === undefined && r.vehicleId)
 
-  const result: VehiculoAdentro[] = []
+  const result: VehicleInside[] = []
   for (const r of active) {
     const vehicle = r.vehicleId ? await ctx.db.get(r.vehicleId) : null
     result.push({
-      tipo: vehicle?.type ?? 'CAR',
-      placaNormalizada: r.normalizedPlate,
-      entradaEn: r.enteredAt,
+      vehicleType: vehicle?.type ?? 'CAR',
+      normalizedPlate: r.normalizedPlate,
+      enteredAt: r.enteredAt,
     })
   }
   return result
@@ -59,7 +57,7 @@ async function getVehiclesUnitInside(
 async function getComplexOccupancy(
   ctx: MutationCtx,
   complexId: Id<'complexes'>,
-): Promise<OcupacionSnapshot> {
+): Promise<OccupancySnapshot> {
   const records = await ctx.db
     .query('accessRecords')
     .withIndex('by_complex_and_exit', (q) =>
@@ -68,27 +66,27 @@ async function getComplexOccupancy(
     .filter((q) => q.eq(q.field('finalDecision'), 'ALLOWED'))
     .collect()
 
-  let carros = 0
-  let motos = 0
+  let cars = 0
+  let motorcycles = 0
   for (const r of records) {
-    let tipo: VehicleTipo = 'CAR'
+    let vehicleType: VehicleTipo = 'CAR'
     if (r.vehicleId) {
       const vehicle = await ctx.db.get(r.vehicleId)
-      tipo = vehicle?.type ?? 'CAR'
+      vehicleType = vehicle?.type ?? 'CAR'
     } else if (r.visitorVehicleType) {
-      tipo = r.visitorVehicleType
+      vehicleType = r.visitorVehicleType
     }
-    if (tipo === 'MOTORCYCLE') motos++
-    else carros++
+    if (vehicleType === 'MOTORCYCLE') motorcycles++
+    else cars++
   }
 
-  return { carros, motos }
+  return { cars, motorcycles }
 }
 
 async function loadConfigAndCapacity(
   ctx: MutationCtx,
   complexId: Id<'complexes'>,
-): Promise<{ config: RuleConfig; capacidad: OcupacionSnapshot }> {
+): Promise<{ config: RuleConfig; capacity: OccupancySnapshot }> {
   const row = await ctx.db
     .query('complexConfig')
     .withIndex('by_complex_id', (q) => q.eq('complexId', complexId))
@@ -103,9 +101,9 @@ async function loadConfigAndCapacity(
           ruleEntryOverCapacity: row.ruleEntryOverCapacity,
         }
       : DEFAULT_RULE_CONFIG,
-    capacidad: {
-      carros: row?.carParkingSlots ?? 0,
-      motos: row?.motoParkingSlots ?? 0,
+    capacity: {
+      cars: row?.carParkingSlots ?? 0,
+      motorcycles: row?.motoParkingSlots ?? 0,
     },
   }
 }
@@ -121,8 +119,6 @@ function requireObservationsInvariant(args: {
     )
   }
 }
-
-// --- Mutations ---
 
 /**
  * Register entry of a known resident vehicle.
@@ -147,7 +143,7 @@ export const registerEntry = mutation({
       allowedRoles: ['GUARD', 'ADMIN'],
     })
 
-    const normalizedPlate = normalizePlaca(args.rawPlate)
+    const normalizedPlate = normalizePlate(args.rawPlate)
     requireValidPlate(normalizedPlate)
     requireObservationsInvariant(args)
 
@@ -175,7 +171,7 @@ export const registerEntry = mutation({
       throwConvexError(ERROR_CODES.UNIT_NOT_FOUND, 'Unidad no encontrada')
     }
 
-    const { config, capacidad } = await loadConfigAndCapacity(
+    const { config, capacity } = await loadConfigAndCapacity(
       ctx,
       args.complexId,
     )
@@ -186,14 +182,14 @@ export const registerEntry = mutation({
     ])
 
     const ruleResult = evaluateRules({
-      tipo: 'RESIDENT',
-      vehiculoTipo: vehicle.type,
-      unidadEnMora: unit.inArrears,
-      vehiculosUnidadAdentro: vehiclesUnitInside,
-      ocupacion: occupancy,
-      capacidad,
+      recordType: 'RESIDENT',
+      vehicleType: vehicle.type,
+      unitInArrears: unit.inArrears,
+      vehiclesUnitInside: vehiclesUnitInside,
+      occupancy: occupancy,
+      capacity,
       config,
-      ahora: Date.now(),
+      now: Date.now(),
     })
 
     if (ruleResult.violations.length > 0 && !args.forcePermitted) {
@@ -249,7 +245,7 @@ export const registerExit = mutation({
       allowedRoles: ['GUARD', 'ADMIN'],
     })
 
-    const normalizedPlate = normalizePlaca(args.rawPlate)
+    const normalizedPlate = normalizePlate(args.rawPlate)
     requireValidPlate(normalizedPlate)
 
     const records = await ctx.db
@@ -317,7 +313,7 @@ export const registerVisitor = mutation({
       allowedRoles: ['GUARD', 'ADMIN'],
     })
 
-    const normalizedPlate = normalizePlaca(args.rawPlate)
+    const normalizedPlate = normalizePlate(args.rawPlate)
     requireValidPlate(normalizedPlate)
     requireObservationsInvariant(args)
 
@@ -335,20 +331,20 @@ export const registerVisitor = mutation({
       }
     }
 
-    const { config, capacidad } = await loadConfigAndCapacity(
+    const { config, capacity } = await loadConfigAndCapacity(
       ctx,
       args.complexId,
     )
     const occupancy = await getComplexOccupancy(ctx, args.complexId)
 
     const ruleResult = evaluateRules({
-      tipo: args.type,
-      vehiculoTipo: args.vehicleType,
-      vehiculosUnidadAdentro: [],
-      ocupacion: occupancy,
-      capacidad,
+      recordType: args.type,
+      vehicleType: args.vehicleType,
+      vehiclesUnitInside: [],
+      occupancy: occupancy,
+      capacity,
       config,
-      ahora: Date.now(),
+      now: Date.now(),
     })
 
     if (ruleResult.violations.length > 0 && !args.forcePermitted) {
@@ -415,7 +411,7 @@ export const registerNewResident = mutation({
       allowedRoles: ['GUARD', 'ADMIN'],
     })
 
-    const normalizedPlate = normalizePlaca(args.rawPlate)
+    const normalizedPlate = normalizePlate(args.rawPlate)
     requireValidPlate(normalizedPlate)
     requireObservationsInvariant(args)
 
@@ -451,7 +447,7 @@ export const registerNewResident = mutation({
       return { vehicleId, registerOnly: true as const }
     }
 
-    const { config, capacidad } = await loadConfigAndCapacity(
+    const { config, capacity } = await loadConfigAndCapacity(
       ctx,
       args.complexId,
     )
@@ -462,14 +458,14 @@ export const registerNewResident = mutation({
     ])
 
     const ruleResult = evaluateRules({
-      tipo: 'RESIDENT',
-      vehiculoTipo: args.vehicleType,
-      unidadEnMora: unit.inArrears,
-      vehiculosUnidadAdentro: vehiclesUnitInside,
-      ocupacion: occupancy,
-      capacidad,
+      recordType: 'RESIDENT',
+      vehicleType: args.vehicleType,
+      unitInArrears: unit.inArrears,
+      vehiclesUnitInside: vehiclesUnitInside,
+      occupancy: occupancy,
+      capacity,
       config,
-      ahora: Date.now(),
+      now: Date.now(),
     })
 
     // Violations without forcing -> return WITHOUT inserting anything. The client
@@ -539,7 +535,7 @@ export const registerRejection = mutation({
       allowedRoles: ['GUARD', 'ADMIN'],
     })
 
-    const normalizedPlate = normalizePlaca(args.rawPlate)
+    const normalizedPlate = normalizePlate(args.rawPlate)
 
     const recordId = await ctx.db.insert('accessRecords', {
       complexId: args.complexId,

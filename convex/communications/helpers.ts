@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 
 import { internalMutation, internalQuery } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
-import { STAFF_ROLES } from './constants'
+import { PRIORITY_RANK, STAFF_ROLES } from './constants'
 import { PLATFORM_COMPLEX_ID, type AssignedRole } from './validators'
 
 export const requireCommsAccessCheck = internalQuery({
@@ -288,13 +288,12 @@ export const escalateConversation = internalMutation({
       ...platformCategories.filter((p) => !customKeys.has(p.key)),
     ]
 
-    const priorityRank = { high: 3, medium: 2, low: 1 } as const
     let bestRole: AssignedRole = 'AUXILIAR'
     let bestPriority = 0
 
     for (const cat of merged) {
       if (args.categories.includes(cat.key)) {
-        const rank = priorityRank[cat.priority]
+        const rank = PRIORITY_RANK[cat.priority]
         if (rank > bestPriority) {
           bestPriority = rank
           bestRole = cat.assignedRole

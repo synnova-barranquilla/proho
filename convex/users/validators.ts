@@ -14,7 +14,7 @@ export const userFields = {
   organizationId: v.id('organizations'),
   orgRole: orgRoles,
   active: v.boolean(),
-  // Marca al dueño/fundador de la organización. El primer ADMIN creado en
-  // onboardTenant se marca con `true`. Puede haber múltiples owners (socios).
+  // Marks the org owner/founder. The first ADMIN created via onboardTenant is
+  // marked true. Multiple owners (partners) are allowed.
   isOrgOwner: v.boolean(),
 }

@@ -47,3 +47,20 @@ export function formatAbsolute(timestamp: number | Date): string {
   const date = typeof timestamp === 'number' ? new Date(timestamp) : timestamp
   return ABSOLUTE_FORMATTER.format(date)
 }
+
+const ACCESS_TIME_FORMATTER = new Intl.DateTimeFormat('es-CO', {
+  day: '2-digit',
+  month: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+})
+
+/**
+ * Formats a Convex timestamp for access-control tables: `"06/04, 14:30"`.
+ * Returns `'—'` when `ts` is `undefined` or `null`.
+ */
+export function formatAccessTime(ts: number | undefined | null): string {
+  if (ts == null) return '—'
+  return ACCESS_TIME_FORMATTER.format(new Date(ts))
+}

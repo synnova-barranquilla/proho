@@ -28,34 +28,34 @@ import {
 import { api } from '../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 
-type UnidadTipo = Doc<'units'>['type']
+type UnitDocType = Doc<'units'>['type']
 
-interface UnidadDialogProps {
+interface UnitDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   complexId: Id<'complexes'>
-  unidad: Doc<'units'> | null
+  unit: Doc<'units'> | null
 }
 
-export function UnidadDialog({
+export function UnitDialog({
   open,
   onOpenChange,
   complexId,
-  unidad,
-}: UnidadDialogProps) {
-  const isEdit = unidad !== null
+  unit,
+}: UnitDialogProps) {
+  const isEdit = unit !== null
 
   const [tower, setTower] = useState('')
   const [number, setNumber] = useState('')
-  const [tipo, setTipo] = useState<UnidadTipo>('APARTMENT')
+  const [unitType, setUnitType] = useState<UnitDocType>('APARTMENT')
 
   useEffect(() => {
     if (open) {
-      setTower(unidad?.tower ?? '')
-      setNumber(unidad?.number ?? '')
-      setTipo(unidad?.type ?? 'APARTMENT')
+      setTower(unit?.tower ?? '')
+      setNumber(unit?.number ?? '')
+      setUnitType(unit?.type ?? 'APARTMENT')
     }
-  }, [open, unidad])
+  }, [open, unit])
 
   const createFn = useConvexMutation(api.units.mutations.create)
   const updateFn = useConvexMutation(api.units.mutations.update)
@@ -67,12 +67,12 @@ export function UnidadDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      if (unidad !== null) {
+      if (unit !== null) {
         await updateMut.mutateAsync({
-          unitId: unidad._id,
+          unitId: unit._id,
           tower,
           number,
-          type: tipo,
+          type: unitType,
         })
         toast.success('Unidad actualizada')
       } else {
@@ -80,7 +80,7 @@ export function UnidadDialog({
           complexId,
           tower,
           number,
-          type: tipo,
+          type: unitType,
         })
         toast.success('Unidad creada')
       }
@@ -126,7 +126,10 @@ export function UnidadDialog({
               </div>
               <Field>
                 <FieldLabel>Tipo</FieldLabel>
-                <Select value={tipo} onValueChange={(v) => v && setTipo(v)}>
+                <Select
+                  value={unitType}
+                  onValueChange={(v) => v && setUnitType(v)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona tipo">
                       {
@@ -134,7 +137,7 @@ export function UnidadDialog({
                           APARTMENT: 'Apartamento',
                           HOUSE: 'Casa',
                           COMMERCIAL: 'Local',
-                        }[tipo]
+                        }[unitType]
                       }
                     </SelectValue>
                   </SelectTrigger>

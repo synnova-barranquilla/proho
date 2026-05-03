@@ -8,70 +8,71 @@ import { PlacaInput } from '#/components/ui/formatted-input'
 import { formatPlaca } from '#/lib/formatters'
 import type { Doc } from '../../../convex/_generated/dataModel'
 import {
-  isPlacaValida,
-  normalizePlaca,
-  PLACA_FORMAT_HINT,
-} from '../../../convex/lib/placa'
+  isValidPlate,
+  normalizePlate,
+  PLATE_FORMAT_HINT,
+  PLATE_LENGTH,
+} from '../../../convex/lib/plate'
 
-type VehiculoRow = Doc<'vehicles'> & { unit: Doc<'units'> | null }
+type VehicleRow = Doc<'vehicles'> & { unit: Doc<'units'> | null }
 
-interface PlacaSearchBarProps {
-  onSubmit: (placa: string) => void
-  isProcesando: boolean
-  vehiculos: VehiculoRow[]
+interface PlateSearchBarProps {
+  onSubmit: (plate: string) => void
+  isProcessing: boolean
+  vehicles: VehicleRow[]
 }
 
-export function PlacaSearchBar({
+export function PlateSearchBar({
   onSubmit,
-  isProcesando,
-  vehiculos,
-}: PlacaSearchBarProps) {
-  const [placa, setPlaca] = useState('')
+  isProcessing,
+  vehicles,
+}: PlateSearchBarProps) {
+  const [plate, setPlate] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const justSubmittedRef = useRef(false)
 
-  const placaNorm = useMemo(() => normalizePlaca(placa), [placa])
+  const plateNorm = useMemo(() => normalizePlate(plate), [plate])
 
   const suggestions = useMemo(() => {
-    if (!placaNorm || placaNorm.length < 2) return []
-    return vehiculos
-      .filter((v) => v.active && v.plate.includes(placaNorm))
+    if (!plateNorm || plateNorm.length < 2) return []
+    return vehicles
+      .filter((v) => v.active && v.plate.includes(plateNorm))
       .slice(0, 8)
-  }, [placaNorm, vehiculos])
+  }, [plateNorm, vehicles])
 
   const handleSubmit = useCallback(() => {
-    const trimmed = placa.trim()
-    if (isPlacaValida(normalizePlaca(trimmed)) && !justSubmittedRef.current) {
+    const trimmed = plate.trim()
+    if (isValidPlate(normalizePlate(trimmed)) && !justSubmittedRef.current) {
       justSubmittedRef.current = true
       setShowDropdown(false)
       setSelectedIndex(-1)
       onSubmit(trimmed)
     }
-  }, [placa, onSubmit])
+  }, [plate, onSubmit])
 
-  // Auto-submit when placa reaches a valid Colombian format (6 chars)
+  // Auto-submit when plate reaches a valid Colombian format (6 chars)
   useEffect(() => {
-    if (isPlacaValida(placaNorm) && !justSubmittedRef.current) {
+    if (isValidPlate(plateNorm) && !justSubmittedRef.current) {
       handleSubmit()
     }
-  }, [placaNorm, handleSubmit])
+  }, [plateNorm, handleSubmit])
 
   const handleChange = (value: string) => {
     justSubmittedRef.current = false
-    setPlaca(value)
+    setPlate(value)
     setShowDropdown(true)
     setSelectedIndex(-1)
   }
 
-  const handleSelect = (vehiculo: VehiculoRow) => {
+  const handleSelect = (vehicle: VehicleRow) => {
     justSubmittedRef.current = true
-    setPlaca(vehiculo.plate)
+    setPlate(vehicle.plate)
     setShowDropdown(false)
     setSelectedIndex(-1)
-    onSubmit(vehiculo.plate)
+    onSubmit(vehicle.plate)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -98,7 +99,7 @@ export function PlacaSearchBar({
 
   const handleClear = () => {
     justSubmittedRef.current = false
-    setPlaca('')
+    setPlate('')
     setShowDropdown(false)
     setSelectedIndex(-1)
     inputRef.current?.focus()
@@ -122,38 +123,39 @@ export function PlacaSearchBar({
 
   // Auto-focus and reset after processing completes
   useEffect(() => {
-    if (!isProcesando) {
+    if (!isProcessing) {
       justSubmittedRef.current = false
-      setPlaca('')
+      setPlate('')
       inputRef.current?.focus()
     }
-  }, [isProcesando])
+  }, [isProcessing])
 
   const hasSuggestions = showDropdown && suggestions.length > 0
-  const showFormatError = placaNorm.length === 6 && !isPlacaValida(placaNorm)
+  const showFormatError =
+    plateNorm.length === PLATE_LENGTH && !isValidPlate(plateNorm)
 
   return (
     <div className="relative">
       <PlacaInput
         ref={inputRef}
-        value={placa}
+        value={plate}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => placaNorm.length >= 2 && setShowDropdown(true)}
+        onFocus={() => plateNorm.length >= 2 && setShowDropdown(true)}
         placeholder="Ingrese placa..."
-        disabled={isProcesando}
+        disabled={isProcessing}
         className="h-14 text-center font-mono text-2xl tracking-wider"
         autoFocus
       />
       {showFormatError && (
         <p className="mt-1.5 text-center text-sm text-destructive">
-          {PLACA_FORMAT_HINT}
+          {PLATE_FORMAT_HINT}
         </p>
       )}
       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">
-        {isProcesando ? (
+        {isProcessing ? (
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        ) : placa ? (
+        ) : plate ? (
           <Button
             type="button"
             variant="ghost"
@@ -173,7 +175,7 @@ export function PlacaSearchBar({
         >
           {suggestions.map((veh, i) => {
             const Icon = veh.type === 'MOTORCYCLE' ? Bike : Car
-            const unidad = veh.unit
+            const unit = veh.unit
             return (
               <button
                 key={veh._id}
@@ -197,9 +199,9 @@ export function PlacaSearchBar({
                       ? 'Otro'
                       : 'Carro'}
                 </Badge>
-                {unidad && (
+                {unit && (
                   <span className="ml-auto text-sm text-muted-foreground">
-                    T{unidad.tower} — {unidad.number}
+                    T{unit.tower} — {unit.number}
                   </span>
                 )}
               </button>

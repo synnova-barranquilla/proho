@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { formatAccessTime } from '#/lib/date'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -24,23 +25,13 @@ import {
   type RegistroActivo,
 } from './types'
 
-function formatDateTime(ts: number | undefined): string {
-  if (ts == null) return '—'
-  return new Date(ts).toLocaleString('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
 const columns: ColumnDef<RegistroActivo, unknown>[] = [
   {
     id: 'fecha',
     header: 'Fecha',
     cell: ({ row }) => (
       <span className="text-sm">
-        {formatDateTime(row.original.enteredAt ?? row.original._creationTime)}
+        {formatAccessTime(row.original.enteredAt ?? row.original._creationTime)}
       </span>
     ),
   },

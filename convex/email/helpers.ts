@@ -37,7 +37,6 @@ export const getInvitationData = internalQuery({
 export const getAllComplexSummaries = internalQuery({
   args: {},
   handler: async (ctx) => {
-    // Get all organizations
     const orgs = await ctx.db.query('organizations').collect()
     const activeOrgs = orgs.filter((o) => o.active)
 
@@ -54,7 +53,6 @@ export const getAllComplexSummaries = internalQuery({
       adminEmails: string[]
     }> = []
 
-    // Yesterday range
     const now = new Date()
     const startOfToday = new Date(
       now.getFullYear(),
@@ -76,7 +74,6 @@ export const getAllComplexSummaries = internalQuery({
         .collect()
 
       for (const complex of complexes.filter((c) => c.active)) {
-        // Get records
         const records = await ctx.db
           .query('accessRecords')
           .withIndex('by_complex_id', (q) => q.eq('complexId', complex._id))
@@ -102,7 +99,6 @@ export const getAllComplexSummaries = internalQuery({
           (r) => r.finalDecision === 'REJECTED',
         ).length
 
-        // Admin emails
         const memberships = await ctx.db
           .query('complexMemberships')
           .withIndex('by_complex_and_role', (q) =>
@@ -119,7 +115,7 @@ export const getAllComplexSummaries = internalQuery({
           }
         }
 
-        // Also include org owners
+        // Also include org owners who may not have complex memberships
         const orgUsers = await ctx.db
           .query('users')
           .withIndex('by_organization_id', (q) =>

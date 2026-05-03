@@ -28,20 +28,20 @@ const columns: ColumnDef<RegistroActivo, unknown>[] = [
     ),
   },
   {
-    id: 'tipoVehiculo',
+    id: 'vehicleType',
     header: 'Vehículo',
     enableSorting: false,
     cell: ({ row }) => {
-      const tipo =
+      const vehicleType =
         row.original.vehicle?.type ?? row.original.visitorVehicleType ?? 'CAR'
-      const Icon = tipo === 'MOTORCYCLE' ? Bike : Car
+      const Icon = vehicleType === 'MOTORCYCLE' ? Bike : Car
       return (
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <Icon className="h-4 w-4" />
           <span className="text-sm">
-            {tipo === 'MOTORCYCLE'
+            {vehicleType === 'MOTORCYCLE'
               ? 'Moto'
-              : tipo === 'OTHER'
+              : vehicleType === 'OTHER'
                 ? 'Otro'
                 : 'Carro'}
           </span>
@@ -79,8 +79,8 @@ export function DashboardTab({ complexId }: DashboardTabProps) {
   )
 
   const carrosDentro = activos.filter((r: RegistroActivo) => {
-    const tipo = r.vehicle?.type ?? r.visitorVehicleType ?? 'CAR'
-    return tipo !== 'MOTORCYCLE'
+    const vehicleType = r.vehicle?.type ?? r.visitorVehicleType ?? 'CAR'
+    return vehicleType !== 'MOTORCYCLE'
   }).length
 
   const motosDentro = activos.filter(
