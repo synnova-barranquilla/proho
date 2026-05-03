@@ -77,6 +77,8 @@ export function QuickActionsManager({ complexId }: QuickActionsManagerProps) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
         toast.error(d.message ?? 'Error')
+      } else {
+        toast.error('Error inesperado')
       }
     }
   }
@@ -89,6 +91,8 @@ export function QuickActionsManager({ complexId }: QuickActionsManagerProps) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
         toast.error(d.message ?? 'Error')
+      } else {
+        toast.error('Error inesperado')
       }
     }
   }

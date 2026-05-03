@@ -3,11 +3,8 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { complexConfigDefaults } from '../complexConfig/validators'
 import { requireComplexAccess, requireOrgRole } from '../lib/auth'
+import { SLUG_MAX, SLUG_MIN, SLUG_REGEX } from '../lib/constants'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-
-const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-const SLUG_MIN = 3
-const SLUG_MAX = 40
 
 function validateComplexSlug(slug: string): void {
   if (slug.length < SLUG_MIN || slug.length > SLUG_MAX) {

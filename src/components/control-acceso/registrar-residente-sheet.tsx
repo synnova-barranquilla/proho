@@ -31,15 +31,7 @@ import {
   TipoVehiculoCards,
   type TipoVehiculoSelectable,
 } from './tipo-vehiculo-cards'
-
-const VIOLATION_LABELS: Record<RuleViolation, string> = {
-  MORA: 'La unidad está en mora de administración',
-  VEHICULO_DUPLICADO: 'Ya hay un vehículo de esta unidad dentro',
-  MOTO_ADICIONAL: 'Ya hay un vehículo dentro y se agrega una moto',
-  PERMANENCIA_EXCEDIDA: 'Un vehículo de la unidad supera la permanencia máxima',
-  SOBRECUPO_CARROS: 'Sobrecupo de parqueadero de carros',
-  SOBRECUPO_MOTOS: 'Sobrecupo de parqueadero de motos',
-}
+import { VIOLATION_LABELS_LONG as VIOLATION_LABELS } from './types'
 
 interface RegistrarResidenteSheetProps {
   open: boolean

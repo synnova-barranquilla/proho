@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 
 import { query } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
+import { MS_PER_DAY } from '../lib/constants'
 import { normalizePlaca } from '../lib/placa'
 
 /**
@@ -60,7 +61,7 @@ export const listRecent = query({
       allowedRoles: ['ADMIN', 'GUARD'],
     })
 
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000
+    const cutoff = Date.now() - MS_PER_DAY
 
     const records = await ctx.db
       .query('accessRecords')

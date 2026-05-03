@@ -14,7 +14,7 @@ export type TicketStatus =
 
 export type TicketPriority = 'high' | 'medium' | 'low'
 
-export type ConversationStatus =
+type ConversationStatus =
   | 'active'
   | 'escalated'
   | 'resolved_by_bot'
@@ -102,13 +102,6 @@ export const ORIGIN_LABELS: Record<string, string> = {
   digital: 'Digital',
   in_person: 'Presencial',
 } satisfies Record<TicketOrigin, string>
-
-// -- Role labels (for admin UI) ---------------------------------------------
-
-export const ROLE_LABELS: Record<string, string> = {
-  ADMIN: 'Admin',
-  AUXILIAR: 'Auxiliar Op.',
-} satisfies Record<AssignedRole, string>
 
 // -- Utility: relative time (Spanish) ---------------------------------------
 

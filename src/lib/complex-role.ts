@@ -14,9 +14,6 @@ export type ComplexRole =
   | 'TENANT'
   | 'LESSEE'
 
-const STAFF_ROLES: ComplexRole[] = ['ADMIN', 'AUXILIAR']
-const RESIDENT_ROLES: ComplexRole[] = ['OWNER', 'TENANT', 'LESSEE']
-
 interface UserForRole {
   orgRole: 'SUPER_ADMIN' | 'ADMIN' | 'MEMBER'
   isOrgOwner: boolean
@@ -43,7 +40,7 @@ interface MembershipForRole {
  * Returning `null` is treated by UI gates as "no access" — render
  * nothing / redirect.
  */
-export function getEffectiveComplexRole(
+function getEffectiveComplexRole(
   user: UserForRole,
   complex: Pick<Doc<'complexes'>, 'organizationId'>,
   membership: MembershipForRole | null,
@@ -110,32 +107,4 @@ export function useEffectiveComplexRole(): ComplexRole | null {
 
 export function useIsComplexAdmin(): boolean {
   return useEffectiveComplexRole() === 'ADMIN'
-}
-
-export function isComplexStaff(
-  user: UserForRole,
-  complex: Pick<Doc<'complexes'>, 'organizationId'>,
-  membership: MembershipForRole | null,
-): boolean {
-  const role = getEffectiveComplexRole(user, complex, membership)
-  return role !== null && STAFF_ROLES.includes(role)
-}
-
-export function isResident(
-  user: UserForRole,
-  complex: Pick<Doc<'complexes'>, 'organizationId'>,
-  membership: MembershipForRole | null,
-): boolean {
-  const role = getEffectiveComplexRole(user, complex, membership)
-  return role !== null && RESIDENT_ROLES.includes(role)
-}
-
-export function useIsComplexStaff(): boolean {
-  const role = useEffectiveComplexRole()
-  return role !== null && STAFF_ROLES.includes(role)
-}
-
-export function useIsResident(): boolean {
-  const role = useEffectiveComplexRole()
-  return role !== null && RESIDENT_ROLES.includes(role)
 }

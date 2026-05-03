@@ -26,6 +26,7 @@ import { Switch } from '#/components/ui/switch'
 import { useIsComplexAdmin } from '#/lib/complex-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
+import { complexConfigDefaults } from '../../../../../convex/complexConfig/validators'
 
 export const Route = createFileRoute(
   '/_authenticated/c/$complexSlug/configuracion',
@@ -44,8 +45,7 @@ export const Route = createFileRoute(
 function ConfiguracionPage() {
   const ctx = Route.useRouteContext()
   const { complexId, complexSlug } = ctx
-  const activeModules = (ctx as any).activeModules as string[] | undefined
-  const hasControlAcceso = activeModules?.includes('access_control') ?? false
+  const hasControlAcceso = ctx.activeModules.includes('access_control')
   const navigate = useNavigate()
   const isAdmin = useIsComplexAdmin()
 
@@ -65,22 +65,23 @@ function ConfiguracionPage() {
   )
 
   const [ruleEntryInArrears, setRuleEntryInArrears] = useState(
-    config?.ruleEntryInArrears ?? true,
+    config?.ruleEntryInArrears ?? complexConfigDefaults.ruleEntryInArrears,
   )
   const [ruleDuplicateVehicle, setRuleDuplicateVehicle] = useState(
-    config?.ruleDuplicateVehicle ?? true,
+    config?.ruleDuplicateVehicle ?? complexConfigDefaults.ruleDuplicateVehicle,
   )
   const [ruleMaxStayDays, setRuleMaxStayDays] = useState(
-    config?.ruleMaxStayDays ?? 30,
+    config?.ruleMaxStayDays ?? complexConfigDefaults.ruleMaxStayDays,
   )
   const [ruleEntryOverCapacity, setRuleEntryOverCapacity] = useState(
-    config?.ruleEntryOverCapacity ?? true,
+    config?.ruleEntryOverCapacity ??
+      complexConfigDefaults.ruleEntryOverCapacity,
   )
   const [carParkingSlots, setCarParkingSlots] = useState(
-    config?.carParkingSlots ?? 0,
+    config?.carParkingSlots ?? complexConfigDefaults.carParkingSlots,
   )
   const [motoParkingSlots, setMotoParkingSlots] = useState(
-    config?.motoParkingSlots ?? 0,
+    config?.motoParkingSlots ?? complexConfigDefaults.motoParkingSlots,
   )
 
   useEffect(() => {

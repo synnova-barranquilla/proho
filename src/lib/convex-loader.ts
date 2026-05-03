@@ -5,7 +5,7 @@ import { getAuth } from '@workos/authkit-tanstack-react-start'
 import { ConvexHttpClient } from 'convex/browser'
 import type { FunctionReference, FunctionReturnType } from 'convex/server'
 
-const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL
+const CONVEX_URL = import.meta.env.VITE_CONVEX_URL
 
 /**
  * Prefetches a Convex query with an authenticated HTTP client and populates

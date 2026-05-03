@@ -123,8 +123,8 @@ export function BulkImportDialog<T>({
       setResult(res)
       setStep('result')
       toast.success(`${res.created} creados, ${res.updated} actualizados`)
-    } catch {
-      toast.error('Error al importar')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al importar')
     } finally {
       setIsPending(false)
     }

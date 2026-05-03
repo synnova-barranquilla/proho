@@ -5,6 +5,7 @@ import { v } from 'convex/values'
 
 import { components, internal } from '../_generated/api'
 import { action, internalAction } from '../_generated/server'
+import { CONVERSATION_INACTIVITY_MS } from '../lib/constants'
 import { supportAgent } from './agent'
 import { isBusinessHours } from './businessHours'
 
@@ -470,6 +471,7 @@ export const computeTicketSummary = internalAction({
       )
     } catch (error) {
       console.error('Error computing ticket summary:', error)
+      throw error
     }
   },
 })
@@ -486,7 +488,7 @@ export const closeInactiveConversations = internalAction({
       {},
     )
 
-    const cutoff = Date.now() - 30 * 60 * 1000
+    const cutoff = Date.now() - CONVERSATION_INACTIVITY_MS
 
     for (const conv of activeConversations) {
       if (conv.updatedAt < cutoff) {

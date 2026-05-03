@@ -36,7 +36,7 @@ import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 
-const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL
+const CONVEX_URL = import.meta.env.VITE_CONVEX_URL
 
 // Optional `from` search param: the conjunto id the user was visiting
 // before navigating to /admin/equipo. The sidebar uses it to render a
@@ -69,14 +69,10 @@ export const Route = createFileRoute('/_authenticated/admin/equipo')({
     // Resolve the fromComplex FIRST so we know which org to scope to.
     let fromComplex: Doc<'complexes'> | null = null
     if (deps.from) {
-      try {
-        const result = await client.query(api.complexes.queries.getBySlug, {
-          slug: deps.from,
-        })
-        fromComplex = result?.complex ?? null
-      } catch {
-        fromComplex = null
-      }
+      const result = await client.query(api.complexes.queries.getBySlug, {
+        slug: deps.from,
+      })
+      fromComplex = result?.complex ?? null
     }
 
     // If a super admin navigated here from a conjunto in another org,

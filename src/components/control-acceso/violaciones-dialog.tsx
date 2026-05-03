@@ -21,15 +21,7 @@ import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
-
-const VIOLATION_LABELS: Record<RuleViolation, string> = {
-  MORA: 'La unidad está en mora de administración',
-  VEHICULO_DUPLICADO: 'Ya hay un vehículo de esta unidad dentro',
-  MOTO_ADICIONAL: 'Ya hay un vehículo dentro y se agrega una moto',
-  PERMANENCIA_EXCEDIDA: 'Un vehículo de la unidad supera la permanencia máxima',
-  SOBRECUPO_CARROS: 'Sobrecupo de parqueadero de carros',
-  SOBRECUPO_MOTOS: 'Sobrecupo de parqueadero de motos',
-}
+import { VIOLATION_LABELS_LONG as VIOLATION_LABELS } from './types'
 
 interface ViolacionesDialogProps {
   open: boolean
@@ -98,7 +90,12 @@ export function ViolacionesDialog({
       toast.error('Ingreso rechazado')
       onClose()
     } catch (err) {
-      toast.error('Error al registrar rechazo')
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error al registrar rechazo')
+      } else {
+        toast.error('Error al registrar rechazo')
+      }
     }
   }
 

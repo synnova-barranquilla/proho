@@ -1,8 +1,10 @@
 import { Bike, Car } from 'lucide-react'
 
 import { cn } from '#/lib/utils'
+import type { PlacaTipo } from '../../../convex/lib/placa'
 
-export type TipoVehiculoSelectable = 'CAR' | 'MOTORCYCLE'
+/** UI alias — selectable vehicle types match the plate-detection domain type. */
+export type TipoVehiculoSelectable = PlacaTipo
 
 interface TipoVehiculoCardsProps {
   value: TipoVehiculoSelectable

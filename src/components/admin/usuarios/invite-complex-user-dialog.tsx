@@ -26,10 +26,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import type { ComplexRole } from '#/lib/complex-role'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
-type ComplexRole = 'GUARD' | 'OWNER' | 'TENANT' | 'LESSEE'
+/** Roles available for invitation (excludes ADMIN/AUXILIAR which are org-level). */
+type InvitableComplexRole = Extract<
+  ComplexRole,
+  'GUARD' | 'OWNER' | 'TENANT' | 'LESSEE'
+>
 
 interface InviteComplexUserDialogProps {
   open: boolean
@@ -45,7 +50,7 @@ export function InviteComplexUserDialog({
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [role, setRole] = useState<ComplexRole>('GUARD')
+  const [role, setRole] = useState<InvitableComplexRole>('GUARD')
 
   useEffect(() => {
     if (open) {
@@ -127,7 +132,7 @@ export function InviteComplexUserDialog({
                 <FieldLabel>Rol en el conjunto</FieldLabel>
                 <Select
                   value={role}
-                  onValueChange={(v) => v && setRole(v as ComplexRole)}
+                  onValueChange={(v) => v && setRole(v as InvitableComplexRole)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona rol">

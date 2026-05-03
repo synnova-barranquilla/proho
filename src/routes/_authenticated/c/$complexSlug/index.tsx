@@ -4,6 +4,7 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import { ConvexError } from 'convex/values'
 import {
   AlertTriangle,
   ArrowRight,
@@ -36,6 +37,7 @@ import { useIsComplexAdmin } from '#/lib/complex-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
+import { complexConfigDefaults } from '../../../../../convex/complexConfig/validators'
 
 export const Route = createFileRoute('/_authenticated/c/$complexSlug/')({
   loader: async ({ context: { queryClient, complexId } }) => {
@@ -64,8 +66,7 @@ export const Route = createFileRoute('/_authenticated/c/$complexSlug/')({
 function ComplexDashboardPage() {
   const ctx = Route.useRouteContext()
   const complexId = ctx.complexId
-  const activeModules = (ctx as any).activeModules as string[] | undefined
-  const hasControlAcceso = activeModules?.includes('access_control') ?? false
+  const hasControlAcceso = ctx.activeModules.includes('access_control')
 
   return (
     <div className="flex flex-col gap-6">
@@ -224,17 +225,29 @@ function ParkingSettingsDialog({
     try {
       await mutation.mutateAsync({
         complexId,
-        ruleEntryInArrears: config?.ruleEntryInArrears ?? true,
-        ruleDuplicateVehicle: config?.ruleDuplicateVehicle ?? true,
-        ruleMaxStayDays: config?.ruleMaxStayDays ?? 30,
-        ruleEntryOverCapacity: config?.ruleEntryOverCapacity ?? true,
+        ruleEntryInArrears:
+          config?.ruleEntryInArrears ??
+          complexConfigDefaults.ruleEntryInArrears,
+        ruleDuplicateVehicle:
+          config?.ruleDuplicateVehicle ??
+          complexConfigDefaults.ruleDuplicateVehicle,
+        ruleMaxStayDays:
+          config?.ruleMaxStayDays ?? complexConfigDefaults.ruleMaxStayDays,
+        ruleEntryOverCapacity:
+          config?.ruleEntryOverCapacity ??
+          complexConfigDefaults.ruleEntryOverCapacity,
         carParkingSlots: carros,
         motoParkingSlots: motos,
       })
       toast.success('Capacidad de parqueaderos actualizada')
       onOpenChange(false)
-    } catch {
-      toast.error('Error al actualizar')
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error al actualizar')
+      } else {
+        toast.error('Error al actualizar')
+      }
     }
   }
 

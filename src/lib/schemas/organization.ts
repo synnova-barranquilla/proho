@@ -50,8 +50,6 @@ export type OnboardTenantInput = z.infer<typeof onboardTenantSchema>
 export const updateOrgSchema = z.object({
   name: nameSchema,
 })
-export type UpdateOrgInput = z.infer<typeof updateOrgSchema>
-
 /**
  * Schema for inviting an admin to an existing organization.
  * `organizationId` may be pre-set by the caller (when invoked from an org

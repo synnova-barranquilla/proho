@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 
 import { internalQuery } from '../_generated/server'
+import { MS_PER_DAY } from '../lib/constants'
 
 /**
  * Get invitation data for the email template.
@@ -60,7 +61,7 @@ export const getAllComplexSummaries = internalQuery({
       now.getMonth(),
       now.getDate(),
     ).getTime()
-    const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000
+    const startOfYesterday = startOfToday - MS_PER_DAY
 
     const fechaLabel = new Date(startOfYesterday).toLocaleDateString('es-CO', {
       day: 'numeric',

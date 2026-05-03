@@ -5,7 +5,7 @@ import { Bike, Car, LogIn, LogOut, type LucideIcon } from 'lucide-react'
 import { Badge } from '#/components/ui/badge'
 import { PaginatedDataTable } from '#/components/ui/paginated-data-table'
 import { formatDuracion, formatPlaca } from '#/lib/formatters'
-import type { RegistroReciente } from './types'
+import { RECORD_TYPE_LABELS, type RegistroReciente } from './types'
 
 interface RegistrosRecientesTableProps {
   registros: RegistroReciente[]
@@ -18,11 +18,7 @@ const TIPO_VEHICULO_ICON: Record<string, LucideIcon> = {
   OTHER: Car,
 }
 
-const TIPO_REGISTRO_LABEL: Record<string, string> = {
-  RESIDENT: 'Residente',
-  VISITOR: 'Visitante',
-  ADMIN_VISIT: 'Visita admin',
-}
+const TIPO_REGISTRO_LABEL = RECORD_TYPE_LABELS
 
 const TIPO_REGISTRO_VARIANT: Record<
   string,

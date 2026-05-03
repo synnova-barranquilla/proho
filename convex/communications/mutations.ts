@@ -4,6 +4,7 @@ import { internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import { mutation, type MutationCtx } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
+import { RECURRENCE_LOOKBACK_MS } from '../lib/constants'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { ALL_COMMS_ROLES, CLOSED_STATUSES, STAFF_ROLES } from './constants'
 import {
@@ -47,7 +48,7 @@ async function detectRecurrence(
   residentId: Id<'residents'>,
   categories: string[],
 ): Promise<boolean> {
-  const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000
+  const cutoff = Date.now() - RECURRENCE_LOOKBACK_MS
 
   const recentTickets = await ctx.db
     .query('tickets')

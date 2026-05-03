@@ -33,6 +33,7 @@ import {
   TipoVehiculoCards,
   type TipoVehiculoSelectable,
 } from './tipo-vehiculo-cards'
+import { VIOLATION_LABELS_LONG as VIOLATION_LABELS } from './types'
 
 type SubScreen = 'OPTIONS' | 'VISITOR' | 'VIOLACIONES' | 'RESIDENT'
 
@@ -40,15 +41,6 @@ interface PendingVisitante {
   tipo: 'VISITOR' | 'ADMIN_VISIT'
   unitId?: Id<'units'>
   vehiculoTipo: TipoVehiculoSelectable
-}
-
-const VIOLATION_LABELS: Record<RuleViolation, string> = {
-  MORA: 'La unidad está en mora',
-  VEHICULO_DUPLICADO: 'Vehículo duplicado',
-  MOTO_ADICIONAL: 'Moto adicional',
-  PERMANENCIA_EXCEDIDA: 'Permanencia excedida',
-  SOBRECUPO_CARROS: 'Sobrecupo de parqueadero de carros',
-  SOBRECUPO_MOTOS: 'Sobrecupo de parqueadero de motos',
 }
 
 interface NoEncontradoDialogProps {

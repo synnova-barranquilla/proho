@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 
 import type { Id } from '../_generated/dataModel'
 import { mutation, type MutationCtx } from '../_generated/server'
+import { complexConfigDefaults } from '../complexConfig/validators'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { isPlacaValida, normalizePlaca } from '../lib/placa'
@@ -16,10 +17,10 @@ import { vehicleTypes } from '../vehicles/validators'
 import { accessRecordTypes } from './validators'
 
 const DEFAULT_RULE_CONFIG: RuleConfig = {
-  ruleEntryInArrears: true,
-  ruleDuplicateVehicle: true,
-  ruleMaxStayDays: 30,
-  ruleEntryOverCapacity: true,
+  ruleEntryInArrears: complexConfigDefaults.ruleEntryInArrears,
+  ruleDuplicateVehicle: complexConfigDefaults.ruleDuplicateVehicle,
+  ruleMaxStayDays: complexConfigDefaults.ruleMaxStayDays,
+  ruleEntryOverCapacity: complexConfigDefaults.ruleEntryOverCapacity,
 }
 
 // --- Helpers ---

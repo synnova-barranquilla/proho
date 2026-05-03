@@ -1,23 +1,8 @@
 import { z } from 'zod'
 
-/**
- * Slugs that are reserved and cannot be used by any organization.
- * Must match the server-side reserved list in `convex/organizations/mutations.ts`.
- */
-export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
-  'synnova-internal',
-  'demo-conjunto',
-  'api',
-  'www',
-  'admin',
-  'app',
-  'auth',
-  'login',
-  'logout',
-])
+import { RESERVED_SLUGS, SLUG_MAX, SLUG_MIN } from '../../convex/lib/constants'
 
-export const SLUG_MIN = 3
-export const SLUG_MAX = 40
+export { RESERVED_SLUGS, SLUG_MAX, SLUG_MIN }
 
 /**
  * Converts an arbitrary string (usually an organization name) into a
@@ -30,7 +15,7 @@ export function slugify(input: string): string {
   return input
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // remove diacritics
+    .replace(/[̀-ͯ]/g, '') // remove diacritics
     .replace(/[^a-z0-9\s-]/g, '') // strip invalid chars
     .trim()
     .replace(/\s+/g, '-') // spaces → dash

@@ -1,5 +1,43 @@
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
+import { MS_PER_DAY } from '../../../convex/lib/constants'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
+
+// ─── Shared labels ───────────────────────────────────────────────��────
+
+/** Short labels for badges / table cells. */
+export const VIOLATION_LABELS_SHORT: Record<RuleViolation, string> = {
+  MORA: 'Mora',
+  VEHICULO_DUPLICADO: 'Duplicado',
+  MOTO_ADICIONAL: 'Moto adicional',
+  PERMANENCIA_EXCEDIDA: 'Permanencia',
+  SOBRECUPO_CARROS: 'Sobrecupo carros',
+  SOBRECUPO_MOTOS: 'Sobrecupo motos',
+}
+
+/** Verbose labels for dialogs / confirmation screens. */
+export const VIOLATION_LABELS_LONG: Record<RuleViolation, string> = {
+  MORA: 'La unidad está en mora de administración',
+  VEHICULO_DUPLICADO: 'Ya hay un vehículo de esta unidad dentro',
+  MOTO_ADICIONAL: 'Ya hay un vehículo dentro y se agrega una moto',
+  PERMANENCIA_EXCEDIDA: 'Un vehículo de la unidad supera la permanencia máxima',
+  SOBRECUPO_CARROS: 'Sobrecupo de parqueadero de carros',
+  SOBRECUPO_MOTOS: 'Sobrecupo de parqueadero de motos',
+}
+
+/** Record type labels used in tables and badges. */
+export const RECORD_TYPE_LABELS: Record<string, string> = {
+  RESIDENT: 'Residente',
+  VISITOR: 'Visitante',
+  ADMIN_VISIT: 'Visita admin',
+}
+
+/** Period filter options shared by historico and novedades tabs. */
+export const PERIODO_OPTIONS = [
+  { value: 'hoy', label: 'Hoy', ms: MS_PER_DAY },
+  { value: '7d', label: 'Últimos 7 días', ms: 7 * MS_PER_DAY },
+  { value: '30d', label: 'Últimos 30 días', ms: 30 * MS_PER_DAY },
+  { value: 'todo', label: 'Todo', ms: 0 },
+] as const
 
 // ─── Enriched types from queries ───────────────────────────────────────
 

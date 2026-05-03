@@ -19,79 +19,22 @@ import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { CreateInPersonDialog } from './create-in-person-dialog'
 import { TicketDetailPanel } from './ticket-detail-panel'
-
-type TicketStatus =
-  | 'open_waiting_admin'
-  | 'open_waiting_resident'
-  | 'closed_by_bot'
-  | 'closed_by_admin'
-  | 'closed_by_inactivity'
-  | 'reopened'
-
-type TicketPriority = 'high' | 'medium' | 'low'
+import {
+  PRIORITY_CONFIG,
+  STATUS_LABELS,
+  STATUS_VARIANTS,
+  timeAgo,
+  type AssignedRole,
+  type TicketOrigin,
+  type TicketPriority,
+  type TicketStatus,
+} from './types'
 
 interface Filters {
   status: TicketStatus | undefined
   priority: TicketPriority | undefined
-  assignedRole: 'ADMIN' | 'AUXILIAR' | undefined
-  origin: 'digital' | 'in_person' | undefined
-}
-
-const STATUS_LABELS: Record<TicketStatus, string> = {
-  open_waiting_admin: 'Esp. admin',
-  open_waiting_resident: 'Esp. residente',
-  reopened: 'Reabierto',
-  closed_by_bot: 'Cerrado (bot)',
-  closed_by_admin: 'Cerrado (admin)',
-  closed_by_inactivity: 'Cerrado (inactividad)',
-}
-
-const STATUS_VARIANTS: Record<TicketStatus, string> = {
-  open_waiting_admin:
-    'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400',
-  open_waiting_resident:
-    'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400',
-  reopened:
-    'bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400',
-  closed_by_bot:
-    'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-  closed_by_admin:
-    'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-  closed_by_inactivity:
-    'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-}
-
-const PRIORITY_CONFIG: {
-  key: TicketPriority
-  label: string
-  badgeClass: string
-}[] = [
-  {
-    key: 'high',
-    label: 'Alta',
-    badgeClass: 'bg-red-500 text-white',
-  },
-  {
-    key: 'medium',
-    label: 'Media',
-    badgeClass: 'bg-yellow-500 text-white',
-  },
-  {
-    key: 'low',
-    label: 'Baja',
-    badgeClass: 'bg-gray-400 text-white',
-  },
-]
-
-function timeAgo(ts: number): string {
-  const diff = Date.now() - ts
-  const minutes = Math.floor(diff / 60_000)
-  if (minutes < 1) return 'ahora'
-  if (minutes < 60) return `${minutes}m`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h`
-  const days = Math.floor(hours / 24)
-  return `${days}d`
+  assignedRole: AssignedRole | undefined
+  origin: TicketOrigin | undefined
 }
 
 interface StaffTicketsTabProps {

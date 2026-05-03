@@ -17,26 +17,13 @@ import {
 } from '#/components/ui/select'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
-import type { Doc, Id } from '../../../convex/_generated/dataModel'
+import type { Id } from '../../../convex/_generated/dataModel'
 import { normalizePlaca } from '../../../convex/lib/placa'
-
-type RegistroRow = Doc<'accessRecords'> & {
-  vehicle: Doc<'vehicles'> | null
-  unit: Doc<'units'> | null
-}
-
-const PERIODO_OPTIONS = [
-  { value: 'hoy', label: 'Hoy', ms: 24 * 60 * 60 * 1000 },
-  { value: '7d', label: 'Últimos 7 días', ms: 7 * 24 * 60 * 60 * 1000 },
-  { value: '30d', label: 'Últimos 30 días', ms: 30 * 24 * 60 * 60 * 1000 },
-  { value: 'todo', label: 'Todo', ms: 0 },
-]
-
-const TIPO_LABELS: Record<string, string> = {
-  RESIDENT: 'Residente',
-  VISITOR: 'Visitante',
-  ADMIN_VISIT: 'Visita admin',
-}
+import {
+  PERIODO_OPTIONS,
+  RECORD_TYPE_LABELS,
+  type RegistroActivo,
+} from './types'
 
 const DECISION_LABELS: Record<string, string> = {
   ALLOWED: 'Permitido',
@@ -53,7 +40,7 @@ function formatDateTime(ts: number | undefined): string {
   })
 }
 
-const columns: ColumnDef<RegistroRow, unknown>[] = [
+const columns: ColumnDef<RegistroActivo, unknown>[] = [
   {
     accessorKey: 'normalizedPlate',
     header: 'Placa',
@@ -68,7 +55,7 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
     header: 'Tipo',
     cell: ({ row }) => (
       <span className="text-sm">
-        {TIPO_LABELS[row.original.type] ?? row.original.type}
+        {RECORD_TYPE_LABELS[row.original.type] ?? row.original.type}
       </span>
     ),
   },

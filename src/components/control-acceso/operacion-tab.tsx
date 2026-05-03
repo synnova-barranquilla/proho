@@ -11,6 +11,7 @@ import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { MS_PER_DAY } from '../../../convex/lib/constants'
 import { normalizePlaca } from '../../../convex/lib/placa'
 import { NoEncontradoDialog } from './no-encontrado-dialog'
 import { PlacaSearchBar } from './placa-search-bar'
@@ -88,7 +89,7 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
           dispatch({
             type: 'RESULTADO_VIOLACIONES',
             placaRaw: placa,
-            violations: result.violations as any,
+            violations: result.violations,
             vehicleId: '' as Id<'vehicles'>,
             unidadInfo: '',
           })
@@ -124,7 +125,7 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
     (r) => r.type === 'VISITOR' || r.type === 'ADMIN_VISIT',
   )
 
-  const permanenciaMs = permanenciaDias * 24 * 60 * 60 * 1000
+  const permanenciaMs = permanenciaDias * MS_PER_DAY
   const permanenciaExcedida =
     permanenciaDias > 0
       ? activos.filter(

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { MS_PER_DAY } from './constants'
 import {
   evaluateRules,
   type RuleConfig,
@@ -22,7 +23,6 @@ const ALL_RULES_OFF: RuleConfig = {
 }
 
 const NOW = Date.now()
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 function makeInput(overrides: Partial<RuleInput> = {}): RuleInput {
   return {

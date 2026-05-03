@@ -2,26 +2,16 @@ import { v } from 'convex/values'
 
 import { mutation, type MutationCtx } from '../_generated/server'
 import { requireOrgRole } from '../lib/auth'
+import {
+  RESERVED_SLUGS,
+  SEVEN_DAYS_MS,
+  SLUG_MAX,
+  SLUG_MIN,
+  SLUG_REGEX,
+} from '../lib/constants'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { isInternalOrg } from '../lib/organizations'
 import { moduleKeys } from './validators'
-
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-
-const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-const SLUG_MIN = 3
-const SLUG_MAX = 40
-const RESERVED_SLUGS = new Set([
-  'synnova-internal',
-  'demo-conjunto',
-  'api',
-  'www',
-  'admin',
-  'app',
-  'auth',
-  'login',
-  'logout',
-])
 
 function validateSlug(slug: string): void {
   if (slug.length < SLUG_MIN || slug.length > SLUG_MAX) {

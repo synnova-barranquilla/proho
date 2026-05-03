@@ -5,6 +5,8 @@
  * Used identically on client (for instant UX) and server (safety net).
  */
 
+import { MS_PER_DAY } from './constants'
+
 export type VehicleTipo = 'CAR' | 'MOTORCYCLE' | 'OTHER'
 
 export interface VehiculoAdentro {
@@ -56,8 +58,6 @@ export interface RuleResult {
   violations: RuleViolation[]
   requiresJustificacion: boolean
 }
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 export function evaluateRules(input: RuleInput): RuleResult {
   const violations: RuleViolation[] = []

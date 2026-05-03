@@ -98,6 +98,8 @@ export function CategoriesManager({ complexId }: CategoriesManagerProps) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
         toast.error(d.message ?? 'Error')
+      } else {
+        toast.error('Error inesperado')
       }
     }
   }
@@ -110,6 +112,8 @@ export function CategoriesManager({ complexId }: CategoriesManagerProps) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
         toast.error(d.message ?? 'Error')
+      } else {
+        toast.error('Error inesperado')
       }
     }
   }

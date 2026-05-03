@@ -8,7 +8,7 @@ import { api } from '../../convex/_generated/api'
 import { buttonVariants } from '../components/ui/button'
 import { getDashboardPathForRole } from '../lib/routes'
 
-const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL
+const CONVEX_URL = import.meta.env.VITE_CONVEX_URL
 
 export const Route = createFileRoute('/')({
   loader: async () => {

@@ -16,29 +16,13 @@ import {
 } from '#/components/ui/select'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
-import type { Doc, Id } from '../../../convex/_generated/dataModel'
+import type { Id } from '../../../convex/_generated/dataModel'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
-
-type RegistroRow = Doc<'accessRecords'> & {
-  vehicle: Doc<'vehicles'> | null
-  unit: Doc<'units'> | null
-}
-
-const PERIODO_OPTIONS = [
-  { value: 'hoy', label: 'Hoy', ms: 24 * 60 * 60 * 1000 },
-  { value: '7d', label: 'Últimos 7 días', ms: 7 * 24 * 60 * 60 * 1000 },
-  { value: '30d', label: 'Últimos 30 días', ms: 30 * 24 * 60 * 60 * 1000 },
-  { value: 'todo', label: 'Todo', ms: 0 },
-]
-
-const VIOLATION_LABELS: Record<RuleViolation, string> = {
-  MORA: 'Mora',
-  VEHICULO_DUPLICADO: 'Duplicado',
-  MOTO_ADICIONAL: 'Moto adicional',
-  PERMANENCIA_EXCEDIDA: 'Permanencia',
-  SOBRECUPO_CARROS: 'Sobrecupo carros',
-  SOBRECUPO_MOTOS: 'Sobrecupo motos',
-}
+import {
+  PERIODO_OPTIONS,
+  VIOLATION_LABELS_SHORT,
+  type RegistroActivo,
+} from './types'
 
 function formatDateTime(ts: number | undefined): string {
   if (ts == null) return '—'
@@ -50,7 +34,7 @@ function formatDateTime(ts: number | undefined): string {
   })
 }
 
-const columns: ColumnDef<RegistroRow, unknown>[] = [
+const columns: ColumnDef<RegistroActivo, unknown>[] = [
   {
     id: 'fecha',
     header: 'Fecha',
@@ -93,7 +77,7 @@ const columns: ColumnDef<RegistroRow, unknown>[] = [
         <div className="flex flex-wrap gap-1">
           {motor.map((v) => (
             <Badge key={v} variant="outline" className="text-xs text-amber-600">
-              {VIOLATION_LABELS[v]}
+              {VIOLATION_LABELS_SHORT[v]}
             </Badge>
           ))}
         </div>
@@ -137,7 +121,7 @@ export function NovedadesTab({ complexId }: NovedadesTabProps) {
   // Filter: only overrides (violations exist but entry was allowed)
   const overrides = useMemo(
     () =>
-      (registros as RegistroRow[]).filter(
+      (registros as RegistroActivo[]).filter(
         (r) => r.engineDecision.length > 0 && r.finalDecision === 'ALLOWED',
       ),
     [registros],

@@ -3,10 +3,9 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { mutation } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
+import { SEVEN_DAYS_MS } from '../lib/constants'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { documentType, residentTypes } from './validators'
-
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 
 const RESIDENT_TYPE_TO_COMPLEX_ROLE = {
   OWNER: 'OWNER',
