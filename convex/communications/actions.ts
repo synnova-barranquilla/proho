@@ -42,7 +42,6 @@ export const handleResidentMessage = internalAction({
     content: v.string(),
   },
   handler: async (ctx, args) => {
-    // 1. Look for an active conversation
     let conversation = await ctx.runQuery(
       internal.communications.helpers.getActiveConversationInternal,
       { complexId: args.complexId, residentId: args.residentId },
@@ -50,7 +49,6 @@ export const handleResidentMessage = internalAction({
 
     let threadId: string
 
-    // 2. Create conversation + thread if none exists
     if (!conversation) {
       threadId = await createThread(ctx, components.agent, {})
 
@@ -86,19 +84,16 @@ export const handleResidentMessage = internalAction({
       threadId = conversation.threadId
     }
 
-    // 3. Get resident context
     const residentInfo = await ctx.runQuery(
       internal.communications.helpers.getResidentInfo,
       { residentId: args.residentId },
     )
 
-    // 4. Get complex config for business hours
     const complexConfig = await ctx.runQuery(
       internal.communications.helpers.getComplexConfig,
       { complexId: args.complexId },
     )
 
-    // 5. Build system context (injected as system message, NOT visible to resident)
     const systemParts: string[] = []
     if (residentInfo) {
       systemParts.push(
@@ -125,7 +120,6 @@ export const handleResidentMessage = internalAction({
     const systemContext =
       systemParts.length > 0 ? systemParts.join('\n') : undefined
 
-    // 6. Stream bot response (prompt saves the user message automatically)
     try {
       const result = await supportAgent.streamText(
         ctx,
@@ -142,17 +136,8 @@ export const handleResidentMessage = internalAction({
         },
       )
 
-      // Wait for stream to complete and check for tool calls
       const steps = await result.steps
 
-      console.log(
-        '[handleResidentMessage] steps:',
-        steps.length,
-        'toolCalls:',
-        steps.flatMap((s) => s.toolCalls.map((tc) => tc.toolName)),
-      )
-
-      // Check if the bot called escalateToHuman
       let escalated = false
       for (const step of steps) {
         for (const toolResult of step.toolResults) {
@@ -242,13 +227,12 @@ export const handleResidentMessage = internalAction({
       })
     }
 
-    // 8. Update conversation.updatedAt
     await ctx.runMutation(
       internal.communications.helpers.updateConversationTimestamp,
       { conversationId: conversation._id },
     )
 
-    // 9. Check for 3-message fallback (bot stuck in loop)
+    // Auto-escalate if bot sent 3+ consecutive replies without resolution
     try {
       const recentMessages = await listMessages(ctx, components.agent, {
         threadId,
@@ -280,7 +264,22 @@ export const handleResidentMessage = internalAction({
         )
       }
     } catch (error) {
-      console.error('Error checking message fallback:', error)
+      console.error(
+        `[handleResidentMessage] Error in 3-message fallback escalation for conversation ${conversation._id}:`,
+        error,
+      )
+      try {
+        await saveMessage(ctx, components.agent, {
+          threadId,
+          message: {
+            role: 'assistant',
+            content:
+              'Disculpa, hubo un problema procesando tu solicitud. Un miembro del equipo revisará tu caso.',
+          },
+        })
+      } catch {
+        // Last resort: nothing more we can do
+      }
     }
   },
 })
@@ -305,7 +304,6 @@ export const handleQuickAction = internalAction({
       return
     }
 
-    // Get or create conversation + thread
     let conversation = await ctx.runQuery(
       internal.communications.helpers.getActiveConversationInternal,
       { complexId: args.complexId, residentId: args.residentId },
@@ -335,7 +333,6 @@ export const handleQuickAction = internalAction({
     }
 
     if (quickAction.isInfoOnly && quickAction.response) {
-      // Info-only: save user message + predefined response, no LLM call
       await saveMessage(ctx, components.agent, {
         threadId,
         message: { role: 'user', content: quickAction.label },
@@ -354,7 +351,6 @@ export const handleQuickAction = internalAction({
         { conversationId: conversation._id },
       )
     } else {
-      // Not info-only: trigger full LLM flow with category context
       const categoryHint = quickAction.suggestedCategory
         ? ` [Categoría sugerida: ${quickAction.suggestedCategory}]`
         : ''
@@ -389,7 +385,7 @@ export const suggestResponse = action({
       return { text: null, error: 'Ticket not found' }
     }
 
-    // Auth check via internal query (actions don't have direct db access)
+    // Actions lack direct db access; delegate auth to an internal query
     await ctx.runQuery(
       internal.communications.helpers.requireCommsAccessCheck,
       { complexId: ticket.complexId },
@@ -499,7 +495,6 @@ export const closeInactiveConversations = internalAction({
           { conversationId: conv._id },
         )
 
-        // Save system message in thread
         try {
           await saveMessage(ctx, components.agent, {
             threadId: conv.threadId,
@@ -516,36 +511,5 @@ export const closeInactiveConversations = internalAction({
         }
       }
     }
-  },
-})
-
-/**
- * Send a static acknowledgment when a resident messages after escalation.
- */
-export const sendStaticAcknowledgment = internalAction({
-  args: {
-    conversationId: v.id('conversations'),
-    publicId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const conversation = await ctx.runQuery(
-      internal.communications.helpers.getConversationInternal,
-      { conversationId: args.conversationId },
-    )
-
-    if (!conversation) return
-
-    await saveMessage(ctx, components.agent, {
-      threadId: conversation.threadId,
-      message: {
-        role: 'assistant',
-        content: `Tu caso ya fue asignado, un miembro del equipo te atenderá pronto. Caso #${args.publicId}`,
-      },
-    })
-
-    await ctx.runMutation(
-      internal.communications.helpers.updateConversationTimestamp,
-      { conversationId: args.conversationId },
-    )
   },
 })

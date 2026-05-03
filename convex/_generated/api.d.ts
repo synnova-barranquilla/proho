@@ -23,6 +23,7 @@ import type * as communications_agent from '../communications/agent.js'
 import type * as communications_attachmentMutations from '../communications/attachmentMutations.js'
 import type * as communications_businessHours from '../communications/businessHours.js'
 import type * as communications_categoryMutations from '../communications/categoryMutations.js'
+import type * as communications_constants from '../communications/constants.js'
 import type * as communications_helpers from '../communications/helpers.js'
 import type * as communications_mutations from '../communications/mutations.js'
 import type * as communications_queries from '../communications/queries.js'
@@ -79,6 +80,7 @@ declare const fullApi: ApiFromModules<{
   'communications/attachmentMutations': typeof communications_attachmentMutations
   'communications/businessHours': typeof communications_businessHours
   'communications/categoryMutations': typeof communications_categoryMutations
+  'communications/constants': typeof communications_constants
   'communications/helpers': typeof communications_helpers
   'communications/mutations': typeof communications_mutations
   'communications/queries': typeof communications_queries

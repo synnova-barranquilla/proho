@@ -36,28 +36,13 @@ import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { BotStreamingIndicator } from './bot-streaming-indicator'
 import { QuickActionsBar } from './quick-actions-bar'
-
-// ---------------------------------------------------------------------------
-// Status helpers
-// ---------------------------------------------------------------------------
-
-const CONV_STATUS_LABELS: Record<string, string> = {
-  active: 'Activa',
-  escalated: 'Escalada',
-  resolved_by_bot: 'Resuelta',
-  closed_by_inactivity: 'Cerrada',
-}
-
-function statusColor(status: string) {
-  switch (status) {
-    case 'active':
-      return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-    case 'escalated':
-      return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-    default:
-      return 'bg-muted text-muted-foreground'
-  }
-}
+import {
+  CONV_STATUS_LABELS,
+  CONV_STATUS_VARIANTS,
+  parseAttachment,
+  type AttachmentMeta,
+  type UIMessageLike,
+} from './types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -332,7 +317,7 @@ function ConversationList({
               </span>
               <Badge
                 variant="secondary"
-                className={cn('text-[10px]', statusColor(conv.status))}
+                className={cn('text-[10px]', CONV_STATUS_VARIANTS[conv.status])}
               >
                 {CONV_STATUS_LABELS[conv.status] ?? conv.status}
               </Badge>
@@ -596,7 +581,6 @@ function ActiveChatView({
       for (const file of res) {
         const mimeType = file.type || 'application/octet-stream'
 
-        // Save attachment record in Convex
         await saveAttachmentMut.mutateAsync({
           complexId,
           conversationId,
@@ -607,7 +591,7 @@ function ActiveChatView({
           size: file.size,
         })
 
-        // Save a marker message in the thread so it appears in chat
+        // Marker message so the attachment renders inline in the chat thread
         const attachmentMeta = JSON.stringify({
           fileName: file.name,
           fileUrl: file.ufsUrl,
@@ -630,7 +614,6 @@ function ActiveChatView({
       const files = Array.from(e.target.files ?? [])
       if (files.length === 0) return
       startUpload(files)
-      // Reset input so the same file can be selected again
       e.target.value = ''
     },
     [startUpload],
@@ -830,33 +813,9 @@ function ReadOnlyThreadView({ threadId }: { threadId: string }) {
 // MessageBubble
 // ---------------------------------------------------------------------------
 
-interface UIMessageLike {
-  key: string
-  role: 'user' | 'assistant' | 'system'
-  parts: Array<{ type: string; text?: string }>
-  status: string
-}
-
 // ---------------------------------------------------------------------------
 // Attachment parsing & rendering
 // ---------------------------------------------------------------------------
-
-interface AttachmentMeta {
-  fileName: string
-  fileUrl: string
-  fileKey: string
-  mimeType: string
-}
-
-function parseAttachment(text: string): AttachmentMeta | null {
-  const match = text.match(/^\[ATTACHMENT:(.+)\]$/)
-  if (!match) return null
-  try {
-    return JSON.parse(match[1]) as AttachmentMeta
-  } catch {
-    return null
-  }
-}
 
 function AttachmentContent({ meta }: { meta: AttachmentMeta }) {
   const isImage = meta.mimeType.startsWith('image/')
@@ -923,10 +882,10 @@ function MessageBubble({
 
   if (!text) return null
 
-  // Check if this is an attachment message
   const attachmentMeta = parseAttachment(text)
 
-  // Detect staff messages: role=user with [STAFF:RoleLabel]: prefix
+  // Staff messages are stored as user-role with a [STAFF:...] prefix to avoid
+  // merging with the previous assistant message in the agent thread.
   const staffMatch = text.match(/^\[STAFF:(.+?)\]:\s*/)
   const isStaff = !!staffMatch
   const isResident = message.role === 'user' && !isStaff

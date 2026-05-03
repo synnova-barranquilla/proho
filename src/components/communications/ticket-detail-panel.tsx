@@ -45,56 +45,17 @@ import { Textarea } from '#/components/ui/textarea'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-
-type TicketStatus =
-  | 'open_waiting_admin'
-  | 'open_waiting_resident'
-  | 'closed_by_bot'
-  | 'closed_by_admin'
-  | 'closed_by_inactivity'
-  | 'reopened'
-
-const STATUS_LABELS: Record<TicketStatus, string> = {
-  open_waiting_admin: 'Esp. admin',
-  open_waiting_resident: 'Esp. residente',
-  reopened: 'Reabierto',
-  closed_by_bot: 'Cerrado (bot)',
-  closed_by_admin: 'Cerrado (admin)',
-  closed_by_inactivity: 'Cerrado (inactividad)',
-}
-
-const STATUS_VARIANTS: Record<TicketStatus, string> = {
-  open_waiting_admin:
-    'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400',
-  open_waiting_resident:
-    'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400',
-  reopened:
-    'bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400',
-  closed_by_bot:
-    'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-  closed_by_admin:
-    'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-  closed_by_inactivity:
-    'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-}
-
-const PRIORITY_LABELS: Record<string, string> = {
-  high: 'Alta',
-  medium: 'Media',
-  low: 'Baja',
-}
-
-const PRIORITY_VARIANTS: Record<string, string> = {
-  high: 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400',
-  medium:
-    'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400',
-  low: 'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-}
-
-const ORIGIN_LABELS: Record<string, string> = {
-  digital: 'Digital',
-  in_person: 'Presencial',
-}
+import {
+  ORIGIN_LABELS,
+  parseAttachment,
+  PRIORITY_LABELS,
+  PRIORITY_VARIANTS,
+  STATUS_LABELS,
+  STATUS_VARIANTS,
+  type AttachmentMeta,
+  type TicketStatus,
+  type UIMessageLike,
+} from './types'
 
 interface TicketDetailPanelProps {
   ticketId: Id<'tickets'>
@@ -729,13 +690,6 @@ export function TicketDetailPanel({
   )
 }
 
-interface UIMessageLike {
-  key: string
-  role: 'user' | 'assistant' | 'system'
-  parts: Array<{ type: string; text?: string }>
-  status: string
-}
-
 function ThreadMessages({ threadId }: { threadId: string }) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -788,23 +742,6 @@ function ThreadMessages({ threadId }: { threadId: string }) {
   )
 }
 
-interface AttachmentMeta {
-  fileName: string
-  fileUrl: string
-  fileKey: string
-  mimeType: string
-}
-
-function parseAttachmentMeta(text: string): AttachmentMeta | null {
-  const match = text.match(/^\[ATTACHMENT:(.+)\]$/)
-  if (!match) return null
-  try {
-    return JSON.parse(match[1]) as AttachmentMeta
-  } catch {
-    return null
-  }
-}
-
 function TicketMessageBubble({ message }: { message: UIMessageLike }) {
   const text = message.parts
     .filter((p) => p.type === 'text')
@@ -813,9 +750,8 @@ function TicketMessageBubble({ message }: { message: UIMessageLike }) {
 
   if (!text) return null
 
-  const attachmentMeta = parseAttachmentMeta(text)
+  const attachmentMeta = parseAttachment(text)
 
-  // Detect staff messages: role=user with [STAFF:RoleLabel]: prefix
   const staffMatch = text.match(/^\[STAFF:(.+?)\]:\s*/)
   const isStaff = !!staffMatch
   const isResident = message.role === 'user' && !isStaff

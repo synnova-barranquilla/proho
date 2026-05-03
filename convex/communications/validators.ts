@@ -1,5 +1,16 @@
 import { v } from 'convex/values'
 
+import type { Id } from '../_generated/dataModel'
+
+/**
+ * Typed constant for the platform-level complexId sentinel.
+ *
+ * Categories and quick actions use `v.union(v.id('complexes'), v.literal('_platform'))`
+ * as their `complexId`. This constant provides the `'_platform'` literal
+ * pre-cast to the union so callers can use it in index queries without `as any`.
+ */
+export const PLATFORM_COMPLEX_ID = '_platform' as Id<'complexes'> | '_platform'
+
 export const conversationStatuses = v.union(
   v.literal('active'),
   v.literal('resolved_by_bot'),

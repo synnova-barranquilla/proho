@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 import { internalMutation, mutation } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { ticketPriorities } from './validators'
+import { PLATFORM_COMPLEX_ID, ticketPriorities } from './validators'
 
 const DEFAULT_CATEGORIES: Array<{
   key: string
@@ -171,37 +171,13 @@ const DEFAULT_QUICK_ACTIONS: Array<{
   },
 ]
 
-export const patchPlatformCategories = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const all = await ctx.db.query('categories').collect()
-
-    for (const cat of all) {
-      if (cat.complexId !== ('_platform' as any)) continue
-
-      const def = DEFAULT_CATEGORIES.find((d) => d.key === cat.key)
-      if (!def) continue
-
-      if (
-        cat.assignedRole !== def.assignedRole ||
-        JSON.stringify(cat.keywords) !== JSON.stringify(def.keywords)
-      ) {
-        await ctx.db.patch(cat._id, {
-          assignedRole: def.assignedRole,
-          keywords: def.keywords,
-        })
-      }
-    }
-  },
-})
-
 export const seedPlatformDefaults = internalMutation({
   args: {},
   handler: async (ctx) => {
     const existingCategories = await ctx.db
       .query('categories')
       .withIndex('by_complex', (q) =>
-        q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+        q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
       )
       .collect()
 
@@ -212,7 +188,7 @@ export const seedPlatformDefaults = internalMutation({
       if (existingKeys.has(cat.key)) continue
 
       await ctx.db.insert('categories', {
-        complexId: '_platform' as any,
+        complexId: PLATFORM_COMPLEX_ID,
         key: cat.key,
         label: cat.label,
         priority: cat.priority,
@@ -227,7 +203,7 @@ export const seedPlatformDefaults = internalMutation({
     const existingActions = await ctx.db
       .query('quickActions')
       .withIndex('by_complex', (q) =>
-        q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+        q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
       )
       .collect()
 
@@ -238,7 +214,7 @@ export const seedPlatformDefaults = internalMutation({
       if (existingLabels.has(action.label)) continue
 
       await ctx.db.insert('quickActions', {
-        complexId: '_platform' as any,
+        complexId: PLATFORM_COMPLEX_ID,
         label: action.label,
         response: action.response,
         isInfoOnly: action.isInfoOnly,
@@ -317,7 +293,7 @@ export const updateCategory = mutation({
       )
     }
 
-    await requireCommsAccess(ctx, category.complexId as any, {
+    await requireCommsAccess(ctx, category.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -358,7 +334,7 @@ export const toggleCategory = mutation({
       )
     }
 
-    await requireCommsAccess(ctx, category.complexId as any, {
+    await requireCommsAccess(ctx, category.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -385,7 +361,7 @@ export const deleteCategory = mutation({
       )
     }
 
-    await requireCommsAccess(ctx, category.complexId as any, {
+    await requireCommsAccess(ctx, category.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -463,7 +439,7 @@ export const updateQuickAction = mutation({
       )
     }
 
-    await requireCommsAccess(ctx, action.complexId as any, {
+    await requireCommsAccess(ctx, action.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -507,7 +483,7 @@ export const toggleQuickAction = mutation({
       )
     }
 
-    await requireCommsAccess(ctx, action.complexId as any, {
+    await requireCommsAccess(ctx, action.complexId, {
       allowedRoles: ['ADMIN'],
     })
 
@@ -534,7 +510,7 @@ export const deleteQuickAction = mutation({
       )
     }
 
-    await requireCommsAccess(ctx, action.complexId as any, {
+    await requireCommsAccess(ctx, action.complexId, {
       allowedRoles: ['ADMIN'],
     })
 

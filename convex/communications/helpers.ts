@@ -2,26 +2,22 @@ import { v } from 'convex/values'
 
 import { internalMutation, internalQuery } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
+import { STAFF_ROLES } from './constants'
+import { PLATFORM_COMPLEX_ID } from './validators'
 
-/**
- * Auth check for actions — verifies comms access with ADMIN/AUXILIAR role.
- * Throws ConvexError if unauthorized.
- */
 export const requireCommsAccessCheck = internalQuery({
   args: {
     complexId: v.id('complexes'),
   },
   handler: async (ctx, args) => {
     await requireCommsAccess(ctx, args.complexId, {
-      allowedRoles: ['ADMIN', 'AUXILIAR'],
+      allowedRoles: [...STAFF_ROLES],
     })
     return true
   },
 })
 
-/**
- * Internal query to get an active conversation for a resident.
- */
+/** Returns active or escalated conversation (both are "live" from resident POV). */
 export const getActiveConversationInternal = internalQuery({
   args: {
     complexId: v.id('complexes'),
@@ -36,7 +32,6 @@ export const getActiveConversationInternal = internalQuery({
       .first()
 
     if (!conversation) {
-      // Also check escalated conversations (still "active" from resident perspective)
       const escalated = await ctx.db
         .query('conversations')
         .withIndex('by_resident_and_status', (q) =>
@@ -63,9 +58,6 @@ export const getActiveConversationInternal = internalQuery({
   },
 })
 
-/**
- * Internal mutation to create a new conversation.
- */
 export const createConversation = internalMutation({
   args: {
     complexId: v.id('complexes'),
@@ -85,9 +77,6 @@ export const createConversation = internalMutation({
   },
 })
 
-/**
- * Internal mutation to update conversation timestamp.
- */
 export const updateConversationTimestamp = internalMutation({
   args: {
     conversationId: v.id('conversations'),
@@ -97,9 +86,6 @@ export const updateConversationTimestamp = internalMutation({
   },
 })
 
-/**
- * Internal query to get resident info with unit details.
- */
 export const getResidentInfo = internalQuery({
   args: {
     residentId: v.id('residents'),
@@ -120,9 +106,6 @@ export const getResidentInfo = internalQuery({
   },
 })
 
-/**
- * Internal query to get complex config.
- */
 export const getComplexConfig = internalQuery({
   args: {
     complexId: v.id('complexes'),
@@ -135,9 +118,6 @@ export const getComplexConfig = internalQuery({
   },
 })
 
-/**
- * Internal query to get a quick action by ID.
- */
 export const getQuickAction = internalQuery({
   args: {
     quickActionId: v.id('quickActions'),
@@ -147,9 +127,6 @@ export const getQuickAction = internalQuery({
   },
 })
 
-/**
- * Internal query to get a ticket by ID.
- */
 export const getTicketInternal = internalQuery({
   args: {
     ticketId: v.id('tickets'),
@@ -159,9 +136,6 @@ export const getTicketInternal = internalQuery({
   },
 })
 
-/**
- * Internal query to get a conversation by ID.
- */
 export const getConversationInternal = internalQuery({
   args: {
     conversationId: v.id('conversations'),
@@ -177,9 +151,6 @@ export const getConversationInternal = internalQuery({
   },
 })
 
-/**
- * Internal query to get ticket by conversation ID.
- */
 export const getTicketByConversation = internalQuery({
   args: {
     conversationId: v.id('conversations'),
@@ -194,9 +165,6 @@ export const getTicketByConversation = internalQuery({
   },
 })
 
-/**
- * Internal query to list all active conversations.
- */
 export const listActiveConversations = internalQuery({
   args: {},
   handler: async (ctx) => {
@@ -214,9 +182,6 @@ export const listActiveConversations = internalQuery({
   },
 })
 
-/**
- * Internal mutation to close a conversation by inactivity.
- */
 export const closeConversationByInactivity = internalMutation({
   args: {
     conversationId: v.id('conversations'),
@@ -229,9 +194,6 @@ export const closeConversationByInactivity = internalMutation({
   },
 })
 
-/**
- * Internal mutation to patch a ticket summary.
- */
 export const patchTicketSummary = internalMutation({
   args: {
     ticketId: v.id('tickets'),
@@ -245,9 +207,7 @@ export const patchTicketSummary = internalMutation({
   },
 })
 
-/**
- * Internal mutation to escalate a conversation by creating a ticket.
- */
+/** Marks conversation as escalated and creates a ticket with auto-assigned role. */
 export const escalateConversation = internalMutation({
   args: {
     complexId: v.id('complexes'),
@@ -258,13 +218,11 @@ export const escalateConversation = internalMutation({
     priority: v.union(v.literal('high'), v.literal('medium'), v.literal('low')),
   },
   handler: async (ctx, args) => {
-    // Update conversation status
     await ctx.db.patch(args.conversationId, {
       status: 'escalated',
       updatedAt: Date.now(),
     })
 
-    // Get resident to find unit + resolve userId via membership
     const resident = await ctx.db.get(args.residentId)
     if (!resident) return null
 
@@ -279,7 +237,13 @@ export const escalateConversation = internalMutation({
       )
       .first()
 
-    // Get complex config for sequence
+    if (!membership) {
+      console.error(
+        `[escalateConversation] No active membership for resident ${args.residentId} in complex ${args.complexId}`,
+      )
+      return null
+    }
+
     const config = await ctx.db
       .query('complexConfig')
       .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
@@ -303,7 +267,7 @@ export const escalateConversation = internalMutation({
 
     const publicId = `${prefix}-${String(seq).padStart(4, '0')}`
 
-    // Resolve assigned role from categories
+    // Pick the role of the highest-priority matching category
     const allCategories = await ctx.db
       .query('categories')
       .withIndex('by_complex', (q) =>
@@ -314,7 +278,7 @@ export const escalateConversation = internalMutation({
     const platformCategories = await ctx.db
       .query('categories')
       .withIndex('by_complex', (q) =>
-        q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+        q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
       )
       .collect()
 
@@ -352,7 +316,7 @@ export const escalateConversation = internalMutation({
       categories: args.categories,
       assignedRole: bestRole,
       initialDescription: args.summary,
-      createdByUserId: membership!.userId,
+      createdByUserId: membership.userId,
       reopenCount: 0,
       flaggedAbusive: false,
       updatedAt: now,

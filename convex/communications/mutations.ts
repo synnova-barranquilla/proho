@@ -5,22 +5,12 @@ import type { Id } from '../_generated/dataModel'
 import { mutation, type MutationCtx } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { ticketOrigins, ticketPriorities } from './validators'
-
-const STAFF_ROLES = ['ADMIN', 'AUXILIAR'] as const
-const ALL_COMMS_ROLES = [
-  'ADMIN',
-  'AUXILIAR',
-  'OWNER',
-  'TENANT',
-  'LESSEE',
-] as const
-
-const CLOSED_STATUSES = [
-  'closed_by_bot',
-  'closed_by_admin',
-  'closed_by_inactivity',
-] as const
+import { ALL_COMMS_ROLES, CLOSED_STATUSES, STAFF_ROLES } from './constants'
+import {
+  PLATFORM_COMPLEX_ID,
+  ticketOrigins,
+  ticketPriorities,
+} from './validators'
 
 async function generatePublicId(
   ctx: MutationCtx,
@@ -90,7 +80,7 @@ async function resolveAssignedRole(
   const platformCategories = await ctx.db
     .query('categories')
     .withIndex('by_complex', (q) =>
-      q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+      q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
     )
     .collect()
 
@@ -505,7 +495,6 @@ export const sendResidentMessage = mutation({
       allowedRoles: ['OWNER', 'TENANT', 'LESSEE'],
     })
 
-    // Look up the resident record via the membership's residentId
     if (!membership?.residentId) {
       throwConvexError(
         ERROR_CODES.FORBIDDEN,
@@ -521,7 +510,6 @@ export const sendResidentMessage = mutation({
       )
     }
 
-    // If a quickActionId is provided, use the quick action flow
     if (args.quickActionId) {
       await ctx.scheduler.runAfter(
         0,
@@ -533,7 +521,6 @@ export const sendResidentMessage = mutation({
         },
       )
     } else {
-      // Schedule the internal action to handle bot response
       await ctx.scheduler.runAfter(
         0,
         internal.communications.actions.handleResidentMessage,
@@ -603,13 +590,11 @@ export const sendAdminMessage = mutation({
       throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Conversation not found')
     }
 
-    // Determine sender role label
     const senderRole =
       membership?.role === 'AUXILIAR'
         ? 'Auxiliar Operativo'
         : 'Coordinador(a) Administrativo(a)'
 
-    // Schedule internal action to save the message to the agent thread
     await ctx.scheduler.runAfter(
       0,
       internal.communications.actions.saveAdminMessageToThread,
@@ -620,7 +605,6 @@ export const sendAdminMessage = mutation({
       },
     )
 
-    // Update ticket status to open_waiting_resident
     if (
       ticket.status === 'open_waiting_admin' ||
       ticket.status === 'reopened'

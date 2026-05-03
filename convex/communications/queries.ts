@@ -5,16 +5,12 @@ import { v } from 'convex/values'
 import { components } from '../_generated/api'
 import { query } from '../_generated/server'
 import { requireCommsAccess, requireUser } from '../lib/auth'
-import { ticketPriorities, ticketStatuses } from './validators'
-
-const STAFF_ROLES = ['ADMIN', 'AUXILIAR'] as const
-const ALL_COMMS_ROLES = [
-  'ADMIN',
-  'AUXILIAR',
-  'OWNER',
-  'TENANT',
-  'LESSEE',
-] as const
+import { ALL_COMMS_ROLES, STAFF_ROLES } from './constants'
+import {
+  PLATFORM_COMPLEX_ID,
+  ticketPriorities,
+  ticketStatuses,
+} from './validators'
 
 export const listTickets = query({
   args: {
@@ -283,7 +279,7 @@ export const listAllCategories = query({
       ctx.db
         .query('categories')
         .withIndex('by_complex', (q) =>
-          q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+          q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
         )
         .collect(),
       ctx.db
@@ -295,7 +291,7 @@ export const listAllCategories = query({
     const disabledPlatform = await ctx.db
       .query('categories')
       .withIndex('by_complex', (q) =>
-        q.eq('complexId', '_platform' as any).eq('isEnabled', false),
+        q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', false),
       )
       .collect()
 
@@ -321,7 +317,7 @@ export const listCategories = query({
       ctx.db
         .query('categories')
         .withIndex('by_complex', (q) =>
-          q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+          q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
         )
         .collect(),
       ctx.db
@@ -355,13 +351,13 @@ export const listAllQuickActions = query({
       ctx.db
         .query('quickActions')
         .withIndex('by_complex', (q) =>
-          q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+          q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
         )
         .collect(),
       ctx.db
         .query('quickActions')
         .withIndex('by_complex', (q) =>
-          q.eq('complexId', '_platform' as any).eq('isEnabled', false),
+          q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', false),
         )
         .collect(),
       ctx.db
@@ -392,7 +388,7 @@ export const listQuickActions = query({
       ctx.db
         .query('quickActions')
         .withIndex('by_complex', (q) =>
-          q.eq('complexId', '_platform' as any).eq('isEnabled', true),
+          q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
         )
         .collect(),
       ctx.db
@@ -434,7 +430,6 @@ export const getMyActiveConversation = query({
 
     if (conversation) return conversation
 
-    // Also check escalated (still visible to resident)
     return await ctx.db
       .query('conversations')
       .withIndex('by_resident_and_status', (q) =>
@@ -494,7 +489,10 @@ export const listThreadMessages = query({
 
     const paginated = await listUIMessages(ctx, components.agent, args)
     const streams = args.streamArgs
-      ? await syncStreams(ctx, components.agent, args as any)
+      ? await syncStreams(ctx, components.agent, {
+          threadId: args.threadId,
+          streamArgs: args.streamArgs,
+        })
       : undefined
     return { ...paginated, streams }
   },
@@ -536,29 +534,32 @@ export const listAttachmentsByComplex = query({
       .order('desc')
       .collect()
 
-    // Enrich with conversation + user info
     const conversationIds = [
       ...new Set(attachments.map((a) => a.conversationId)),
     ]
     const conversations = await Promise.all(
       conversationIds.map((id) => ctx.db.get(id)),
     )
-    const convMap = new Map(
-      conversations.filter(Boolean).map((c) => [c!._id, c!]),
+    const validConversations = conversations.filter(
+      (c): c is NonNullable<typeof c> => c != null,
     )
+    const convMap = new Map(validConversations.map((c) => [c._id, c]))
 
     const userIds = [...new Set(attachments.map((a) => a.uploadedByUserId))]
     const users = await Promise.all(userIds.map((id) => ctx.db.get(id)))
-    const userMap = new Map(users.filter(Boolean).map((u) => [u!._id, u!]))
+    const validUsers = users.filter(
+      (u): u is NonNullable<typeof u> => u != null,
+    )
+    const userMap = new Map(validUsers.map((u) => [u._id, u]))
 
-    // Get resident info from conversations
     const residentIds = [
-      ...new Set(conversations.filter(Boolean).map((c) => c!.residentId)),
+      ...new Set(validConversations.map((c) => c.residentId)),
     ]
     const residents = await Promise.all(residentIds.map((id) => ctx.db.get(id)))
-    const residentMap = new Map(
-      residents.filter(Boolean).map((r) => [r!._id, r!]),
+    const validResidents = residents.filter(
+      (r): r is NonNullable<typeof r> => r != null,
     )
+    const residentMap = new Map(validResidents.map((r) => [r._id, r]))
 
     return attachments.map((a) => {
       const conv = convMap.get(a.conversationId)
