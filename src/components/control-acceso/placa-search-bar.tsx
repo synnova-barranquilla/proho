@@ -7,7 +7,11 @@ import { Button } from '#/components/ui/button'
 import { PlacaInput } from '#/components/ui/formatted-input'
 import { formatPlaca } from '#/lib/formatters'
 import type { Doc } from '../../../convex/_generated/dataModel'
-import { isPlacaValida, normalizePlaca } from '../../../convex/lib/placa'
+import {
+  isPlacaValida,
+  normalizePlaca,
+  PLACA_FORMAT_HINT,
+} from '../../../convex/lib/placa'
 
 type VehiculoRow = Doc<'vehicles'> & { unit: Doc<'units'> | null }
 
@@ -143,7 +147,7 @@ export function PlacaSearchBar({
       />
       {showFormatError && (
         <p className="mt-1.5 text-center text-sm text-destructive">
-          Formato inválido — Carro: ABC-123 / Moto: ABC-12D
+          {PLACA_FORMAT_HINT}
         </p>
       )}
       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">

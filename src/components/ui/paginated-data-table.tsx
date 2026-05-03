@@ -30,7 +30,7 @@ import {
 import { cn } from '#/lib/utils'
 
 interface PaginatedDataTableProps<T> {
-  columns: ColumnDef<T, any>[]
+  columns: ColumnDef<T, unknown>[]
   data: T[]
   pageSize?: number
   emptyMessage?: string

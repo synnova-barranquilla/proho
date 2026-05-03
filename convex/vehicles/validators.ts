@@ -6,6 +6,9 @@ export const vehicleTypes = v.union(
   v.literal('OTHER'),
 )
 
+/** TS-level vehicle type derived from the Convex validator. */
+export type VehicleTipo = 'CAR' | 'MOTORCYCLE' | 'OTHER'
+
 export const vehicleFields = {
   complexId: v.id('complexes'),
   unitId: v.id('units'),

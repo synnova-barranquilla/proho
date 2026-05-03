@@ -2,8 +2,6 @@ import { z } from 'zod'
 
 import { RESERVED_SLUGS, SLUG_MAX, SLUG_MIN } from '../../convex/lib/constants'
 
-export { RESERVED_SLUGS, SLUG_MAX, SLUG_MIN }
-
 /**
  * Converts an arbitrary string (usually an organization name) into a
  * URL-safe, DNS-safe slug. Removes diacritics, lowercases, collapses
@@ -24,11 +22,7 @@ export function slugify(input: string): string {
     .slice(0, SLUG_MAX)
 }
 
-/**
- * Returns true if the given slug is in the reserved list and cannot be
- * used by a new organization.
- */
-export function isReservedSlug(slug: string): boolean {
+function isReservedSlug(slug: string): boolean {
   return RESERVED_SLUGS.has(slug)
 }
 

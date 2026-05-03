@@ -5,9 +5,10 @@
  * Used identically on client (for instant UX) and server (safety net).
  */
 
+import type { VehicleTipo } from '../vehicles/validators'
 import { MS_PER_DAY } from './constants'
 
-export type VehicleTipo = 'CAR' | 'MOTORCYCLE' | 'OTHER'
+export type { VehicleTipo }
 
 export interface VehiculoAdentro {
   tipo: VehicleTipo

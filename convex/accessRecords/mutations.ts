@@ -5,7 +5,7 @@ import { mutation, type MutationCtx } from '../_generated/server'
 import { complexConfigDefaults } from '../complexConfig/validators'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { isPlacaValida, normalizePlaca } from '../lib/placa'
+import { normalizePlaca, requireValidPlate } from '../lib/placa'
 import {
   evaluateRules,
   type OcupacionSnapshot,
@@ -110,15 +110,6 @@ async function loadConfigAndCapacity(
   }
 }
 
-function requireValidPlate(normalizedPlate: string) {
-  if (!normalizedPlate) {
-    throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Placa obligatoria')
-  }
-  if (!isPlacaValida(normalizedPlate)) {
-    throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Formato de placa inválido')
-  }
-}
-
 function requireObservationsInvariant(args: {
   justification?: string
   observations?: string
@@ -179,7 +170,6 @@ export const registerEntry = mutation({
       )
     }
 
-    // Get unit and config
     const unit = await ctx.db.get(vehicle.unitId)
     if (!unit) {
       throwConvexError(ERROR_CODES.UNIT_NOT_FOUND, 'Unidad no encontrada')

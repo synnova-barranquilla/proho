@@ -1,18 +1,18 @@
 export type TaskStatus = 'done' | 'wip' | 'pending' | 'blocked' | 'deferred'
 
-export type Task = {
+type Task = {
   id: string
   name: string
   status: TaskStatus
 }
 
-export type Phase = {
+type Phase = {
   id: string
   name: string
   tasks: Task[]
 }
 
-export type Milestone = {
+type Milestone = {
   id: string
   name: string
   description: string

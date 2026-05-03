@@ -26,6 +26,7 @@ import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 import {
   detectPlacaTipo,
   isPlacaValidaParaTipo,
+  PLACA_FORMAT_HINT,
 } from '../../../../convex/lib/placa'
 import {
   TipoVehiculoCards,
@@ -159,7 +160,7 @@ export function VehiculoDialog({
                 />
                 {showPlacaError && (
                   <p className="text-sm text-destructive">
-                    Formato inválido — Carro: ABC-123 / Moto: ABC-12D
+                    {PLACA_FORMAT_HINT}
                   </p>
                 )}
               </Field>

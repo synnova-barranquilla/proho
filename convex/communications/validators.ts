@@ -33,6 +33,12 @@ export const ticketPriorities = v.union(
   v.literal('low'),
 )
 
+/** TS-level ticket priority derived from the Convex validator. */
+export type TicketPriority = 'high' | 'medium' | 'low'
+
+/** TS-level assigned role for ticket routing. */
+export type AssignedRole = 'ADMIN' | 'AUXILIAR'
+
 export const ticketOrigins = v.union(
   v.literal('digital'),
   v.literal('in_person'),

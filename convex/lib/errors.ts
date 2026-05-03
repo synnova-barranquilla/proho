@@ -1,5 +1,7 @@
 import { ConvexError } from 'convex/values'
 
+import { SLUG_MAX, SLUG_MIN, SLUG_REGEX } from './constants'
+
 /**
  * Standardized error codes used across mutations and queries.
  * The client maps these to field-level errors or global toasts.
@@ -59,4 +61,26 @@ export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES]
  */
 export function throwConvexError(code: ErrorCode, message: string): never {
   throw new ConvexError({ code, message })
+}
+
+/**
+ * Validates slug length and format. Throws a ConvexError if invalid.
+ * Does NOT check uniqueness or reserved slugs — callers handle those.
+ */
+export function validateSlugFormat(
+  slug: string,
+  errorCode: ErrorCode = ERROR_CODES.SLUG_INVALID_FORMAT,
+): void {
+  if (slug.length < SLUG_MIN || slug.length > SLUG_MAX) {
+    throwConvexError(
+      errorCode,
+      `El slug debe tener entre ${SLUG_MIN} y ${SLUG_MAX} caracteres`,
+    )
+  }
+  if (!SLUG_REGEX.test(slug)) {
+    throwConvexError(
+      errorCode,
+      'El slug solo puede contener minúsculas, números y guiones (no al inicio/final)',
+    )
+  }
 }

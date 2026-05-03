@@ -3,23 +3,11 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { complexConfigDefaults } from '../complexConfig/validators'
 import { requireComplexAccess, requireOrgRole } from '../lib/auth'
-import { SLUG_MAX, SLUG_MIN, SLUG_REGEX } from '../lib/constants'
-import { ERROR_CODES, throwConvexError } from '../lib/errors'
-
-function validateComplexSlug(slug: string): void {
-  if (slug.length < SLUG_MIN || slug.length > SLUG_MAX) {
-    throwConvexError(
-      ERROR_CODES.VALIDATION_ERROR,
-      `El slug debe tener entre ${SLUG_MIN} y ${SLUG_MAX} caracteres`,
-    )
-  }
-  if (!SLUG_REGEX.test(slug)) {
-    throwConvexError(
-      ERROR_CODES.VALIDATION_ERROR,
-      'El slug solo puede contener minúsculas, números y guiones',
-    )
-  }
-}
+import {
+  ERROR_CODES,
+  throwConvexError,
+  validateSlugFormat,
+} from '../lib/errors'
 
 function requireNonEmpty(value: string, field: string): string {
   const trimmed = value.trim()
@@ -52,7 +40,7 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const user = await requireOrgRole(ctx, ['ADMIN', 'SUPER_ADMIN'])
 
-    validateComplexSlug(args.slug)
+    validateSlugFormat(args.slug, ERROR_CODES.VALIDATION_ERROR)
     const name = requireNonEmpty(args.name, 'name')
     const address = requireNonEmpty(args.address, 'address')
     const city = requireNonEmpty(args.city, 'city')

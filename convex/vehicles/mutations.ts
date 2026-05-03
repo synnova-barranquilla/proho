@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { isPlacaValida, normalizePlaca } from '../lib/placa'
+import { isPlacaValida, normalizePlaca, requireValidPlate } from '../lib/placa'
 import { vehicleTypes } from './validators'
 
 export const create = mutation({
@@ -23,15 +23,7 @@ export const create = mutation({
     })
 
     const plate = normalizePlaca(args.plate)
-    if (!plate) {
-      throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Placa obligatoria')
-    }
-    if (!isPlacaValida(plate)) {
-      throwConvexError(
-        ERROR_CODES.VALIDATION_ERROR,
-        'Formato de placa inválido',
-      )
-    }
+    requireValidPlate(plate)
 
     // Plate unique per complex
     const existing = await ctx.db
@@ -86,15 +78,7 @@ export const update = mutation({
     }
 
     const plate = normalizePlaca(args.plate)
-    if (!plate) {
-      throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Placa obligatoria')
-    }
-    if (!isPlacaValida(plate)) {
-      throwConvexError(
-        ERROR_CODES.VALIDATION_ERROR,
-        'Formato de placa inválido',
-      )
-    }
+    requireValidPlate(plate)
 
     if (plate !== vehicle.plate) {
       const existing = await ctx.db

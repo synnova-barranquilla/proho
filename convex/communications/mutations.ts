@@ -11,6 +11,7 @@ import {
   PLATFORM_COMPLEX_ID,
   ticketOrigins,
   ticketPriorities,
+  type AssignedRole,
 } from './validators'
 
 async function generatePublicId(
@@ -68,7 +69,7 @@ async function resolveAssignedRole(
   ctx: MutationCtx,
   complexId: Id<'complexes'>,
   categories: string[],
-): Promise<'ADMIN' | 'AUXILIAR'> {
+): Promise<AssignedRole> {
   const priorityRank = { high: 3, medium: 2, low: 1 } as const
 
   const allCategories = await ctx.db
@@ -91,7 +92,7 @@ async function resolveAssignedRole(
     ...platformCategories.filter((p) => !customKeys.has(p.key)),
   ]
 
-  let bestRole: 'ADMIN' | 'AUXILIAR' = 'AUXILIAR'
+  let bestRole: AssignedRole = 'AUXILIAR'
   let bestPriority = 0
 
   for (const cat of merged) {

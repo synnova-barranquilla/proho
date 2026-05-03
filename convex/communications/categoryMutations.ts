@@ -3,13 +3,18 @@ import { v } from 'convex/values'
 import { internalMutation, mutation } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { PLATFORM_COMPLEX_ID, ticketPriorities } from './validators'
+import {
+  PLATFORM_COMPLEX_ID,
+  ticketPriorities,
+  type AssignedRole,
+  type TicketPriority,
+} from './validators'
 
 const DEFAULT_CATEGORIES: Array<{
   key: string
   label: string
-  priority: 'high' | 'medium' | 'low'
-  assignedRole: 'AUXILIAR' | 'ADMIN'
+  priority: TicketPriority
+  assignedRole: AssignedRole
   keywords: string[]
 }> = [
   {
@@ -131,7 +136,7 @@ const DEFAULT_QUICK_ACTIONS: Array<{
   isInfoOnly: boolean
   response?: string
   suggestedCategory?: string
-  suggestedPriority?: 'high' | 'medium' | 'low'
+  suggestedPriority?: TicketPriority
 }> = [
   {
     label: 'Reportar una fuga o filtración',

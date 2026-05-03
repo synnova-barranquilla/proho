@@ -1,6 +1,17 @@
 // ---------------------------------------------------------------------------
 // Shared types & constants for the communications module
+//
+// Canonical definitions for TicketPriority and AssignedRole live in
+// convex/communications/validators.ts. Re-exported here for src/ consumers.
 // ---------------------------------------------------------------------------
+
+import type {
+  AssignedRole as _AssignedRole,
+  TicketPriority as _TicketPriority,
+} from '../../../convex/communications/validators'
+
+export type TicketPriority = _TicketPriority
+export type AssignedRole = _AssignedRole
 
 // -- Ticket status ----------------------------------------------------------
 
@@ -12,15 +23,11 @@ export type TicketStatus =
   | 'closed_by_inactivity'
   | 'reopened'
 
-export type TicketPriority = 'high' | 'medium' | 'low'
-
 type ConversationStatus =
   | 'active'
   | 'escalated'
   | 'resolved_by_bot'
   | 'closed_by_inactivity'
-
-export type AssignedRole = 'ADMIN' | 'AUXILIAR'
 
 export type TicketOrigin = 'digital' | 'in_person'
 

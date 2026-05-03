@@ -185,7 +185,6 @@ function ProgressPage() {
 
   return (
     <div className="mx-auto min-h-screen max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-      {/* Header */}
       <header className="mb-10 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -198,7 +197,6 @@ function ProgressPage() {
         <ThemeToggle />
       </header>
 
-      {/* Stats */}
       <section className="mb-10 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border/60 bg-card px-5 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -296,7 +294,6 @@ function ProgressPage() {
         </div>
       </section>
 
-      {/* Milestones */}
       <section className="space-y-5">
         {milestones.map((milestone) => {
           const stats = getMilestoneStats(milestone)
@@ -305,7 +302,6 @@ function ProgressPage() {
               key={milestone.id}
               className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm"
             >
-              {/* Milestone header */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border/40 px-5 py-4">
                 <div className="flex items-center gap-2.5">
                   <span className="font-mono text-xs font-bold text-muted-foreground">
@@ -337,12 +333,10 @@ function ProgressPage() {
                 </div>
               </div>
 
-              {/* Milestone description */}
               <p className="border-b border-border/20 bg-muted/20 px-5 py-2 text-xs text-muted-foreground">
                 {milestone.description}
               </p>
 
-              {/* Phases */}
               <div className="divide-y divide-border/30 px-2 py-1">
                 {milestone.phases.map((phase, pi) => (
                   <PhaseRow key={phase.id} phase={phase} index={pi} />
@@ -353,7 +347,6 @@ function ProgressPage() {
         })}
       </section>
 
-      {/* Legend */}
       <section className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
         {Object.entries(statusConfig).map(([key, config]) => (
           <span key={key} className="flex items-center gap-1.5">
@@ -363,7 +356,6 @@ function ProgressPage() {
         ))}
       </section>
 
-      {/* Footer */}
       <footer className="mt-12 border-t border-border/40 pt-6 text-center text-xs text-muted-foreground">
         Synnova &copy; 2026
       </footer>

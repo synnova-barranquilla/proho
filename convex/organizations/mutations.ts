@@ -2,30 +2,17 @@ import { v } from 'convex/values'
 
 import { mutation, type MutationCtx } from '../_generated/server'
 import { requireOrgRole } from '../lib/auth'
+import { RESERVED_SLUGS, SEVEN_DAYS_MS } from '../lib/constants'
 import {
-  RESERVED_SLUGS,
-  SEVEN_DAYS_MS,
-  SLUG_MAX,
-  SLUG_MIN,
-  SLUG_REGEX,
-} from '../lib/constants'
-import { ERROR_CODES, throwConvexError } from '../lib/errors'
+  ERROR_CODES,
+  throwConvexError,
+  validateSlugFormat,
+} from '../lib/errors'
 import { isInternalOrg } from '../lib/organizations'
 import { moduleKeys } from './validators'
 
 function validateSlug(slug: string): void {
-  if (slug.length < SLUG_MIN || slug.length > SLUG_MAX) {
-    throwConvexError(
-      ERROR_CODES.SLUG_INVALID_FORMAT,
-      `El slug debe tener entre ${SLUG_MIN} y ${SLUG_MAX} caracteres`,
-    )
-  }
-  if (!SLUG_REGEX.test(slug)) {
-    throwConvexError(
-      ERROR_CODES.SLUG_INVALID_FORMAT,
-      'El slug solo puede contener minúsculas, números y guiones (no al inicio/final)',
-    )
-  }
+  validateSlugFormat(slug)
   if (RESERVED_SLUGS.has(slug)) {
     throwConvexError(
       ERROR_CODES.SLUG_RESERVED,

@@ -1,8 +1,4 @@
-/**
- * Client-side mirror of `convex/lib/organizations.ts::INTERNAL_ORG_SLUG`.
- * Kept in sync manually.
- */
-const INTERNAL_ORG_SLUG = 'synnova-internal'
+import { INTERNAL_ORG_SLUG } from '../../convex/lib/organizations'
 
 /**
  * Returns true if the given slug belongs to the internal Synnova organization.

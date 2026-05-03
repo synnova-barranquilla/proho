@@ -27,6 +27,7 @@ import {
   isPlacaValida,
   normalizePlaca,
 } from '../../../../../../convex/lib/placa'
+import type { VehicleTipo } from '../../../../../../convex/vehicles/validators'
 
 export const Route = createFileRoute(
   '/_authenticated/c/$complexSlug/vehiculos/',
@@ -53,7 +54,7 @@ type VehiculoImportRow = {
   tower: string
   number: string
   plate: string
-  type: 'CAR' | 'MOTORCYCLE' | 'OTHER'
+  type: VehicleTipo
   ownerName?: string
 }
 
@@ -99,7 +100,7 @@ function VehiculosPage() {
     const detectedTipo = detectPlacaTipo(plate)
     const tipo =
       tipoRaw && VALID_VEHICULO_TIPOS.has(tipoRaw)
-        ? (tipoRaw as 'CAR' | 'MOTORCYCLE' | 'OTHER')
+        ? (tipoRaw as VehicleTipo)
         : (detectedTipo ?? 'CAR')
 
     return {

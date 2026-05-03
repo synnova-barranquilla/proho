@@ -12,35 +12,11 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Activa',
-  escalated: 'Escalada',
-  resolved_by_bot: 'Resuelta',
-  closed_by_inactivity: 'Cerrada',
-}
-
-const STATUS_VARIANTS: Record<string, string> = {
-  active:
-    'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400',
-  escalated:
-    'bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400',
-  resolved_by_bot:
-    'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-  closed_by_inactivity:
-    'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
-}
-
-function timeAgo(ts: number): string {
-  const diff = Date.now() - ts
-  const minutes = Math.floor(diff / 60_000)
-  if (minutes < 1) return 'ahora'
-  if (minutes < 60) return `${minutes}m`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h`
-  const days = Math.floor(hours / 24)
-  return `${days}d`
-}
+import {
+  CONV_STATUS_LABELS as STATUS_LABELS,
+  CONV_STATUS_VARIANTS as STATUS_VARIANTS,
+  timeAgo,
+} from './types'
 
 interface StaffConversationsTabProps {
   complexId: Id<'complexes'>

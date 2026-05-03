@@ -1,7 +1,81 @@
 import { ConvexError, v } from 'convex/values'
 
-import { mutation } from '../_generated/server'
+import type { Doc, Id } from '../_generated/dataModel'
+import { mutation, type MutationCtx } from '../_generated/server'
 import { ERROR_CODES } from '../lib/errors'
+
+async function findPendingInvitation(ctx: MutationCtx, email: string) {
+  const invitations = await ctx.db
+    .query('invitations')
+    .withIndex('by_email_and_status', (q) =>
+      q.eq('email', email).eq('status', 'PENDING'),
+    )
+    .collect()
+  invitations.sort((a, b) => b._creationTime - a._creationTime)
+  return invitations.at(0)
+}
+
+async function createMembershipsFromInvitation(
+  ctx: MutationCtx,
+  userId: Id<'users'>,
+  invitation: Doc<'invitations'>,
+) {
+  if (invitation.complexId && invitation.complexRole) {
+    await ctx.db.insert('complexMemberships', {
+      userId,
+      complexId: invitation.complexId,
+      role: invitation.complexRole,
+      active: true,
+      assignedBy: invitation.invitedBy,
+      assignedAt: Date.now(),
+      createdByOwner: false,
+      residentId: invitation.residentId,
+    })
+  }
+  if (
+    invitation.isOrgOwnerOnAccept !== true &&
+    invitation.complexIdsOnAccept &&
+    invitation.complexIdsOnAccept.length > 0
+  ) {
+    for (const complexId of invitation.complexIdsOnAccept) {
+      await ctx.db.insert('complexMemberships', {
+        userId,
+        complexId,
+        role: 'ADMIN',
+        active: true,
+        assignedBy: invitation.invitedBy,
+        assignedAt: Date.now(),
+        createdByOwner: true,
+      })
+    }
+  }
+}
+
+async function acceptInvitation(
+  ctx: MutationCtx,
+  invitation: Doc<'invitations'>,
+  userId: Id<'users'>,
+) {
+  await ctx.db.patch(invitation._id, {
+    status: 'ACCEPTED',
+    acceptedAt: Date.now(),
+    acceptedUserId: userId,
+  })
+
+  let complexSlug: string | undefined
+  if (invitation.complexId) {
+    const c = await ctx.db.get(invitation.complexId)
+    complexSlug = c?.slug
+  }
+
+  return {
+    status: 'accepted' as const,
+    orgRole: invitation.orgRole,
+    complexId: invitation.complexId,
+    complexRole: invitation.complexRole,
+    complexSlug,
+  }
+}
 
 /**
  * Coordinates the login flow after WorkOS authenticates the user.
@@ -52,83 +126,26 @@ export const handleLogin = mutation({
       }
 
       if (!existing.active) {
-        // Before declaring the account deactivated, check if there's a
-        // pending invitation that should reactivate this user.
-        const reactivationInvitations = await ctx.db
-          .query('invitations')
-          .withIndex('by_email_and_status', (q) =>
-            q.eq('email', email).eq('status', 'PENDING'),
-          )
-          .collect()
-        reactivationInvitations.sort(
-          (a, b) => b._creationTime - a._creationTime,
-        )
-        const reactivationInv = reactivationInvitations.at(0)
-
-        if (reactivationInv && reactivationInv.expiresAt >= Date.now()) {
-          // Reactivate the existing user with the invitation's settings.
-          await ctx.db.patch(existing._id, {
-            active: true,
-            organizationId: reactivationInv.organizationId,
-            orgRole: reactivationInv.orgRole,
-            isOrgOwner: reactivationInv.isOrgOwnerOnAccept === true,
-            ...(firstName ? { firstName } : {}),
-            ...(lastName ? { lastName } : {}),
-          })
-
-          // Create complex memberships from the invitation.
-          if (reactivationInv.complexId && reactivationInv.complexRole) {
-            await ctx.db.insert('complexMemberships', {
-              userId: existing._id,
-              complexId: reactivationInv.complexId,
-              role: reactivationInv.complexRole,
-              active: true,
-              assignedBy: reactivationInv.invitedBy,
-              assignedAt: Date.now(),
-              createdByOwner: false,
-              residentId: reactivationInv.residentId,
-            })
-          }
-          if (
-            reactivationInv.isOrgOwnerOnAccept !== true &&
-            reactivationInv.complexIdsOnAccept &&
-            reactivationInv.complexIdsOnAccept.length > 0
-          ) {
-            for (const complexId of reactivationInv.complexIdsOnAccept) {
-              await ctx.db.insert('complexMemberships', {
-                userId: existing._id,
-                complexId,
-                role: 'ADMIN',
-                active: true,
-                assignedBy: reactivationInv.invitedBy,
-                assignedAt: Date.now(),
-                createdByOwner: true,
-              })
-            }
-          }
-
-          await ctx.db.patch(reactivationInv._id, {
-            status: 'ACCEPTED',
-            acceptedAt: Date.now(),
-            acceptedUserId: existing._id,
-          })
-
-          let reactivationSlug: string | undefined
-          if (reactivationInv.complexId) {
-            const c = await ctx.db.get(reactivationInv.complexId)
-            reactivationSlug = c?.slug
-          }
-
-          return {
-            status: 'accepted' as const,
-            orgRole: reactivationInv.orgRole,
-            complexId: reactivationInv.complexId,
-            complexRole: reactivationInv.complexRole,
-            complexSlug: reactivationSlug,
-          }
+        const reactivationInv = await findPendingInvitation(ctx, email)
+        if (!reactivationInv || reactivationInv.expiresAt < Date.now()) {
+          return { status: 'cuenta_desactivada' as const }
         }
 
-        return { status: 'cuenta_desactivada' as const }
+        await ctx.db.patch(existing._id, {
+          active: true,
+          organizationId: reactivationInv.organizationId,
+          orgRole: reactivationInv.orgRole,
+          isOrgOwner: reactivationInv.isOrgOwnerOnAccept === true,
+          ...(firstName ? { firstName } : {}),
+          ...(lastName ? { lastName } : {}),
+        })
+
+        await createMembershipsFromInvitation(
+          ctx,
+          existing._id,
+          reactivationInv,
+        )
+        return acceptInvitation(ctx, reactivationInv, existing._id)
       }
 
       // Check org active status (defense in depth)
@@ -159,16 +176,7 @@ export const handleLogin = mutation({
     }
 
     // 2. No user -> look for a PENDING invitation matching the verified email.
-    const pendingInvitations = await ctx.db
-      .query('invitations')
-      .withIndex('by_email_and_status', (q) =>
-        q.eq('email', email).eq('status', 'PENDING'),
-      )
-      .collect()
-
-    // Pick the most recent pending invitation (by _creationTime desc).
-    pendingInvitations.sort((a, b) => b._creationTime - a._creationTime)
-    const invitation = pendingInvitations.at(0)
+    const invitation = await findPendingInvitation(ctx, email)
 
     if (!invitation) {
       const anyPrev = await ctx.db
@@ -212,60 +220,7 @@ export const handleLogin = mutation({
       isOrgOwner: invitation.isOrgOwnerOnAccept === true,
     })
 
-    // If the invitation is complex-scoped, create the active membership
-    // for the newly created user.
-    if (invitation.complexId && invitation.complexRole) {
-      await ctx.db.insert('complexMemberships', {
-        userId,
-        complexId: invitation.complexId,
-        role: invitation.complexRole,
-        active: true,
-        assignedBy: invitation.invitedBy,
-        assignedAt: Date.now(),
-        createdByOwner: false,
-        residentId: invitation.residentId,
-      })
-    }
-
-    // If the invitation is org-scoped and has pre-assigned complexes,
-    // create the ADMIN memberships now. Only applies if the user is NOT
-    // an owner — owners see all complexes automatically.
-    if (
-      invitation.isOrgOwnerOnAccept !== true &&
-      invitation.complexIdsOnAccept &&
-      invitation.complexIdsOnAccept.length > 0
-    ) {
-      for (const complexId of invitation.complexIdsOnAccept) {
-        await ctx.db.insert('complexMemberships', {
-          userId,
-          complexId,
-          role: 'ADMIN',
-          active: true,
-          assignedBy: invitation.invitedBy,
-          assignedAt: Date.now(),
-          createdByOwner: true,
-        })
-      }
-    }
-
-    await ctx.db.patch(invitation._id, {
-      status: 'ACCEPTED',
-      acceptedAt: Date.now(),
-      acceptedUserId: userId,
-    })
-
-    let acceptedSlug: string | undefined
-    if (invitation.complexId) {
-      const c = await ctx.db.get(invitation.complexId)
-      acceptedSlug = c?.slug
-    }
-
-    return {
-      status: 'accepted' as const,
-      orgRole: invitation.orgRole,
-      complexId: invitation.complexId,
-      complexRole: invitation.complexRole,
-      complexSlug: acceptedSlug,
-    }
+    await createMembershipsFromInvitation(ctx, userId, invitation)
+    return acceptInvitation(ctx, invitation, userId)
   },
 })

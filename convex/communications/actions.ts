@@ -4,7 +4,8 @@ import { createThread, listMessages, saveMessage } from '@convex-dev/agent'
 import { v } from 'convex/values'
 
 import { components, internal } from '../_generated/api'
-import { action, internalAction } from '../_generated/server'
+import type { Id } from '../_generated/dataModel'
+import { action, internalAction, type ActionCtx } from '../_generated/server'
 import { CONVERSATION_INACTIVITY_MS } from '../lib/constants'
 import { supportAgent } from './agent'
 import { isBusinessHours } from './businessHours'
@@ -31,6 +32,85 @@ export const saveAdminMessageToThread = internalAction({
     })
   },
 })
+
+async function handleEscalation(
+  ctx: ActionCtx,
+  toolResult: { output: unknown },
+  ids: {
+    complexId: Id<'complexes'>
+    residentId: Id<'residents'>
+    conversationId: Id<'conversations'>
+    threadId: string
+  },
+): Promise<boolean> {
+  const output = toolResult.output as {
+    escalated: boolean
+    summary: string
+    categories: string[]
+    priority: string
+  }
+  if (!output.escalated) return false
+
+  try {
+    const escalationResult = await ctx.runMutation(
+      internal.communications.helpers.escalateConversation,
+      {
+        complexId: ids.complexId,
+        residentId: ids.residentId,
+        conversationId: ids.conversationId,
+        summary: output.summary || 'Escalado por el asistente',
+        categories:
+          output.categories.length > 0 ? output.categories : ['other'],
+        priority: output.priority as 'high' | 'medium' | 'low',
+      },
+    )
+
+    if (escalationResult) {
+      const roleLabel =
+        escalationResult.assignedRole === 'AUXILIAR'
+          ? 'Auxiliar Operativo'
+          : 'Coordinador(a) Administrativo(a)'
+
+      await saveMessage(ctx, components.agent, {
+        threadId: ids.threadId,
+        message: {
+          role: 'assistant',
+          content: `Tu caso ha sido registrado con el número ${escalationResult.publicId} y asignado al ${roleLabel}. Te responderá pronto. A partir de ahora, las respuestas las recibirás directamente del equipo.`,
+        },
+      })
+    }
+  } catch (escalationError) {
+    console.error('[handleResidentMessage] escalation failed:', escalationError)
+    await saveMessage(ctx, components.agent, {
+      threadId: ids.threadId,
+      message: {
+        role: 'assistant',
+        content:
+          'Hubo un problema al crear tu caso de soporte. Por favor intenta de nuevo.',
+      },
+    })
+  }
+  return true
+}
+
+async function handleAbusiveFlag(
+  ctx: ActionCtx,
+  toolResult: { output: unknown },
+  conversationId: Id<'conversations'>,
+): Promise<void> {
+  const output = toolResult.output as { flagged: boolean }
+  if (!output.flagged) return
+
+  const ticket = await ctx.runQuery(
+    internal.communications.helpers.getTicketByConversation,
+    { conversationId },
+  )
+  if (ticket) {
+    await ctx.runMutation(internal.communications.helpers.flagTicketAbusive, {
+      ticketId: ticket._id,
+    })
+  }
+}
 
 /**
  * Handle a message from a resident in the chat interface.
@@ -139,79 +219,20 @@ export const handleResidentMessage = internalAction({
 
       const steps = await result.steps
 
+      const allToolResults = steps.flatMap((step) => step.toolResults)
+
       let escalated = false
-      for (const step of steps) {
-        for (const toolResult of step.toolResults) {
-          if (toolResult.toolName === 'escalateToHuman') {
-            const output = toolResult.output as {
-              escalated: boolean
-              summary: string
-              categories: string[]
-              priority: string
-            }
-            if (output.escalated) {
-              try {
-                const escalationResult = await ctx.runMutation(
-                  internal.communications.helpers.escalateConversation,
-                  {
-                    complexId: args.complexId,
-                    residentId: args.residentId,
-                    conversationId: conversation._id,
-                    summary: output.summary || 'Escalado por el asistente',
-                    categories:
-                      output.categories.length > 0
-                        ? output.categories
-                        : ['other'],
-                    priority: output.priority as 'high' | 'medium' | 'low',
-                  },
-                )
-
-                if (escalationResult) {
-                  const roleLabel =
-                    escalationResult.assignedRole === 'AUXILIAR'
-                      ? 'Auxiliar Operativo'
-                      : 'Coordinador(a) Administrativo(a)'
-
-                  await saveMessage(ctx, components.agent, {
-                    threadId,
-                    message: {
-                      role: 'assistant',
-                      content: `Tu caso ha sido registrado con el número ${escalationResult.publicId} y asignado al ${roleLabel}. Te responderá pronto. A partir de ahora, las respuestas las recibirás directamente del equipo.`,
-                    },
-                  })
-                }
-              } catch (escalationError) {
-                console.error(
-                  '[handleResidentMessage] escalation failed:',
-                  escalationError,
-                )
-                await saveMessage(ctx, components.agent, {
-                  threadId,
-                  message: {
-                    role: 'assistant',
-                    content:
-                      'Hubo un problema al crear tu caso de soporte. Por favor intenta de nuevo.',
-                  },
-                })
-              }
-              escalated = true
-            }
-          }
-          if (toolResult.toolName === 'flagAbusiveLanguage') {
-            const output = toolResult.output as { flagged: boolean }
-            if (output.flagged) {
-              const ticket = await ctx.runQuery(
-                internal.communications.helpers.getTicketByConversation,
-                { conversationId: conversation._id },
-              )
-              if (ticket) {
-                await ctx.runMutation(
-                  internal.communications.helpers.flagTicketAbusive,
-                  { ticketId: ticket._id },
-                )
-              }
-            }
-          }
+      for (const toolResult of allToolResults) {
+        if (toolResult.toolName === 'escalateToHuman') {
+          escalated = await handleEscalation(ctx, toolResult, {
+            complexId: args.complexId,
+            residentId: args.residentId,
+            conversationId: conversation._id,
+            threadId,
+          })
+        }
+        if (toolResult.toolName === 'flagAbusiveLanguage') {
+          await handleAbusiveFlag(ctx, toolResult, conversation._id)
         }
       }
 

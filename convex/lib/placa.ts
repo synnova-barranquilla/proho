@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values'
+
 /**
  * Normaliza una placa vehicular: trim, uppercase, sin espacios.
  * Compartida entre vehiculos/mutations y registrosAcceso/mutations.
@@ -22,9 +24,31 @@ export function isPlacaValida(placa: string): boolean {
   return detectPlacaTipo(placa) !== null
 }
 
+export const PLACA_FORMAT_HINT =
+  'Formato inválido — Carro: ABC-123 / Moto: ABC-12D'
+
 export function isPlacaValidaParaTipo(
   placa: string,
   tipo: 'CAR' | 'MOTORCYCLE',
 ): boolean {
   return detectPlacaTipo(placa) === tipo
+}
+
+/**
+ * Throws a ConvexError if the plate is empty or has an invalid format.
+ * Shared by accessRecords and vehicles mutations.
+ */
+export function requireValidPlate(normalizedPlate: string): void {
+  if (!normalizedPlate) {
+    throw new ConvexError({
+      code: 'VALIDATION_ERROR',
+      message: 'Placa obligatoria',
+    })
+  }
+  if (!isPlacaValida(normalizedPlate)) {
+    throw new ConvexError({
+      code: 'VALIDATION_ERROR',
+      message: 'Formato de placa inválido',
+    })
+  }
 }

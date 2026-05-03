@@ -221,18 +221,15 @@ export const getDashboardStats = query({
       now.getDate(),
     ).getTime()
 
-    // Get all records for this complex
     const records = await ctx.db
       .query('accessRecords')
       .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
       .collect()
 
-    // Get active (inside now)
     const vehiclesInside = records.filter(
       (r) => r.exitedAt === undefined && r.finalDecision === 'ALLOWED',
     ).length
 
-    // Today's records
     const today = records.filter((r) => r._creationTime >= startOfDay)
 
     const entriesToday = today.filter(

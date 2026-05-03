@@ -33,6 +33,7 @@ import { slugify } from '#/lib/slug'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import type { AssignedRole, TicketPriority } from './types'
 
 const PRIORITY_LABELS: Record<string, string> = {
   high: 'Alta',
@@ -323,9 +324,11 @@ function CategoryDialog({
   const isCreate = category === null
 
   const [label, setLabel] = useState(category?.label ?? '')
-  const [priority, setPriority] = useState(category?.priority ?? 'medium')
-  const [assignedRole, setAssignedRole] = useState(
-    category?.assignedRole ?? 'ADMIN',
+  const [priority, setPriority] = useState<TicketPriority>(
+    (category?.priority as TicketPriority | undefined) ?? 'medium',
+  )
+  const [assignedRole, setAssignedRole] = useState<AssignedRole>(
+    (category?.assignedRole as AssignedRole | undefined) ?? 'ADMIN',
   )
   const [keywords, setKeywords] = useState<string[]>(
     category && category.keywords.length > 0 ? category.keywords : [''],
@@ -405,8 +408,8 @@ function CategoryDialog({
         await updateMut.mutateAsync({
           categoryId: category._id,
           label: label.trim(),
-          priority: priority as 'high' | 'medium' | 'low',
-          assignedRole: assignedRole as 'ADMIN' | 'AUXILIAR',
+          priority,
+          assignedRole,
           keywords: cleanKeywords,
         })
         toast.success('Categoría actualizada')
@@ -415,8 +418,8 @@ function CategoryDialog({
           complexId,
           key: generatedKey,
           label: label.trim(),
-          priority: priority as 'high' | 'medium' | 'low',
-          assignedRole: assignedRole as 'ADMIN' | 'AUXILIAR',
+          priority,
+          assignedRole,
           keywords: cleanKeywords,
         })
         toast.success('Categoría creada')
@@ -473,7 +476,9 @@ function CategoryDialog({
                   ) : (
                     <Select
                       value={priority}
-                      onValueChange={(v) => v && setPriority(v)}
+                      onValueChange={(v) =>
+                        v && setPriority(v as TicketPriority)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue>{PRIORITY_LABELS[priority]}</SelectValue>
@@ -496,7 +501,9 @@ function CategoryDialog({
                   ) : (
                     <Select
                       value={assignedRole}
-                      onValueChange={(v) => v && setAssignedRole(v)}
+                      onValueChange={(v) =>
+                        v && setAssignedRole(v as AssignedRole)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue>{ROLE_LABELS[assignedRole]}</SelectValue>

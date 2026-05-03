@@ -1,6 +1,7 @@
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { MS_PER_DAY } from '../../../convex/lib/constants'
 import type { RuleViolation } from '../../../convex/lib/rulesEngine'
+import type { VehicleTipo } from '../../../convex/vehicles/validators'
 
 // ─── Shared labels ───────────────────────────────────────────────��────
 
@@ -53,7 +54,7 @@ export interface RegistroReciente {
   enteredAt?: number
   normalizedPlate: string
   type: string
-  visitorVehicleType?: 'CAR' | 'MOTORCYCLE' | 'OTHER'
+  visitorVehicleType?: VehicleTipo
   vehicle: Doc<'vehicles'> | null
   unit: Doc<'units'> | null
 }
