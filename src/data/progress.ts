@@ -26,7 +26,7 @@ export const currentFocus = {
   done: 6,
   total: 17,
 }
-export const lastUpdated = 'May 2, 2026'
+export const lastUpdated = 'May 3, 2026'
 
 export const milestones: Milestone[] = [
   {
@@ -860,6 +860,62 @@ export const milestones: Milestone[] = [
           {
             id: 'P4.4',
             name: 'Remove Incidents tab + manual incident FAB',
+            status: 'done',
+          },
+        ],
+      },
+      {
+        id: 'P5',
+        name: 'Codebase Cleanup (4 passes)',
+        tasks: [
+          {
+            id: 'P5.1',
+            name: 'Consolidate ConvexError handling into toastConvexError utility',
+            status: 'done',
+          },
+          {
+            id: 'P5.2',
+            name: 'Derive types from Convex validators (ComplexRole, TicketStatus, ModuleKey, etc.)',
+            status: 'done',
+          },
+          {
+            id: 'P5.3',
+            name: 'Remove dead dependencies and unused code',
+            status: 'done',
+          },
+          {
+            id: 'P5.4',
+            name: 'Remove weak types (any/unknown placeholders)',
+            status: 'done',
+          },
+          {
+            id: 'P5.5',
+            name: 'Fix silent error swallowing, add console.error to fallback paths',
+            status: 'done',
+          },
+          {
+            id: 'P5.6',
+            name: 'Remove AI slop comments and section dividers',
+            status: 'done',
+          },
+          {
+            id: 'P5.7',
+            name: 'Extract shared constants (DEFAULT_TIMEZONE, PLATE_LENGTH, PRIORITY_RANK)',
+            status: 'done',
+          },
+          {
+            id: 'P5.8',
+            name: 'Flatten nested logic with early returns (mutations, helpers)',
+            status: 'done',
+          },
+          {
+            id: 'P5.9',
+            name: 'Rename Spanish identifiers and files to English',
+            status: 'done',
+          },
+          {
+            id: 'P5.10',
+            name: 'Extract formatAccessTime to shared date lib',
             status: 'done',
           },
         ],
