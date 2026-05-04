@@ -25,7 +25,11 @@ import {
 } from '#/components/ui/select'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-import { ZONE_COLORS } from '../../../convex/socialZones/validators'
+import {
+  DAY_KEYS,
+  ZONE_COLORS,
+  type WeekdayAvailability,
+} from '../../../convex/socialZones/validators'
 
 interface BookingDialogProps {
   open: boolean
@@ -37,7 +41,7 @@ interface BookingDialogProps {
     colorIndex: number
     blockDurationMinutes: number
     maxConsecutiveBlocks: number
-    weekdayAvailability: Record<number, { start: number; end: number } | null>
+    weekdayAvailability: WeekdayAvailability
   }>
   initialDate?: string
   initialStartMinutes?: number
@@ -83,16 +87,16 @@ export function BookingDialog({
   const selectedZone = zones.find((z) => z._id === selectedZoneId)
 
   // Compute the day-of-week from the ISO date to look up availability
-  const dayOfWeek = useMemo(() => {
+  const dayKey = useMemo(() => {
     if (!initialDate) return undefined
     const d = new Date(initialDate + 'T00:00:00')
-    return d.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6
+    return DAY_KEYS[d.getDay()]
   }, [initialDate])
 
   // Available time slots based on zone's weekday availability
   const timeSlots = useMemo(() => {
-    if (!selectedZone || dayOfWeek === undefined) return []
-    const avail = selectedZone.weekdayAvailability[dayOfWeek]
+    if (!selectedZone || dayKey === undefined) return []
+    const avail = selectedZone.weekdayAvailability[dayKey]
     if (!avail) return []
 
     const slots: number[] = []
@@ -102,20 +106,20 @@ export function BookingDialog({
       slots.push(m)
     }
     return slots
-  }, [selectedZone, dayOfWeek])
+  }, [selectedZone, dayKey])
 
   // Max blocks available from the selected start time
   const maxBlocks = useMemo(() => {
-    if (!selectedZone || dayOfWeek === undefined || startMinutes === undefined)
+    if (!selectedZone || dayKey === undefined || startMinutes === undefined)
       return 1
-    const avail = selectedZone.weekdayAvailability[dayOfWeek]
+    const avail = selectedZone.weekdayAvailability[dayKey]
     if (!avail) return 1
     const remainingMinutes = avail.end - startMinutes
     const possible = Math.floor(
       remainingMinutes / selectedZone.blockDurationMinutes,
     )
     return Math.min(possible, selectedZone.maxConsecutiveBlocks)
-  }, [selectedZone, dayOfWeek, startMinutes])
+  }, [selectedZone, dayKey, startMinutes])
 
   const blockOptions = Array.from({ length: maxBlocks }, (_, i) => i + 1)
 
@@ -132,9 +136,9 @@ export function BookingDialog({
 
   // Check if the zone is closed on the selected day
   const isClosed = useMemo(() => {
-    if (!selectedZone || dayOfWeek === undefined) return false
-    return selectedZone.weekdayAvailability[dayOfWeek] === null
-  }, [selectedZone, dayOfWeek])
+    if (!selectedZone || dayKey === undefined) return false
+    return selectedZone.weekdayAvailability[dayKey] === null
+  }, [selectedZone, dayKey])
 
   function handleZoneChange(zoneId: Id<'socialZones'>) {
     setSelectedZoneId(zoneId)

@@ -3,7 +3,11 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { DEFAULT_AVAILABILITY, MAX_BOOKING_HORIZON_WEEKS } from './validators'
+import {
+  DAY_KEYS,
+  DEFAULT_AVAILABILITY,
+  MAX_BOOKING_HORIZON_WEEKS,
+} from './validators'
 
 // ---------------------------------------------------------------------------
 // Zone CRUD (admin only)
@@ -59,13 +63,34 @@ export const updateZone = mutation({
     maxConsecutiveBlocks: v.optional(v.number()),
     weekdayAvailability: v.optional(
       v.object({
-        0: v.union(v.object({ start: v.number(), end: v.number() }), v.null()),
-        1: v.union(v.object({ start: v.number(), end: v.number() }), v.null()),
-        2: v.union(v.object({ start: v.number(), end: v.number() }), v.null()),
-        3: v.union(v.object({ start: v.number(), end: v.number() }), v.null()),
-        4: v.union(v.object({ start: v.number(), end: v.number() }), v.null()),
-        5: v.union(v.object({ start: v.number(), end: v.number() }), v.null()),
-        6: v.union(v.object({ start: v.number(), end: v.number() }), v.null()),
+        sun: v.union(
+          v.object({ start: v.number(), end: v.number() }),
+          v.null(),
+        ),
+        mon: v.union(
+          v.object({ start: v.number(), end: v.number() }),
+          v.null(),
+        ),
+        tue: v.union(
+          v.object({ start: v.number(), end: v.number() }),
+          v.null(),
+        ),
+        wed: v.union(
+          v.object({ start: v.number(), end: v.number() }),
+          v.null(),
+        ),
+        thu: v.union(
+          v.object({ start: v.number(), end: v.number() }),
+          v.null(),
+        ),
+        fri: v.union(
+          v.object({ start: v.number(), end: v.number() }),
+          v.null(),
+        ),
+        sat: v.union(
+          v.object({ start: v.number(), end: v.number() }),
+          v.null(),
+        ),
       }),
     ),
     depositAmount: v.optional(v.number()),
@@ -137,8 +162,8 @@ export const createBooking = mutation({
       )
 
     // Validate within zone's weekday availability
-    const dayOfWeek = bookingDate.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6
-    const dayAvail = zone.weekdayAvailability[dayOfWeek]
+    const dayKey = DAY_KEYS[bookingDate.getDay()]
+    const dayAvail = zone.weekdayAvailability[dayKey]
     if (!dayAvail)
       throwConvexError(
         ERROR_CODES.VALIDATION_ERROR,

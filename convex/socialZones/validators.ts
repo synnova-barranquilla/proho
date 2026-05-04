@@ -6,13 +6,13 @@ const daySlot = v.union(
 )
 
 const weekdayAvailabilitySchema = v.object({
-  0: daySlot, // Sunday
-  1: daySlot, // Monday
-  2: daySlot,
-  3: daySlot,
-  4: daySlot,
-  5: daySlot,
-  6: daySlot, // Saturday
+  sun: daySlot,
+  mon: daySlot,
+  tue: daySlot,
+  wed: daySlot,
+  thu: daySlot,
+  fri: daySlot,
+  sat: daySlot,
 })
 
 export const socialZoneFields = {
@@ -54,18 +54,40 @@ export const socialZoneDateBlockFields = {
   createdAt: v.number(),
 }
 
+export type DayKey = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'
+
 export type WeekdayAvailability = {
-  [key in 0 | 1 | 2 | 3 | 4 | 5 | 6]: { start: number; end: number } | null
+  [key in DayKey]: { start: number; end: number } | null
+}
+
+export const DAY_KEYS: DayKey[] = [
+  'sun',
+  'mon',
+  'tue',
+  'wed',
+  'thu',
+  'fri',
+  'sat',
+]
+
+export const DAY_LABELS: Record<DayKey, string> = {
+  sun: 'Dom',
+  mon: 'Lun',
+  tue: 'Mar',
+  wed: 'Mié',
+  thu: 'Jue',
+  fri: 'Vie',
+  sat: 'Sáb',
 }
 
 export const DEFAULT_AVAILABILITY: WeekdayAvailability = {
-  1: { start: 420, end: 1320 }, // Mon 7:00-22:00
-  2: { start: 420, end: 1320 },
-  3: { start: 420, end: 1320 },
-  4: { start: 420, end: 1320 },
-  5: { start: 420, end: 1320 },
-  6: { start: 480, end: 1320 }, // Sat 8:00-22:00
-  0: { start: 480, end: 1080 }, // Sun 8:00-18:00
+  mon: { start: 420, end: 1320 }, // 7:00-22:00
+  tue: { start: 420, end: 1320 },
+  wed: { start: 420, end: 1320 },
+  thu: { start: 420, end: 1320 },
+  fri: { start: 420, end: 1320 },
+  sat: { start: 480, end: 1320 }, // 8:00-22:00
+  sun: { start: 480, end: 1080 }, // 8:00-18:00
 }
 
 export const DEFAULT_ZONES = [

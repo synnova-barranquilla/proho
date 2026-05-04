@@ -27,7 +27,9 @@ import { Switch } from '#/components/ui/switch'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import {
+  DAY_LABELS as SHARED_DAY_LABELS,
   ZONE_COLORS,
+  type DayKey,
   type WeekdayAvailability,
 } from '../../../convex/socialZones/validators'
 
@@ -55,18 +57,7 @@ interface ZoneFormState {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const DAY_LABELS: Record<number, string> = {
-  1: 'Lun',
-  2: 'Mar',
-  3: 'Mié',
-  4: 'Jue',
-  5: 'Vie',
-  6: 'Sáb',
-  0: 'Dom',
-}
-
-/** Day keys ordered Mon-Sun for display. */
-const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const
+const DAY_ORDER: DayKey[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
 /** Generate time options from 0:00 to 23:30 in 30-minute increments. */
 function generateTimeOptions(): Array<{ value: number; label: string }> {
@@ -430,7 +421,7 @@ function WeekdayRow({
   slot,
   onChange,
 }: {
-  day: number
+  day: DayKey
   slot: { start: number; end: number } | null
   onChange: (slot: { start: number; end: number } | null) => void
 }) {
@@ -438,7 +429,7 @@ function WeekdayRow({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="w-10 text-xs font-medium">{DAY_LABELS[day]}</span>
+      <span className="w-10 text-xs font-medium">{SHARED_DAY_LABELS[day]}</span>
       <Switch
         size="sm"
         checked={!isClosed}

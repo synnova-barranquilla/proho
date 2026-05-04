@@ -3,7 +3,10 @@ import { useMemo } from 'react'
 import { cn } from '#/lib/utils'
 import type { Id } from '../../../convex/_generated/dataModel'
 import {
+  DAY_KEYS,
+  DAY_LABELS,
   ZONE_COLORS,
+  type DayKey,
   type WeekdayAvailability,
 } from '../../../convex/socialZones/validators'
 
@@ -53,7 +56,7 @@ export interface WeekCalendarProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+const DAY_NAMES = DAY_KEYS.map((k) => DAY_LABELS[k])
 const ROW_HEIGHT = 40 // h-10 = 40px
 const MINUTES_PER_ROW = 30
 
@@ -63,9 +66,8 @@ function formatTime(minutes: number): string {
   return `${h}:${m.toString().padStart(2, '0')}`
 }
 
-/** Get the JS day-of-week (0=Sun) from an ISO date string. */
-function isoToDow(iso: string): number {
-  return new Date(iso + 'T00:00:00').getDay()
+function isoToDayKey(iso: string): DayKey {
+  return DAY_KEYS[new Date(iso + 'T00:00:00').getDay()]
 }
 
 function todayIso(): string {
@@ -84,7 +86,7 @@ function computeTimeRange(
   let latest = -Infinity
 
   for (const date of weekDates) {
-    const dow = isoToDow(date) as keyof WeekdayAvailability
+    const dow = isoToDayKey(date)
     for (const zone of zones) {
       const slot = zone.weekdayAvailability[dow]
       if (slot) {
@@ -335,7 +337,7 @@ export function WeekCalendar({
                     : undefined
                   if (!zone) return null
                   // Zone-specific block covers the zone's availability for this day
-                  const dow = isoToDow(date) as keyof WeekdayAvailability
+                  const dow = isoToDayKey(date)
                   const slot = zone.weekdayAvailability[dow]
                   if (!slot) return null
 
