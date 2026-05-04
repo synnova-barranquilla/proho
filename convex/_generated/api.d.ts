@@ -48,9 +48,10 @@ import type * as invitations_mutations from '../invitations/mutations.js'
 import type * as invitations_queries from '../invitations/queries.js'
 import type * as invitations_validators from '../invitations/validators.js'
 import type * as lib_auth from '../lib/auth.js'
+import type * as lib_constants from '../lib/constants.js'
 import type * as lib_errors from '../lib/errors.js'
 import type * as lib_organizations from '../lib/organizations.js'
-import type * as lib_placa from '../lib/placa.js'
+import type * as lib_plate from '../lib/plate.js'
 import type * as lib_rulesEngine from '../lib/rulesEngine.js'
 import type * as migrations_fixUserNames from '../migrations/fixUserNames.js'
 import type * as organizations_mutations from '../organizations/mutations.js'
@@ -109,9 +110,10 @@ declare const fullApi: ApiFromModules<{
   'invitations/queries': typeof invitations_queries
   'invitations/validators': typeof invitations_validators
   'lib/auth': typeof lib_auth
+  'lib/constants': typeof lib_constants
   'lib/errors': typeof lib_errors
   'lib/organizations': typeof lib_organizations
-  'lib/placa': typeof lib_placa
+  'lib/plate': typeof lib_plate
   'lib/rulesEngine': typeof lib_rulesEngine
   'migrations/fixUserNames': typeof migrations_fixUserNames
   'organizations/mutations': typeof organizations_mutations
