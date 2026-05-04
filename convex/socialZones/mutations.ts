@@ -131,7 +131,6 @@ export const createBooking = mutation({
   args: {
     zoneId: v.id('socialZones'),
     residentId: v.id('residents'),
-    unitId: v.id('units'),
     date: v.string(),
     startMinutes: v.number(),
     endMinutes: v.number(),
@@ -142,6 +141,11 @@ export const createBooking = mutation({
       throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Zona no disponible')
 
     await requireComplexAccess(ctx, zone.complexId)
+
+    const resident = await ctx.db.get(args.residentId)
+    if (!resident)
+      throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Residente no encontrado')
+    const unitId = resident.unitId
 
     // Validate booking is within the 4-week horizon
     const today = new Date()
@@ -225,7 +229,7 @@ export const createBooking = mutation({
       complexId: zone.complexId,
       zoneId: args.zoneId,
       residentId: args.residentId,
-      unitId: args.unitId,
+      unitId,
       date: args.date,
       startMinutes: args.startMinutes,
       endMinutes: args.endMinutes,

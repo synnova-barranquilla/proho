@@ -47,7 +47,6 @@ interface BookingDialogProps {
   initialStartMinutes?: number
   initialZoneId?: Id<'socialZones'>
   residentId: Id<'residents'>
-  unitId: Id<'units'>
 }
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('es-CO', {
@@ -71,7 +70,6 @@ export function BookingDialog({
   initialStartMinutes,
   initialZoneId,
   residentId,
-  unitId,
 }: BookingDialogProps) {
   const [selectedZoneId, setSelectedZoneId] = useState<
     Id<'socialZones'> | undefined
@@ -159,7 +157,6 @@ export function BookingDialog({
       await mutation.mutateAsync({
         zoneId: selectedZoneId,
         residentId,
-        unitId,
         date: initialDate,
         startMinutes,
         endMinutes,

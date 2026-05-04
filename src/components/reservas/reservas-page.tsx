@@ -15,7 +15,10 @@ import {
   MAX_BOOKING_HORIZON_WEEKS,
   ZONE_COLORS,
 } from '../../../convex/socialZones/validators'
+import { BookingDialog } from './booking-dialog'
+import { MyBookingsSheet } from './my-bookings-sheet'
 import { WeekCalendar } from './week-calendar'
+import { ZoneManagementSheet } from './zone-management-sheet'
 
 const complexRoute = getRouteApi('/_authenticated/c/$complexSlug')
 
@@ -74,8 +77,14 @@ interface ReservasPageProps {
 
 export function ReservasPage({ complexId }: ReservasPageProps) {
   const [weekOffset, setWeekOffset] = useState(0)
-  const [_showZoneManagement, setShowZoneManagement] = useState(false)
-  const [_showMyBookings, setShowMyBookings] = useState(false)
+  const [showZoneManagement, setShowZoneManagement] = useState(false)
+  const [showMyBookings, setShowMyBookings] = useState(false)
+  const [bookingDialog, setBookingDialog] = useState<{
+    open: boolean
+    date?: string
+    startMinutes?: number
+    zoneId?: Id<'socialZones'>
+  }>({ open: false })
 
   const isAdmin = useIsComplexAdmin()
   const { complexSlug: slug } = complexRoute.useParams()
@@ -109,15 +118,15 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
   const currentResidentId = complexData?.membership?.residentId ?? undefined
 
   const handleSlotClick = (
-    _date: string,
-    _startMinutes: number,
-    _zoneId?: Id<'socialZones'>,
+    date: string,
+    startMinutes: number,
+    zoneId?: Id<'socialZones'>,
   ) => {
-    // TODO: open booking creation sheet
+    setBookingDialog({ open: true, date, startMinutes, zoneId })
   }
 
   const handleBookingClick = (_bookingId: Id<'socialZoneBookings'>) => {
-    // TODO: open booking detail sheet
+    // Future: open booking detail/cancel dialog
   }
 
   return (
@@ -217,6 +226,36 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
         isAdmin={isAdmin}
         onSlotClick={handleSlotClick}
         onBookingClick={handleBookingClick}
+      />
+
+      {currentResidentId && (
+        <BookingDialog
+          open={bookingDialog.open}
+          onOpenChange={(open) =>
+            setBookingDialog((prev) => ({ ...prev, open }))
+          }
+          complexId={complexId}
+          zones={zones}
+          initialDate={bookingDialog.date}
+          initialStartMinutes={bookingDialog.startMinutes}
+          initialZoneId={bookingDialog.zoneId}
+          residentId={currentResidentId}
+        />
+      )}
+
+      {currentResidentId && (
+        <MyBookingsSheet
+          open={showMyBookings}
+          onOpenChange={setShowMyBookings}
+          complexId={complexId}
+          residentId={currentResidentId}
+        />
+      )}
+
+      <ZoneManagementSheet
+        open={showZoneManagement}
+        onOpenChange={setShowZoneManagement}
+        complexId={complexId}
       />
     </div>
   )
