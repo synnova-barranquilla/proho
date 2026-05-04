@@ -312,7 +312,7 @@ function ParkingResumen({
           <CardTitle className="text-base">Control de acceso</CardTitle>
         </div>
         <Link
-          to="/c/$complexSlug/control-acceso"
+          to="/c/$complexSlug/parqueadero/control-de-acceso"
           params={{ complexSlug }}
           className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >

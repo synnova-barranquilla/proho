@@ -14,10 +14,21 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedCComplexSlugCommunicationsIndexRouteImport } from './routes/_authenticated/c/$complexSlug/communications/index'
+import { Route as AuthenticatedCComplexSlugComunicacionAccionesRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/acciones'
+import { Route as AuthenticatedCComplexSlugComunicacionAdjuntosRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/adjuntos'
+import { Route as AuthenticatedCComplexSlugComunicacionCategoriasRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/categorias'
+import { Route as AuthenticatedCComplexSlugComunicacionConversacionesRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/conversaciones'
+import { Route as AuthenticatedCComplexSlugComunicacionIndexRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/index'
+import { Route as AuthenticatedCComplexSlugComunicacionRouteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/route'
+import { Route as AuthenticatedCComplexSlugComunicacionSoporteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/soporte'
 import { Route as AuthenticatedCComplexSlugConfiguracionRouteImport } from './routes/_authenticated/c/$complexSlug/configuracion'
-import { Route as AuthenticatedCComplexSlugControlAccesoIndexRouteImport } from './routes/_authenticated/c/$complexSlug/control-acceso/index'
 import { Route as AuthenticatedCComplexSlugIndexRouteImport } from './routes/_authenticated/c/$complexSlug/index'
+import { Route as AuthenticatedCComplexSlugParqueaderoControlDeAccesoRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/control-de-acceso'
+import { Route as AuthenticatedCComplexSlugParqueaderoDashboardRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/dashboard'
+import { Route as AuthenticatedCComplexSlugParqueaderoHistoricoRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/historico'
+import { Route as AuthenticatedCComplexSlugParqueaderoIndexRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/index'
+import { Route as AuthenticatedCComplexSlugParqueaderoNovedadesRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/novedades'
+import { Route as AuthenticatedCComplexSlugParqueaderoRouteRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/route'
 import { Route as AuthenticatedCComplexSlugResidentesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/residentes/index'
 import { Route as AuthenticatedCComplexSlugRouteRouteImport } from './routes/_authenticated/c/$complexSlug/route'
 import { Route as AuthenticatedCComplexSlugUnidadesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/unidades/index'
@@ -195,6 +206,18 @@ const AuthenticatedCComplexSlugConfiguracionRoute =
     path: '/configuracion',
     getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
+const AuthenticatedCComplexSlugParqueaderoRouteRoute =
+  AuthenticatedCComplexSlugParqueaderoRouteRouteImport.update({
+    id: '/parqueadero',
+    path: '/parqueadero',
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugComunicacionRouteRoute =
+  AuthenticatedCComplexSlugComunicacionRouteRouteImport.update({
+    id: '/comunicacion',
+    path: '/comunicacion',
+    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
+  } as any)
 const AuthenticatedCComplexSlugVehiculosIndexRoute =
   AuthenticatedCComplexSlugVehiculosIndexRouteImport.update({
     id: '/vehiculos/',
@@ -213,17 +236,71 @@ const AuthenticatedCComplexSlugResidentesIndexRoute =
     path: '/residentes/',
     getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
-const AuthenticatedCComplexSlugControlAccesoIndexRoute =
-  AuthenticatedCComplexSlugControlAccesoIndexRouteImport.update({
-    id: '/control-acceso/',
-    path: '/control-acceso/',
-    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
+const AuthenticatedCComplexSlugParqueaderoIndexRoute =
+  AuthenticatedCComplexSlugParqueaderoIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCComplexSlugParqueaderoRouteRoute,
   } as any)
-const AuthenticatedCComplexSlugCommunicationsIndexRoute =
-  AuthenticatedCComplexSlugCommunicationsIndexRouteImport.update({
-    id: '/communications/',
-    path: '/communications/',
-    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
+const AuthenticatedCComplexSlugComunicacionIndexRoute =
+  AuthenticatedCComplexSlugComunicacionIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugParqueaderoNovedadesRoute =
+  AuthenticatedCComplexSlugParqueaderoNovedadesRouteImport.update({
+    id: '/novedades',
+    path: '/novedades',
+    getParentRoute: () => AuthenticatedCComplexSlugParqueaderoRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugParqueaderoHistoricoRoute =
+  AuthenticatedCComplexSlugParqueaderoHistoricoRouteImport.update({
+    id: '/historico',
+    path: '/historico',
+    getParentRoute: () => AuthenticatedCComplexSlugParqueaderoRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugParqueaderoDashboardRoute =
+  AuthenticatedCComplexSlugParqueaderoDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedCComplexSlugParqueaderoRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute =
+  AuthenticatedCComplexSlugParqueaderoControlDeAccesoRouteImport.update({
+    id: '/control-de-acceso',
+    path: '/control-de-acceso',
+    getParentRoute: () => AuthenticatedCComplexSlugParqueaderoRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugComunicacionSoporteRoute =
+  AuthenticatedCComplexSlugComunicacionSoporteRouteImport.update({
+    id: '/soporte',
+    path: '/soporte',
+    getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugComunicacionConversacionesRoute =
+  AuthenticatedCComplexSlugComunicacionConversacionesRouteImport.update({
+    id: '/conversaciones',
+    path: '/conversaciones',
+    getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugComunicacionCategoriasRoute =
+  AuthenticatedCComplexSlugComunicacionCategoriasRouteImport.update({
+    id: '/categorias',
+    path: '/categorias',
+    getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugComunicacionAdjuntosRoute =
+  AuthenticatedCComplexSlugComunicacionAdjuntosRouteImport.update({
+    id: '/adjuntos',
+    path: '/adjuntos',
+    getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
+  } as any)
+const AuthenticatedCComplexSlugComunicacionAccionesRoute =
+  AuthenticatedCComplexSlugComunicacionAccionesRouteImport.update({
+    id: '/acciones',
+    path: '/acciones',
+    getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -250,12 +327,23 @@ export interface FileRoutesByFullPath {
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
+  '/c/$complexSlug/comunicacion': typeof AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren
+  '/c/$complexSlug/parqueadero': typeof AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren
   '/c/$complexSlug/configuracion': typeof AuthenticatedCComplexSlugConfiguracionRoute
   '/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
   '/c/$complexSlug/': typeof AuthenticatedCComplexSlugIndexRoute
-  '/c/$complexSlug/communications/': typeof AuthenticatedCComplexSlugCommunicationsIndexRoute
-  '/c/$complexSlug/control-acceso/': typeof AuthenticatedCComplexSlugControlAccesoIndexRoute
+  '/c/$complexSlug/comunicacion/acciones': typeof AuthenticatedCComplexSlugComunicacionAccionesRoute
+  '/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
+  '/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
+  '/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
+  '/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
+  '/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
+  '/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
+  '/c/$complexSlug/parqueadero/historico': typeof AuthenticatedCComplexSlugParqueaderoHistoricoRoute
+  '/c/$complexSlug/parqueadero/novedades': typeof AuthenticatedCComplexSlugParqueaderoNovedadesRoute
+  '/c/$complexSlug/comunicacion/': typeof AuthenticatedCComplexSlugComunicacionIndexRoute
+  '/c/$complexSlug/parqueadero/': typeof AuthenticatedCComplexSlugParqueaderoIndexRoute
   '/c/$complexSlug/residentes/': typeof AuthenticatedCComplexSlugResidentesIndexRoute
   '/c/$complexSlug/unidades/': typeof AuthenticatedCComplexSlugUnidadesIndexRoute
   '/c/$complexSlug/vehiculos/': typeof AuthenticatedCComplexSlugVehiculosIndexRoute
@@ -285,8 +373,17 @@ export interface FileRoutesByTo {
   '/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
   '/c/$complexSlug': typeof AuthenticatedCComplexSlugIndexRoute
-  '/c/$complexSlug/communications': typeof AuthenticatedCComplexSlugCommunicationsIndexRoute
-  '/c/$complexSlug/control-acceso': typeof AuthenticatedCComplexSlugControlAccesoIndexRoute
+  '/c/$complexSlug/comunicacion/acciones': typeof AuthenticatedCComplexSlugComunicacionAccionesRoute
+  '/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
+  '/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
+  '/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
+  '/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
+  '/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
+  '/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
+  '/c/$complexSlug/parqueadero/historico': typeof AuthenticatedCComplexSlugParqueaderoHistoricoRoute
+  '/c/$complexSlug/parqueadero/novedades': typeof AuthenticatedCComplexSlugParqueaderoNovedadesRoute
+  '/c/$complexSlug/comunicacion': typeof AuthenticatedCComplexSlugComunicacionIndexRoute
+  '/c/$complexSlug/parqueadero': typeof AuthenticatedCComplexSlugParqueaderoIndexRoute
   '/c/$complexSlug/residentes': typeof AuthenticatedCComplexSlugResidentesIndexRoute
   '/c/$complexSlug/unidades': typeof AuthenticatedCComplexSlugUnidadesIndexRoute
   '/c/$complexSlug/vehiculos': typeof AuthenticatedCComplexSlugVehiculosIndexRoute
@@ -317,12 +414,23 @@ export interface FileRoutesById {
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
+  '/_authenticated/c/$complexSlug/comunicacion': typeof AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren
+  '/_authenticated/c/$complexSlug/parqueadero': typeof AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren
   '/_authenticated/c/$complexSlug/configuracion': typeof AuthenticatedCComplexSlugConfiguracionRoute
   '/_authenticated/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/_authenticated/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
   '/_authenticated/c/$complexSlug/': typeof AuthenticatedCComplexSlugIndexRoute
-  '/_authenticated/c/$complexSlug/communications/': typeof AuthenticatedCComplexSlugCommunicationsIndexRoute
-  '/_authenticated/c/$complexSlug/control-acceso/': typeof AuthenticatedCComplexSlugControlAccesoIndexRoute
+  '/_authenticated/c/$complexSlug/comunicacion/acciones': typeof AuthenticatedCComplexSlugComunicacionAccionesRoute
+  '/_authenticated/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
+  '/_authenticated/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
+  '/_authenticated/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
+  '/_authenticated/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
+  '/_authenticated/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
+  '/_authenticated/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
+  '/_authenticated/c/$complexSlug/parqueadero/historico': typeof AuthenticatedCComplexSlugParqueaderoHistoricoRoute
+  '/_authenticated/c/$complexSlug/parqueadero/novedades': typeof AuthenticatedCComplexSlugParqueaderoNovedadesRoute
+  '/_authenticated/c/$complexSlug/comunicacion/': typeof AuthenticatedCComplexSlugComunicacionIndexRoute
+  '/_authenticated/c/$complexSlug/parqueadero/': typeof AuthenticatedCComplexSlugParqueaderoIndexRoute
   '/_authenticated/c/$complexSlug/residentes/': typeof AuthenticatedCComplexSlugResidentesIndexRoute
   '/_authenticated/c/$complexSlug/unidades/': typeof AuthenticatedCComplexSlugUnidadesIndexRoute
   '/_authenticated/c/$complexSlug/vehiculos/': typeof AuthenticatedCComplexSlugVehiculosIndexRoute
@@ -353,12 +461,23 @@ export interface FileRouteTypes {
     | '/api/auth/callback'
     | '/admin/'
     | '/super-admin/'
+    | '/c/$complexSlug/comunicacion'
+    | '/c/$complexSlug/parqueadero'
     | '/c/$complexSlug/configuracion'
     | '/c/$complexSlug/usuarios'
     | '/super-admin/organizaciones/$orgId'
     | '/c/$complexSlug/'
-    | '/c/$complexSlug/communications/'
-    | '/c/$complexSlug/control-acceso/'
+    | '/c/$complexSlug/comunicacion/acciones'
+    | '/c/$complexSlug/comunicacion/adjuntos'
+    | '/c/$complexSlug/comunicacion/categorias'
+    | '/c/$complexSlug/comunicacion/conversaciones'
+    | '/c/$complexSlug/comunicacion/soporte'
+    | '/c/$complexSlug/parqueadero/control-de-acceso'
+    | '/c/$complexSlug/parqueadero/dashboard'
+    | '/c/$complexSlug/parqueadero/historico'
+    | '/c/$complexSlug/parqueadero/novedades'
+    | '/c/$complexSlug/comunicacion/'
+    | '/c/$complexSlug/parqueadero/'
     | '/c/$complexSlug/residentes/'
     | '/c/$complexSlug/unidades/'
     | '/c/$complexSlug/vehiculos/'
@@ -388,8 +507,17 @@ export interface FileRouteTypes {
     | '/c/$complexSlug/usuarios'
     | '/super-admin/organizaciones/$orgId'
     | '/c/$complexSlug'
-    | '/c/$complexSlug/communications'
-    | '/c/$complexSlug/control-acceso'
+    | '/c/$complexSlug/comunicacion/acciones'
+    | '/c/$complexSlug/comunicacion/adjuntos'
+    | '/c/$complexSlug/comunicacion/categorias'
+    | '/c/$complexSlug/comunicacion/conversaciones'
+    | '/c/$complexSlug/comunicacion/soporte'
+    | '/c/$complexSlug/parqueadero/control-de-acceso'
+    | '/c/$complexSlug/parqueadero/dashboard'
+    | '/c/$complexSlug/parqueadero/historico'
+    | '/c/$complexSlug/parqueadero/novedades'
+    | '/c/$complexSlug/comunicacion'
+    | '/c/$complexSlug/parqueadero'
     | '/c/$complexSlug/residentes'
     | '/c/$complexSlug/unidades'
     | '/c/$complexSlug/vehiculos'
@@ -419,12 +547,23 @@ export interface FileRouteTypes {
     | '/api/auth/callback'
     | '/_authenticated/admin/'
     | '/_authenticated/super-admin/'
+    | '/_authenticated/c/$complexSlug/comunicacion'
+    | '/_authenticated/c/$complexSlug/parqueadero'
     | '/_authenticated/c/$complexSlug/configuracion'
     | '/_authenticated/c/$complexSlug/usuarios'
     | '/_authenticated/super-admin/organizaciones/$orgId'
     | '/_authenticated/c/$complexSlug/'
-    | '/_authenticated/c/$complexSlug/communications/'
-    | '/_authenticated/c/$complexSlug/control-acceso/'
+    | '/_authenticated/c/$complexSlug/comunicacion/acciones'
+    | '/_authenticated/c/$complexSlug/comunicacion/adjuntos'
+    | '/_authenticated/c/$complexSlug/comunicacion/categorias'
+    | '/_authenticated/c/$complexSlug/comunicacion/conversaciones'
+    | '/_authenticated/c/$complexSlug/comunicacion/soporte'
+    | '/_authenticated/c/$complexSlug/parqueadero/control-de-acceso'
+    | '/_authenticated/c/$complexSlug/parqueadero/dashboard'
+    | '/_authenticated/c/$complexSlug/parqueadero/historico'
+    | '/_authenticated/c/$complexSlug/parqueadero/novedades'
+    | '/_authenticated/c/$complexSlug/comunicacion/'
+    | '/_authenticated/c/$complexSlug/parqueadero/'
     | '/_authenticated/c/$complexSlug/residentes/'
     | '/_authenticated/c/$complexSlug/unidades/'
     | '/_authenticated/c/$complexSlug/vehiculos/'
@@ -646,6 +785,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCComplexSlugConfiguracionRouteImport
       parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
+    '/_authenticated/c/$complexSlug/parqueadero': {
+      id: '/_authenticated/c/$complexSlug/parqueadero'
+      path: '/parqueadero'
+      fullPath: '/c/$complexSlug/parqueadero'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/comunicacion': {
+      id: '/_authenticated/c/$complexSlug/comunicacion'
+      path: '/comunicacion'
+      fullPath: '/c/$complexSlug/comunicacion'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
+    }
     '/_authenticated/c/$complexSlug/vehiculos/': {
       id: '/_authenticated/c/$complexSlug/vehiculos/'
       path: '/vehiculos'
@@ -667,19 +820,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCComplexSlugResidentesIndexRouteImport
       parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
-    '/_authenticated/c/$complexSlug/control-acceso/': {
-      id: '/_authenticated/c/$complexSlug/control-acceso/'
-      path: '/control-acceso'
-      fullPath: '/c/$complexSlug/control-acceso/'
-      preLoaderRoute: typeof AuthenticatedCComplexSlugControlAccesoIndexRouteImport
-      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
+    '/_authenticated/c/$complexSlug/parqueadero/': {
+      id: '/_authenticated/c/$complexSlug/parqueadero/'
+      path: '/'
+      fullPath: '/c/$complexSlug/parqueadero/'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugParqueaderoIndexRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRoute
     }
-    '/_authenticated/c/$complexSlug/communications/': {
-      id: '/_authenticated/c/$complexSlug/communications/'
-      path: '/communications'
-      fullPath: '/c/$complexSlug/communications/'
-      preLoaderRoute: typeof AuthenticatedCComplexSlugCommunicationsIndexRouteImport
-      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
+    '/_authenticated/c/$complexSlug/comunicacion/': {
+      id: '/_authenticated/c/$complexSlug/comunicacion/'
+      path: '/'
+      fullPath: '/c/$complexSlug/comunicacion/'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionIndexRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/parqueadero/novedades': {
+      id: '/_authenticated/c/$complexSlug/parqueadero/novedades'
+      path: '/novedades'
+      fullPath: '/c/$complexSlug/parqueadero/novedades'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugParqueaderoNovedadesRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/parqueadero/historico': {
+      id: '/_authenticated/c/$complexSlug/parqueadero/historico'
+      path: '/historico'
+      fullPath: '/c/$complexSlug/parqueadero/historico'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugParqueaderoHistoricoRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/parqueadero/dashboard': {
+      id: '/_authenticated/c/$complexSlug/parqueadero/dashboard'
+      path: '/dashboard'
+      fullPath: '/c/$complexSlug/parqueadero/dashboard'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugParqueaderoDashboardRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/parqueadero/control-de-acceso': {
+      id: '/_authenticated/c/$complexSlug/parqueadero/control-de-acceso'
+      path: '/control-de-acceso'
+      fullPath: '/c/$complexSlug/parqueadero/control-de-acceso'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/comunicacion/soporte': {
+      id: '/_authenticated/c/$complexSlug/comunicacion/soporte'
+      path: '/soporte'
+      fullPath: '/c/$complexSlug/comunicacion/soporte'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionSoporteRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/comunicacion/conversaciones': {
+      id: '/_authenticated/c/$complexSlug/comunicacion/conversaciones'
+      path: '/conversaciones'
+      fullPath: '/c/$complexSlug/comunicacion/conversaciones'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionConversacionesRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/comunicacion/categorias': {
+      id: '/_authenticated/c/$complexSlug/comunicacion/categorias'
+      path: '/categorias'
+      fullPath: '/c/$complexSlug/comunicacion/categorias'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionCategoriasRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/comunicacion/adjuntos': {
+      id: '/_authenticated/c/$complexSlug/comunicacion/adjuntos'
+      path: '/adjuntos'
+      fullPath: '/c/$complexSlug/comunicacion/adjuntos'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionAdjuntosRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/comunicacion/acciones': {
+      id: '/_authenticated/c/$complexSlug/comunicacion/acciones'
+      path: '/acciones'
+      fullPath: '/c/$complexSlug/comunicacion/acciones'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionAccionesRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
     }
   }
 }
@@ -722,12 +938,69 @@ const AuthenticatedSuperAdminRouteRouteWithChildren =
     AuthenticatedSuperAdminRouteRouteChildren,
   )
 
+interface AuthenticatedCComplexSlugComunicacionRouteRouteChildren {
+  AuthenticatedCComplexSlugComunicacionAccionesRoute: typeof AuthenticatedCComplexSlugComunicacionAccionesRoute
+  AuthenticatedCComplexSlugComunicacionAdjuntosRoute: typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
+  AuthenticatedCComplexSlugComunicacionCategoriasRoute: typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
+  AuthenticatedCComplexSlugComunicacionConversacionesRoute: typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
+  AuthenticatedCComplexSlugComunicacionSoporteRoute: typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
+  AuthenticatedCComplexSlugComunicacionIndexRoute: typeof AuthenticatedCComplexSlugComunicacionIndexRoute
+}
+
+const AuthenticatedCComplexSlugComunicacionRouteRouteChildren: AuthenticatedCComplexSlugComunicacionRouteRouteChildren =
+  {
+    AuthenticatedCComplexSlugComunicacionAccionesRoute:
+      AuthenticatedCComplexSlugComunicacionAccionesRoute,
+    AuthenticatedCComplexSlugComunicacionAdjuntosRoute:
+      AuthenticatedCComplexSlugComunicacionAdjuntosRoute,
+    AuthenticatedCComplexSlugComunicacionCategoriasRoute:
+      AuthenticatedCComplexSlugComunicacionCategoriasRoute,
+    AuthenticatedCComplexSlugComunicacionConversacionesRoute:
+      AuthenticatedCComplexSlugComunicacionConversacionesRoute,
+    AuthenticatedCComplexSlugComunicacionSoporteRoute:
+      AuthenticatedCComplexSlugComunicacionSoporteRoute,
+    AuthenticatedCComplexSlugComunicacionIndexRoute:
+      AuthenticatedCComplexSlugComunicacionIndexRoute,
+  }
+
+const AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren =
+  AuthenticatedCComplexSlugComunicacionRouteRoute._addFileChildren(
+    AuthenticatedCComplexSlugComunicacionRouteRouteChildren,
+  )
+
+interface AuthenticatedCComplexSlugParqueaderoRouteRouteChildren {
+  AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute: typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
+  AuthenticatedCComplexSlugParqueaderoDashboardRoute: typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
+  AuthenticatedCComplexSlugParqueaderoHistoricoRoute: typeof AuthenticatedCComplexSlugParqueaderoHistoricoRoute
+  AuthenticatedCComplexSlugParqueaderoNovedadesRoute: typeof AuthenticatedCComplexSlugParqueaderoNovedadesRoute
+  AuthenticatedCComplexSlugParqueaderoIndexRoute: typeof AuthenticatedCComplexSlugParqueaderoIndexRoute
+}
+
+const AuthenticatedCComplexSlugParqueaderoRouteRouteChildren: AuthenticatedCComplexSlugParqueaderoRouteRouteChildren =
+  {
+    AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute:
+      AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute,
+    AuthenticatedCComplexSlugParqueaderoDashboardRoute:
+      AuthenticatedCComplexSlugParqueaderoDashboardRoute,
+    AuthenticatedCComplexSlugParqueaderoHistoricoRoute:
+      AuthenticatedCComplexSlugParqueaderoHistoricoRoute,
+    AuthenticatedCComplexSlugParqueaderoNovedadesRoute:
+      AuthenticatedCComplexSlugParqueaderoNovedadesRoute,
+    AuthenticatedCComplexSlugParqueaderoIndexRoute:
+      AuthenticatedCComplexSlugParqueaderoIndexRoute,
+  }
+
+const AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren =
+  AuthenticatedCComplexSlugParqueaderoRouteRoute._addFileChildren(
+    AuthenticatedCComplexSlugParqueaderoRouteRouteChildren,
+  )
+
 interface AuthenticatedCComplexSlugRouteRouteChildren {
+  AuthenticatedCComplexSlugComunicacionRouteRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren
+  AuthenticatedCComplexSlugParqueaderoRouteRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren
   AuthenticatedCComplexSlugConfiguracionRoute: typeof AuthenticatedCComplexSlugConfiguracionRoute
   AuthenticatedCComplexSlugUsuariosRoute: typeof AuthenticatedCComplexSlugUsuariosRoute
   AuthenticatedCComplexSlugIndexRoute: typeof AuthenticatedCComplexSlugIndexRoute
-  AuthenticatedCComplexSlugCommunicationsIndexRoute: typeof AuthenticatedCComplexSlugCommunicationsIndexRoute
-  AuthenticatedCComplexSlugControlAccesoIndexRoute: typeof AuthenticatedCComplexSlugControlAccesoIndexRoute
   AuthenticatedCComplexSlugResidentesIndexRoute: typeof AuthenticatedCComplexSlugResidentesIndexRoute
   AuthenticatedCComplexSlugUnidadesIndexRoute: typeof AuthenticatedCComplexSlugUnidadesIndexRoute
   AuthenticatedCComplexSlugVehiculosIndexRoute: typeof AuthenticatedCComplexSlugVehiculosIndexRoute
@@ -735,15 +1008,15 @@ interface AuthenticatedCComplexSlugRouteRouteChildren {
 
 const AuthenticatedCComplexSlugRouteRouteChildren: AuthenticatedCComplexSlugRouteRouteChildren =
   {
+    AuthenticatedCComplexSlugComunicacionRouteRoute:
+      AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren,
+    AuthenticatedCComplexSlugParqueaderoRouteRoute:
+      AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren,
     AuthenticatedCComplexSlugConfiguracionRoute:
       AuthenticatedCComplexSlugConfiguracionRoute,
     AuthenticatedCComplexSlugUsuariosRoute:
       AuthenticatedCComplexSlugUsuariosRoute,
     AuthenticatedCComplexSlugIndexRoute: AuthenticatedCComplexSlugIndexRoute,
-    AuthenticatedCComplexSlugCommunicationsIndexRoute:
-      AuthenticatedCComplexSlugCommunicationsIndexRoute,
-    AuthenticatedCComplexSlugControlAccesoIndexRoute:
-      AuthenticatedCComplexSlugControlAccesoIndexRoute,
     AuthenticatedCComplexSlugResidentesIndexRoute:
       AuthenticatedCComplexSlugResidentesIndexRoute,
     AuthenticatedCComplexSlugUnidadesIndexRoute:

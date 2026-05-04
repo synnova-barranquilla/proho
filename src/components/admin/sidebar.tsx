@@ -2,16 +2,21 @@ import { getRouteApi, Link, useLocation } from '@tanstack/react-router'
 
 import {
   ArrowLeft,
+  BarChart3,
   Building2,
   Car,
+  FileText,
+  Headset,
   Home,
   MessageSquare,
   Settings,
   Shield,
   ShieldCheck,
   SquareStack,
+  Tags,
   Users,
   UsersRound,
+  Zap,
 } from 'lucide-react'
 
 import {
@@ -61,13 +66,11 @@ export function ComplexSidebar({
     )
   }
 
-  // Complex-scoped: derive the effective role to decide which items
-  // to show. The backend already enforces these checks on every
-  // mutation; this is front-end gating for UX clarity.
   const isAdmin = isComplexAdmin(convexUser, complex, membership)
   const hasControlAcceso = activeModules.includes('access_control')
   const hasCommunications =
     activeModules.includes('communications') || isSuperAdmin
+  const complexRole = membership?.role ?? null
 
   return (
     <ComplexScopedSidebar
@@ -78,6 +81,7 @@ export function ComplexSidebar({
       isSuperAdmin={isSuperAdmin}
       hasControlAcceso={hasControlAcceso}
       hasCommunications={hasCommunications}
+      complexRole={complexRole}
     />
   )
 }
@@ -200,6 +204,7 @@ function ComplexScopedSidebar({
   isSuperAdmin,
   hasControlAcceso,
   hasCommunications,
+  complexRole,
 }: {
   complex: Doc<'complexes'>
   pathname: string
@@ -208,16 +213,23 @@ function ComplexScopedSidebar({
   isSuperAdmin: boolean
   hasControlAcceso: boolean
   hasCommunications: boolean
+  complexRole: string | null
 }) {
   const base = `/c/${complex.slug}`
+  const slug = complex.slug
 
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(path + '/')
 
-  // The "Gestión" group collapses entirely if the user has no items to
-  // see — non-admin non-owner users (e.g. a raw VIGILANTE) get just
-  // Resumen + Inventario.
   const showGestionGroup = isAdmin || isOrgOwner
+
+  const isVigilante = complexRole === 'GUARD'
+  const isStaff =
+    complexRole === 'ADMIN' || complexRole === 'AUXILIAR' || isSuperAdmin
+
+  const showParqueadero =
+    hasControlAcceso && (isVigilante || isAdmin || isSuperAdmin)
+  const showComunicacion = hasCommunications && !isVigilante
 
   return (
     <Sidebar>
@@ -264,10 +276,7 @@ function ComplexScopedSidebar({
                 <SidebarMenuButton
                   isActive={pathname === base}
                   render={
-                    <Link
-                      to="/c/$complexSlug"
-                      params={{ complexSlug: complex.slug }}
-                    >
+                    <Link to="/c/$complexSlug" params={{ complexSlug: slug }}>
                       <Home />
                       <span>Inicio</span>
                     </Link>
@@ -290,7 +299,7 @@ function ComplexScopedSidebar({
                       render={
                         <Link
                           to="/c/$complexSlug/unidades"
-                          params={{ complexSlug: complex.slug }}
+                          params={{ complexSlug: slug }}
                         >
                           <SquareStack />
                           <span>Unidades</span>
@@ -304,7 +313,7 @@ function ComplexScopedSidebar({
                       render={
                         <Link
                           to="/c/$complexSlug/residentes"
-                          params={{ complexSlug: complex.slug }}
+                          params={{ complexSlug: slug }}
                         >
                           <UsersRound />
                           <span>Residentes</span>
@@ -320,7 +329,7 @@ function ComplexScopedSidebar({
                   render={
                     <Link
                       to="/c/$complexSlug/vehiculos"
-                      params={{ complexSlug: complex.slug }}
+                      params={{ complexSlug: slug }}
                     >
                       <Car />
                       <span>Vehículos</span>
@@ -332,42 +341,156 @@ function ComplexScopedSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {hasControlAcceso || hasCommunications ? (
+        {showParqueadero ? (
           <SidebarGroup>
-            <SidebarGroupLabel>Operación</SidebarGroupLabel>
+            <SidebarGroupLabel>Parqueadero</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {hasControlAcceso ? (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={isActive(`${base}/control-acceso`)}
-                      render={
-                        <Link
-                          to="/c/$complexSlug/control-acceso"
-                          params={{ complexSlug: complex.slug }}
-                        >
-                          <ShieldCheck />
-                          <span>Control de acceso</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={isActive(`${base}/parqueadero/control-de-acceso`)}
+                    render={
+                      <Link
+                        to="/c/$complexSlug/parqueadero/control-de-acceso"
+                        params={{ complexSlug: slug }}
+                      >
+                        <ShieldCheck />
+                        <span>Control de acceso</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={isActive(`${base}/parqueadero/dashboard`)}
+                    render={
+                      <Link
+                        to="/c/$complexSlug/parqueadero/dashboard"
+                        params={{ complexSlug: slug }}
+                      >
+                        <BarChart3 />
+                        <span>Dashboard</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+                {isAdmin ? (
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(`${base}/parqueadero/historico`)}
+                        render={
+                          <Link
+                            to="/c/$complexSlug/parqueadero/historico"
+                            params={{ complexSlug: slug }}
+                          >
+                            <Car />
+                            <span>Histórico</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(`${base}/parqueadero/novedades`)}
+                        render={
+                          <Link
+                            to="/c/$complexSlug/parqueadero/novedades"
+                            params={{ complexSlug: slug }}
+                          >
+                            <FileText />
+                            <span>Novedades</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                  </>
                 ) : null}
-                {hasCommunications ? (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={isActive(`${base}/communications`)}
-                      render={
-                        <Link
-                          to="/c/$complexSlug/communications"
-                          params={{ complexSlug: complex.slug }}
-                        >
-                          <MessageSquare />
-                          <span>Comunicaciones</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
+        {showComunicacion ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Comunicación</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={isActive(`${base}/comunicacion/soporte`)}
+                    render={
+                      <Link
+                        to="/c/$complexSlug/comunicacion/soporte"
+                        params={{ complexSlug: slug }}
+                      >
+                        <Headset />
+                        <span>Soporte</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+                {isStaff ? (
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(
+                          `${base}/comunicacion/conversaciones`,
+                        )}
+                        render={
+                          <Link
+                            to="/c/$complexSlug/comunicacion/conversaciones"
+                            params={{ complexSlug: slug }}
+                          >
+                            <MessageSquare />
+                            <span>Conversaciones</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(`${base}/comunicacion/adjuntos`)}
+                        render={
+                          <Link
+                            to="/c/$complexSlug/comunicacion/adjuntos"
+                            params={{ complexSlug: slug }}
+                          >
+                            <FileText />
+                            <span>Adjuntos</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(`${base}/comunicacion/categorias`)}
+                        render={
+                          <Link
+                            to="/c/$complexSlug/comunicacion/categorias"
+                            params={{ complexSlug: slug }}
+                          >
+                            <Tags />
+                            <span>Categorías</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(`${base}/comunicacion/acciones`)}
+                        render={
+                          <Link
+                            to="/c/$complexSlug/comunicacion/acciones"
+                            params={{ complexSlug: slug }}
+                          >
+                            <Zap />
+                            <span>Acciones rápidas</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                  </>
                 ) : null}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -387,7 +510,7 @@ function ComplexScopedSidebar({
                         render={
                           <Link
                             to="/c/$complexSlug/usuarios"
-                            params={{ complexSlug: complex.slug }}
+                            params={{ complexSlug: slug }}
                           >
                             <Users />
                             <span>Usuarios del conjunto</span>
@@ -401,7 +524,7 @@ function ComplexScopedSidebar({
                         render={
                           <Link
                             to="/c/$complexSlug/configuracion"
-                            params={{ complexSlug: complex.slug }}
+                            params={{ complexSlug: slug }}
                           >
                             <Settings />
                             <span>Configuración</span>

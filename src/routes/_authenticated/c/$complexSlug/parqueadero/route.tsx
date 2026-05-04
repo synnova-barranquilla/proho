@@ -1,21 +1,20 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
-import { ControlAccesoPage } from '#/components/control-acceso/control-acceso-page'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$complexSlug/control-acceso/',
+  '/_authenticated/c/$complexSlug/parqueadero',
 )({
-  loader: async ({
-    context: { queryClient, complexId, complexSlug, activeModules },
-  }) => {
+  beforeLoad: ({ context: { complexSlug, activeModules } }) => {
     if (!activeModules.includes('access_control')) {
       throw redirect({
         to: '/c/$complexSlug',
         params: { complexSlug },
       })
     }
+  },
+  loader: async ({ context: { queryClient, complexId } }) => {
     await Promise.all([
       prefetchAuthenticatedQuery(
         queryClient,
@@ -40,10 +39,5 @@ export const Route = createFileRoute(
     ])
     return null
   },
-  component: ControlAccesoRoute,
+  component: () => <Outlet />,
 })
-
-function ControlAccesoRoute() {
-  const { complexId } = Route.useRouteContext()
-  return <ControlAccesoPage complexId={complexId} />
-}
