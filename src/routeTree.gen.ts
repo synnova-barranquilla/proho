@@ -19,6 +19,7 @@ import { Route as AuthenticatedCComplexSlugComunicacionAdjuntosRouteImport } fro
 import { Route as AuthenticatedCComplexSlugComunicacionCategoriasRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/categorias'
 import { Route as AuthenticatedCComplexSlugComunicacionConversacionesRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/conversaciones'
 import { Route as AuthenticatedCComplexSlugComunicacionIndexRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/index'
+import { Route as AuthenticatedCComplexSlugComunicacionReservasRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/reservas'
 import { Route as AuthenticatedCComplexSlugComunicacionRouteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/route'
 import { Route as AuthenticatedCComplexSlugComunicacionSoporteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/soporte'
 import { Route as AuthenticatedCComplexSlugConfiguracionRouteImport } from './routes/_authenticated/c/$complexSlug/configuracion'
@@ -278,6 +279,12 @@ const AuthenticatedCComplexSlugComunicacionSoporteRoute =
     path: '/soporte',
     getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
   } as any)
+const AuthenticatedCComplexSlugComunicacionReservasRoute =
+  AuthenticatedCComplexSlugComunicacionReservasRouteImport.update({
+    id: '/reservas',
+    path: '/reservas',
+    getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
+  } as any)
 const AuthenticatedCComplexSlugComunicacionConversacionesRoute =
   AuthenticatedCComplexSlugComunicacionConversacionesRouteImport.update({
     id: '/conversaciones',
@@ -337,6 +344,7 @@ export interface FileRoutesByFullPath {
   '/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
   '/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
+  '/c/$complexSlug/comunicacion/reservas': typeof AuthenticatedCComplexSlugComunicacionReservasRoute
   '/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
   '/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
   '/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
@@ -377,6 +385,7 @@ export interface FileRoutesByTo {
   '/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
   '/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
+  '/c/$complexSlug/comunicacion/reservas': typeof AuthenticatedCComplexSlugComunicacionReservasRoute
   '/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
   '/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
   '/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
@@ -424,6 +433,7 @@ export interface FileRoutesById {
   '/_authenticated/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
   '/_authenticated/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/_authenticated/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
+  '/_authenticated/c/$complexSlug/comunicacion/reservas': typeof AuthenticatedCComplexSlugComunicacionReservasRoute
   '/_authenticated/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
   '/_authenticated/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
   '/_authenticated/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/c/$complexSlug/comunicacion/adjuntos'
     | '/c/$complexSlug/comunicacion/categorias'
     | '/c/$complexSlug/comunicacion/conversaciones'
+    | '/c/$complexSlug/comunicacion/reservas'
     | '/c/$complexSlug/comunicacion/soporte'
     | '/c/$complexSlug/parqueadero/control-de-acceso'
     | '/c/$complexSlug/parqueadero/dashboard'
@@ -511,6 +522,7 @@ export interface FileRouteTypes {
     | '/c/$complexSlug/comunicacion/adjuntos'
     | '/c/$complexSlug/comunicacion/categorias'
     | '/c/$complexSlug/comunicacion/conversaciones'
+    | '/c/$complexSlug/comunicacion/reservas'
     | '/c/$complexSlug/comunicacion/soporte'
     | '/c/$complexSlug/parqueadero/control-de-acceso'
     | '/c/$complexSlug/parqueadero/dashboard'
@@ -557,6 +569,7 @@ export interface FileRouteTypes {
     | '/_authenticated/c/$complexSlug/comunicacion/adjuntos'
     | '/_authenticated/c/$complexSlug/comunicacion/categorias'
     | '/_authenticated/c/$complexSlug/comunicacion/conversaciones'
+    | '/_authenticated/c/$complexSlug/comunicacion/reservas'
     | '/_authenticated/c/$complexSlug/comunicacion/soporte'
     | '/_authenticated/c/$complexSlug/parqueadero/control-de-acceso'
     | '/_authenticated/c/$complexSlug/parqueadero/dashboard'
@@ -869,6 +882,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionSoporteRouteImport
       parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
     }
+    '/_authenticated/c/$complexSlug/comunicacion/reservas': {
+      id: '/_authenticated/c/$complexSlug/comunicacion/reservas'
+      path: '/reservas'
+      fullPath: '/c/$complexSlug/comunicacion/reservas'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionReservasRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
+    }
     '/_authenticated/c/$complexSlug/comunicacion/conversaciones': {
       id: '/_authenticated/c/$complexSlug/comunicacion/conversaciones'
       path: '/conversaciones'
@@ -943,6 +963,7 @@ interface AuthenticatedCComplexSlugComunicacionRouteRouteChildren {
   AuthenticatedCComplexSlugComunicacionAdjuntosRoute: typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
   AuthenticatedCComplexSlugComunicacionCategoriasRoute: typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   AuthenticatedCComplexSlugComunicacionConversacionesRoute: typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
+  AuthenticatedCComplexSlugComunicacionReservasRoute: typeof AuthenticatedCComplexSlugComunicacionReservasRoute
   AuthenticatedCComplexSlugComunicacionSoporteRoute: typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
   AuthenticatedCComplexSlugComunicacionIndexRoute: typeof AuthenticatedCComplexSlugComunicacionIndexRoute
 }
@@ -957,6 +978,8 @@ const AuthenticatedCComplexSlugComunicacionRouteRouteChildren: AuthenticatedCCom
       AuthenticatedCComplexSlugComunicacionCategoriasRoute,
     AuthenticatedCComplexSlugComunicacionConversacionesRoute:
       AuthenticatedCComplexSlugComunicacionConversacionesRoute,
+    AuthenticatedCComplexSlugComunicacionReservasRoute:
+      AuthenticatedCComplexSlugComunicacionReservasRoute,
     AuthenticatedCComplexSlugComunicacionSoporteRoute:
       AuthenticatedCComplexSlugComunicacionSoporteRoute,
     AuthenticatedCComplexSlugComunicacionIndexRoute:

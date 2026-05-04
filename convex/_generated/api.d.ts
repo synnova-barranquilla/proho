@@ -60,6 +60,10 @@ import type * as residents_mutations from '../residents/mutations.js'
 import type * as residents_queries from '../residents/queries.js'
 import type * as residents_validators from '../residents/validators.js'
 import type * as seed from '../seed.js'
+import type * as socialZones_mutations from '../socialZones/mutations.js'
+import type * as socialZones_queries from '../socialZones/queries.js'
+import type * as socialZones_seed from '../socialZones/seed.js'
+import type * as socialZones_validators from '../socialZones/validators.js'
 import type * as units_mutations from '../units/mutations.js'
 import type * as units_queries from '../units/queries.js'
 import type * as units_validators from '../units/validators.js'
@@ -117,6 +121,10 @@ declare const fullApi: ApiFromModules<{
   'residents/queries': typeof residents_queries
   'residents/validators': typeof residents_validators
   seed: typeof seed
+  'socialZones/mutations': typeof socialZones_mutations
+  'socialZones/queries': typeof socialZones_queries
+  'socialZones/seed': typeof socialZones_seed
+  'socialZones/validators': typeof socialZones_validators
   'units/mutations': typeof units_mutations
   'units/queries': typeof units_queries
   'units/validators': typeof units_validators

@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   BarChart3,
   Building2,
+  CalendarDays,
   Car,
   FileText,
   Headset,
@@ -426,6 +427,20 @@ function ComplexScopedSidebar({
                       >
                         <Headset />
                         <span>Soporte</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={isActive(`${base}/comunicacion/reservas`)}
+                    render={
+                      <Link
+                        to="/c/$complexSlug/comunicacion/reservas"
+                        params={{ complexSlug: slug }}
+                      >
+                        <CalendarDays />
+                        <span>Reservas</span>
                       </Link>
                     }
                   />

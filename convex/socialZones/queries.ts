@@ -1,0 +1,89 @@
+import { v } from 'convex/values'
+
+import { query } from '../_generated/server'
+import { requireComplexAccess } from '../lib/auth'
+
+export const listByComplex = query({
+  args: { complexId: v.id('complexes') },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId)
+    return ctx.db
+      .query('socialZones')
+      .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+      .filter((q) => q.eq(q.field('active'), true))
+      .collect()
+  },
+})
+
+export const getWeekBookings = query({
+  args: {
+    complexId: v.id('complexes'),
+    weekDates: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId)
+    const bookings = []
+    for (const date of args.weekDates) {
+      const dayBookings = await ctx.db
+        .query('socialZoneBookings')
+        .withIndex('by_complex_and_date', (q) =>
+          q.eq('complexId', args.complexId).eq('date', date),
+        )
+        .filter((q) => q.eq(q.field('status'), 'CONFIRMED'))
+        .collect()
+      bookings.push(...dayBookings)
+    }
+    return bookings
+  },
+})
+
+export const getDateBlocks = query({
+  args: {
+    complexId: v.id('complexes'),
+    weekDates: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId)
+    const blocks = []
+    for (const date of args.weekDates) {
+      const dayBlocks = await ctx.db
+        .query('socialZoneDateBlocks')
+        .withIndex('by_complex_and_date', (q) =>
+          q.eq('complexId', args.complexId).eq('date', date),
+        )
+        .collect()
+      blocks.push(...dayBlocks)
+    }
+    return blocks
+  },
+})
+
+export const getMyBookings = query({
+  args: {
+    complexId: v.id('complexes'),
+    residentId: v.id('residents'),
+  },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId)
+    const bookings = await ctx.db
+      .query('socialZoneBookings')
+      .withIndex('by_resident', (q) => q.eq('residentId', args.residentId))
+      .filter((q) => q.eq(q.field('status'), 'CONFIRMED'))
+      .collect()
+
+    const zones = await ctx.db
+      .query('socialZones')
+      .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+      .collect()
+    const zoneMap = new Map(zones.map((z) => [z._id, z]))
+
+    return bookings
+      .map((b) => ({ ...b, zone: zoneMap.get(b.zoneId) ?? null }))
+      .filter((b) => b.zone !== null)
+      .sort((a, b) => {
+        const dateCompare = a.date.localeCompare(b.date)
+        if (dateCompare !== 0) return dateCompare
+        return a.startMinutes - b.startMinutes
+      })
+  },
+})

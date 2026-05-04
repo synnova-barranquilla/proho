@@ -8,6 +8,7 @@ import {
   throwConvexError,
   validateSlugFormat,
 } from '../lib/errors'
+import { DEFAULT_AVAILABILITY, DEFAULT_ZONES } from '../socialZones/validators'
 
 function requireNonEmpty(value: string, field: string): string {
   const trimmed = value.trim()
@@ -75,6 +76,21 @@ export const create = mutation({
       complexId,
       ...complexConfigDefaults,
     })
+
+    for (let i = 0; i < DEFAULT_ZONES.length; i++) {
+      const zone = DEFAULT_ZONES[i]
+      await ctx.db.insert('socialZones', {
+        complexId,
+        name: zone.name,
+        blockDurationMinutes: zone.blockDurationMinutes,
+        maxConsecutiveBlocks: zone.maxConsecutiveBlocks,
+        weekdayAvailability: DEFAULT_AVAILABILITY,
+        colorIndex: zone.colorIndex,
+        isPlatformDefault: true,
+        active: true,
+        displayOrder: i,
+      })
+    }
 
     // Auto-assign membership for non-owner creator (Case B).
     // Owners see all complexes in their org automatically (Case 2 of

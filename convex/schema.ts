@@ -16,6 +16,11 @@ import { complexMembershipFields } from './complexMemberships/validators'
 import { invitationFields } from './invitations/validators'
 import { organizationFields } from './organizations/validators'
 import { residentFields } from './residents/validators'
+import {
+  socialZoneBookingFields,
+  socialZoneDateBlockFields,
+  socialZoneFields,
+} from './socialZones/validators'
 import { unitFields } from './units/validators'
 import { userFields } from './users/validators'
 import { vehicleFields } from './vehicles/validators'
@@ -110,4 +115,18 @@ export default defineSchema({
   attachments: defineTable(attachmentFields)
     .index('by_conversation', ['conversationId', 'createdAt'])
     .index('by_complex', ['complexId', 'createdAt']),
+
+  socialZones: defineTable(socialZoneFields).index('by_complex_id', [
+    'complexId',
+  ]),
+
+  socialZoneBookings: defineTable(socialZoneBookingFields)
+    .index('by_zone_and_date', ['zoneId', 'date'])
+    .index('by_complex_and_date', ['complexId', 'date'])
+    .index('by_resident', ['residentId']),
+
+  socialZoneDateBlocks: defineTable(socialZoneDateBlockFields).index(
+    'by_complex_and_date',
+    ['complexId', 'date'],
+  ),
 })
