@@ -21,12 +21,12 @@ type Milestone = {
 }
 
 export const currentFocus = {
-  phaseId: 'W3',
-  phaseName: 'Notifications + Config UI + Polish',
-  done: 6,
-  total: 17,
+  phaseId: 'F10',
+  phaseName: 'Social Area Reservations',
+  done: 9,
+  total: 9,
 }
-export const lastUpdated = 'May 3, 2026'
+export const lastUpdated = 'May 4, 2026'
 
 export const milestones: Milestone[] = [
   {
@@ -918,6 +918,16 @@ export const milestones: Milestone[] = [
             name: 'Extract formatAccessTime to shared date lib',
             status: 'done',
           },
+          {
+            id: 'P5.11',
+            name: 'Restructure sidebar: modules as sections with sub-routes (parqueadero/, comunicacion/)',
+            status: 'done',
+          },
+          {
+            id: 'P5.12',
+            name: 'Role-based sidebar visibility (VIGILANTE, AUXILIAR, residents, admin)',
+            status: 'done',
+          },
         ],
       },
     ],
@@ -1434,21 +1444,49 @@ export const milestones: Milestone[] = [
         tasks: [
           {
             id: '10.1',
-            name: 'Create social_areas and reservations tables',
-            status: 'pending',
+            name: 'Create socialZones, socialZoneBookings, socialZoneDateBlocks tables',
+            status: 'done',
           },
-          { id: '10.2', name: 'CRUD for social areas', status: 'pending' },
+          {
+            id: '10.2',
+            name: 'Zone CRUD mutations (createZone, updateZone, toggleActive)',
+            status: 'done',
+          },
           {
             id: '10.3',
-            name: 'Reservation request form',
-            status: 'pending',
+            name: 'Booking mutations with overlap/availability/horizon validation',
+            status: 'done',
           },
-          { id: '10.4', name: 'Mutation with validation', status: 'pending' },
-          { id: '10.5', name: 'Rules validation', status: 'pending' },
-          { id: '10.6', name: 'Calendar view', status: 'pending' },
-          { id: '10.7', name: 'Approval/rejection flow', status: 'pending' },
-          { id: '10.8', name: 'Reservation history', status: 'pending' },
-          { id: '10.9', name: 'Rules config per area', status: 'pending' },
+          {
+            id: '10.4',
+            name: 'Date blocking with affected bookings preview + batch cancellation',
+            status: 'done',
+          },
+          {
+            id: '10.5',
+            name: '3 default zones auto-created on complex creation + migration for existing',
+            status: 'done',
+          },
+          {
+            id: '10.6',
+            name: 'Weekly calendar UI (Google Calendar-style, color-coded zones)',
+            status: 'done',
+          },
+          {
+            id: '10.7',
+            name: 'Booking dialog (zone/time/duration selection)',
+            status: 'done',
+          },
+          {
+            id: '10.8',
+            name: 'My bookings sheet with cancel capability',
+            status: 'done',
+          },
+          {
+            id: '10.9',
+            name: 'Admin zone management sheet (CRUD + weekday availability + date blocking)',
+            status: 'done',
+          },
         ],
       },
       {
