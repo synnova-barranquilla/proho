@@ -8,6 +8,7 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import type { getRouter } from './router.tsx'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
@@ -57,6 +58,7 @@ import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
 import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as TunnelRouteImport } from './routes/tunnel'
+import type { startInstance } from './start.ts'
 
 const TunnelRoute = TunnelRouteImport.update({
   id: '/tunnel',
@@ -1170,3 +1172,11 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
