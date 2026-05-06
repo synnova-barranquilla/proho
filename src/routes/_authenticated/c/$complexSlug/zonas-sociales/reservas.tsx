@@ -6,7 +6,7 @@ import { ReservasPage } from '#/components/reservas/reservas-page'
 import { TabSkeleton } from '#/components/ui/skeleton'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$complexSlug/comunicacion/reservas',
+  '/_authenticated/c/$complexSlug/zonas-sociales/reservas',
 )({
   component: ReservasRoute,
 })

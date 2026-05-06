@@ -71,6 +71,7 @@ export function ComplexSidebar({
   const hasControlAcceso = activeModules.includes('access_control')
   const hasCommunications =
     activeModules.includes('communications') || isSuperAdmin
+  const hasReservas = activeModules.includes('reservas') || isSuperAdmin
   const complexRole = membership?.role ?? null
 
   return (
@@ -82,6 +83,7 @@ export function ComplexSidebar({
       isSuperAdmin={isSuperAdmin}
       hasControlAcceso={hasControlAcceso}
       hasCommunications={hasCommunications}
+      hasReservas={hasReservas}
       complexRole={complexRole}
     />
   )
@@ -205,6 +207,7 @@ function ComplexScopedSidebar({
   isSuperAdmin,
   hasControlAcceso,
   hasCommunications,
+  hasReservas,
   complexRole,
 }: {
   complex: Doc<'complexes'>
@@ -214,6 +217,7 @@ function ComplexScopedSidebar({
   isSuperAdmin: boolean
   hasControlAcceso: boolean
   hasCommunications: boolean
+  hasReservas: boolean
   complexRole: string | null
 }) {
   const base = `/c/${complex.slug}`
@@ -231,6 +235,8 @@ function ComplexScopedSidebar({
   const showParqueadero =
     hasControlAcceso && (isVigilante || isAdmin || isSuperAdmin)
   const showComunicacion = hasCommunications && !isVigilante
+  const showZonasSociales =
+    hasReservas && !isVigilante && complexRole !== 'AUXILIAR'
 
   return (
     <Sidebar>
@@ -431,20 +437,6 @@ function ComplexScopedSidebar({
                     }
                   />
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={isActive(`${base}/comunicacion/reservas`)}
-                    render={
-                      <Link
-                        to="/c/$complexSlug/comunicacion/reservas"
-                        params={{ complexSlug: slug }}
-                      >
-                        <CalendarDays />
-                        <span>Reservas</span>
-                      </Link>
-                    }
-                  />
-                </SidebarMenuItem>
                 {isStaff ? (
                   <>
                     <SidebarMenuItem>
@@ -506,6 +498,48 @@ function ComplexScopedSidebar({
                       />
                     </SidebarMenuItem>
                   </>
+                ) : null}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
+        {showZonasSociales ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Zonas Sociales</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={isActive(`${base}/zonas-sociales/reservas`)}
+                    render={
+                      <Link
+                        to="/c/$complexSlug/zonas-sociales/reservas"
+                        params={{ complexSlug: slug }}
+                      >
+                        <CalendarDays />
+                        <span>Reservas</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+                {isAdmin ? (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={isActive(
+                        `${base}/zonas-sociales/configuracion`,
+                      )}
+                      render={
+                        <Link
+                          to="/c/$complexSlug/zonas-sociales/configuracion"
+                          params={{ complexSlug: slug }}
+                        >
+                          <Settings />
+                          <span>Configuración</span>
+                        </Link>
+                      }
+                    />
+                  </SidebarMenuItem>
                 ) : null}
               </SidebarMenu>
             </SidebarGroupContent>

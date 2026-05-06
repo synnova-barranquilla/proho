@@ -4,7 +4,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
 import { convexQuery } from '@convex-dev/react-query'
-import { CalendarDays, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { Button } from '#/components/ui/button'
 import { useIsComplexAdmin } from '#/lib/complex-role'
@@ -18,7 +18,6 @@ import {
 import { BookingDialog } from './booking-dialog'
 import { MyBookingsSheet } from './my-bookings-sheet'
 import { WeekCalendar } from './week-calendar'
-import { ZoneManagementSheet } from './zone-management-sheet'
 
 const complexRoute = getRouteApi('/_authenticated/c/$complexSlug')
 
@@ -77,7 +76,6 @@ interface ReservasPageProps {
 
 export function ReservasPage({ complexId }: ReservasPageProps) {
   const [weekOffset, setWeekOffset] = useState(0)
-  const [showZoneManagement, setShowZoneManagement] = useState(false)
   const [showMyBookings, setShowMyBookings] = useState(false)
   const [bookingDialog, setBookingDialog] = useState<{
     open: boolean
@@ -179,17 +177,6 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
             <CalendarDays className="mr-1.5 h-4 w-4" />
             Mis Reservas
           </Button>
-
-          {isAdmin && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowZoneManagement(true)}
-              aria-label="Administrar zonas"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
         </div>
       </div>
 
@@ -251,12 +238,6 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
           residentId={currentResidentId}
         />
       )}
-
-      <ZoneManagementSheet
-        open={showZoneManagement}
-        onOpenChange={setShowZoneManagement}
-        complexId={complexId}
-      />
     </div>
   )
 }
