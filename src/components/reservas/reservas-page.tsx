@@ -11,63 +11,41 @@ import { useIsComplexAdmin } from '#/lib/complex-role'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-import {
-  MAX_BOOKING_HORIZON_WEEKS,
-  ZONE_COLORS,
-} from '../../../convex/socialZones/validators'
+import { ZONE_COLORS } from '../../../convex/socialZones/validators'
 import { BookingDialog } from './booking-dialog'
+import { DayDetail } from './day-detail'
+import { MonthCalendar } from './month-calendar'
 import { MyBookingsSheet } from './my-bookings-sheet'
-import { WeekCalendar } from './week-calendar'
 
 const complexRoute = getRouteApi('/_authenticated/c/$complexSlug')
 
-/** Monday-based week start for a given offset from today's week. */
-function getWeekStartDate(weekOffset: number): Date {
-  const now = new Date()
-  const day = now.getDay() // 0=Sun … 6=Sat
-  const diff = day === 0 ? -6 : 1 - day // distance to Monday
-  const monday = new Date(now)
-  monday.setDate(now.getDate() + diff + weekOffset * 7)
-  monday.setHours(0, 0, 0, 0)
-  return monday
-}
+const MONTH_NAMES = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+]
 
-/** Returns 7 ISO-date strings (YYYY-MM-DD) starting from `monday`. */
-function getWeekDates(monday: Date): string[] {
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday)
-    d.setDate(monday.getDate() + i)
+function getMonthDates(month: Date): string[] {
+  const year = month.getFullYear()
+  const m = month.getMonth()
+  const daysInMonth = new Date(year, m + 1, 0).getDate()
+  return Array.from({ length: daysInMonth }, (_, i) => {
+    const d = new Date(year, m, i + 1)
     return d.toISOString().slice(0, 10)
   })
 }
 
-/** Formats a date range like "Lun 5 May – Dom 11 May" */
-function formatWeekRange(weekDates: string[]): string {
-  const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-  const MONTH_NAMES = [
-    'Ene',
-    'Feb',
-    'Mar',
-    'Abr',
-    'May',
-    'Jun',
-    'Jul',
-    'Ago',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dic',
-  ]
-
-  const fmt = (iso: string) => {
-    const d = new Date(iso + 'T00:00:00')
-    const dayName = DAY_NAMES[d.getDay()]
-    const date = d.getDate()
-    const month = MONTH_NAMES[d.getMonth()]
-    return `${dayName} ${date} ${month}`
-  }
-
-  return `${fmt(weekDates[0])} – ${fmt(weekDates[6])}`
+function getFirstOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
 }
 
 interface ReservasPageProps {
@@ -75,7 +53,11 @@ interface ReservasPageProps {
 }
 
 export function ReservasPage({ complexId }: ReservasPageProps) {
-  const [weekOffset, setWeekOffset] = useState(0)
+  const now = new Date()
+  const [currentMonth, setCurrentMonth] = useState<Date>(() =>
+    getFirstOfMonth(now),
+  )
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [showMyBookings, setShowMyBookings] = useState(false)
   const [bookingDialog, setBookingDialog] = useState<{
     open: boolean
@@ -87,10 +69,44 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
   const isAdmin = useIsComplexAdmin()
   const { complexSlug: slug } = complexRoute.useParams()
 
-  const weekStart = useMemo(() => getWeekStartDate(weekOffset), [weekOffset])
-  const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart])
+  const monthDates = useMemo(() => getMonthDates(currentMonth), [currentMonth])
 
-  // Fetch complex data to get membership → residentId
+  const currentMonthStart = getFirstOfMonth(now)
+  const maxMonth = new Date(
+    currentMonthStart.getFullYear(),
+    currentMonthStart.getMonth() + 1,
+    1,
+  )
+
+  const isPrevDisabled =
+    currentMonth.getFullYear() === currentMonthStart.getFullYear() &&
+    currentMonth.getMonth() === currentMonthStart.getMonth()
+  const isNextDisabled =
+    currentMonth.getFullYear() === maxMonth.getFullYear() &&
+    currentMonth.getMonth() === maxMonth.getMonth()
+
+  const handlePrevMonth = () => {
+    if (isPrevDisabled) return
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
+    )
+    setSelectedDate(null)
+  }
+
+  const handleNextMonth = () => {
+    if (isNextDisabled) return
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
+    )
+    setSelectedDate(null)
+  }
+
+  const handleToday = () => {
+    setCurrentMonth(getFirstOfMonth(now))
+    setSelectedDate(null)
+  }
+
+  // Fetch complex data to get membership -> residentId
   const { data: complexData } = useSuspenseQuery(
     convexQuery(api.complexes.queries.getBySlug, { slug }),
   )
@@ -99,17 +115,10 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
     convexQuery(api.socialZones.queries.listByComplex, { complexId }),
   )
 
-  const { data: bookings } = useSuspenseQuery(
-    convexQuery(api.socialZones.queries.getWeekBookings, {
+  const { data: monthSummary } = useSuspenseQuery(
+    convexQuery(api.socialZones.queries.getMonthSummary, {
       complexId,
-      weekDates,
-    }),
-  )
-
-  const { data: dateBlocks } = useSuspenseQuery(
-    convexQuery(api.socialZones.queries.getDateBlocks, {
-      complexId,
-      weekDates,
+      monthDates,
     }),
   )
 
@@ -127,48 +136,46 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
     // Future: open booking detail/cancel dialog
   }
 
+  const monthLabel = `${MONTH_NAMES[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`
+
   return (
-    <div className="flex flex-col gap-4">
-      {/* Week navigation header */}
+    <div className="flex flex-col gap-3">
+      {/* Month navigation header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="icon"
-            disabled={weekOffset <= 0}
-            onClick={() => setWeekOffset((o) => Math.max(0, o - 1))}
-            aria-label="Semana anterior"
+            disabled={isPrevDisabled}
+            onClick={handlePrevMonth}
+            aria-label="Mes anterior"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={weekOffset === 0}
-            onClick={() => setWeekOffset(0)}
-          >
-            Hoy
-          </Button>
+          <span className="text-lg font-semibold">{monthLabel}</span>
 
           <Button
             variant="outline"
             size="icon"
-            disabled={weekOffset >= MAX_BOOKING_HORIZON_WEEKS}
-            onClick={() =>
-              setWeekOffset((o) => Math.min(MAX_BOOKING_HORIZON_WEEKS, o + 1))
-            }
-            aria-label="Semana siguiente"
+            disabled={isNextDisabled}
+            onClick={handleNextMonth}
+            aria-label="Mes siguiente"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-
-          <span className="ml-2 text-sm font-medium text-muted-foreground">
-            {formatWeekRange(weekDates)}
-          </span>
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isPrevDisabled}
+            onClick={handleToday}
+          >
+            Hoy
+          </Button>
+
           <Button
             variant="outline"
             size="sm"
@@ -180,22 +187,19 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
         </div>
       </div>
 
-      {/* Zone legend bar */}
+      {/* Zone legend */}
       {zones.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-2">
           {zones.map((zone) => {
             const color = ZONE_COLORS[zone.colorIndex % ZONE_COLORS.length]
             return (
               <span
                 key={zone._id}
-                className={cn(
-                  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium',
-                  color.bg,
-                  color.border,
-                  color.text,
-                  color.darkText,
-                )}
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
               >
+                <span
+                  className={cn('h-2 w-2 rounded-full', color.border, color.bg)}
+                />
                 {zone.name}
               </span>
             )
@@ -203,17 +207,29 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
         </div>
       )}
 
-      {/* Weekly calendar grid */}
-      <WeekCalendar
+      {/* Month calendar grid */}
+      <MonthCalendar
+        currentMonth={currentMonth}
+        selectedDate={selectedDate}
+        onSelectDate={(date) => setSelectedDate(date)}
+        onClearSelection={() => setSelectedDate(null)}
+        monthSummary={monthSummary}
         zones={zones}
-        bookings={bookings}
-        dateBlocks={dateBlocks}
-        weekDates={weekDates}
-        currentResidentId={currentResidentId}
-        isAdmin={isAdmin}
-        onSlotClick={handleSlotClick}
-        onBookingClick={handleBookingClick}
+        today={now.toISOString().slice(0, 10)}
       />
+
+      {/* Day detail (vertical time grid) */}
+      {selectedDate && (
+        <DayDetail
+          date={selectedDate}
+          complexId={complexId}
+          zones={zones}
+          currentResidentId={currentResidentId}
+          isAdmin={isAdmin}
+          onSlotClick={handleSlotClick}
+          onBookingClick={handleBookingClick}
+        />
+      )}
 
       {currentResidentId && (
         <BookingDialog

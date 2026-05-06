@@ -58,6 +58,31 @@ export const getDateBlocks = query({
   },
 })
 
+export const getMonthSummary = query({
+  args: {
+    complexId: v.id('complexes'),
+    monthDates: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId)
+    const summary: Record<string, string[]> = {}
+    for (const date of args.monthDates) {
+      const dayBookings = await ctx.db
+        .query('socialZoneBookings')
+        .withIndex('by_complex_and_date', (q) =>
+          q.eq('complexId', args.complexId).eq('date', date),
+        )
+        .filter((q) => q.eq(q.field('status'), 'CONFIRMED'))
+        .collect()
+      if (dayBookings.length > 0) {
+        const zoneIds = [...new Set(dayBookings.map((b) => b.zoneId))]
+        summary[date] = zoneIds
+      }
+    }
+    return summary
+  },
+})
+
 export const getMyBookings = query({
   args: {
     complexId: v.id('complexes'),
