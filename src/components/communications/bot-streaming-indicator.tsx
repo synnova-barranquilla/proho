@@ -1,4 +1,8 @@
-export function BotStreamingIndicator() {
+export function BotStreamingIndicator({
+  label = 'Asistente Synnova escribiendo...',
+}: {
+  label?: string
+}) {
   return (
     <div className="flex items-center gap-1.5 px-4 py-2">
       <div className="flex gap-1">
@@ -15,9 +19,7 @@ export function BotStreamingIndicator() {
           style={{ animationDelay: '300ms' }}
         />
       </div>
-      <span className="text-xs text-muted-foreground">
-        Asistente Synnova escribiendo...
-      </span>
+      <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   )
 }

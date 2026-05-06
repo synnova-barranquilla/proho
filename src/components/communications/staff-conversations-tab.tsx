@@ -9,9 +9,11 @@ import { ArrowLeft, Bot, MessageSquare } from 'lucide-react'
 import { Avatar, AvatarFallback } from '#/components/ui/avatar'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
+import { useTypingIndicator } from '#/hooks/use-typing-indicator'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { BotStreamingIndicator } from './bot-streaming-indicator'
 import {
   CONV_STATUS_LABELS as STATUS_LABELS,
   CONV_STATUS_VARIANTS as STATUS_VARIANTS,
@@ -106,6 +108,7 @@ interface ConversationDoc {
   _id: Id<'conversations'>
   threadId: string
   status: string
+  typingResidents?: Record<string, number>
   resident: {
     firstName: string
     lastName: string
@@ -123,6 +126,10 @@ function ConversationDetail({
   onBack: () => void
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { isOtherTyping } = useTypingIndicator(
+    null,
+    conversation.typingResidents,
+  )
 
   const { results: messages } = useUIMessages(
     api.communications.queries.listThreadMessages,
@@ -276,6 +283,10 @@ function ConversationDetail({
           })
         )}
       </div>
+
+      {isOtherTyping && (
+        <BotStreamingIndicator label="Residente escribiendo..." />
+      )}
 
       {conversation.status === 'escalated' && (
         <p className="text-center text-xs text-muted-foreground">

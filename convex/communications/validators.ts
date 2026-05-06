@@ -66,6 +66,8 @@ export const conversationFields = {
   residentId: v.id('residents'),
   threadId: v.string(),
   status: conversationStatuses,
+  typingResidents: v.optional(v.record(v.string(), v.number())),
+  typingStaff: v.optional(v.record(v.string(), v.number())),
   createdAt: v.number(),
   updatedAt: v.number(),
 }

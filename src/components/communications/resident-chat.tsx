@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { Skeleton } from '#/components/ui/skeleton'
+import { useTypingIndicator } from '#/hooks/use-typing-indicator'
 import { useUploadThing } from '#/lib/uploadthing'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
@@ -52,6 +53,7 @@ interface ConversationItem {
   _id: Id<'conversations'>
   threadId: string
   status: string
+  typingStaff?: Record<string, number>
   createdAt: number
   updatedAt: number
   ticket: { publicId: string } | null
@@ -233,6 +235,7 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
                   threadId={selectedThreadId}
                   conversationStatus={selectedConv.status}
                   conversationId={selectedConv._id}
+                  typingStaff={selectedConv.typingStaff}
                 />
               ) : (
                 <ReadOnlyThreadView threadId={selectedThreadId} />
@@ -465,15 +468,21 @@ function ActiveChatView({
   threadId,
   conversationStatus: _conversationStatus,
   conversationId,
+  typingStaff,
 }: {
   complexId: Id<'complexes'>
   threadId: string
   conversationStatus: string
   conversationId: Id<'conversations'>
+  typingStaff?: Record<string, number>
 }) {
   const [input, setInput] = useState('')
   const [optimisticUserMsg, setOptimisticUserMsg] = useState<string | null>(
     null,
+  )
+  const { notifyTyping, clearTyping, isOtherTyping } = useTypingIndicator(
+    conversationId,
+    typingStaff,
   )
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -601,6 +610,7 @@ function ActiveChatView({
       if (!trimmed) return
 
       setInput('')
+      clearTyping()
       setOptimisticUserMsg(trimmed)
 
       try {
@@ -619,7 +629,7 @@ function ActiveChatView({
         }
       }
     },
-    [complexId, sendMut],
+    [complexId, sendMut, clearTyping],
   )
 
   const handleQuickAction = useCallback(
@@ -694,6 +704,9 @@ function ActiveChatView({
         {(isStreaming || optimisticUserMsg !== null) && (
           <BotStreamingIndicator />
         )}
+        {isOtherTyping && (
+          <BotStreamingIndicator label="Admin escribiendo..." />
+        )}
       </div>
 
       {/* Upload progress indicator */}
@@ -731,7 +744,10 @@ function ActiveChatView({
 
         <textarea
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value)
+            notifyTyping()
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault()

@@ -42,9 +42,11 @@ import {
 } from '#/components/ui/select'
 import { Separator } from '#/components/ui/separator'
 import { Textarea } from '#/components/ui/textarea'
+import { useTypingIndicator } from '#/hooks/use-typing-indicator'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { BotStreamingIndicator } from './bot-streaming-indicator'
 import {
   ORIGIN_LABELS,
   parseAttachment,
@@ -95,6 +97,10 @@ export function TicketDetailPanel({
 
   const threadId = conversation?.threadId ?? null
 
+  const { notifyTyping, clearTyping, isOtherTyping } = useTypingIndicator(
+    conversation?._id ?? null,
+    conversation?.typingResidents,
+  )
   const closeTicketFn = useConvexMutation(
     api.communications.mutations.closeTicket,
   )
@@ -230,6 +236,7 @@ export function TicketDetailPanel({
 
   const handleSendReply = async () => {
     if (!replyContent.trim()) return
+    clearTyping()
     try {
       await sendAdminMut.mutateAsync({
         ticketId,
@@ -325,6 +332,9 @@ export function TicketDetailPanel({
                 >
                   <ThreadMessages threadId={threadId} />
                 </Suspense>
+                {isOtherTyping && (
+                  <BotStreamingIndicator label="Residente escribiendo..." />
+                )}
               </CardContent>
             </Card>
           ) : (
@@ -398,7 +408,10 @@ export function TicketDetailPanel({
             <div className="flex gap-2">
               <Textarea
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => {
+                  setInputValue(e.target.value)
+                  if (inputMode === 'reply') notifyTyping()
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()

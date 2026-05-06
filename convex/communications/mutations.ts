@@ -489,6 +489,40 @@ export const flagAbusive = mutation({
   },
 })
 
+export const setTypingStatus = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+    isTyping: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const conversation = await ctx.db.get(args.conversationId)
+    if (!conversation) return
+
+    const { user, membership } = await requireCommsAccess(
+      ctx,
+      conversation.complexId,
+      { allowedRoles: [...ALL_COMMS_ROLES] },
+    )
+
+    const isStaff =
+      membership?.role === 'ADMIN' ||
+      membership?.role === 'AUXILIAR' ||
+      user.orgRole === 'SUPER_ADMIN'
+
+    const field = isStaff ? 'typingStaff' : 'typingResidents'
+    const map = { ...(conversation[field] ?? {}) }
+    const key = user._id as string
+
+    if (args.isTyping) {
+      map[key] = Date.now()
+    } else {
+      delete map[key]
+    }
+
+    await ctx.db.patch(args.conversationId, { [field]: map })
+  },
+})
+
 export const sendResidentMessage = mutation({
   args: {
     complexId: v.id('complexes'),
