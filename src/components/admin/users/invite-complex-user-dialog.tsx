@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
-import { useConvexMutation } from '@convex-dev/react-query'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
@@ -18,7 +18,9 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
+import { DocumentInput, PhoneInput } from '#/components/ui/formatted-input'
 import { Input } from '#/components/ui/input'
+import { SearchableSelect } from '#/components/ui/searchable-select'
 import {
   Select,
   SelectContent,
@@ -26,15 +28,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import type { ComplexRole } from '#/lib/complex-role'
+import { buildUnitOptions } from '#/lib/unit-search'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import type { DocumentType } from '../../../../convex/residents/validators'
 
-/** Roles available for invitation (excludes ADMIN/AUXILIAR which are org-level). */
 type InvitableComplexRole = Extract<
   ComplexRole,
   'GUARD' | 'OWNER' | 'TENANT' | 'LESSEE'
 >
+
+const RESIDENT_ROLES: InvitableComplexRole[] = ['OWNER', 'TENANT', 'LESSEE']
 
 interface InviteComplexUserDialogProps {
   open: boolean
@@ -47,19 +53,98 @@ export function InviteComplexUserDialog({
   onOpenChange,
   complexId,
 }: InviteComplexUserDialogProps) {
-  const [email, setEmail] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
   const [role, setRole] = useState<InvitableComplexRole>('GUARD')
 
   useEffect(() => {
-    if (open) {
-      setEmail('')
-      setFirstName('')
-      setLastName('')
-      setRole('GUARD')
-    }
+    if (open) setRole('GUARD')
   }, [open])
+
+  const isResident = RESIDENT_ROLES.includes(role)
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Invitar usuario al conjunto</DialogTitle>
+          <DialogDescription>
+            {isResident
+              ? 'Se creará el registro de residente y se enviará la invitación por email.'
+              : 'El invitado recibirá acceso con el rol seleccionado cuando inicie sesión por primera vez.'}
+          </DialogDescription>
+        </DialogHeader>
+        {isResident ? (
+          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+            <ResidentInviteForm
+              complexId={complexId}
+              role={role}
+              onRoleChange={setRole}
+              onClose={() => onOpenChange(false)}
+            />
+          </Suspense>
+        ) : (
+          <StaffInviteForm
+            complexId={complexId}
+            role={role}
+            onRoleChange={setRole}
+            onClose={() => onOpenChange(false)}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function RoleSelect({
+  value,
+  onChange,
+}: {
+  value: InvitableComplexRole
+  onChange: (v: InvitableComplexRole) => void
+}) {
+  return (
+    <Field>
+      <FieldLabel>Rol en el conjunto</FieldLabel>
+      <Select
+        value={value}
+        onValueChange={(v) => v && onChange(v as InvitableComplexRole)}
+      >
+        <SelectTrigger>
+          <SelectValue>
+            {
+              {
+                GUARD: 'Vigilante',
+                OWNER: 'Propietario',
+                TENANT: 'Inquilino',
+                LESSEE: 'Arrendatario',
+              }[value]
+            }
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="GUARD">Vigilante</SelectItem>
+          <SelectItem value="OWNER">Propietario</SelectItem>
+          <SelectItem value="TENANT">Inquilino</SelectItem>
+          <SelectItem value="LESSEE">Arrendatario</SelectItem>
+        </SelectContent>
+      </Select>
+    </Field>
+  )
+}
+
+function StaffInviteForm({
+  complexId,
+  role,
+  onRoleChange,
+  onClose,
+}: {
+  complexId: Id<'complexes'>
+  role: InvitableComplexRole
+  onRoleChange: (r: InvitableComplexRole) => void
+  onClose: () => void
+}) {
+  const [email, setEmail] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
 
   const mutationFn = useConvexMutation(api.invitations.mutations.create)
   const mutation = useMutation({ mutationFn })
@@ -77,7 +162,7 @@ export function InviteComplexUserDialog({
       toast.success('Invitación enviada', {
         description: `${email} recibirá acceso como ${role} al aceptar.`,
       })
-      onOpenChange(false)
+      onClose()
     } catch (err) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
@@ -89,81 +174,198 @@ export function InviteComplexUserDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Invitar usuario al conjunto</DialogTitle>
-          <DialogDescription>
-            El invitado recibirá acceso con el rol seleccionado cuando inicie
-            sesión por primera vez.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <DialogBody>
-            <FieldGroup>
-              <Field>
-                <FieldLabel>Email</FieldLabel>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="vigilante@ejemplo.com"
-                  required
-                />
-              </Field>
-              <div className="grid grid-cols-2 gap-4">
-                <Field>
-                  <FieldLabel>Nombre</FieldLabel>
-                  <Input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel>Apellido</FieldLabel>
-                  <Input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </Field>
-              </div>
-              <Field>
-                <FieldLabel>Rol en el conjunto</FieldLabel>
-                <Select
-                  value={role}
-                  onValueChange={(v) => v && setRole(v as InvitableComplexRole)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona rol">
-                      {
-                        {
-                          GUARD: 'Vigilante',
-                          OWNER: 'Propietario',
-                          TENANT: 'Inquilino',
-                          LESSEE: 'Arrendatario',
-                        }[role]
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GUARD">Vigilante</SelectItem>
-                    <SelectItem value="OWNER">Propietario</SelectItem>
-                    <SelectItem value="TENANT">Inquilino</SelectItem>
-                    <SelectItem value="LESSEE">Arrendatario</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-            </FieldGroup>
-          </DialogBody>
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
-            <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? 'Enviando...' : 'Invitar'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+      <DialogBody>
+        <FieldGroup>
+          <Field>
+            <FieldLabel>Email</FieldLabel>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="vigilante@ejemplo.com"
+              required
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel>Nombre</FieldLabel>
+              <Input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </Field>
+            <Field>
+              <FieldLabel>Apellido</FieldLabel>
+              <Input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </Field>
+          </div>
+          <RoleSelect value={role} onChange={onRoleChange} />
+        </FieldGroup>
+      </DialogBody>
+      <DialogFooter>
+        <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+        <Button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending ? 'Enviando...' : 'Invitar'}
+        </Button>
+      </DialogFooter>
+    </form>
+  )
+}
+
+function ResidentInviteForm({
+  complexId,
+  role,
+  onRoleChange,
+  onClose,
+}: {
+  complexId: Id<'complexes'>
+  role: InvitableComplexRole
+  onRoleChange: (r: InvitableComplexRole) => void
+  onClose: () => void
+}) {
+  const [email, setEmail] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [unitId, setUnitId] = useState('')
+  const [docType, setDocType] = useState<DocumentType>('CC')
+  const [documentNumber, setDocumentNumber] = useState('')
+  const [phone, setPhone] = useState('')
+
+  const { data: unitsData } = useSuspenseQuery(
+    convexQuery(api.units.queries.listByComplex, { complexId }),
+  )
+  const units = unitsData.towers.flatMap(
+    (t: { units: Array<{ _id: string; tower: string; number: string }> }) =>
+      t.units,
+  )
+  const unitOptions = buildUnitOptions(units)
+
+  const createFn = useConvexMutation(api.residents.mutations.create)
+  const createMut = useMutation({ mutationFn: createFn })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!unitId) {
+      toast.error('Selecciona una unidad')
+      return
+    }
+    if (!email) {
+      toast.error('El email es obligatorio para enviar la invitación')
+      return
+    }
+    try {
+      await createMut.mutateAsync({
+        unitId: unitId as Id<'units'>,
+        firstName,
+        lastName,
+        documentType: docType,
+        documentNumber,
+        phone: phone || undefined,
+        email,
+        type: role as 'OWNER' | 'TENANT' | 'LESSEE',
+      })
+      toast.success('Residente creado e invitación enviada', {
+        description: `${email} recibirá acceso como ${role} al aceptar.`,
+      })
+      onClose()
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error al crear residente')
+      } else {
+        toast.error('Error inesperado')
+      }
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+      <DialogBody>
+        <FieldGroup>
+          <RoleSelect value={role} onChange={onRoleChange} />
+          <Field>
+            <FieldLabel>Unidad</FieldLabel>
+            <SearchableSelect
+              value={unitId}
+              onValueChange={setUnitId}
+              options={unitOptions}
+              placeholder="Selecciona una unidad"
+              searchPlaceholder="Buscar por torre o número..."
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel>Nombres</FieldLabel>
+              <Input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </Field>
+            <Field>
+              <FieldLabel>Apellidos</FieldLabel>
+              <Input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
+            </Field>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <Field>
+              <FieldLabel>Tipo doc.</FieldLabel>
+              <Select
+                value={docType}
+                onValueChange={(v) => v && setDocType(v as DocumentType)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CC">CC</SelectItem>
+                  <SelectItem value="CE">CE</SelectItem>
+                  <SelectItem value="PA">Pasaporte</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field className="col-span-2">
+              <FieldLabel>Número de documento</FieldLabel>
+              <DocumentInput
+                value={documentNumber}
+                onChange={setDocumentNumber}
+                required
+              />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel>Teléfono</FieldLabel>
+              <PhoneInput value={phone} onChange={setPhone} />
+            </Field>
+            <Field>
+              <FieldLabel>Email</FieldLabel>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="residente@ejemplo.com"
+                required
+              />
+            </Field>
+          </div>
+        </FieldGroup>
+      </DialogBody>
+      <DialogFooter>
+        <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+        <Button type="submit" disabled={createMut.isPending}>
+          {createMut.isPending ? 'Creando...' : 'Crear e invitar'}
+        </Button>
+      </DialogFooter>
+    </form>
   )
 }

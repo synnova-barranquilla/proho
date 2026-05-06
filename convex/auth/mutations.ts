@@ -1,7 +1,11 @@
 import { ConvexError, v } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
-import { mutation, type MutationCtx } from '../_generated/server'
+import {
+  internalMutation,
+  mutation,
+  type MutationCtx,
+} from '../_generated/server'
 import { ERROR_CODES } from '../lib/errors'
 
 async function findPendingInvitation(ctx: MutationCtx, email: string) {
@@ -21,16 +25,32 @@ async function createMembershipsFromInvitation(
   invitation: Doc<'invitations'>,
 ) {
   if (invitation.complexId && invitation.complexRole) {
-    await ctx.db.insert('complexMemberships', {
-      userId,
-      complexId: invitation.complexId,
-      role: invitation.complexRole,
-      active: true,
-      assignedBy: invitation.invitedBy,
-      assignedAt: Date.now(),
-      createdByOwner: false,
-      residentId: invitation.residentId,
-    })
+    const existing = await ctx.db
+      .query('complexMemberships')
+      .withIndex('by_user_and_complex', (q) =>
+        q.eq('userId', userId).eq('complexId', invitation.complexId!),
+      )
+      .first()
+
+    if (existing) {
+      // Link residentId to existing membership if missing
+      if (invitation.residentId && !existing.residentId) {
+        await ctx.db.patch(existing._id, {
+          residentId: invitation.residentId,
+        })
+      }
+    } else {
+      await ctx.db.insert('complexMemberships', {
+        userId,
+        complexId: invitation.complexId,
+        role: invitation.complexRole,
+        active: true,
+        assignedBy: invitation.invitedBy,
+        assignedAt: Date.now(),
+        createdByOwner: false,
+        residentId: invitation.residentId,
+      })
+    }
   }
   if (
     invitation.isOrgOwnerOnAccept !== true &&
@@ -38,15 +58,24 @@ async function createMembershipsFromInvitation(
     invitation.complexIdsOnAccept.length > 0
   ) {
     for (const complexId of invitation.complexIdsOnAccept) {
-      await ctx.db.insert('complexMemberships', {
-        userId,
-        complexId,
-        role: 'ADMIN',
-        active: true,
-        assignedBy: invitation.invitedBy,
-        assignedAt: Date.now(),
-        createdByOwner: true,
-      })
+      const existing = await ctx.db
+        .query('complexMemberships')
+        .withIndex('by_user_and_complex', (q) =>
+          q.eq('userId', userId).eq('complexId', complexId),
+        )
+        .first()
+
+      if (!existing) {
+        await ctx.db.insert('complexMemberships', {
+          userId,
+          complexId,
+          role: 'ADMIN',
+          active: true,
+          assignedBy: invitation.invitedBy,
+          assignedAt: Date.now(),
+          createdByOwner: true,
+        })
+      }
     }
   }
 }
@@ -148,6 +177,14 @@ export const handleLogin = mutation({
         return acceptInvitation(ctx, reactivationInv, existing._id)
       }
 
+      // Accept any pending invitation for this active user (e.g. admin
+      // registered them as a resident while they already had an account).
+      const pendingInv = await findPendingInvitation(ctx, email)
+      if (pendingInv && pendingInv.expiresAt >= Date.now()) {
+        await createMembershipsFromInvitation(ctx, existing._id, pendingInv)
+        return acceptInvitation(ctx, pendingInv, existing._id)
+      }
+
       // Check org active status (defense in depth)
       const organization = await ctx.db.get(existing.organizationId)
       if (!organization || !organization.active) {
@@ -222,5 +259,46 @@ export const handleLogin = mutation({
 
     await createMembershipsFromInvitation(ctx, userId, invitation)
     return acceptInvitation(ctx, invitation, userId)
+  },
+})
+
+/**
+ * One-shot repair: links residentId to memberships where a resident exists
+ * with a matching email but the membership is missing the link.
+ * Safe to run multiple times — only patches memberships that need it.
+ */
+export const repairResidentLinks = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const residents = await ctx.db.query('residents').collect()
+    let fixed = 0
+
+    for (const resident of residents) {
+      if (!resident.email) continue
+
+      const user = await ctx.db
+        .query('users')
+        .filter((q) => q.eq(q.field('email'), resident.email))
+        .first()
+      if (!user) continue
+
+      const membership = await ctx.db
+        .query('complexMemberships')
+        .withIndex('by_user_and_complex', (q) =>
+          q.eq('userId', user._id).eq('complexId', resident.complexId),
+        )
+        .first()
+
+      if (membership && !membership.residentId) {
+        await ctx.db.patch(membership._id, { residentId: resident._id })
+        console.log(
+          `[repairResidentLinks] linked resident ${resident._id} to membership ${membership._id} (${resident.email})`,
+        )
+        fixed++
+      }
+    }
+
+    console.log(`[repairResidentLinks] done, fixed ${fixed} memberships`)
+    return { fixed }
   },
 })
