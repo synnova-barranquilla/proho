@@ -25,9 +25,7 @@ const ROW_HEIGHT_PX = 48 // min-h-12 = 48px
 
 /** Map border-{color}-500 → bg-{color}-500 */
 function dotBgClass(colorIndex: number): string {
-  const color = ZONE_COLORS[colorIndex % ZONE_COLORS.length]
-  // border class is e.g. "border-blue-500", we want "bg-blue-500"
-  return color.border.replace('border-', 'bg-')
+  return ZONE_COLORS[colorIndex % ZONE_COLORS.length].dot
 }
 
 function toIso(d: Date): string {

@@ -114,6 +114,7 @@ export const DEFAULT_ZONES = [
 export const ZONE_COLORS = [
   {
     name: 'blue',
+    dot: 'bg-blue-500',
     bg: 'bg-blue-500/20',
     border: 'border-blue-500',
     text: 'text-blue-700',
@@ -121,6 +122,7 @@ export const ZONE_COLORS = [
   },
   {
     name: 'emerald',
+    dot: 'bg-emerald-500',
     bg: 'bg-emerald-500/20',
     border: 'border-emerald-500',
     text: 'text-emerald-700',
@@ -128,6 +130,7 @@ export const ZONE_COLORS = [
   },
   {
     name: 'amber',
+    dot: 'bg-amber-500',
     bg: 'bg-amber-500/20',
     border: 'border-amber-500',
     text: 'text-amber-700',
@@ -135,6 +138,7 @@ export const ZONE_COLORS = [
   },
   {
     name: 'purple',
+    dot: 'bg-purple-500',
     bg: 'bg-purple-500/20',
     border: 'border-purple-500',
     text: 'text-purple-700',
@@ -142,6 +146,7 @@ export const ZONE_COLORS = [
   },
   {
     name: 'rose',
+    dot: 'bg-rose-500',
     bg: 'bg-rose-500/20',
     border: 'border-rose-500',
     text: 'text-rose-700',
@@ -149,6 +154,7 @@ export const ZONE_COLORS = [
   },
   {
     name: 'cyan',
+    dot: 'bg-cyan-500',
     bg: 'bg-cyan-500/20',
     border: 'border-cyan-500',
     text: 'text-cyan-700',
@@ -156,6 +162,7 @@ export const ZONE_COLORS = [
   },
   {
     name: 'orange',
+    dot: 'bg-orange-500',
     bg: 'bg-orange-500/20',
     border: 'border-orange-500',
     text: 'text-orange-700',
@@ -163,6 +170,7 @@ export const ZONE_COLORS = [
   },
   {
     name: 'indigo',
+    dot: 'bg-indigo-500',
     bg: 'bg-indigo-500/20',
     border: 'border-indigo-500',
     text: 'text-indigo-700',

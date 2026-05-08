@@ -81,7 +81,7 @@ export function ZoneAvailability({
             <AccordionTrigger className="px-1">
               <div className="flex items-center gap-2">
                 <span
-                  className={`inline-block size-2.5 rounded-full ${color.border} ${color.bg}`}
+                  className={`inline-block size-2.5 rounded-full ${color.dot}`}
                 />
                 <span>{zone.name}</span>
                 {isClosed && (

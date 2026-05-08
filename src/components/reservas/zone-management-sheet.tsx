@@ -229,9 +229,7 @@ function ZoneCard({
     <div className="flex flex-col gap-2 rounded-lg border p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span
-            className={`inline-block size-3 rounded-full ${color.border} ${color.bg}`}
-          />
+          <span className={`inline-block size-3 rounded-full ${color.dot}`} />
           <span className="text-sm font-medium">{zone.name}</span>
           {zone.isPlatformDefault && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">

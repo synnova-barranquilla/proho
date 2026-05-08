@@ -119,7 +119,7 @@ function BookingCard({
       <div className="flex items-center gap-2">
         {color && (
           <span
-            className={`inline-block size-2.5 shrink-0 rounded-full ${color.border} bg-current ${color.text} ${color.darkText}`}
+            className={`inline-block size-2.5 shrink-0 rounded-full ${color.dot}`}
           />
         )}
         <span className="text-sm font-medium">{zone?.name ?? 'Zona'}</span>

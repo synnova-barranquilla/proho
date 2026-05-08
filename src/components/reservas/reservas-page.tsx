@@ -213,9 +213,7 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
                 key={zone._id}
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
               >
-                <span
-                  className={cn('h-2 w-2 rounded-full', color.border, color.bg)}
-                />
+                <span className={cn('h-2 w-2 rounded-full', color.dot)} />
                 {zone.name}
               </span>
             )
