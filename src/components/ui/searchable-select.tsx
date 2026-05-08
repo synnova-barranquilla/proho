@@ -141,11 +141,10 @@ export function SearchableSelect({
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Positioner
-          data-vaul-no-drag
           side="bottom"
           align="start"
           sideOffset={4}
-          className="pointer-events-auto isolate z-50 w-(--anchor-width) outline-none"
+          className="isolate z-50 w-(--anchor-width) outline-none"
         >
           <PopoverPrimitive.Popup
             className={cn(
