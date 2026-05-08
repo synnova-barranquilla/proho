@@ -145,7 +145,7 @@ export function SearchableSelect({
           side="bottom"
           align="start"
           sideOffset={4}
-          className="isolate z-50 w-(--anchor-width) outline-none"
+          className="pointer-events-auto isolate z-50 w-(--anchor-width) outline-none"
         >
           <PopoverPrimitive.Popup
             className={cn(
