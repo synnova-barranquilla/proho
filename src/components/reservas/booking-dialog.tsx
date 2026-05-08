@@ -97,6 +97,13 @@ export function BookingDialog({
   const [selectedUnitId, setSelectedUnitId] = useState<string>('')
   const [selectedResidentId, setSelectedResidentId] = useState<string>('')
 
+  useEffect(() => {
+    setStartMinutes(initialStartMinutes)
+    setEndMinutes(undefined)
+    setSelectedUnitId('')
+    setSelectedResidentId('')
+  }, [initialStartMinutes, availableBlockStart, availableBlockEnd, zone?._id])
+
   const mutationFn = useConvexMutation(api.socialZones.mutations.createBooking)
   const mutation = useMutation({ mutationFn })
 
@@ -186,12 +193,6 @@ export function BookingDialog({
   }
 
   function handleOpenChange(next: boolean) {
-    if (next) {
-      setStartMinutes(initialStartMinutes)
-      setEndMinutes(undefined)
-      setSelectedUnitId('')
-      setSelectedResidentId('')
-    }
     onOpenChange(next)
   }
 
