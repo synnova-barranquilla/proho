@@ -1,13 +1,13 @@
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 
 export interface RowDetailItem {
   label: string
@@ -34,12 +34,12 @@ export function RowDetailsDialog({
   items,
 }: RowDetailsDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <DialogBody>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{title}</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogBody>
           <dl className="grid gap-3">
             {items.map(({ label, value }) => (
               <div key={label} className="grid gap-1">
@@ -50,11 +50,13 @@ export function RowDetailsDialog({
               </div>
             ))}
           </dl>
-        </DialogBody>
-        <DialogFooter>
-          <DialogClose render={<Button variant="outline">Cerrar</Button>} />
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogClose
+            render={<Button variant="outline">Cerrar</Button>}
+          />
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

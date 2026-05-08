@@ -8,17 +8,17 @@ import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { api } from '../../../convex/_generated/api'
 
 /**
@@ -96,13 +96,13 @@ export function CreateConjuntoDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Crear conjunto</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Crear conjunto</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <DialogBody>
+          <ResponsiveDialogBody>
             <FieldGroup>
               <Field>
                 <FieldLabel>Nombre</FieldLabel>
@@ -145,15 +145,17 @@ export function CreateConjuntoDialog({
                 />
               </Field>
             </FieldGroup>
-          </DialogBody>
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+          </ResponsiveDialogBody>
+          <ResponsiveDialogFooter>
+            <ResponsiveDialogClose
+              render={<Button variant="outline">Cancelar</Button>}
+            />
             <Button type="submit" disabled={createMut.isPending}>
               {createMut.isPending ? 'Creando...' : 'Crear'}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

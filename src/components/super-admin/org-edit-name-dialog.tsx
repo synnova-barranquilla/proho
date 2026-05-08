@@ -8,18 +8,18 @@ import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Field, FieldError, FieldLabel } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { updateOrgSchema } from '#/lib/schemas/organization'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
@@ -76,15 +76,15 @@ export function OrgEditNameDialog({
   )
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Editar nombre</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent className="max-w-sm">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Editar nombre</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Solo el nombre puede cambiar. El slug de la organización es
             permanente.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <form
           onSubmit={(e) => {
@@ -94,7 +94,7 @@ export function OrgEditNameDialog({
           }}
           className="flex min-h-0 flex-1 flex-col"
         >
-          <DialogBody>
+          <ResponsiveDialogBody>
             <form.Field name="name">
               {(field) => (
                 <Field>
@@ -117,16 +117,18 @@ export function OrgEditNameDialog({
                 </Field>
               )}
             </form.Field>
-          </DialogBody>
+          </ResponsiveDialogBody>
 
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+          <ResponsiveDialogFooter>
+            <ResponsiveDialogClose
+              render={<Button variant="outline">Cancelar</Button>}
+            />
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? 'Guardando...' : 'Guardar'}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

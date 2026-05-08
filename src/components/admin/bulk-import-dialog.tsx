@@ -7,14 +7,14 @@ import { toast } from 'sonner'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import {
   Table,
   TableBody,
@@ -131,12 +131,12 @@ export function BulkImportDialog<T>({
   }, [validRows, onImport])
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <DialogBody>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent className="max-w-2xl">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{title}</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogBody>
           {step === 'upload' && (
             <div className="flex flex-col items-center gap-4 py-8">
               <FileUp className="h-10 w-10 text-muted-foreground" />
@@ -239,8 +239,8 @@ export function BulkImportDialog<T>({
               )}
             </div>
           )}
-        </DialogBody>
-        <DialogFooter>
+        </ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
           {step === 'preview' && (
             <>
               <Button variant="outline" onClick={reset}>
@@ -257,13 +257,15 @@ export function BulkImportDialog<T>({
             </>
           )}
           {step === 'result' && (
-            <DialogClose render={<Button>Cerrar</Button>} />
+            <ResponsiveDialogClose render={<Button>Cerrar</Button>} />
           )}
           {step === 'upload' && (
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+            <ResponsiveDialogClose
+              render={<Button variant="outline">Cancelar</Button>}
+            />
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

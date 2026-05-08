@@ -7,15 +7,15 @@ import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { cn } from '#/lib/utils'
 import { api } from '../../../../convex/_generated/api'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
@@ -57,16 +57,16 @@ export function ManageAccessDialog({
   const open = adminId !== null
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-lg">
         {open ? (
           <ManageAccessDialogBody
             adminId={adminId}
             organizationId={organizationId}
           />
         ) : null}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }
 
@@ -134,9 +134,9 @@ function ManageAccessDialogBody({
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>Gestionar accesos</DialogTitle>
-        <DialogDescription>
+      <ResponsiveDialogHeader>
+        <ResponsiveDialogTitle>Gestionar accesos</ResponsiveDialogTitle>
+        <ResponsiveDialogDescription>
           {admin ? (
             <>
               Selecciona los conjuntos a los que{' '}
@@ -147,10 +147,10 @@ function ManageAccessDialogBody({
               tendrá acceso como ADMIN.
             </>
           ) : null}
-        </DialogDescription>
-      </DialogHeader>
+        </ResponsiveDialogDescription>
+      </ResponsiveDialogHeader>
 
-      <DialogBody>
+      <ResponsiveDialogBody>
         {complexes.length === 0 ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
             No hay conjuntos en la organización aún.
@@ -167,11 +167,13 @@ function ManageAccessDialogBody({
             isPending={createMutation.isPending || setActiveMutation.isPending}
           />
         )}
-      </DialogBody>
+      </ResponsiveDialogBody>
 
-      <DialogFooter>
-        <DialogClose render={<Button variant="outline">Cerrar</Button>} />
-      </DialogFooter>
+      <ResponsiveDialogFooter>
+        <ResponsiveDialogClose
+          render={<Button variant="outline">Cerrar</Button>}
+        />
+      </ResponsiveDialogFooter>
     </>
   )
 }

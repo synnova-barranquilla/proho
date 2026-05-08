@@ -7,13 +7,13 @@ import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -71,17 +71,17 @@ export function YaDentroDialog({
   const unidadLabel = unidad ? `T${unidad.tower} — ${unidad.number}` : '—'
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
           <div className="flex items-center gap-2 text-orange-600">
             <AlertTriangle className="h-6 w-6" />
-            <DialogTitle className="text-orange-600">
+            <ResponsiveDialogTitle className="text-orange-600">
               Vehículo ya está dentro
-            </DialogTitle>
+            </ResponsiveDialogTitle>
           </div>
-        </DialogHeader>
-        <DialogBody>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogBody>
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="font-mono text-lg font-medium">
@@ -95,8 +95,8 @@ export function YaDentroDialog({
               Ingresó {formatTimeAgo(registro.enteredAt)}
             </div>
           </div>
-        </DialogBody>
-        <DialogFooter>
+        </ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
           <Button
             variant="outline"
             onClick={onClose}
@@ -112,8 +112,8 @@ export function YaDentroDialog({
               ? 'Registrando...'
               : 'Registrar salida'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

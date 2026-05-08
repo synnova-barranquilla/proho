@@ -7,18 +7,18 @@ import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
@@ -66,17 +66,19 @@ export function OrgConfirmDeactivateDialog({
   }, [mutation, org._id, org.name, onOpenChange])
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Desactivar &quot;{org.name}&quot;</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            Desactivar &quot;{org.name}&quot;
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Esta acción bloqueará el login de todos los usuarios de esta
             organización. Puedes reactivarla después en cualquier momento.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
-        <DialogBody className="space-y-2">
+        <ResponsiveDialogBody className="space-y-2">
           <Label htmlFor="confirm-slug" className="text-sm">
             Para confirmar, escribe el slug de la organización:{' '}
             <code className="font-mono text-foreground">{org.slug}</code>
@@ -88,10 +90,12 @@ export function OrgConfirmDeactivateDialog({
             placeholder={org.slug}
             autoComplete="off"
           />
-        </DialogBody>
+        </ResponsiveDialogBody>
 
-        <DialogFooter>
-          <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogClose
+            render={<Button variant="outline">Cancelar</Button>}
+          />
           <Button
             variant="destructive"
             disabled={!matches || mutation.isPending}
@@ -99,8 +103,8 @@ export function OrgConfirmDeactivateDialog({
           >
             {mutation.isPending ? 'Desactivando...' : 'Desactivar organización'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

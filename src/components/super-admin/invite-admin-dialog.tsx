@@ -10,16 +10,6 @@ import { toast } from 'sonner'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
-import {
   Field,
   FieldDescription,
   FieldError,
@@ -28,6 +18,16 @@ import {
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { SearchableSelect } from '#/components/ui/searchable-select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { Switch } from '#/components/ui/switch'
@@ -159,15 +159,15 @@ export function InviteAdminDialog({
     : null
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Invitar administrador</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Invitar administrador</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             El invitado recibirá acceso como ADMIN de la organización cuando
             inicie sesión por primera vez.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <form
           onSubmit={(e) => {
@@ -177,7 +177,7 @@ export function InviteAdminDialog({
           }}
           className="flex min-h-0 flex-1 flex-col"
         >
-          <DialogBody>
+          <ResponsiveDialogBody>
             <FieldGroup>
               {initialOrgId ? (
                 selectedOrg && (
@@ -343,16 +343,18 @@ export function InviteAdminDialog({
                 </Field>
               ) : null}
             </FieldGroup>
-          </DialogBody>
+          </ResponsiveDialogBody>
 
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+          <ResponsiveDialogFooter>
+            <ResponsiveDialogClose
+              render={<Button variant="outline">Cancelar</Button>}
+            />
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? 'Enviando...' : 'Invitar'}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

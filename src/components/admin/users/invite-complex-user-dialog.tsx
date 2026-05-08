@@ -7,19 +7,19 @@ import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { DocumentInput, PhoneInput } from '#/components/ui/formatted-input'
 import { Input } from '#/components/ui/input'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { SearchableSelect } from '#/components/ui/searchable-select'
 import {
   Select,
@@ -62,16 +62,18 @@ export function InviteComplexUserDialog({
   const isResident = RESIDENT_ROLES.includes(role)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Invitar usuario al conjunto</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            Invitar usuario al conjunto
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {isResident
               ? 'Se creará el registro de residente y se enviará la invitación por email.'
               : 'El invitado recibirá acceso con el rol seleccionado cuando inicie sesión por primera vez.'}
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         {isResident ? (
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
             <ResidentInviteForm
@@ -89,8 +91,8 @@ export function InviteComplexUserDialog({
             onClose={() => onOpenChange(false)}
           />
         )}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }
 
@@ -175,7 +177,7 @@ function StaffInviteForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-      <DialogBody>
+      <ResponsiveDialogBody>
         <FieldGroup>
           <Field>
             <FieldLabel>Email</FieldLabel>
@@ -206,13 +208,15 @@ function StaffInviteForm({
           </div>
           <RoleSelect value={role} onChange={onRoleChange} />
         </FieldGroup>
-      </DialogBody>
-      <DialogFooter>
-        <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+      </ResponsiveDialogBody>
+      <ResponsiveDialogFooter>
+        <ResponsiveDialogClose
+          render={<Button variant="outline">Cancelar</Button>}
+        />
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? 'Enviando...' : 'Invitar'}
         </Button>
-      </DialogFooter>
+      </ResponsiveDialogFooter>
     </form>
   )
 }
@@ -285,7 +289,7 @@ function ResidentInviteForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-      <DialogBody>
+      <ResponsiveDialogBody>
         <FieldGroup>
           <RoleSelect value={role} onChange={onRoleChange} />
           <Field>
@@ -359,13 +363,15 @@ function ResidentInviteForm({
             </Field>
           </div>
         </FieldGroup>
-      </DialogBody>
-      <DialogFooter>
-        <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+      </ResponsiveDialogBody>
+      <ResponsiveDialogFooter>
+        <ResponsiveDialogClose
+          render={<Button variant="outline">Cancelar</Button>}
+        />
         <Button type="submit" disabled={createMut.isPending}>
           {createMut.isPending ? 'Creando...' : 'Crear e invitar'}
         </Button>
-      </DialogFooter>
+      </ResponsiveDialogFooter>
     </form>
   )
 }

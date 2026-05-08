@@ -7,15 +7,15 @@ import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Field, FieldLabel } from '#/components/ui/field'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import {
   SearchableSelect,
   type SearchableSelectOption,
@@ -123,17 +123,17 @@ export function CreateInPersonDialog({
   }
 
   return (
-    <Dialog
+    <ResponsiveDialog
       open={open}
       onOpenChange={(o) => {
         if (!o) handleClose()
       }}
     >
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Crear ticket presencial</DialogTitle>
-        </DialogHeader>
-        <DialogBody>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Crear ticket presencial</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogBody>
           <div className="flex flex-col gap-4">
             <Field>
               <FieldLabel>Residente</FieldLabel>
@@ -188,8 +188,8 @@ export function CreateInPersonDialog({
               />
             </Field>
           </div>
-        </DialogBody>
-        <DialogFooter>
+        </ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
           <Button
             variant="outline"
             onClick={handleClose}
@@ -208,8 +208,8 @@ export function CreateInPersonDialog({
           >
             {createMut.isPending ? 'Creando...' : 'Crear ticket'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

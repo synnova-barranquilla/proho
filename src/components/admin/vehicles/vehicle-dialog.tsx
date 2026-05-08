@@ -7,18 +7,18 @@ import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { PlacaInput } from '#/components/ui/formatted-input'
 import { Input } from '#/components/ui/input'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { SearchableSelect } from '#/components/ui/searchable-select'
 import { buildUnitOptions } from '#/lib/unit-search'
 import { api } from '../../../../convex/_generated/api'
@@ -128,15 +128,15 @@ export function VehicleDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
             {isEdit ? 'Editar vehículo' : 'Nuevo vehículo'}
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <DialogBody>
+          <ResponsiveDialogBody>
             <FieldGroup>
               <Field>
                 <FieldLabel>Unidad</FieldLabel>
@@ -178,15 +178,17 @@ export function VehicleDialog({
                 />
               </Field>
             </FieldGroup>
-          </DialogBody>
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+          </ResponsiveDialogBody>
+          <ResponsiveDialogFooter>
+            <ResponsiveDialogClose
+              render={<Button variant="outline">Cancelar</Button>}
+            />
             <Button type="submit" disabled={isPending || !isPlateValid}>
               {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

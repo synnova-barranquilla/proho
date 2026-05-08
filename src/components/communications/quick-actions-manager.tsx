@@ -10,17 +10,17 @@ import { toast } from 'sonner'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import {
   Select,
   SelectContent,
@@ -399,19 +399,19 @@ function ActionDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
             {isReadOnly
               ? 'Detalle de acción rápida'
               : isEdit
                 ? 'Editar acción rápida'
                 : 'Nueva acción rápida'}
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <DialogBody>
+          <ResponsiveDialogBody>
             <FieldGroup>
               <Field>
                 <FieldLabel>Etiqueta del botón</FieldLabel>
@@ -524,13 +524,15 @@ function ActionDialog({
                 </>
               )}
             </FieldGroup>
-          </DialogBody>
-          <DialogFooter>
+          </ResponsiveDialogBody>
+          <ResponsiveDialogFooter>
             {isReadOnly ? (
-              <DialogClose render={<Button variant="outline">Cerrar</Button>} />
+              <ResponsiveDialogClose
+                render={<Button variant="outline">Cerrar</Button>}
+              />
             ) : (
               <>
-                <DialogClose
+                <ResponsiveDialogClose
                   render={<Button variant="outline">Cancelar</Button>}
                 />
                 <Button type="submit" disabled={isPending || !label.trim()}>
@@ -538,9 +540,9 @@ function ActionDialog({
                 </Button>
               </>
             )}
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

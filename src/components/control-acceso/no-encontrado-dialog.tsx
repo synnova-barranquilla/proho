@@ -8,15 +8,15 @@ import { Building2, Car, CircleHelp, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Field, FieldLabel } from '#/components/ui/field'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { SearchableSelect } from '#/components/ui/searchable-select'
 import { Textarea } from '#/components/ui/textarea'
 import { formatPlaca } from '#/lib/formatters'
@@ -183,23 +183,25 @@ export function NotFoundDialog({
 
   return (
     <>
-      <Dialog
+      <ResponsiveDialog
         open={dialogOpen}
         onOpenChange={(o) => {
           if (!o) handleClose()
         }}
       >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
+        <ResponsiveDialogContent className="max-w-md">
+          <ResponsiveDialogHeader>
             <div className="flex items-center gap-2 text-blue-600">
               <CircleHelp className="h-6 w-6" />
-              <DialogTitle>Vehículo no registrado</DialogTitle>
+              <ResponsiveDialogTitle>
+                Vehículo no registrado
+              </ResponsiveDialogTitle>
             </div>
             <p className="mt-1 font-mono text-lg font-medium">
               {formatPlaca(plate)}
             </p>
-          </DialogHeader>
-          <DialogBody>
+          </ResponsiveDialogHeader>
+          <ResponsiveDialogBody>
             {subScreen === 'OPTIONS' && (
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
@@ -311,8 +313,8 @@ export function NotFoundDialog({
                 </Field>
               </div>
             )}
-          </DialogBody>
-          <DialogFooter>
+          </ResponsiveDialogBody>
+          <ResponsiveDialogFooter>
             {subScreen === 'OPTIONS' && (
               <Button variant="outline" onClick={handleClose}>
                 Cancelar
@@ -362,9 +364,9 @@ export function NotFoundDialog({
                 </Button>
               </>
             )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
 
       <RegisterResidentSheet
         open={sheetOpen}

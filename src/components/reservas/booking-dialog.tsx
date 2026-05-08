@@ -8,22 +8,14 @@ import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '#/components/ui/drawer'
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { SearchableSelect } from '#/components/ui/searchable-select'
 import {
   Select,
@@ -32,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import { useIsMobile } from '#/hooks/use-mobile'
 import { buildUnitOptions } from '#/lib/unit-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -96,8 +87,6 @@ export function BookingDialog({
   residentId,
   isAdmin,
 }: BookingDialogProps) {
-  const isMobile = useIsMobile()
-
   const [startMinutes, setStartMinutes] = useState<number | undefined>(
     initialStartMinutes,
   )
@@ -290,42 +279,23 @@ export function BookingDialog({
     </div>
   )
 
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={handleOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Nueva reserva</DrawerTitle>
-          </DrawerHeader>
-          <div className="overflow-y-auto px-4 pb-2">{formBody}</div>
-          <DrawerFooter>
-            <Button onClick={handleSubmit} disabled={!canSubmit}>
-              {mutation.isPending ? 'Reservando...' : 'Reservar'}
-            </Button>
-            <DrawerClose asChild>
-              <Button variant="outline">Cancelar</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-    )
-  }
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Nueva reserva</DialogTitle>
-        </DialogHeader>
-        <DialogBody>{formBody}</DialogBody>
-        <DialogFooter>
-          <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Nueva reserva</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogBody>{formBody}</ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogClose
+            render={<Button variant="outline">Cancelar</Button>}
+          />
           <Button onClick={handleSubmit} disabled={!canSubmit}>
             {mutation.isPending ? 'Reservando...' : 'Reservar'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }
 

@@ -9,13 +9,13 @@ import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { Textarea } from '#/components/ui/textarea'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
@@ -99,17 +99,17 @@ export function ViolacionesDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <ResponsiveDialogContent className="max-w-md">
+        <ResponsiveDialogHeader>
           <div className="flex items-center gap-2 text-amber-600">
             <AlertTriangle className="h-6 w-6" />
-            <DialogTitle className="text-amber-600">
+            <ResponsiveDialogTitle className="text-amber-600">
               Reglas violadas
-            </DialogTitle>
+            </ResponsiveDialogTitle>
           </div>
-        </DialogHeader>
-        <DialogBody>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogBody>
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <span className="font-mono text-lg font-medium">
@@ -155,8 +155,8 @@ export function ViolacionesDialog({
               />
             </div>
           </div>
-        </DialogBody>
-        <DialogFooter>
+        </ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isPending}>
             Cancelar
           </Button>
@@ -174,8 +174,8 @@ export function ViolacionesDialog({
           >
             {registerEntryMut.isPending ? 'Registrando...' : 'Permitir'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

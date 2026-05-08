@@ -10,16 +10,6 @@ import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
-import {
   Field,
   FieldDescription,
   FieldError,
@@ -28,6 +18,16 @@ import {
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { Switch } from '#/components/ui/switch'
 import { MODULE_DESCRIPTIONS, MODULE_LABELS } from '#/lib/modules'
 import {
@@ -110,15 +110,15 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
   )
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Nueva organización</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent className="max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Nueva organización</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Crea una organización e invita a su administrador inicial en una
             sola acción.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <form
           onSubmit={(e) => {
@@ -128,7 +128,7 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
           }}
           className="flex min-h-0 flex-1 flex-col"
         >
-          <DialogBody className="space-y-4">
+          <ResponsiveDialogBody className="space-y-4">
             <FieldGroup>
               <form.Field name="name">
                 {(field) => (
@@ -319,16 +319,18 @@ export function OrgCreateDialog({ open, onOpenChange }: OrgCreateDialogProps) {
                 </form.Field>
               </div>
             </FieldGroup>
-          </DialogBody>
+          </ResponsiveDialogBody>
 
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+          <ResponsiveDialogFooter>
+            <ResponsiveDialogClose
+              render={<Button variant="outline">Cancelar</Button>}
+            />
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? 'Creando...' : 'Crear organización'}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

@@ -21,14 +21,14 @@ import { Avatar, AvatarFallback } from '#/components/ui/avatar'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
+  ResponsiveDialog,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { Skeleton } from '#/components/ui/skeleton'
 import { useTypingIndicator } from '#/hooks/use-typing-indicator'
 import { useUploadThing } from '#/lib/uploadthing'
@@ -140,17 +140,21 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
 
   return (
     <>
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Iniciar nueva conversacion?</DialogTitle>
-            <DialogDescription>
+      <ResponsiveDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <ResponsiveDialogContent className="max-w-sm">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>
+              Iniciar nueva conversacion?
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               Tu conversacion actual sera cerrada. Si tienes un caso abierto,
               seguira activo y podras verlo en tu historial.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
+          <ResponsiveDialogFooter>
+            <ResponsiveDialogClose
+              render={<Button variant="outline">Cancelar</Button>}
+            />
             <Button
               onClick={() => {
                 setConfirmOpen(false)
@@ -159,9 +163,9 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
             >
               Cerrar e iniciar nueva
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
 
       <div className="flex h-full gap-4">
         {/* Left column: conversation list */}

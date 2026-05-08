@@ -12,16 +12,6 @@ import { z } from 'zod'
 
 import { Button } from '#/components/ui/button'
 import {
-  Dialog,
-  DialogBody,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
-import {
   Field,
   FieldDescription,
   FieldError,
@@ -29,6 +19,16 @@ import {
   FieldLabel,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '#/components/ui/responsive-dialog'
 import { Switch } from '#/components/ui/switch'
 import { cn } from '#/lib/utils'
 import { api } from '../../../../convex/_generated/api'
@@ -155,15 +155,15 @@ export function InviteOrgAdminDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Invitar administrador</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent className="max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Invitar administrador</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             El nuevo admin entrará a {organization.name}. Puedes marcarlo como
             owner o pre-asignarle conjuntos específicos en este mismo paso.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <form
           onSubmit={(e) => {
@@ -173,7 +173,7 @@ export function InviteOrgAdminDialog({
           }}
           className="flex min-h-0 flex-1 flex-col"
         >
-          <DialogBody>
+          <ResponsiveDialogBody>
             <FieldGroup>
               <form.Field name="email">
                 {(field) => (
@@ -284,17 +284,19 @@ export function InviteOrgAdminDialog({
                 </Field>
               ) : null}
             </FieldGroup>
-          </DialogBody>
+          </ResponsiveDialogBody>
 
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline">Cancelar</Button>} />
+          <ResponsiveDialogFooter>
+            <ResponsiveDialogClose
+              render={<Button variant="outline">Cancelar</Button>}
+            />
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? 'Enviando...' : 'Invitar'}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }
 
