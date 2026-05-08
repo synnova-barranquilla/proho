@@ -141,6 +141,7 @@ export function SearchableSelect({
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Positioner
+          data-vaul-no-drag
           side="bottom"
           align="start"
           sideOffset={4}

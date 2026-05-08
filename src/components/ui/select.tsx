@@ -74,6 +74,7 @@ function SelectContent({
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Positioner
+        data-vaul-no-drag
         side={side}
         sideOffset={sideOffset}
         align={align}
