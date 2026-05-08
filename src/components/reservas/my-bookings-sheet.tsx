@@ -14,6 +14,7 @@ import {
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { ZONE_COLORS } from '../../../convex/socialZones/validators'
+import { formatTime12h } from './availability-utils'
 
 interface MyBookingsSheetProps {
   open: boolean
@@ -27,12 +28,6 @@ const BOOKING_DATE_FORMATTER = new Intl.DateTimeFormat('es-CO', {
   day: 'numeric',
   month: 'long',
 })
-
-function formatMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-}
 
 function isUpcoming(dateStr: string): boolean {
   const today = new Date()
@@ -133,8 +128,8 @@ function BookingCard({
         {formattedDate}
       </div>
       <div className="text-sm text-muted-foreground">
-        {formatMinutes(booking.startMinutes)} &ndash;{' '}
-        {formatMinutes(booking.endMinutes)}
+        {formatTime12h(booking.startMinutes)} &ndash;{' '}
+        {formatTime12h(booking.endMinutes)}
       </div>
       <Button
         variant="outline"

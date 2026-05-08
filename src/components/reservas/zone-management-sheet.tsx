@@ -32,6 +32,7 @@ import {
   type DayKey,
   type WeekdayAvailability,
 } from '../../../convex/socialZones/validators'
+import { formatTime12h } from './availability-utils'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,16 +60,10 @@ interface ZoneFormState {
 
 const DAY_ORDER: DayKey[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
-/** Generate time options from 0:00 to 23:30 in 30-minute increments. */
 function generateTimeOptions(): Array<{ value: number; label: string }> {
   const options: Array<{ value: number; label: string }> = []
   for (let minutes = 0; minutes <= 23 * 60 + 30; minutes += 30) {
-    const h = Math.floor(minutes / 60)
-    const m = minutes % 60
-    options.push({
-      value: minutes,
-      label: `${h}:${m.toString().padStart(2, '0')}`,
-    })
+    options.push({ value: minutes, label: formatTime12h(minutes) })
   }
   return options
 }

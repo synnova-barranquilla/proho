@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
-import { useConvexMutation } from '@convex-dev/react-query'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import { toast } from 'sonner'
 
@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import { SearchableSelect } from '#/components/ui/searchable-select'
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { buildUnitOptions } from '#/lib/unit-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import {
@@ -30,23 +32,35 @@ import {
   ZONE_COLORS,
   type WeekdayAvailability,
 } from '../../../convex/socialZones/validators'
+import {
+  computeEndTimeOptions,
+  formatTime12h,
+  type BookingForAvailability,
+} from './availability-utils'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface BookingDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   complexId: Id<'complexes'>
-  zones: Array<{
+  zone?: {
     _id: Id<'socialZones'>
     name: string
     colorIndex: number
     blockDurationMinutes: number
     maxConsecutiveBlocks: number
     weekdayAvailability: WeekdayAvailability
-  }>
+  }
   initialDate?: string
   initialStartMinutes?: number
-  initialZoneId?: Id<'socialZones'>
-  residentId: Id<'residents'>
+  availableBlockStart?: number
+  availableBlockEnd?: number
+  bookings: BookingForAvailability[]
+  residentId?: Id<'residents'>
+  isAdmin: boolean
 }
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('es-CO', {
@@ -56,107 +70,101 @@ const DATE_FORMATTER = new Intl.DateTimeFormat('es-CO', {
   year: 'numeric',
 })
 
-function formatMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-}
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function BookingDialog({
   open,
   onOpenChange,
-  zones,
+  complexId,
+  zone,
   initialDate,
   initialStartMinutes,
-  initialZoneId,
+  availableBlockStart,
+  availableBlockEnd,
+  bookings,
   residentId,
+  isAdmin,
 }: BookingDialogProps) {
-  const [selectedZoneId, setSelectedZoneId] = useState<
-    Id<'socialZones'> | undefined
-  >(initialZoneId)
   const [startMinutes, setStartMinutes] = useState<number | undefined>(
     initialStartMinutes,
   )
-  const [blockCount, setBlockCount] = useState(1)
+  const [endMinutes, setEndMinutes] = useState<number | undefined>(undefined)
+
+  // Admin flow state
+  const [selectedUnitId, setSelectedUnitId] = useState<string>('')
+  const [selectedResidentId, setSelectedResidentId] = useState<string>('')
 
   const mutationFn = useConvexMutation(api.socialZones.mutations.createBooking)
   const mutation = useMutation({ mutationFn })
 
-  const selectedZone = zones.find((z) => z._id === selectedZoneId)
-
-  // Compute the day-of-week from the ISO date to look up availability
   const dayKey = useMemo(() => {
     if (!initialDate) return undefined
-    const d = new Date(initialDate + 'T00:00:00')
-    return DAY_KEYS[d.getDay()]
+    return DAY_KEYS[new Date(initialDate + 'T00:00:00').getDay()]
   }, [initialDate])
 
-  // Available time slots based on zone's weekday availability
+  // Time slots for "Desde" — limited to the clicked available block
   const timeSlots = useMemo(() => {
-    if (!selectedZone || dayKey === undefined) return []
-    const avail = selectedZone.weekdayAvailability[dayKey]
+    if (!zone || dayKey === undefined) return []
+    const avail = zone.weekdayAvailability[dayKey]
     if (!avail) return []
 
+    const blockStart = availableBlockStart ?? avail.start
+    const blockEnd = availableBlockEnd ?? avail.end
+    const step = zone.blockDurationMinutes
     const slots: number[] = []
-    const step = selectedZone.blockDurationMinutes
-    // The last possible start is (end - one block duration)
-    for (let m = avail.start; m <= avail.end - step; m += step) {
+    for (let m = blockStart; m <= blockEnd - step; m += step) {
       slots.push(m)
     }
     return slots
-  }, [selectedZone, dayKey])
+  }, [zone, dayKey, availableBlockStart, availableBlockEnd])
 
-  // Max blocks available from the selected start time
-  const maxBlocks = useMemo(() => {
-    if (!selectedZone || dayKey === undefined || startMinutes === undefined)
-      return 1
-    const avail = selectedZone.weekdayAvailability[dayKey]
-    if (!avail) return 1
-    const remainingMinutes = avail.end - startMinutes
-    const possible = Math.floor(
-      remainingMinutes / selectedZone.blockDurationMinutes,
-    )
-    return Math.min(possible, selectedZone.maxConsecutiveBlocks)
-  }, [selectedZone, dayKey, startMinutes])
+  // End-time options for "Hasta"
+  const endTimeOptions = useMemo(() => {
+    if (!zone || dayKey === undefined || startMinutes === undefined) return []
+    return computeEndTimeOptions(zone, dayKey, startMinutes, bookings)
+  }, [zone, dayKey, startMinutes, bookings])
 
-  const blockOptions = Array.from({ length: maxBlocks }, (_, i) => i + 1)
+  // Auto-select when single option
+  useEffect(() => {
+    if (timeSlots.length === 1 && startMinutes === undefined) {
+      setStartMinutes(timeSlots[0])
+    }
+  }, [timeSlots, startMinutes])
 
-  const endMinutes =
-    startMinutes !== undefined && selectedZone
-      ? startMinutes + blockCount * selectedZone.blockDurationMinutes
-      : undefined
+  useEffect(() => {
+    if (endTimeOptions.length === 1 && endMinutes === undefined) {
+      setEndMinutes(endTimeOptions[0].endMinutes)
+    }
+  }, [endTimeOptions, endMinutes])
 
   const formattedDate = useMemo(() => {
     if (!initialDate) return ''
-    const d = new Date(initialDate + 'T12:00:00')
-    return DATE_FORMATTER.format(d)
+    return DATE_FORMATTER.format(new Date(initialDate + 'T12:00:00'))
   }, [initialDate])
 
-  // Check if the zone is closed on the selected day
-  const isClosed = useMemo(() => {
-    if (!selectedZone || dayKey === undefined) return false
-    return selectedZone.weekdayAvailability[dayKey] === null
-  }, [selectedZone, dayKey])
+  const color = zone ? ZONE_COLORS[zone.colorIndex % ZONE_COLORS.length] : null
 
-  function handleZoneChange(zoneId: Id<'socialZones'>) {
-    setSelectedZoneId(zoneId)
-    setStartMinutes(undefined)
-    setBlockCount(1)
-  }
+  // Determine which residentId to use for the booking
+  const effectiveResidentId = isAdmin
+    ? (selectedResidentId as Id<'residents'>) || undefined
+    : residentId
 
   async function handleSubmit() {
     if (
-      !selectedZoneId ||
+      !zone ||
       startMinutes === undefined ||
-      !endMinutes ||
-      !initialDate
+      endMinutes === undefined ||
+      !initialDate ||
+      !effectiveResidentId
     )
       return
 
     try {
       await mutation.mutateAsync({
-        zoneId: selectedZoneId,
-        residentId,
+        zoneId: zone._id,
+        residentId: effectiveResidentId,
         date: initialDate,
         startMinutes,
         endMinutes,
@@ -173,12 +181,12 @@ export function BookingDialog({
     }
   }
 
-  // Reset state when dialog opens
   function handleOpenChange(next: boolean) {
     if (next) {
-      setSelectedZoneId(initialZoneId)
       setStartMinutes(initialStartMinutes)
-      setBlockCount(1)
+      setEndMinutes(undefined)
+      setSelectedUnitId('')
+      setSelectedResidentId('')
     }
     onOpenChange(next)
   }
@@ -192,34 +200,18 @@ export function BookingDialog({
 
         <DialogBody>
           <div className="flex flex-col gap-4">
-            {/* Zone selector */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Zona</span>
-              <div className="flex flex-wrap gap-2">
-                {zones.map((zone) => {
-                  const color =
-                    ZONE_COLORS[zone.colorIndex % ZONE_COLORS.length]
-                  const isSelected = selectedZoneId === zone._id
-                  return (
-                    <button
-                      key={zone._id}
-                      type="button"
-                      onClick={() => handleZoneChange(zone._id)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
-                        isSelected
-                          ? `${color.bg} ${color.border} ${color.text} ${color.darkText}`
-                          : 'border-input hover:bg-muted'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block size-2.5 rounded-full ${color.border} ${isSelected ? 'bg-current' : `${color.bg}`}`}
-                      />
-                      {zone.name}
-                    </button>
-                  )
-                })}
+            {/* Zone (read-only) */}
+            {zone && color && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Zona</span>
+                <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
+                  <span
+                    className={`inline-block size-2.5 rounded-full ${color.border} bg-current ${color.text} ${color.darkText}`}
+                  />
+                  {zone.name}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Date (read-only) */}
             {initialDate && (
@@ -231,17 +223,10 @@ export function BookingDialog({
               </div>
             )}
 
-            {/* Closed day warning */}
-            {isClosed && selectedZone && (
-              <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300">
-                {selectedZone.name} no tiene disponibilidad este día.
-              </div>
-            )}
-
-            {/* Start time selector */}
-            {selectedZone && !isClosed && timeSlots.length > 0 && (
+            {/* Desde */}
+            {zone && timeSlots.length > 0 && (
               <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">Hora de inicio</span>
+                <span className="text-sm font-medium">Desde</span>
                 <Select
                   value={
                     startMinutes !== undefined
@@ -250,7 +235,7 @@ export function BookingDialog({
                   }
                   onValueChange={(val) => {
                     setStartMinutes(Number(val))
-                    setBlockCount(1)
+                    setEndMinutes(undefined)
                   }}
                 >
                   <SelectTrigger className="w-full">
@@ -259,7 +244,7 @@ export function BookingDialog({
                   <SelectContent>
                     {timeSlots.map((m) => (
                       <SelectItem key={m} value={String(m)}>
-                        {formatMinutes(m)}
+                        {formatTime12h(m)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -267,33 +252,47 @@ export function BookingDialog({
               </div>
             )}
 
-            {/* Duration selector */}
-            {selectedZone && startMinutes !== undefined && !isClosed && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">Duración</span>
-                <Select
-                  value={String(blockCount)}
-                  onValueChange={(val) => setBlockCount(Number(val))}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {blockOptions.map((n) => (
-                      <SelectItem key={n} value={String(n)}>
-                        {n} {n === 1 ? 'bloque' : 'bloques'} (
-                        {n * selectedZone.blockDurationMinutes} min)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {endMinutes !== undefined && (
-                  <p className="text-xs text-muted-foreground">
-                    {formatMinutes(startMinutes)} &ndash;{' '}
-                    {formatMinutes(endMinutes)}
-                  </p>
-                )}
-              </div>
+            {/* Hasta */}
+            {zone &&
+              startMinutes !== undefined &&
+              endTimeOptions.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">Hasta</span>
+                  <Select
+                    value={
+                      endMinutes !== undefined ? String(endMinutes) : undefined
+                    }
+                    onValueChange={(val) => setEndMinutes(Number(val))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona hora de fin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {endTimeOptions.map((opt) => (
+                        <SelectItem
+                          key={opt.endMinutes}
+                          value={String(opt.endMinutes)}
+                        >
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+            {/* Admin: Unit → Resident selector */}
+            {isAdmin && (
+              <AdminResidentSelector
+                complexId={complexId}
+                selectedUnitId={selectedUnitId}
+                onUnitChange={(unitId) => {
+                  setSelectedUnitId(unitId)
+                  setSelectedResidentId('')
+                }}
+                selectedResidentId={selectedResidentId}
+                onResidentChange={setSelectedResidentId}
+              />
             )}
           </div>
         </DialogBody>
@@ -304,10 +303,10 @@ export function BookingDialog({
             onClick={handleSubmit}
             disabled={
               mutation.isPending ||
-              !selectedZoneId ||
+              !zone ||
               startMinutes === undefined ||
-              !endMinutes ||
-              isClosed
+              endMinutes === undefined ||
+              !effectiveResidentId
             }
           >
             {mutation.isPending ? 'Reservando...' : 'Reservar'}
@@ -315,5 +314,112 @@ export function BookingDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Admin resident selector sub-component
+// ---------------------------------------------------------------------------
+
+function AdminResidentSelector({
+  complexId,
+  selectedUnitId,
+  onUnitChange,
+  selectedResidentId,
+  onResidentChange,
+}: {
+  complexId: Id<'complexes'>
+  selectedUnitId: string
+  onUnitChange: (unitId: string) => void
+  selectedResidentId: string
+  onResidentChange: (residentId: string) => void
+}) {
+  const { data: unitsData } = useQuery(
+    convexQuery(api.units.queries.listByComplex, { complexId }),
+  )
+
+  const allUnits = useMemo(() => {
+    if (!unitsData) return []
+    const units: Array<{ _id: string; tower: string; number: string }> = []
+    for (const group of unitsData.towers) {
+      for (const unit of group.units) {
+        units.push(unit)
+      }
+    }
+    return units
+  }, [unitsData])
+
+  const unitOptions = useMemo(() => buildUnitOptions(allUnits), [allUnits])
+
+  return (
+    <>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium">Unidad</span>
+        <SearchableSelect
+          value={selectedUnitId}
+          onValueChange={onUnitChange}
+          options={unitOptions}
+          placeholder="Seleccionar unidad..."
+          searchPlaceholder="Buscar unidad..."
+        />
+      </div>
+
+      {selectedUnitId && (
+        <ResidentSelect
+          unitId={selectedUnitId as Id<'units'>}
+          value={selectedResidentId}
+          onValueChange={onResidentChange}
+        />
+      )}
+    </>
+  )
+}
+
+function ResidentSelect({
+  unitId,
+  value,
+  onValueChange,
+}: {
+  unitId: Id<'units'>
+  value: string
+  onValueChange: (value: string) => void
+}) {
+  const { data: residents } = useQuery(
+    convexQuery(api.residents.queries.listByUnit, { unitId }),
+  )
+
+  const activeResidents = useMemo(
+    () => (residents ?? []).filter((r) => r.active),
+    [residents],
+  )
+
+  // Auto-select when single resident
+  useEffect(() => {
+    if (activeResidents.length === 1 && !value) {
+      onValueChange(activeResidents[0]._id)
+    }
+  }, [activeResidents, value, onValueChange])
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-sm font-medium">Residente</span>
+      <Select
+        value={value || undefined}
+        onValueChange={(val) => {
+          if (val) onValueChange(val)
+        }}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Seleccionar residente..." />
+        </SelectTrigger>
+        <SelectContent>
+          {activeResidents.map((r) => (
+            <SelectItem key={r._id} value={r._id}>
+              {r.firstName} {r.lastName}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }
