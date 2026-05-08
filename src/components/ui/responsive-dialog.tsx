@@ -146,7 +146,11 @@ function ResponsiveDialogBody({
 
   if (isMobile) {
     return (
-      <div className={cn('overflow-y-auto px-4 pb-2', className)} {...props} />
+      <div
+        data-vaul-no-drag
+        className={cn('overflow-y-auto px-4 pb-2', className)}
+        {...props}
+      />
     )
   }
 
