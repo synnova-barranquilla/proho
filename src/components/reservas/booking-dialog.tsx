@@ -34,7 +34,9 @@ import {
 } from '../../../convex/socialZones/validators'
 import {
   computeEndTimeOptions,
+  endTimeValueFormatter,
   formatTime12h,
+  minutesValueFormatter,
   type BookingForAvailability,
 } from './availability-utils'
 
@@ -232,9 +234,7 @@ export function BookingDialog({
             <SelectTrigger className="w-full">
               <SelectValue
                 placeholder="Selecciona horario"
-                formatValue={(v) =>
-                  v != null ? formatTime12h(Number(v)) : null
-                }
+                valueFormatterFunction={minutesValueFormatter}
               />
             </SelectTrigger>
             <SelectContent>
@@ -258,13 +258,7 @@ export function BookingDialog({
             <SelectTrigger className="w-full">
               <SelectValue
                 placeholder="Selecciona hora de fin"
-                formatValue={(v) => {
-                  if (v == null) return null
-                  const opt = endTimeOptions.find(
-                    (o) => o.endMinutes === Number(v),
-                  )
-                  return opt?.label ?? formatTime12h(Number(v))
-                }}
+                valueFormatterFunction={endTimeValueFormatter(endTimeOptions)}
               />
             </SelectTrigger>
             <SelectContent>

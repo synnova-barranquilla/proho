@@ -61,6 +61,24 @@ export function formatDuration(totalMinutes: number): string {
 }
 
 // ---------------------------------------------------------------------------
+// Select value formatters (for SelectValue.valueFormatterFunction)
+// ---------------------------------------------------------------------------
+
+export function minutesValueFormatter(value: unknown) {
+  return value != null ? formatTime12h(Number(value)) : null
+}
+
+export function endTimeValueFormatter(
+  options: Array<{ endMinutes: number; label: string }>,
+) {
+  return (value: unknown) => {
+    if (value == null) return null
+    const opt = options.find((o) => o.endMinutes === Number(value))
+    return opt?.label ?? formatTime12h(Number(value))
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Day key
 // ---------------------------------------------------------------------------
 
@@ -143,7 +161,28 @@ export function computeAvailabilitySegments(
     })
   }
 
-  return segments
+  return mergeContiguousSegments(segments)
+}
+
+function mergeContiguousSegments(
+  segments: AvailabilitySegment[],
+): AvailabilitySegment[] {
+  if (segments.length <= 1) return segments
+
+  const merged: AvailabilitySegment[] = [segments[0]]
+
+  for (let i = 1; i < segments.length; i++) {
+    const prev = merged[merged.length - 1]
+    const curr = segments[i]
+
+    if (prev.type === curr.type && prev.endMinutes === curr.startMinutes) {
+      prev.endMinutes = curr.endMinutes
+    } else {
+      merged.push(curr)
+    }
+  }
+
+  return merged
 }
 
 // ---------------------------------------------------------------------------

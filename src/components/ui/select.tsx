@@ -21,10 +21,10 @@ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
 
 function SelectValue({
   className,
-  formatValue,
+  valueFormatterFunction,
   ...props
 }: SelectPrimitive.Value.Props & {
-  formatValue?: (value: unknown) => React.ReactNode
+  valueFormatterFunction?: (value: unknown) => React.ReactNode
 }) {
   return (
     <SelectPrimitive.Value
@@ -32,7 +32,7 @@ function SelectValue({
       className={cn('flex flex-1 text-left', className)}
       {...props}
     >
-      {formatValue ?? props.children}
+      {valueFormatterFunction ?? props.children}
     </SelectPrimitive.Value>
   )
 }
