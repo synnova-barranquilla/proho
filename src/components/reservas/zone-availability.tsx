@@ -13,25 +13,16 @@ import {
 import { Button } from '#/components/ui/button'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-import { ZONE_COLORS } from '../../../convex/socialZones/validators'
+import type { AvailabilitySegment } from '../../../convex/socialZones/availability'
+import { DAY_KEYS, ZONE_COLORS } from '../../../convex/socialZones/validators'
 import {
-  computeAvailabilitySegments,
   formatTime12h,
-  isoToDayKey,
-  type AvailabilitySegment,
   type BookingForAvailability,
-  type DateBlockForAvailability,
-  type ZoneForAvailability,
 } from './availability-utils'
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface ZoneAvailabilityProps {
   date: string
   complexId: Id<'complexes'>
-  zones: ZoneForAvailability[]
   onReservar: (
     date: string,
     startMinutes: number,
@@ -42,16 +33,18 @@ interface ZoneAvailabilityProps {
   ) => void
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
 export function ZoneAvailability({
   date,
   complexId,
-  zones,
   onReservar,
 }: ZoneAvailabilityProps) {
+  const { data } = useSuspenseQuery(
+    convexQuery(api.socialZones.queries.getDayAvailability, {
+      complexId,
+      date,
+    }),
+  )
+
   const { data: bookings } = useSuspenseQuery(
     convexQuery(api.socialZones.queries.getWeekBookings, {
       complexId,
@@ -59,43 +52,17 @@ export function ZoneAvailability({
     }),
   )
 
-  const { data: dateBlocks } = useSuspenseQuery(
-    convexQuery(api.socialZones.queries.getDateBlocks, {
-      complexId,
-      weekDates: [date],
-    }),
-  )
-
-  const dayKey = useMemo(() => isoToDayKey(date), [date])
-
-  const sortedZones = useMemo(
-    () => [...zones].sort((a, b) => a.name.localeCompare(b.name)),
-    [zones],
-  )
-
-  const typedBookings = bookings as BookingForAvailability[]
-  const typedBlocks = dateBlocks as DateBlockForAvailability[]
-
-  const segmentsByZone = useMemo(() => {
-    const map = new Map<string, AvailabilitySegment[]>()
-    for (const zone of sortedZones) {
-      map.set(
-        zone._id,
-        computeAvailabilitySegments(zone, dayKey, typedBookings, typedBlocks),
-      )
-    }
-    return map
-  }, [sortedZones, dayKey, typedBookings, typedBlocks])
+  const dayKey = DAY_KEYS[new Date(date + 'T00:00:00').getDay()]
 
   const availableZoneIds = useMemo(
     () =>
-      sortedZones
-        .filter((z) => z.weekdayAvailability[dayKey] !== null)
-        .map((z) => z._id),
-    [sortedZones, dayKey],
+      data
+        .filter((d) => d.zone.weekdayAvailability[dayKey] !== null)
+        .map((d) => d.zone._id),
+    [data, dayKey],
   )
 
-  if (sortedZones.length === 0) {
+  if (data.length === 0) {
     return (
       <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
         No hay zonas disponibles
@@ -105,10 +72,9 @@ export function ZoneAvailability({
 
   return (
     <Accordion defaultValue={availableZoneIds}>
-      {sortedZones.map((zone) => {
+      {data.map(({ zone, segments }) => {
         const isClosed = zone.weekdayAvailability[dayKey] === null
         const color = ZONE_COLORS[zone.colorIndex % ZONE_COLORS.length]
-        const segments = segmentsByZone.get(zone._id) ?? []
 
         return (
           <AccordionItem key={zone._id} value={zone._id} disabled={isClosed}>
@@ -138,7 +104,7 @@ export function ZoneAvailability({
                         zone._id,
                         segment.startMinutes,
                         segment.endMinutes,
-                        typedBookings,
+                        bookings as BookingForAvailability[],
                       )
                     }
                   />
@@ -151,10 +117,6 @@ export function ZoneAvailability({
     </Accordion>
   )
 }
-
-// ---------------------------------------------------------------------------
-// Segment card
-// ---------------------------------------------------------------------------
 
 function SegmentCard({
   segment,

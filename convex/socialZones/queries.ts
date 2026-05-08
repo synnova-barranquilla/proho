@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 
 import { query } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
+import { computeAvailabilitySegments, isoToDayKey } from './availability'
 
 export const listByComplex = query({
   args: { complexId: v.id('complexes') },
@@ -110,5 +111,57 @@ export const getMyBookings = query({
         if (dateCompare !== 0) return dateCompare
         return a.startMinutes - b.startMinutes
       })
+  },
+})
+
+export const getDayAvailability = query({
+  args: {
+    complexId: v.id('complexes'),
+    date: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId)
+
+    const [zones, bookings, dateBlocks] = await Promise.all([
+      ctx.db
+        .query('socialZones')
+        .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+        .filter((q) => q.eq(q.field('active'), true))
+        .collect(),
+      ctx.db
+        .query('socialZoneBookings')
+        .withIndex('by_complex_and_date', (q) =>
+          q.eq('complexId', args.complexId).eq('date', args.date),
+        )
+        .filter((q) => q.eq(q.field('status'), 'CONFIRMED'))
+        .collect(),
+      ctx.db
+        .query('socialZoneDateBlocks')
+        .withIndex('by_complex_and_date', (q) =>
+          q.eq('complexId', args.complexId).eq('date', args.date),
+        )
+        .collect(),
+    ])
+
+    const dayKey = isoToDayKey(args.date)
+
+    return zones
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((zone) => ({
+        zone: {
+          _id: zone._id,
+          name: zone.name,
+          colorIndex: zone.colorIndex,
+          blockDurationMinutes: zone.blockDurationMinutes,
+          maxConsecutiveBlocks: zone.maxConsecutiveBlocks,
+          weekdayAvailability: zone.weekdayAvailability,
+        },
+        segments: computeAvailabilitySegments(
+          zone,
+          dayKey,
+          bookings,
+          dateBlocks,
+        ),
+      }))
   },
 })

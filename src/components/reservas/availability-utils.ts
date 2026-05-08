@@ -6,15 +6,8 @@ import {
 } from '../../../convex/socialZones/validators'
 
 // ---------------------------------------------------------------------------
-// Types
+// Types (still needed by booking-dialog for computeEndTimeOptions)
 // ---------------------------------------------------------------------------
-
-export type AvailabilitySegment = {
-  startMinutes: number
-  endMinutes: number
-  type: 'available' | 'occupied' | 'blocked'
-  reason?: string
-}
 
 export interface ZoneForAvailability {
   _id: Id<'socialZones'>
@@ -31,12 +24,6 @@ export interface BookingForAvailability {
   date: string
   startMinutes: number
   endMinutes: number
-}
-
-export interface DateBlockForAvailability {
-  zoneId?: Id<'socialZones'>
-  date: string
-  reason?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -87,106 +74,7 @@ export function isoToDayKey(iso: string): DayKey {
 }
 
 // ---------------------------------------------------------------------------
-// Availability segments
-// ---------------------------------------------------------------------------
-
-export function computeAvailabilitySegments(
-  zone: ZoneForAvailability,
-  dayKey: DayKey,
-  bookings: BookingForAvailability[],
-  dateBlocks: DateBlockForAvailability[],
-): AvailabilitySegment[] {
-  const avail = zone.weekdayAvailability[dayKey]
-  if (!avail) return []
-
-  const fullBlock = dateBlocks.find((b) => !b.zoneId)
-  const zoneBlock = dateBlocks.find((b) => b.zoneId === (zone._id as string))
-
-  if (fullBlock || zoneBlock) {
-    const block = fullBlock ?? zoneBlock
-    return [
-      {
-        startMinutes: avail.start,
-        endMinutes: avail.end,
-        type: 'blocked',
-        reason: block?.reason,
-      },
-    ]
-  }
-
-  const zoneBookings = bookings
-    .filter((b) => b.zoneId === (zone._id as string))
-    .sort((a, b) => a.startMinutes - b.startMinutes)
-
-  const segments: AvailabilitySegment[] = []
-  let cursor = avail.start
-
-  for (const booking of zoneBookings) {
-    if (booking.startMinutes > cursor) {
-      const gapMinutes = booking.startMinutes - cursor
-      if (gapMinutes >= zone.blockDurationMinutes) {
-        segments.push({
-          startMinutes: cursor,
-          endMinutes: booking.startMinutes,
-          type: 'available',
-        })
-      } else {
-        // Gap too small — merge into the occupied segment
-      }
-    }
-    segments.push({
-      startMinutes: booking.startMinutes,
-      endMinutes: booking.endMinutes,
-      type: 'occupied',
-    })
-    cursor = Math.max(cursor, booking.endMinutes)
-  }
-
-  if (cursor < avail.end) {
-    const gapMinutes = avail.end - cursor
-    if (gapMinutes >= zone.blockDurationMinutes) {
-      segments.push({
-        startMinutes: cursor,
-        endMinutes: avail.end,
-        type: 'available',
-      })
-    }
-  }
-
-  if (segments.length === 0) {
-    segments.push({
-      startMinutes: avail.start,
-      endMinutes: avail.end,
-      type: 'available',
-    })
-  }
-
-  return mergeContiguousSegments(segments)
-}
-
-function mergeContiguousSegments(
-  segments: AvailabilitySegment[],
-): AvailabilitySegment[] {
-  if (segments.length <= 1) return segments
-
-  const merged: AvailabilitySegment[] = [segments[0]]
-
-  for (let i = 1; i < segments.length; i++) {
-    const prev = merged[merged.length - 1]
-    const curr = segments[i]
-
-    if (prev.type === curr.type && prev.endMinutes === curr.startMinutes) {
-      prev.endMinutes = curr.endMinutes
-    } else {
-      merged.push(curr)
-    }
-  }
-
-  return merged
-}
-
-// ---------------------------------------------------------------------------
-// End-time options for "Hasta" selector
+// End-time options for "Hasta" selector (stays in frontend — depends on form state)
 // ---------------------------------------------------------------------------
 
 export function computeEndTimeOptions(

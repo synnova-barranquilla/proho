@@ -239,7 +239,6 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
         <ZoneAvailability
           date={selectedDate}
           complexId={complexId}
-          zones={zones}
           onReservar={handleReservar}
         />
       )}
