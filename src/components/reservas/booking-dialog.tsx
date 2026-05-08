@@ -203,7 +203,7 @@ export function BookingDialog({
           <span className="text-sm font-medium">Zona</span>
           <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
             <span
-              className={`inline-block size-2.5 rounded-full ${color.border} bg-current ${color.text} ${color.darkText}`}
+              className={`inline-block size-2.5 rounded-full ${color.border} ${color.bg}`}
             />
             {zone.name}
           </div>

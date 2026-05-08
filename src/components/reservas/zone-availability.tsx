@@ -93,9 +93,9 @@ export function ZoneAvailability({
             </AccordionTrigger>
             <AccordionContent>
               <div className="flex flex-col gap-1.5 px-1">
-                {segments.map((segment, idx) => (
+                {segments.map((segment) => (
                   <SegmentCard
-                    key={`${zone._id}-${idx}`}
+                    key={`${zone._id}-${segment.type}-${segment.startMinutes}`}
                     segment={segment}
                     onReservar={() =>
                       onReservar(
