@@ -1,5 +1,7 @@
 import { createContext, use, type ReactElement, type ReactNode } from 'react'
 
+import { Drawer as DrawerPrimitive } from 'vaul'
+
 import {
   Dialog,
   DialogBody,
@@ -13,7 +15,6 @@ import {
 import {
   Drawer,
   DrawerClose,
-  DrawerContent,
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
@@ -37,7 +38,9 @@ function ResponsiveDialog({
   return (
     <MobileContext value={isMobile}>
       {isMobile ? (
-        <Drawer {...props}>{children}</Drawer>
+        <Drawer modal={false} {...props}>
+          {children}
+        </Drawer>
       ) : (
         <Dialog {...props}>{children}</Dialog>
       )}
@@ -59,13 +62,19 @@ function ResponsiveDialogContent({
 
   if (isMobile) {
     return (
-      <DrawerContent
-        className={className}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-      >
-        {children}
-      </DrawerContent>
+      <DrawerPrimitive.Portal>
+        <DrawerPrimitive.Overlay className="fixed inset-0 z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs" />
+        <DrawerPrimitive.Content
+          data-slot="drawer-content"
+          className={cn(
+            'group/drawer-content fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[80vh] flex-col rounded-t-xl border-t bg-popover text-sm text-popover-foreground',
+            className,
+          )}
+        >
+          <div className="mx-auto mt-4 h-1 w-[100px] shrink-0 rounded-full bg-muted" />
+          {children}
+        </DrawerPrimitive.Content>
+      </DrawerPrimitive.Portal>
     )
   }
 
