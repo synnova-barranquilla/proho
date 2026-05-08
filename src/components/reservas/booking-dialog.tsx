@@ -16,6 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '#/components/ui/drawer'
 import { SearchableSelect } from '#/components/ui/searchable-select'
 import {
   Select,
@@ -24,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { useIsMobile } from '#/hooks/use-mobile'
 import { buildUnitOptions } from '#/lib/unit-search'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -87,12 +96,13 @@ export function BookingDialog({
   residentId,
   isAdmin,
 }: BookingDialogProps) {
+  const isMobile = useIsMobile()
+
   const [startMinutes, setStartMinutes] = useState<number | undefined>(
     initialStartMinutes,
   )
   const [endMinutes, setEndMinutes] = useState<number | undefined>(undefined)
 
-  // Admin flow state
   const [selectedUnitId, setSelectedUnitId] = useState<string>('')
   const [selectedResidentId, setSelectedResidentId] = useState<string>('')
 
@@ -104,7 +114,6 @@ export function BookingDialog({
     return DAY_KEYS[new Date(initialDate + 'T00:00:00').getDay()]
   }, [initialDate])
 
-  // Time slots for "Desde" — limited to the clicked available block
   const timeSlots = useMemo(() => {
     if (!zone || dayKey === undefined) return []
     const avail = zone.weekdayAvailability[dayKey]
@@ -120,13 +129,11 @@ export function BookingDialog({
     return slots
   }, [zone, dayKey, availableBlockStart, availableBlockEnd])
 
-  // End-time options for "Hasta"
   const endTimeOptions = useMemo(() => {
     if (!zone || dayKey === undefined || startMinutes === undefined) return []
     return computeEndTimeOptions(zone, dayKey, startMinutes, bookings)
   }, [zone, dayKey, startMinutes, bookings])
 
-  // Auto-select when single option
   useEffect(() => {
     if (timeSlots.length === 1 && startMinutes === undefined) {
       setStartMinutes(timeSlots[0])
@@ -146,10 +153,16 @@ export function BookingDialog({
 
   const color = zone ? ZONE_COLORS[zone.colorIndex % ZONE_COLORS.length] : null
 
-  // Determine which residentId to use for the booking
   const effectiveResidentId = isAdmin
     ? (selectedResidentId as Id<'residents'>) || undefined
     : residentId
+
+  const canSubmit =
+    !mutation.isPending &&
+    !!zone &&
+    startMinutes !== undefined &&
+    endMinutes !== undefined &&
+    !!effectiveResidentId
 
   async function handleSubmit() {
     if (
@@ -191,124 +204,123 @@ export function BookingDialog({
     onOpenChange(next)
   }
 
+  // ---- Shared form body ----
+  const formBody = (
+    <div className="flex flex-col gap-4">
+      {zone && color && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium">Zona</span>
+          <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
+            <span
+              className={`inline-block size-2.5 rounded-full ${color.border} bg-current ${color.text} ${color.darkText}`}
+            />
+            {zone.name}
+          </div>
+        </div>
+      )}
+
+      {initialDate && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium">Fecha</span>
+          <div className="rounded-md bg-muted px-3 py-2 text-sm capitalize">
+            {formattedDate}
+          </div>
+        </div>
+      )}
+
+      {zone && timeSlots.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium">Desde</span>
+          <Select
+            value={
+              startMinutes !== undefined ? String(startMinutes) : undefined
+            }
+            onValueChange={(val) => {
+              setStartMinutes(Number(val))
+              setEndMinutes(undefined)
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecciona horario" />
+            </SelectTrigger>
+            <SelectContent>
+              {timeSlots.map((m) => (
+                <SelectItem key={m} value={String(m)}>
+                  {formatTime12h(m)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {zone && startMinutes !== undefined && endTimeOptions.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium">Hasta</span>
+          <Select
+            value={endMinutes !== undefined ? String(endMinutes) : undefined}
+            onValueChange={(val) => setEndMinutes(Number(val))}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecciona hora de fin" />
+            </SelectTrigger>
+            <SelectContent>
+              {endTimeOptions.map((opt) => (
+                <SelectItem key={opt.endMinutes} value={String(opt.endMinutes)}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {isAdmin && (
+        <AdminResidentSelector
+          complexId={complexId}
+          selectedUnitId={selectedUnitId}
+          onUnitChange={(unitId) => {
+            setSelectedUnitId(unitId)
+            setSelectedResidentId('')
+          }}
+          selectedResidentId={selectedResidentId}
+          onResidentChange={setSelectedResidentId}
+        />
+      )}
+    </div>
+  )
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={handleOpenChange}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Nueva reserva</DrawerTitle>
+          </DrawerHeader>
+          <div className="overflow-y-auto px-4 pb-2">{formBody}</div>
+          <DrawerFooter>
+            <Button onClick={handleSubmit} disabled={!canSubmit}>
+              {mutation.isPending ? 'Reservando...' : 'Reservar'}
+            </Button>
+            <DrawerClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Nueva reserva</DialogTitle>
         </DialogHeader>
-
-        <DialogBody>
-          <div className="flex flex-col gap-4">
-            {/* Zone (read-only) */}
-            {zone && color && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">Zona</span>
-                <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
-                  <span
-                    className={`inline-block size-2.5 rounded-full ${color.border} bg-current ${color.text} ${color.darkText}`}
-                  />
-                  {zone.name}
-                </div>
-              </div>
-            )}
-
-            {/* Date (read-only) */}
-            {initialDate && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">Fecha</span>
-                <div className="rounded-md bg-muted px-3 py-2 text-sm capitalize">
-                  {formattedDate}
-                </div>
-              </div>
-            )}
-
-            {/* Desde */}
-            {zone && timeSlots.length > 0 && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">Desde</span>
-                <Select
-                  value={
-                    startMinutes !== undefined
-                      ? String(startMinutes)
-                      : undefined
-                  }
-                  onValueChange={(val) => {
-                    setStartMinutes(Number(val))
-                    setEndMinutes(undefined)
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecciona horario" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {timeSlots.map((m) => (
-                      <SelectItem key={m} value={String(m)}>
-                        {formatTime12h(m)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Hasta */}
-            {zone &&
-              startMinutes !== undefined &&
-              endTimeOptions.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-sm font-medium">Hasta</span>
-                  <Select
-                    value={
-                      endMinutes !== undefined ? String(endMinutes) : undefined
-                    }
-                    onValueChange={(val) => setEndMinutes(Number(val))}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecciona hora de fin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {endTimeOptions.map((opt) => (
-                        <SelectItem
-                          key={opt.endMinutes}
-                          value={String(opt.endMinutes)}
-                        >
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-            {/* Admin: Unit → Resident selector */}
-            {isAdmin && (
-              <AdminResidentSelector
-                complexId={complexId}
-                selectedUnitId={selectedUnitId}
-                onUnitChange={(unitId) => {
-                  setSelectedUnitId(unitId)
-                  setSelectedResidentId('')
-                }}
-                selectedResidentId={selectedResidentId}
-                onResidentChange={setSelectedResidentId}
-              />
-            )}
-          </div>
-        </DialogBody>
-
+        <DialogBody>{formBody}</DialogBody>
         <DialogFooter>
           <DialogClose render={<Button variant="outline">Cancelar</Button>} />
-          <Button
-            onClick={handleSubmit}
-            disabled={
-              mutation.isPending ||
-              !zone ||
-              startMinutes === undefined ||
-              endMinutes === undefined ||
-              !effectiveResidentId
-            }
-          >
+          <Button onClick={handleSubmit} disabled={!canSubmit}>
             {mutation.isPending ? 'Reservando...' : 'Reservar'}
           </Button>
         </DialogFooter>
@@ -393,7 +405,6 @@ function ResidentSelect({
     [residents],
   )
 
-  // Auto-select when single resident
   useEffect(() => {
     if (activeResidents.length === 1 && !value) {
       onValueChange(activeResidents[0]._id)

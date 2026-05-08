@@ -58,7 +58,9 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(() =>
     getFirstOfMonth(now),
   )
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(() =>
+    now.toISOString().slice(0, 10),
+  )
   const [showMyBookings, setShowMyBookings] = useState(false)
   const [bookingDialog, setBookingDialog] = useState<{
     open: boolean
