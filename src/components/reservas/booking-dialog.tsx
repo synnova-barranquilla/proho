@@ -230,7 +230,12 @@ export function BookingDialog({
             }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecciona horario" />
+              <SelectValue
+                placeholder="Selecciona horario"
+                formatValue={(v) =>
+                  v != null ? formatTime12h(Number(v)) : null
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               {timeSlots.map((m) => (
@@ -251,7 +256,16 @@ export function BookingDialog({
             onValueChange={(val) => setEndMinutes(Number(val))}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecciona hora de fin" />
+              <SelectValue
+                placeholder="Selecciona hora de fin"
+                formatValue={(v) => {
+                  if (v == null) return null
+                  const opt = endTimeOptions.find(
+                    (o) => o.endMinutes === Number(v),
+                  )
+                  return opt?.label ?? formatTime12h(Number(v))
+                }}
+              />
             </SelectTrigger>
             <SelectContent>
               {endTimeOptions.map((opt) => (
