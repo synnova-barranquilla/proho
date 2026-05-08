@@ -37,7 +37,9 @@ function ResponsiveDialog({
   return (
     <MobileContext value={isMobile}>
       {isMobile ? (
-        <Drawer {...props}>{children}</Drawer>
+        <Drawer modal={false} {...props}>
+          {children}
+        </Drawer>
       ) : (
         <Dialog {...props}>{children}</Dialog>
       )}
