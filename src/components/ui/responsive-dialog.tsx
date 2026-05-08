@@ -37,9 +37,7 @@ function ResponsiveDialog({
   return (
     <MobileContext value={isMobile}>
       {isMobile ? (
-        <Drawer modal={false} {...props}>
-          {children}
-        </Drawer>
+        <Drawer {...props}>{children}</Drawer>
       ) : (
         <Dialog {...props}>{children}</Dialog>
       )}
@@ -60,7 +58,15 @@ function ResponsiveDialogContent({
   const isMobile = use(MobileContext)
 
   if (isMobile) {
-    return <DrawerContent className={className}>{children}</DrawerContent>
+    return (
+      <DrawerContent
+        className={className}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        {children}
+      </DrawerContent>
+    )
   }
 
   return (
