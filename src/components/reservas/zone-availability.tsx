@@ -71,7 +71,7 @@ export function ZoneAvailability({
   }
 
   return (
-    <Accordion defaultValue={availableZoneIds}>
+    <Accordion defaultValue={availableZoneIds.slice(0, 1)}>
       {data.map(({ zone, segments }) => {
         const isClosed = zone.weekdayAvailability[dayKey] === null
         const color = ZONE_COLORS[zone.colorIndex % ZONE_COLORS.length]
