@@ -15,6 +15,18 @@ export function useCutoffTimestamp(daysAgo: number): number {
 }
 
 /**
+ * Returns a stable cutoff timestamp from a period in milliseconds.
+ * Returns undefined when periodMs is 0 (meaning "all time").
+ * Only recomputes when periodMs changes.
+ */
+export function usePeriodCutoff(periodMs: number): number | undefined {
+  return useMemo(
+    () => (periodMs > 0 ? Date.now() - periodMs : undefined),
+    [periodMs],
+  )
+}
+
+/**
  * Returns a stable start-of-day timestamp in the user's local timezone.
  * Only recomputes when the calendar day changes.
  */
