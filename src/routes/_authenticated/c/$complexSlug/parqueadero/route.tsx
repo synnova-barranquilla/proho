@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../../convex/_generated/api'
+import { MS_PER_DAY } from '../../../../../../convex/lib/constants'
 
 export const Route = createFileRoute(
   '/_authenticated/c/$complexSlug/parqueadero',
@@ -24,7 +25,7 @@ export const Route = createFileRoute(
       prefetchAuthenticatedQuery(
         queryClient,
         api.accessRecords.queries.listRecent,
-        { complexId },
+        { complexId, cutoffTimestamp: Date.now() - MS_PER_DAY },
       ),
       prefetchAuthenticatedQuery(
         queryClient,

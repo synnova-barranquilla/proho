@@ -43,13 +43,15 @@ export default defineSchema({
 
   complexes: defineTable(complexFields)
     .index('by_organization_id', ['organizationId'])
-    .index('by_organization_id_and_slug', ['organizationId', 'slug']),
+    .index('by_organization_id_and_slug', ['organizationId', 'slug'])
+    .index('by_active', ['active']),
 
   complexMemberships: defineTable(complexMembershipFields)
     .index('by_user_id', ['userId'])
     .index('by_complex_id', ['complexId'])
     .index('by_user_and_complex', ['userId', 'complexId'])
-    .index('by_complex_and_role', ['complexId', 'role']),
+    .index('by_complex_and_role', ['complexId', 'role'])
+    .index('by_user_and_active', ['userId', 'active']),
 
   complexConfig: defineTable(complexConfigFields).index('by_complex_id', [
     'complexId',
@@ -74,7 +76,12 @@ export default defineSchema({
     .index('by_complex_id', ['complexId'])
     .index('by_complex_and_plate', ['complexId', 'normalizedPlate'])
     .index('by_complex_and_exit', ['complexId', 'exitedAt'])
-    .index('by_complex_and_unit', ['complexId', 'unitId']),
+    .index('by_complex_and_unit', ['complexId', 'unitId'])
+    .index('by_complex_decision_exit', [
+      'complexId',
+      'finalDecision',
+      'exitedAt',
+    ]),
 
   conversations: defineTable(conversationFields)
     .index('by_complex', ['complexId'])

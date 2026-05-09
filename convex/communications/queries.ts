@@ -3,6 +3,7 @@ import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
 import { components } from '../_generated/api'
+import type { Doc } from '../_generated/dataModel'
 import { query } from '../_generated/server'
 import { requireCommsAccess, requireUser } from '../lib/auth'
 import { ALL_COMMS_ROLES, STAFF_ROLES } from './constants'
@@ -27,14 +28,18 @@ export const listTickets = query({
       allowedRoles: [...STAFF_ROLES],
     })
 
-    let tickets = await ctx.db
-      .query('tickets')
-      .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
-      .collect()
+    let tickets = args.status
+      ? await ctx.db
+          .query('tickets')
+          .withIndex('by_complex_and_status', (q) =>
+            q.eq('complexId', args.complexId).eq('status', args.status!),
+          )
+          .collect()
+      : await ctx.db
+          .query('tickets')
+          .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
+          .collect()
 
-    if (args.status) {
-      tickets = tickets.filter((t) => t.status === args.status)
-    }
     if (args.priority) {
       tickets = tickets.filter((t) => t.priority === args.priority)
     }
@@ -150,20 +155,38 @@ export const searchClosedTickets = query({
       allowedRoles: [...STAFF_ROLES],
     })
 
-    let tickets = await ctx.db
-      .query('tickets')
-      .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
-      .collect()
-
-    tickets = tickets.filter(
-      (t) =>
-        t.status === 'closed_by_bot' ||
-        t.status === 'closed_by_admin' ||
-        t.status === 'closed_by_inactivity',
-    )
+    let tickets: Doc<'tickets'>[] = []
 
     if (args.publicId) {
-      tickets = tickets.filter((t) => t.publicId === args.publicId)
+      const byPublicId = await ctx.db
+        .query('tickets')
+        .withIndex('by_complex_and_publicId', (q) =>
+          q.eq('complexId', args.complexId).eq('publicId', args.publicId!),
+        )
+        .collect()
+      tickets = byPublicId.filter(
+        (t) =>
+          t.status === 'closed_by_bot' ||
+          t.status === 'closed_by_admin' ||
+          t.status === 'closed_by_inactivity',
+      )
+    } else {
+      const closedStatuses = [
+        'closed_by_bot',
+        'closed_by_admin',
+        'closed_by_inactivity',
+      ] as const
+      const results = await Promise.all(
+        closedStatuses.map((status) =>
+          ctx.db
+            .query('tickets')
+            .withIndex('by_complex_and_status', (q) =>
+              q.eq('complexId', args.complexId).eq('status', status),
+            )
+            .collect(),
+        ),
+      )
+      tickets = results.flat()
     }
 
     if (args.dateFrom) {
@@ -225,25 +248,28 @@ export const countByStatus = query({
       allowedRoles: [...STAFF_ROLES],
     })
 
-    const tickets = await ctx.db
-      .query('tickets')
-      .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
-      .collect()
+    const statuses = [
+      'open_waiting_admin',
+      'open_waiting_resident',
+      'closed_by_bot',
+      'closed_by_admin',
+      'closed_by_inactivity',
+      'reopened',
+    ] as const
 
-    const counts: Record<string, number> = {
-      open_waiting_admin: 0,
-      open_waiting_resident: 0,
-      closed_by_bot: 0,
-      closed_by_admin: 0,
-      closed_by_inactivity: 0,
-      reopened: 0,
-    }
+    const results = await Promise.all(
+      statuses.map(async (status) => {
+        const tickets = await ctx.db
+          .query('tickets')
+          .withIndex('by_complex_and_status', (q) =>
+            q.eq('complexId', args.complexId).eq('status', status),
+          )
+          .collect()
+        return [status, tickets.length] as const
+      }),
+    )
 
-    for (const t of tickets) {
-      counts[t.status] = (counts[t.status] ?? 0) + 1
-    }
-
-    return counts
+    return Object.fromEntries(results) as Record<string, number>
   },
 })
 
@@ -284,7 +310,7 @@ export const listAllCategories = query({
         .collect(),
       ctx.db
         .query('categories')
-        .filter((q) => q.eq(q.field('complexId'), args.complexId))
+        .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
         .collect(),
     ])
 
@@ -362,7 +388,7 @@ export const listAllQuickActions = query({
         .collect(),
       ctx.db
         .query('quickActions')
-        .filter((q) => q.eq(q.field('complexId'), args.complexId))
+        .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
         .collect(),
     ])
 

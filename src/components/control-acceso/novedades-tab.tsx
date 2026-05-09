@@ -105,7 +105,7 @@ export function NovedadesTab({ complexId }: NovedadesTabProps) {
   const { data: registros } = useSuspenseQuery(
     convexQuery(api.accessRecords.queries.listHistory, {
       complexId,
-      periodMs: periodoMs || undefined,
+      cutoffTimestamp: periodoMs ? Date.now() - periodoMs : undefined,
     }),
   )
 

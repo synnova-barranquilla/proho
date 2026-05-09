@@ -46,17 +46,33 @@ export const listAllPendingWithOrg = query({
   handler: async (ctx) => {
     await requireOrgRole(ctx, ['SUPER_ADMIN'])
 
-    const [invitations, orgs, users] = await Promise.all([
-      ctx.db.query('invitations').order('desc').collect(),
-      ctx.db.query('organizations').collect(),
-      ctx.db.query('users').collect(),
-    ])
+    const orgs = await ctx.db.query('organizations').collect()
+
+    const pendingByOrg = await Promise.all(
+      orgs.map((org) =>
+        ctx.db
+          .query('invitations')
+          .withIndex('by_organization_id_and_status', (q) =>
+            q.eq('organizationId', org._id).eq('status', 'PENDING'),
+          )
+          .collect(),
+      ),
+    )
+
+    const invitations = pendingByOrg.flat()
+
+    const invitedByIds = [...new Set(invitations.map((inv) => inv.invitedBy))]
+    const users = await Promise.all(invitedByIds.map((id) => ctx.db.get(id)))
+    const userMap = new Map(
+      users
+        .filter((u): u is NonNullable<typeof u> => u !== null)
+        .map((u) => [u._id, u]),
+    )
 
     const orgMap = new Map(orgs.map((o) => [o._id, o]))
-    const userMap = new Map(users.map((u) => [u._id, u]))
 
     return invitations
-      .filter((inv) => inv.status === 'PENDING')
+      .sort((a, b) => b._creationTime - a._creationTime)
       .map((inv) => ({
         ...inv,
         organization: orgMap.get(inv.organizationId) ?? null,

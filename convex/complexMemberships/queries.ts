@@ -13,8 +13,9 @@ export const listForCurrentUser = query({
     const user = await requireUser(ctx)
     return await ctx.db
       .query('complexMemberships')
-      .withIndex('by_user_id', (q) => q.eq('userId', user._id))
-      .filter((q) => q.eq(q.field('active'), true))
+      .withIndex('by_user_and_active', (q) =>
+        q.eq('userId', user._id).eq('active', true),
+      )
       .collect()
   },
 })
@@ -93,6 +94,6 @@ export const listOrgAdminMemberships = query({
       ),
     )
 
-    return all.flat().filter((m) => m.active)
+    return all.flat().filter((m) => m.active === true)
   },
 })

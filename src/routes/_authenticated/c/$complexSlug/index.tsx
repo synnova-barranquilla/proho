@@ -33,6 +33,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from '#/components/ui/field'
 import { NumberInput } from '#/components/ui/number-input'
 import { Skeleton } from '#/components/ui/skeleton'
+import { useStartOfDayTimestamp } from '#/hooks/use-cutoff-timestamp'
 import { useIsComplexAdmin } from '#/lib/complex-role'
 import { prefetchAuthenticatedQuery } from '#/lib/convex-loader'
 import { api } from '../../../../../convex/_generated/api'
@@ -50,7 +51,14 @@ export const Route = createFileRoute('/_authenticated/c/$complexSlug/')({
       prefetchAuthenticatedQuery(
         queryClient,
         api.accessRecords.queries.getDashboardStats,
-        { complexId },
+        {
+          complexId,
+          startOfDayTimestamp: new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate(),
+          ).getTime(),
+        },
       ),
       prefetchAuthenticatedQuery(
         queryClient,
@@ -298,9 +306,12 @@ function ParkingResumen({
   complexId: Id<'complexes'>
   complexSlug: string
 }) {
+  const startOfDayTimestamp = useStartOfDayTimestamp()
+
   const { data: stats } = useSuspenseQuery(
     convexQuery(api.accessRecords.queries.getDashboardStats, {
       complexId,
+      startOfDayTimestamp,
     }),
   )
 

@@ -21,8 +21,10 @@ export const listForCurrentUser = query({
     const user = await requireUser(ctx)
 
     if (user.orgRole === 'SUPER_ADMIN') {
-      const all = await ctx.db.query('complexes').collect()
-      return all.filter((c) => c.active)
+      return await ctx.db
+        .query('complexes')
+        .withIndex('by_active', (q) => q.eq('active', true))
+        .collect()
     }
 
     if (user.isOrgOwner === true) {
@@ -38,8 +40,9 @@ export const listForCurrentUser = query({
     // Non-owner: resolve by memberships
     const memberships = await ctx.db
       .query('complexMemberships')
-      .withIndex('by_user_id', (q) => q.eq('userId', user._id))
-      .filter((q) => q.eq(q.field('active'), true))
+      .withIndex('by_user_and_active', (q) =>
+        q.eq('userId', user._id).eq('active', true),
+      )
       .collect()
 
     if (memberships.length === 0) return []
@@ -99,17 +102,22 @@ export const getBySlug = query({
     // unlikely) case of two orgs with the same slug the super admin
     // will see the first one — sufficient for manual debugging.
     // Any other role resolves only within their own org.
-    const complex =
-      user.orgRole === 'SUPER_ADMIN'
-        ? ((await ctx.db.query('complexes').collect()).find(
-            (c) => c.slug === args.slug,
-          ) ?? null)
-        : await ctx.db
-            .query('complexes')
-            .withIndex('by_organization_id_and_slug', (q) =>
-              q.eq('organizationId', user.organizationId).eq('slug', args.slug),
-            )
-            .unique()
+    let complex: Doc<'complexes'> | null = null
+    if (user.orgRole === 'SUPER_ADMIN') {
+      // Slugs are per-org; scan active complexes for the slug
+      const allActive = await ctx.db
+        .query('complexes')
+        .withIndex('by_active', (q) => q.eq('active', true))
+        .collect()
+      complex = allActive.find((c) => c.slug === args.slug) ?? null
+    } else {
+      complex = await ctx.db
+        .query('complexes')
+        .withIndex('by_organization_id_and_slug', (q) =>
+          q.eq('organizationId', user.organizationId).eq('slug', args.slug),
+        )
+        .unique()
+    }
 
     if (!complex) return null
 

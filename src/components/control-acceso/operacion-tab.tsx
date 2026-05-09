@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { useCutoffTimestamp } from '#/hooks/use-cutoff-timestamp'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { MS_PER_DAY } from '../../../convex/lib/constants'
@@ -32,8 +33,13 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
     convexQuery(api.accessRecords.queries.listActive, { complexId }),
   )
 
+  const cutoffTimestamp = useCutoffTimestamp(1)
+
   const { data: recientes } = useSuspenseQuery(
-    convexQuery(api.accessRecords.queries.listRecent, { complexId }),
+    convexQuery(api.accessRecords.queries.listRecent, {
+      complexId,
+      cutoffTimestamp,
+    }),
   )
 
   const { data: vehiculos } = useSuspenseQuery(

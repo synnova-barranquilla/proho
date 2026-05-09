@@ -123,7 +123,7 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
   const { data: registros } = useSuspenseQuery(
     convexQuery(api.accessRecords.queries.listHistory, {
       complexId,
-      periodMs: periodoMs || undefined,
+      cutoffTimestamp: periodoMs ? Date.now() - periodoMs : undefined,
     }),
   )
 

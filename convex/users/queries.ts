@@ -70,8 +70,9 @@ export const listAdminsByOrg = query({
       admins.map(async (admin) => {
         const memberships = await ctx.db
           .query('complexMemberships')
-          .withIndex('by_user_id', (q) => q.eq('userId', admin._id))
-          .filter((q) => q.eq(q.field('active'), true))
+          .withIndex('by_user_and_active', (q) =>
+            q.eq('userId', admin._id).eq('active', true),
+          )
           .collect()
 
         return {
