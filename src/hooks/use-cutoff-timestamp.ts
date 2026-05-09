@@ -1,41 +1,39 @@
-import { useMemo } from 'react'
-
 const MS_PER_DAY = 24 * 60 * 60 * 1000
+const FIVE_MINUTES = 5 * 60_000
 
 /**
- * Returns a stable cutoff timestamp (now - daysAgo) that only changes
- * once per minute, preventing Convex query cache invalidation on every render.
+ * Rounds Date.now() to the nearest 5-minute window. This produces the
+ * same value across mount/unmount cycles (Suspense), preventing
+ * Convex query key churn that causes infinite subscription loops.
+ */
+function stableNow(): number {
+  return Math.floor(Date.now() / FIVE_MINUTES) * FIVE_MINUTES
+}
+
+/**
+ * Returns a stable cutoff timestamp (now - daysAgo).
+ * Deterministic within a 5-minute window regardless of remounts.
  */
 export function useCutoffTimestamp(daysAgo: number): number {
-  const minuteBucket = Math.floor(Date.now() / 60_000)
-  return useMemo(
-    () => Date.now() - daysAgo * MS_PER_DAY,
-    [daysAgo, minuteBucket],
-  )
+  return stableNow() - daysAgo * MS_PER_DAY
 }
 
 /**
  * Returns a stable cutoff timestamp from a period in milliseconds.
  * Returns undefined when periodMs is 0 (meaning "all time").
- * Only recomputes when periodMs changes.
+ * Deterministic within a 5-minute window regardless of remounts.
  */
 export function usePeriodCutoff(periodMs: number): number | undefined {
-  return useMemo(
-    () => (periodMs > 0 ? Date.now() - periodMs : undefined),
-    [periodMs],
-  )
+  if (periodMs <= 0) return undefined
+  return stableNow() - periodMs
 }
 
 /**
  * Returns a stable start-of-day timestamp in the user's local timezone.
- * Only recomputes when the calendar day changes.
+ * Deterministic within the same calendar day.
  */
 export function useStartOfDayTimestamp(): number {
-  const now = new Date()
-  const dayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`
-  return useMemo(() => {
-    const d = new Date()
-    d.setHours(0, 0, 0, 0)
-    return d.getTime()
-  }, [dayKey])
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d.getTime()
 }
