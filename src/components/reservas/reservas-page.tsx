@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useState, useTransition } from 'react'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -61,6 +61,7 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(() =>
     now.toISOString().slice(0, 10),
   )
+  const [isPending, startTransition] = useTransition()
   const [showMyBookings, setShowMyBookings] = useState(false)
   const [bookingDialog, setBookingDialog] = useState<{
     open: boolean
@@ -225,20 +226,27 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
       <MonthCalendar
         currentMonth={currentMonth}
         selectedDate={selectedDate}
-        onSelectDate={(date) => setSelectedDate(date)}
-        onClearSelection={() => setSelectedDate(null)}
+        onSelectDate={(date) => startTransition(() => setSelectedDate(date))}
+        onClearSelection={() => startTransition(() => setSelectedDate(null))}
         monthSummary={monthSummary}
         zones={zones}
         today={now.toISOString().slice(0, 10)}
       />
 
       {/* Zone availability accordion */}
+      {isPending && (
+        <div className="h-0.5 overflow-hidden">
+          <div className="h-full w-full origin-left animate-[nav-progress_1.5s_ease-out_forwards] bg-primary" />
+        </div>
+      )}
       {selectedDate && (
-        <ZoneAvailability
-          date={selectedDate}
-          complexId={complexId}
-          onReservar={handleReservar}
-        />
+        <Suspense>
+          <ZoneAvailability
+            date={selectedDate}
+            complexId={complexId}
+            onReservar={handleReservar}
+          />
+        </Suspense>
       )}
 
       <BookingDialog
