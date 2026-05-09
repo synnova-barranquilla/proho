@@ -234,11 +234,13 @@ export function ReservasPage({ complexId }: ReservasPageProps) {
       />
 
       {/* Zone availability accordion */}
-      {isPending && (
-        <div className="h-0.5 overflow-hidden">
-          <div className="h-full w-full origin-left animate-[nav-progress_1.5s_ease-out_forwards] bg-primary" />
-        </div>
-      )}
+      <div className="relative">
+        {isPending && (
+          <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden">
+            <div className="h-full w-full origin-left animate-[nav-progress_1.5s_ease-out_forwards] bg-primary" />
+          </div>
+        )}
+      </div>
       {selectedDate && (
         <Suspense>
           <ZoneAvailability
