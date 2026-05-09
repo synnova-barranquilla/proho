@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import { usePeriodCutoff } from '#/hooks/use-cutoff-timestamp'
 import { formatAccessTime } from '#/lib/date'
 import { formatPlaca } from '#/lib/formatters'
 import { api } from '../../../convex/_generated/api'
@@ -120,12 +119,11 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
   const [decisionFilter, setDecisionFilter] = useState('todos')
 
   const periodoMs = PERIODO_OPTIONS.find((p) => p.value === periodo)?.ms ?? 0
-  const cutoffTimestamp = usePeriodCutoff(periodoMs)
 
   const { data: registros } = useSuspenseQuery(
     convexQuery(api.accessRecords.queries.listHistory, {
       complexId,
-      cutoffTimestamp,
+      periodMs: periodoMs || undefined,
     }),
   )
 

@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 
 import { query } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
+import { MS_PER_DAY } from '../lib/constants'
 import { normalizePlate } from '../lib/plate'
 
 export const listActive = query({
@@ -48,14 +49,13 @@ export const listActive = query({
 export const listRecent = query({
   args: {
     complexId: v.id('complexes'),
-    cutoffTimestamp: v.number(),
   },
   handler: async (ctx, args) => {
     await requireComplexAccess(ctx, args.complexId, {
       allowedRoles: ['ADMIN', 'GUARD'],
     })
 
-    const cutoff = args.cutoffTimestamp
+    const cutoff = Date.now() - MS_PER_DAY
 
     const records = await ctx.db
       .query('accessRecords')
@@ -148,7 +148,7 @@ export const findActiveByPlate = query({
 export const listHistory = query({
   args: {
     complexId: v.id('complexes'),
-    cutoffTimestamp: v.optional(v.number()),
+    periodMs: v.optional(v.number()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -156,7 +156,7 @@ export const listHistory = query({
       allowedRoles: ['ADMIN'],
     })
 
-    const cutoff = args.cutoffTimestamp ?? 0
+    const cutoff = args.periodMs ? Date.now() - args.periodMs : 0
     const maxResults = Math.min(args.limit ?? 1000, 2000)
 
     const allRecords = await ctx.db
@@ -193,12 +193,16 @@ export const listHistory = query({
 export const getDashboardStats = query({
   args: {
     complexId: v.id('complexes'),
-    startOfDayTimestamp: v.number(),
   },
   handler: async (ctx, args) => {
     await requireComplexAccess(ctx, args.complexId)
 
-    const startOfDay = args.startOfDayTimestamp
+    const now = new Date()
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    ).getTime()
 
     const activeAllowed = await ctx.db
       .query('accessRecords')

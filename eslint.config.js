@@ -20,6 +20,7 @@ export default [
       'eslint.config.js',
       'prettier.config.js',
       'convex/_generated/**',
+      'convex/**/*.test.ts',
       '.vercel/**',
       'dist/**',
     ],

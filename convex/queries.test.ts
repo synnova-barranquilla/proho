@@ -162,12 +162,9 @@ describe('accessRecords queries', () => {
         engineDecision: ['MORA'],
       })
 
-      const startOfDay = new Date()
-      startOfDay.setHours(0, 0, 0, 0)
-
       const stats = await asAdmin.query(
         api.accessRecords.queries.getDashboardStats,
-        { complexId, startOfDayTimestamp: startOfDay.getTime() },
+        { complexId },
       )
 
       expect(stats.vehiclesInside).toBe(1)
