@@ -3,6 +3,7 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
+import { rateLimiter } from '../lib/rateLimits'
 import {
   DAY_KEYS,
   DEFAULT_AVAILABILITY,
@@ -136,6 +137,11 @@ export const createBooking = mutation({
     endMinutes: v.number(),
   },
   handler: async (ctx, args) => {
+    await rateLimiter.limit(ctx, 'createBooking', {
+      key: args.residentId,
+      throws: true,
+    })
+
     const zone = await ctx.db.get(args.zoneId)
     if (!zone || !zone.active)
       throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Zona no disponible')

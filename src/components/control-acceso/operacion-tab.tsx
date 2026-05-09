@@ -50,13 +50,12 @@ export function OperacionTab({ complexId }: OperacionTabProps) {
     convexQuery(api.complexConfig.queries.getByComplex, { complexId }),
   )
 
-  const carrosDentro = activos.filter((r) => {
-    const vehicleType = r.vehicle?.type ?? r.visitorVehicleType ?? 'CAR'
-    return vehicleType !== 'MOTORCYCLE'
-  }).length
-  const motosDentro = activos.filter(
-    (r) => (r.vehicle?.type ?? r.visitorVehicleType) === 'MOTORCYCLE',
-  ).length
+  const { data: activeStats } = useSuspenseQuery(
+    convexQuery(api.accessRecords.queries.getActiveStats, { complexId }),
+  )
+
+  const carrosDentro = activeStats.cars
+  const motosDentro = activeStats.motos
   const carrosCapacidad = config?.carParkingSlots ?? 0
   const motosCapacidad = config?.motoParkingSlots ?? 0
   const permanenciaDias = config?.ruleMaxStayDays ?? 0

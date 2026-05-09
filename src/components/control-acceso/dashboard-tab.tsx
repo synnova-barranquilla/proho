@@ -78,19 +78,13 @@ export function DashboardTab({ complexId }: DashboardTabProps) {
     convexQuery(api.accessRecords.queries.listActive, { complexId }),
   )
 
-  const carrosDentro = activos.filter((r: RegistroActivo) => {
-    const vehicleType = r.vehicle?.type ?? r.visitorVehicleType ?? 'CAR'
-    return vehicleType !== 'MOTORCYCLE'
-  }).length
+  const { data: activeStats } = useSuspenseQuery(
+    convexQuery(api.accessRecords.queries.getActiveStats, { complexId }),
+  )
 
-  const motosDentro = activos.filter(
-    (r: RegistroActivo) =>
-      (r.vehicle?.type ?? r.visitorVehicleType) === 'MOTORCYCLE',
-  ).length
-
-  const visitantesDentro = activos.filter(
-    (r: RegistroActivo) => r.type === 'VISITOR' || r.type === 'ADMIN_VISIT',
-  ).length
+  const carrosDentro = activeStats.cars
+  const motosDentro = activeStats.motos
+  const visitantesDentro = activeStats.visitors
 
   const residentesDentro = useMemo(
     () =>

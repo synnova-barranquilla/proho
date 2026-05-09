@@ -33,6 +33,11 @@ export const accessRecordFields = {
     v.union(v.literal('CAR'), v.literal('MOTORCYCLE'), v.literal('OTHER')),
   ),
 
+  // Resolved vehicle type set at write time — avoids joining vehicles table on reads
+  resolvedVehicleType: v.optional(
+    v.union(v.literal('CAR'), v.literal('MOTORCYCLE'), v.literal('OTHER')),
+  ),
+
   // Rules engine decision
   engineDecision: v.array(v.string()),
   finalDecision: finalDecisionValues,

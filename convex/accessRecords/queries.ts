@@ -237,3 +237,37 @@ export const getDashboardStats = query({
     }
   },
 })
+
+export const getActiveStats = query({
+  args: {
+    complexId: v.id('complexes'),
+  },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId, {
+      allowedRoles: ['ADMIN', 'GUARD'],
+    })
+
+    const records = await ctx.db
+      .query('accessRecords')
+      .withIndex('by_complex_decision_exit', (q) =>
+        q
+          .eq('complexId', args.complexId)
+          .eq('finalDecision', 'ALLOWED')
+          .eq('exitedAt', undefined),
+      )
+      .collect()
+
+    let cars = 0
+    let motos = 0
+    let visitors = 0
+
+    for (const r of records) {
+      const vType = r.resolvedVehicleType ?? r.visitorVehicleType ?? 'CAR'
+      if (r.type === 'VISITOR' || r.type === 'ADMIN_VISIT') visitors++
+      if (vType === 'MOTORCYCLE') motos++
+      else cars++
+    }
+
+    return { cars, motos, visitors, total: records.length }
+  },
+})

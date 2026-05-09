@@ -6,6 +6,7 @@ import { mutation, type MutationCtx } from '../_generated/server'
 import { requireCommsAccess } from '../lib/auth'
 import { RECURRENCE_LOOKBACK_MS } from '../lib/constants'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
+import { rateLimiter } from '../lib/rateLimits'
 import {
   ALL_COMMS_ROLES,
   CLOSED_STATUSES,
@@ -540,6 +541,11 @@ export const sendResidentMessage = mutation({
         'No se encontró tu registro de residente asociado',
       )
     }
+
+    await rateLimiter.limit(ctx, 'sendMessage', {
+      key: membership.residentId,
+      throws: true,
+    })
 
     const resident = await ctx.db.get(membership.residentId)
     if (!resident) {

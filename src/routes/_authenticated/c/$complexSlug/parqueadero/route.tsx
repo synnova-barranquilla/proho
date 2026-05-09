@@ -37,6 +37,11 @@ export const Route = createFileRoute(
         api.complexConfig.queries.getByComplex,
         { complexId },
       ),
+      prefetchAuthenticatedQuery(
+        queryClient,
+        api.accessRecords.queries.getActiveStats,
+        { complexId },
+      ),
     ])
     return null
   },

@@ -8,6 +8,7 @@ import { canInvite, requireComplexAccess, requireOrgRole } from '../lib/auth'
 import { SEVEN_DAYS_MS } from '../lib/constants'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { isInternalOrg } from '../lib/organizations'
+import { rateLimiter } from '../lib/rateLimits'
 import { orgRoles } from '../users/validators'
 
 /**
@@ -47,6 +48,11 @@ export const create = mutation({
     complexIdsOnAccept: v.optional(v.array(v.id('complexes'))),
   },
   handler: async (ctx, args) => {
+    await rateLimiter.limit(ctx, 'inviteUser', {
+      key: args.email,
+      throws: true,
+    })
+
     // Discriminate: org-scoped (SUPER_ADMIN/owner) or complex-scoped (ADMIN of the complex)?
     const isComplexScoped = args.complexId !== undefined
 

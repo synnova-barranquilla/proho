@@ -7,6 +7,7 @@ import {
   type MutationCtx,
 } from '../_generated/server'
 import { ERROR_CODES } from '../lib/errors'
+import { rateLimiter } from '../lib/rateLimits'
 
 async function findPendingInvitation(ctx: MutationCtx, email: string) {
   const invitations = await ctx.db
@@ -124,6 +125,11 @@ export const handleLogin = mutation({
     lastName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await rateLimiter.limit(ctx, 'handleLogin', {
+      key: args.email,
+      throws: true,
+    })
+
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) {
       throw new ConvexError({

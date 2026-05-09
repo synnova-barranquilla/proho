@@ -11,7 +11,6 @@ import {
   type OccupancySnapshot,
   type RuleConfig,
   type VehicleInside,
-  type VehicleTipo,
 } from '../lib/rulesEngine'
 import { vehicleTypes } from '../vehicles/validators'
 import { accessRecordTypes } from './validators'
@@ -71,13 +70,7 @@ async function getComplexOccupancy(
   let cars = 0
   let motorcycles = 0
   for (const r of records) {
-    let vehicleType: VehicleTipo = 'CAR'
-    if (r.vehicleId) {
-      const vehicle = await ctx.db.get(r.vehicleId)
-      vehicleType = vehicle?.type ?? 'CAR'
-    } else if (r.visitorVehicleType) {
-      vehicleType = r.visitorVehicleType
-    }
+    const vehicleType = r.resolvedVehicleType ?? r.visitorVehicleType ?? 'CAR'
     if (vehicleType === 'MOTORCYCLE') motorcycles++
     else cars++
   }
@@ -217,6 +210,7 @@ export const registerEntry = mutation({
       normalizedPlate,
       unitId: vehicle.unitId,
       enteredAt: Date.now(),
+      resolvedVehicleType: vehicle.type,
       engineDecision: ruleResult.violations,
       finalDecision: 'ALLOWED',
       justification: args.justification?.trim() || undefined,
@@ -285,6 +279,7 @@ export const registerExit = mutation({
       normalizedPlate,
       unitId: vehicle?.unitId,
       exitedAt: now,
+      resolvedVehicleType: vehicle?.type,
       engineDecision: [],
       finalDecision: 'ALLOWED',
       guardId: user._id,
@@ -370,6 +365,7 @@ export const registerVisitor = mutation({
       normalizedPlate,
       unitId: args.unitId,
       visitorVehicleType: args.vehicleType,
+      resolvedVehicleType: args.vehicleType,
       enteredAt: Date.now(),
       engineDecision: ruleResult.violations,
       finalDecision: 'ALLOWED',
@@ -503,6 +499,7 @@ export const registerNewResident = mutation({
       rawPlate: args.rawPlate,
       normalizedPlate,
       unitId: args.unitId,
+      resolvedVehicleType: args.vehicleType,
       enteredAt: Date.now(),
       engineDecision: ruleResult.violations,
       finalDecision: 'ALLOWED',
@@ -539,6 +536,12 @@ export const registerRejection = mutation({
 
     const normalizedPlate = normalizePlate(args.rawPlate)
 
+    let resolvedVehicleType: 'CAR' | 'MOTORCYCLE' | 'OTHER' | undefined
+    if (args.vehicleId) {
+      const vehicle = await ctx.db.get(args.vehicleId)
+      resolvedVehicleType = vehicle?.type
+    }
+
     const recordId = await ctx.db.insert('accessRecords', {
       complexId: args.complexId,
       type: args.type,
@@ -546,6 +549,7 @@ export const registerRejection = mutation({
       rawPlate: args.rawPlate,
       normalizedPlate,
       unitId: args.unitId,
+      resolvedVehicleType,
       engineDecision: args.engineDecision,
       finalDecision: 'REJECTED',
       guardId: user._id,

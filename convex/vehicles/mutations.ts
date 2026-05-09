@@ -4,6 +4,7 @@ import { mutation } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
 import { isValidPlate, normalizePlate, requireValidPlate } from '../lib/plate'
+import { rateLimiter } from '../lib/rateLimits'
 import { vehicleTypes } from './validators'
 
 export const create = mutation({
@@ -119,6 +120,11 @@ export const bulkImport = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    await rateLimiter.limit(ctx, 'bulkImport', {
+      key: args.complexId,
+      throws: true,
+    })
+
     await requireComplexAccess(ctx, args.complexId, {
       allowedRoles: ['ADMIN'],
     })
