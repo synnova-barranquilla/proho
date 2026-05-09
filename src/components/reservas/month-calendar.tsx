@@ -187,7 +187,6 @@ export function MonthCalendar({
             const isSelected = cell.date === selectedDate
             const isPast = cell.date < today
             const zoneIds = monthSummary[cell.date] ?? []
-            const hasDots = zoneIds.length > 0
 
             return (
               <button
@@ -216,30 +215,28 @@ export function MonthCalendar({
                   {cell.dayNumber}
                 </span>
 
-                {/* Color dots */}
-                {hasDots && (
-                  <div className="flex gap-0.5">
-                    {(zoneIds.length <= 4 ? zoneIds : zoneIds.slice(0, 3)).map(
-                      (zoneId) => {
-                        const colorIdx = zoneColorMap.get(zoneId)
-                        return (
-                          <span
-                            key={zoneId}
-                            className={cn(
-                              'h-1.5 w-1.5 rounded-full',
-                              colorIdx !== undefined
-                                ? dotBgClass(colorIdx)
-                                : 'bg-muted-foreground',
-                            )}
-                          />
-                        )
-                      },
-                    )}
-                    {zoneIds.length > 4 && (
-                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
-                    )}
-                  </div>
-                )}
+                {/* Color dots — always reserve space for consistent row height */}
+                <div className="flex h-1.5 gap-0.5">
+                  {(zoneIds.length <= 4 ? zoneIds : zoneIds.slice(0, 3)).map(
+                    (zoneId) => {
+                      const colorIdx = zoneColorMap.get(zoneId)
+                      return (
+                        <span
+                          key={zoneId}
+                          className={cn(
+                            'h-1.5 w-1.5 rounded-full',
+                            colorIdx !== undefined
+                              ? dotBgClass(colorIdx)
+                              : 'bg-muted-foreground',
+                          )}
+                        />
+                      )
+                    },
+                  )}
+                  {zoneIds.length > 4 && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+                  )}
+                </div>
               </button>
             )
           })}
