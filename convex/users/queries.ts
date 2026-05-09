@@ -99,17 +99,25 @@ export const listAllWithOrg = query({
   handler: async (ctx, args) => {
     await requireOrgRole(ctx, ['SUPER_ADMIN'])
 
-    const [users, orgs] = await Promise.all([
-      ctx.db.query('users').order('desc').collect(),
-      ctx.db.query('organizations').collect(),
-    ])
+    const users = await ctx.db
+      .query('users')
+      .order('desc')
+      .filter((q) =>
+        args.includeInactive ? q.eq(true, true) : q.eq(q.field('active'), true),
+      )
+      .take(1000)
 
-    const orgMap = new Map(orgs.map((o) => [o._id, o]))
-    return users
-      .filter((u) => (args.includeInactive ? true : u.active))
-      .map((u) => ({
-        ...u,
-        organization: orgMap.get(u.organizationId) ?? null,
-      }))
+    const orgIds = [...new Set(users.map((u) => u.organizationId))]
+    const orgs = await Promise.all(orgIds.map((id) => ctx.db.get(id)))
+    const orgMap = new Map(
+      orgs
+        .filter((o): o is NonNullable<typeof o> => o !== null)
+        .map((o) => [o._id, o]),
+    )
+
+    return users.map((u) => ({
+      ...u,
+      organization: orgMap.get(u.organizationId) ?? null,
+    }))
   },
 })

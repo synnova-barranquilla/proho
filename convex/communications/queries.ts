@@ -183,7 +183,7 @@ export const searchClosedTickets = query({
             .withIndex('by_complex_and_status', (q) =>
               q.eq('complexId', args.complexId).eq('status', status),
             )
-            .collect(),
+            .take(500),
         ),
       )
       tickets = results.flat()

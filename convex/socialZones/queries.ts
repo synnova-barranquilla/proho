@@ -1,13 +1,11 @@
 import { v } from 'convex/values'
 
-import { query } from '../_generated/server'
-import { requireComplexAccess } from '../lib/auth'
+import { complexQuery } from '../lib/functions'
 import { computeAvailabilitySegments, isoToDayKey } from './availability'
 
-export const listByComplex = query({
-  args: { complexId: v.id('complexes') },
+export const listByComplex = complexQuery({
+  args: {},
   handler: async (ctx, args) => {
-    await requireComplexAccess(ctx, args.complexId)
     return ctx.db
       .query('socialZones')
       .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
@@ -16,13 +14,11 @@ export const listByComplex = query({
   },
 })
 
-export const getWeekBookings = query({
+export const getWeekBookings = complexQuery({
   args: {
-    complexId: v.id('complexes'),
     weekDates: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireComplexAccess(ctx, args.complexId)
     const bookings = []
     for (const date of args.weekDates) {
       const dayBookings = await ctx.db
@@ -38,13 +34,11 @@ export const getWeekBookings = query({
   },
 })
 
-export const getDateBlocks = query({
+export const getDateBlocks = complexQuery({
   args: {
-    complexId: v.id('complexes'),
     weekDates: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireComplexAccess(ctx, args.complexId)
     const blocks = []
     for (const date of args.weekDates) {
       const dayBlocks = await ctx.db
@@ -59,13 +53,11 @@ export const getDateBlocks = query({
   },
 })
 
-export const getMonthSummary = query({
+export const getMonthSummary = complexQuery({
   args: {
-    complexId: v.id('complexes'),
     monthDates: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireComplexAccess(ctx, args.complexId)
     const summary: Record<string, string[]> = {}
     for (const date of args.monthDates) {
       const dayBookings = await ctx.db
@@ -84,13 +76,11 @@ export const getMonthSummary = query({
   },
 })
 
-export const getMyBookings = query({
+export const getMyBookings = complexQuery({
   args: {
-    complexId: v.id('complexes'),
     residentId: v.id('residents'),
   },
   handler: async (ctx, args) => {
-    await requireComplexAccess(ctx, args.complexId)
     const bookings = await ctx.db
       .query('socialZoneBookings')
       .withIndex('by_resident', (q) => q.eq('residentId', args.residentId))
@@ -114,14 +104,11 @@ export const getMyBookings = query({
   },
 })
 
-export const getDayAvailability = query({
+export const getDayAvailability = complexQuery({
   args: {
-    complexId: v.id('complexes'),
     date: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireComplexAccess(ctx, args.complexId)
-
     const [zones, bookings, dateBlocks] = await Promise.all([
       ctx.db
         .query('socialZones')

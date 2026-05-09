@@ -2,7 +2,6 @@ import { HOUR, MINUTE, RateLimiter } from '@convex-dev/rate-limiter'
 
 import { components } from '../_generated/api'
 
-// @ts-expect-error rateLimiter component types are generated after `npx convex dev`
 export const rateLimiter = new RateLimiter(components.rateLimiter, {
   handleLogin: {
     kind: 'token bucket',

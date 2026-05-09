@@ -149,6 +149,7 @@ export const listHistory = query({
   args: {
     complexId: v.id('complexes'),
     cutoffTimestamp: v.optional(v.number()),
+    limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     await requireComplexAccess(ctx, args.complexId, {
@@ -156,17 +157,16 @@ export const listHistory = query({
     })
 
     const cutoff = args.cutoffTimestamp ?? 0
+    const maxResults = Math.min(args.limit ?? 1000, 2000)
 
     const allRecords = await ctx.db
       .query('accessRecords')
       .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
       .order('desc')
-      .collect()
-
-    const filtered =
-      cutoff > 0
-        ? allRecords.filter((r) => r._creationTime >= cutoff)
-        : allRecords
+      .filter((q) =>
+        cutoff > 0 ? q.gte(q.field('_creationTime'), cutoff) : q.eq(true, true),
+      )
+      .take(maxResults)
 
     const [vehicles, units] = await Promise.all([
       ctx.db
@@ -182,7 +182,7 @@ export const listHistory = query({
     const vehicleMap = new Map(vehicles.map((veh) => [veh._id, veh]))
     const unitMap = new Map(units.map((u) => [u._id, u]))
 
-    return filtered.map((r) => ({
+    return allRecords.map((r) => ({
       ...r,
       vehicle: r.vehicleId ? (vehicleMap.get(r.vehicleId) ?? null) : null,
       unit: r.unitId ? (unitMap.get(r.unitId) ?? null) : null,

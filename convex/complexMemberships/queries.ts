@@ -1,34 +1,22 @@
 import { v } from 'convex/values'
 
-import { query } from '../_generated/server'
-import { requireComplexAccess, requireOrgRole, requireUser } from '../lib/auth'
+import { requireComplexAccess, requireOrgRole } from '../lib/auth'
+import { authenticatedQuery, complexQuery } from '../lib/functions'
 
-/**
- * Lists the active memberships of the authenticated user.
- * Useful for resolving "which complexes does this user have access to" from the client.
- */
-export const listForCurrentUser = query({
+export const listForCurrentUser = authenticatedQuery({
   args: {},
   handler: async (ctx) => {
-    const user = await requireUser(ctx)
     return await ctx.db
       .query('complexMemberships')
       .withIndex('by_user_and_active', (q) =>
-        q.eq('userId', user._id).eq('active', true),
+        q.eq('userId', ctx.user._id).eq('active', true),
       )
       .collect()
   },
 })
 
-/**
- * Lists the users with access to a complex, optionally filtered by role.
- * Includes the user document embedded. Used by:
- * - `/admin/c/$id/usuarios` to see GUARD/etc.
- * - `/admin/equipo` (owners) to see who has `role: ADMIN` in each complex
- */
-export const listByComplex = query({
+export const listByComplex = complexQuery({
   args: {
-    complexId: v.id('complexes'),
     role: v.optional(
       v.union(
         v.literal('ADMIN'),
@@ -64,11 +52,7 @@ export const listByComplex = query({
   },
 })
 
-/**
- * Lists all ADMIN memberships for an entire organization.
- * Used by the `/admin/equipo` screen (only owners).
- */
-export const listOrgAdminMemberships = query({
+export const listOrgAdminMemberships = authenticatedQuery({
   args: {},
   handler: async (ctx) => {
     const user = await requireOrgRole(ctx, ['ADMIN', 'SUPER_ADMIN'])

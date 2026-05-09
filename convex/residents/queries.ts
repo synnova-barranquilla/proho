@@ -2,14 +2,11 @@ import { v } from 'convex/values'
 
 import { query } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
+import { complexQuery } from '../lib/functions'
 
-export const listByComplex = query({
-  args: {
-    complexId: v.id('complexes'),
-  },
+export const listByComplex = complexQuery({
+  args: {},
   handler: async (ctx, args) => {
-    await requireComplexAccess(ctx, args.complexId)
-
     const [residents, units] = await Promise.all([
       ctx.db
         .query('residents')

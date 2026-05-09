@@ -2,18 +2,11 @@ import { v } from 'convex/values'
 
 import { query } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
+import { complexQuery } from '../lib/functions'
 
-/**
- * Lists units of the complex grouped by tower.
- * Returns an object with `towers: Array<{ tower, units }>` sorted.
- */
-export const listByComplex = query({
-  args: {
-    complexId: v.id('complexes'),
-  },
+export const listByComplex = complexQuery({
+  args: {},
   handler: async (ctx, args) => {
-    await requireComplexAccess(ctx, args.complexId)
-
     const units = await ctx.db
       .query('units')
       .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))

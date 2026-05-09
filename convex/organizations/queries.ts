@@ -1,20 +1,12 @@
 import { v } from 'convex/values'
 
-import { query } from '../_generated/server'
-import { requireOrgRole } from '../lib/auth'
+import { superAdminQuery } from '../lib/functions'
 
-/**
- * Lists all organizations. Only SUPER_ADMIN.
- * By default excludes inactive organizations; pass `includeInactive: true`
- * to include them.
- */
-export const listAll = query({
+export const listAll = superAdminQuery({
   args: {
     includeInactive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await requireOrgRole(ctx, ['SUPER_ADMIN'])
-
     const orgs = await ctx.db.query('organizations').order('desc').collect()
 
     if (args.includeInactive) return orgs
@@ -22,22 +14,11 @@ export const listAll = query({
   },
 })
 
-/**
- * Returns an organization with its active admins and pending invitations
- * embedded. Used by the detail view at `/super-admin/organizaciones/$orgId`.
- *
- * Returns null if the org does not exist — the route loader converts this
- * to a 404 via `throw notFound()`.
- *
- * Enriches pending invitations with `invitedByUser` via in-memory map.
- */
-export const getWithDetails = query({
+export const getWithDetails = superAdminQuery({
   args: {
     orgId: v.id('organizations'),
   },
   handler: async (ctx, args) => {
-    await requireOrgRole(ctx, ['SUPER_ADMIN'])
-
     const organization = await ctx.db.get(args.orgId)
     if (!organization) return null
 

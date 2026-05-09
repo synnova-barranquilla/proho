@@ -216,3 +216,112 @@ describe('accessRecords queries', () => {
     })
   })
 })
+
+describe('complexConfig queries', () => {
+  it('returns null when no config exists', async () => {
+    const t = convexTest(schema, modules)
+    const asAdmin = t.withIdentity({ subject: 'admin-1' })
+    const { complexId } = await setupTestComplex(asAdmin)
+
+    const config = await asAdmin.query(api.complexConfig.queries.getByComplex, {
+      complexId,
+    })
+
+    expect(config).toBeNull()
+  })
+})
+
+describe('users queries', () => {
+  describe('getCurrentContext', () => {
+    it('returns null for unauthenticated user', async () => {
+      const t = convexTest(schema, modules)
+
+      const result = await t.query(api.users.queries.getCurrentContext, {})
+      expect(result).toBeNull()
+    })
+
+    it('returns user and organization for authenticated user', async () => {
+      const t = convexTest(schema, modules)
+      const asUser = t.withIdentity({ subject: 'user-1' })
+
+      await asUser.mutation(async (ctx) => {
+        const orgId = await ctx.db.insert('organizations', {
+          name: 'Test Org',
+          slug: 'test-org',
+          active: true,
+          activeModules: [],
+        })
+        await ctx.db.insert('users', {
+          email: 'user@test.com',
+          firstName: 'User',
+          workosUserId: 'user-1',
+          organizationId: orgId,
+          orgRole: 'ADMIN',
+          active: true,
+          isOrgOwner: true,
+        })
+      })
+
+      const result = await asUser.query(api.users.queries.getCurrentContext, {})
+      expect(result).not.toBeNull()
+      expect(result!.user.email).toBe('user@test.com')
+      expect(result!.organization.name).toBe('Test Org')
+    })
+  })
+})
+
+describe('socialZones queries', () => {
+  it('listByComplex returns only active zones', async () => {
+    const t = convexTest(schema, modules)
+    const asAdmin = t.withIdentity({ subject: 'admin-1' })
+    const { complexId } = await setupTestComplex(asAdmin)
+
+    await asAdmin.mutation(async (ctx) => {
+      await ctx.db.insert('socialZones', {
+        complexId,
+        name: 'Active Zone',
+        blockDurationMinutes: 60,
+        maxConsecutiveBlocks: 2,
+        weekdayAvailability: {
+          sun: null,
+          mon: { start: 480, end: 1200 },
+          tue: { start: 480, end: 1200 },
+          wed: { start: 480, end: 1200 },
+          thu: { start: 480, end: 1200 },
+          fri: { start: 480, end: 1200 },
+          sat: null,
+        },
+        colorIndex: 0,
+        isPlatformDefault: false,
+        active: true,
+        displayOrder: 0,
+      })
+      await ctx.db.insert('socialZones', {
+        complexId,
+        name: 'Inactive Zone',
+        blockDurationMinutes: 60,
+        maxConsecutiveBlocks: 2,
+        weekdayAvailability: {
+          sun: null,
+          mon: null,
+          tue: null,
+          wed: null,
+          thu: null,
+          fri: null,
+          sat: null,
+        },
+        colorIndex: 1,
+        isPlatformDefault: false,
+        active: false,
+        displayOrder: 1,
+      })
+    })
+
+    const zones = await asAdmin.query(api.socialZones.queries.listByComplex, {
+      complexId,
+    })
+
+    expect(zones).toHaveLength(1)
+    expect(zones[0].name).toBe('Active Zone')
+  })
+})
