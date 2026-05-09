@@ -411,6 +411,20 @@ function ComplexScopedSidebar({
                         }
                       />
                     </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(`${base}/parqueadero/configuracion`)}
+                        render={
+                          <Link
+                            to="/c/$complexSlug/parqueadero/configuracion"
+                            params={{ complexSlug: slug }}
+                          >
+                            <Settings />
+                            <span>Configuración</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
                   </>
                 ) : null}
               </SidebarMenu>
@@ -563,20 +577,6 @@ function ComplexScopedSidebar({
                           >
                             <Users />
                             <span>Usuarios del conjunto</span>
-                          </Link>
-                        }
-                      />
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        isActive={isActive(`${base}/configuracion`)}
-                        render={
-                          <Link
-                            to="/c/$complexSlug/configuracion"
-                            params={{ complexSlug: slug }}
-                          >
-                            <Settings />
-                            <span>Configuración</span>
                           </Link>
                         }
                       />

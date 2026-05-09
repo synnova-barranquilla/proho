@@ -9,54 +9,54 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TunnelRouteImport } from './routes/tunnel'
-import { Route as ProgressRouteImport } from './routes/progress'
-import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
-import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
-import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
-import { Route as LogoutRouteImport } from './routes/logout'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as InvitacionRevocadaRouteImport } from './routes/invitacion-revocada'
-import { Route as InvitacionExpiradaRouteImport } from './routes/invitacion-expirada'
-import { Route as ErrorAuthRouteImport } from './routes/error-auth'
-import { Route as CuentaDesactivadaRouteImport } from './routes/cuenta-desactivada'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiUploadthingRouteImport } from './routes/api/uploadthing'
-import { Route as AuthenticatedSeleccionarConjuntoRouteImport } from './routes/_authenticated/seleccionar-conjunto'
-import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
-import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
-import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
-import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
-import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
-import { Route as AuthenticatedSuperAdminConjuntosRouteImport } from './routes/_authenticated/super-admin/conjuntos'
 import { Route as AuthenticatedAdminEquipoRouteImport } from './routes/_authenticated/admin/equipo'
-import { Route as AuthenticatedCComplexSlugRouteRouteImport } from './routes/_authenticated/c/$complexSlug/route'
-import { Route as AuthenticatedCComplexSlugIndexRouteImport } from './routes/_authenticated/c/$complexSlug/index'
-import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from './routes/_authenticated/super-admin/organizaciones/$orgId'
-import { Route as AuthenticatedCComplexSlugUsuariosRouteImport } from './routes/_authenticated/c/$complexSlug/usuarios'
-import { Route as AuthenticatedCComplexSlugConfiguracionRouteImport } from './routes/_authenticated/c/$complexSlug/configuracion'
-import { Route as AuthenticatedCComplexSlugZonasSocialesRouteRouteImport } from './routes/_authenticated/c/$complexSlug/zonas-sociales/route'
-import { Route as AuthenticatedCComplexSlugParqueaderoRouteRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/route'
-import { Route as AuthenticatedCComplexSlugComunicacionRouteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/route'
-import { Route as AuthenticatedCComplexSlugZonasSocialesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/zonas-sociales/index'
-import { Route as AuthenticatedCComplexSlugVehiculosIndexRouteImport } from './routes/_authenticated/c/$complexSlug/vehiculos/index'
-import { Route as AuthenticatedCComplexSlugUnidadesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/unidades/index'
-import { Route as AuthenticatedCComplexSlugResidentesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/residentes/index'
-import { Route as AuthenticatedCComplexSlugParqueaderoIndexRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/index'
-import { Route as AuthenticatedCComplexSlugComunicacionIndexRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/index'
-import { Route as AuthenticatedCComplexSlugZonasSocialesReservasRouteImport } from './routes/_authenticated/c/$complexSlug/zonas-sociales/reservas'
-import { Route as AuthenticatedCComplexSlugZonasSocialesConfiguracionRouteImport } from './routes/_authenticated/c/$complexSlug/zonas-sociales/configuracion'
-import { Route as AuthenticatedCComplexSlugParqueaderoNovedadesRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/novedades'
-import { Route as AuthenticatedCComplexSlugParqueaderoHistoricoRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/historico'
-import { Route as AuthenticatedCComplexSlugParqueaderoDashboardRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/dashboard'
-import { Route as AuthenticatedCComplexSlugParqueaderoControlDeAccesoRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/control-de-acceso'
-import { Route as AuthenticatedCComplexSlugComunicacionSoporteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/soporte'
-import { Route as AuthenticatedCComplexSlugComunicacionConversacionesRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/conversaciones'
-import { Route as AuthenticatedCComplexSlugComunicacionCategoriasRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/categorias'
-import { Route as AuthenticatedCComplexSlugComunicacionAdjuntosRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/adjuntos'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedCComplexSlugComunicacionAccionesRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/acciones'
+import { Route as AuthenticatedCComplexSlugComunicacionAdjuntosRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/adjuntos'
+import { Route as AuthenticatedCComplexSlugComunicacionCategoriasRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/categorias'
+import { Route as AuthenticatedCComplexSlugComunicacionConversacionesRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/conversaciones'
+import { Route as AuthenticatedCComplexSlugComunicacionIndexRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/index'
+import { Route as AuthenticatedCComplexSlugComunicacionRouteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/route'
+import { Route as AuthenticatedCComplexSlugComunicacionSoporteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/soporte'
+import { Route as AuthenticatedCComplexSlugIndexRouteImport } from './routes/_authenticated/c/$complexSlug/index'
+import { Route as AuthenticatedCComplexSlugParqueaderoConfiguracionRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/configuracion'
+import { Route as AuthenticatedCComplexSlugParqueaderoControlDeAccesoRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/control-de-acceso'
+import { Route as AuthenticatedCComplexSlugParqueaderoDashboardRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/dashboard'
+import { Route as AuthenticatedCComplexSlugParqueaderoHistoricoRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/historico'
+import { Route as AuthenticatedCComplexSlugParqueaderoIndexRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/index'
+import { Route as AuthenticatedCComplexSlugParqueaderoNovedadesRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/novedades'
+import { Route as AuthenticatedCComplexSlugParqueaderoRouteRouteImport } from './routes/_authenticated/c/$complexSlug/parqueadero/route'
+import { Route as AuthenticatedCComplexSlugResidentesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/residentes/index'
+import { Route as AuthenticatedCComplexSlugRouteRouteImport } from './routes/_authenticated/c/$complexSlug/route'
+import { Route as AuthenticatedCComplexSlugUnidadesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/unidades/index'
+import { Route as AuthenticatedCComplexSlugUsuariosRouteImport } from './routes/_authenticated/c/$complexSlug/usuarios'
+import { Route as AuthenticatedCComplexSlugVehiculosIndexRouteImport } from './routes/_authenticated/c/$complexSlug/vehiculos/index'
+import { Route as AuthenticatedCComplexSlugZonasSocialesConfiguracionRouteImport } from './routes/_authenticated/c/$complexSlug/zonas-sociales/configuracion'
+import { Route as AuthenticatedCComplexSlugZonasSocialesIndexRouteImport } from './routes/_authenticated/c/$complexSlug/zonas-sociales/index'
+import { Route as AuthenticatedCComplexSlugZonasSocialesReservasRouteImport } from './routes/_authenticated/c/$complexSlug/zonas-sociales/reservas'
+import { Route as AuthenticatedCComplexSlugZonasSocialesRouteRouteImport } from './routes/_authenticated/c/$complexSlug/zonas-sociales/route'
+import { Route as AuthenticatedSeleccionarConjuntoRouteImport } from './routes/_authenticated/seleccionar-conjunto'
+import { Route as AuthenticatedSuperAdminConjuntosRouteImport } from './routes/_authenticated/super-admin/conjuntos'
+import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin/index'
+import { Route as AuthenticatedSuperAdminOrganizacionesOrgIdRouteImport } from './routes/_authenticated/super-admin/organizaciones/$orgId'
+import { Route as AuthenticatedSuperAdminRouteRouteImport } from './routes/_authenticated/super-admin/route'
+import { Route as AuthenticatedSuperAdminUsuariosRouteImport } from './routes/_authenticated/super-admin/usuarios'
+import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as ApiUploadthingRouteImport } from './routes/api/uploadthing'
+import { Route as CuentaDesactivadaRouteImport } from './routes/cuenta-desactivada'
+import { Route as ErrorAuthRouteImport } from './routes/error-auth'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as InvitacionExpiradaRouteImport } from './routes/invitacion-expirada'
+import { Route as InvitacionRevocadaRouteImport } from './routes/invitacion-revocada'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LogoutRouteImport } from './routes/logout'
+import { Route as NoAutorizadoRouteImport } from './routes/no-autorizado'
+import { Route as NoRegistradoRouteImport } from './routes/no-registrado'
+import { Route as OrganizacionInactivaRouteImport } from './routes/organizacion-inactiva'
+import { Route as ProgressRouteImport } from './routes/progress'
+import { Route as TunnelRouteImport } from './routes/tunnel'
 
 const TunnelRoute = TunnelRouteImport.update({
   id: '/tunnel',
@@ -202,12 +202,6 @@ const AuthenticatedCComplexSlugUsuariosRoute =
     path: '/usuarios',
     getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
   } as any)
-const AuthenticatedCComplexSlugConfiguracionRoute =
-  AuthenticatedCComplexSlugConfiguracionRouteImport.update({
-    id: '/configuracion',
-    path: '/configuracion',
-    getParentRoute: () => AuthenticatedCComplexSlugRouteRoute,
-  } as any)
 const AuthenticatedCComplexSlugZonasSocialesRouteRoute =
   AuthenticatedCComplexSlugZonasSocialesRouteRouteImport.update({
     id: '/zonas-sociales',
@@ -298,6 +292,12 @@ const AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute =
     path: '/control-de-acceso',
     getParentRoute: () => AuthenticatedCComplexSlugParqueaderoRouteRoute,
   } as any)
+const AuthenticatedCComplexSlugParqueaderoConfiguracionRoute =
+  AuthenticatedCComplexSlugParqueaderoConfiguracionRouteImport.update({
+    id: '/configuracion',
+    path: '/configuracion',
+    getParentRoute: () => AuthenticatedCComplexSlugParqueaderoRouteRoute,
+  } as any)
 const AuthenticatedCComplexSlugComunicacionSoporteRoute =
   AuthenticatedCComplexSlugComunicacionSoporteRouteImport.update({
     id: '/soporte',
@@ -356,7 +356,6 @@ export interface FileRoutesByFullPath {
   '/c/$complexSlug/comunicacion': typeof AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren
   '/c/$complexSlug/parqueadero': typeof AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren
   '/c/$complexSlug/zonas-sociales': typeof AuthenticatedCComplexSlugZonasSocialesRouteRouteWithChildren
-  '/c/$complexSlug/configuracion': typeof AuthenticatedCComplexSlugConfiguracionRoute
   '/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
   '/c/$complexSlug/': typeof AuthenticatedCComplexSlugIndexRoute
@@ -365,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
   '/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
+  '/c/$complexSlug/parqueadero/configuracion': typeof AuthenticatedCComplexSlugParqueaderoConfiguracionRoute
   '/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
   '/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
   '/c/$complexSlug/parqueadero/historico': typeof AuthenticatedCComplexSlugParqueaderoHistoricoRoute
@@ -399,7 +399,6 @@ export interface FileRoutesByTo {
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/super-admin': typeof AuthenticatedSuperAdminIndexRoute
-  '/c/$complexSlug/configuracion': typeof AuthenticatedCComplexSlugConfiguracionRoute
   '/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
   '/c/$complexSlug': typeof AuthenticatedCComplexSlugIndexRoute
@@ -408,6 +407,7 @@ export interface FileRoutesByTo {
   '/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
   '/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
+  '/c/$complexSlug/parqueadero/configuracion': typeof AuthenticatedCComplexSlugParqueaderoConfiguracionRoute
   '/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
   '/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
   '/c/$complexSlug/parqueadero/historico': typeof AuthenticatedCComplexSlugParqueaderoHistoricoRoute
@@ -450,7 +450,6 @@ export interface FileRoutesById {
   '/_authenticated/c/$complexSlug/comunicacion': typeof AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren
   '/_authenticated/c/$complexSlug/parqueadero': typeof AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren
   '/_authenticated/c/$complexSlug/zonas-sociales': typeof AuthenticatedCComplexSlugZonasSocialesRouteRouteWithChildren
-  '/_authenticated/c/$complexSlug/configuracion': typeof AuthenticatedCComplexSlugConfiguracionRoute
   '/_authenticated/c/$complexSlug/usuarios': typeof AuthenticatedCComplexSlugUsuariosRoute
   '/_authenticated/super-admin/organizaciones/$orgId': typeof AuthenticatedSuperAdminOrganizacionesOrgIdRoute
   '/_authenticated/c/$complexSlug/': typeof AuthenticatedCComplexSlugIndexRoute
@@ -459,6 +458,7 @@ export interface FileRoutesById {
   '/_authenticated/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/_authenticated/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
   '/_authenticated/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
+  '/_authenticated/c/$complexSlug/parqueadero/configuracion': typeof AuthenticatedCComplexSlugParqueaderoConfiguracionRoute
   '/_authenticated/c/$complexSlug/parqueadero/control-de-acceso': typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
   '/_authenticated/c/$complexSlug/parqueadero/dashboard': typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
   '/_authenticated/c/$complexSlug/parqueadero/historico': typeof AuthenticatedCComplexSlugParqueaderoHistoricoRoute
@@ -501,7 +501,6 @@ export interface FileRouteTypes {
     | '/c/$complexSlug/comunicacion'
     | '/c/$complexSlug/parqueadero'
     | '/c/$complexSlug/zonas-sociales'
-    | '/c/$complexSlug/configuracion'
     | '/c/$complexSlug/usuarios'
     | '/super-admin/organizaciones/$orgId'
     | '/c/$complexSlug/'
@@ -510,6 +509,7 @@ export interface FileRouteTypes {
     | '/c/$complexSlug/comunicacion/categorias'
     | '/c/$complexSlug/comunicacion/conversaciones'
     | '/c/$complexSlug/comunicacion/soporte'
+    | '/c/$complexSlug/parqueadero/configuracion'
     | '/c/$complexSlug/parqueadero/control-de-acceso'
     | '/c/$complexSlug/parqueadero/dashboard'
     | '/c/$complexSlug/parqueadero/historico'
@@ -544,7 +544,6 @@ export interface FileRouteTypes {
     | '/api/auth/callback'
     | '/admin'
     | '/super-admin'
-    | '/c/$complexSlug/configuracion'
     | '/c/$complexSlug/usuarios'
     | '/super-admin/organizaciones/$orgId'
     | '/c/$complexSlug'
@@ -553,6 +552,7 @@ export interface FileRouteTypes {
     | '/c/$complexSlug/comunicacion/categorias'
     | '/c/$complexSlug/comunicacion/conversaciones'
     | '/c/$complexSlug/comunicacion/soporte'
+    | '/c/$complexSlug/parqueadero/configuracion'
     | '/c/$complexSlug/parqueadero/control-de-acceso'
     | '/c/$complexSlug/parqueadero/dashboard'
     | '/c/$complexSlug/parqueadero/historico'
@@ -594,7 +594,6 @@ export interface FileRouteTypes {
     | '/_authenticated/c/$complexSlug/comunicacion'
     | '/_authenticated/c/$complexSlug/parqueadero'
     | '/_authenticated/c/$complexSlug/zonas-sociales'
-    | '/_authenticated/c/$complexSlug/configuracion'
     | '/_authenticated/c/$complexSlug/usuarios'
     | '/_authenticated/super-admin/organizaciones/$orgId'
     | '/_authenticated/c/$complexSlug/'
@@ -603,6 +602,7 @@ export interface FileRouteTypes {
     | '/_authenticated/c/$complexSlug/comunicacion/categorias'
     | '/_authenticated/c/$complexSlug/comunicacion/conversaciones'
     | '/_authenticated/c/$complexSlug/comunicacion/soporte'
+    | '/_authenticated/c/$complexSlug/parqueadero/configuracion'
     | '/_authenticated/c/$complexSlug/parqueadero/control-de-acceso'
     | '/_authenticated/c/$complexSlug/parqueadero/dashboard'
     | '/_authenticated/c/$complexSlug/parqueadero/historico'
@@ -826,13 +826,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCComplexSlugUsuariosRouteImport
       parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
     }
-    '/_authenticated/c/$complexSlug/configuracion': {
-      id: '/_authenticated/c/$complexSlug/configuracion'
-      path: '/configuracion'
-      fullPath: '/c/$complexSlug/configuracion'
-      preLoaderRoute: typeof AuthenticatedCComplexSlugConfiguracionRouteImport
-      parentRoute: typeof AuthenticatedCComplexSlugRouteRoute
-    }
     '/_authenticated/c/$complexSlug/zonas-sociales': {
       id: '/_authenticated/c/$complexSlug/zonas-sociales'
       path: '/zonas-sociales'
@@ -936,6 +929,13 @@ declare module '@tanstack/react-router' {
       path: '/control-de-acceso'
       fullPath: '/c/$complexSlug/parqueadero/control-de-acceso'
       preLoaderRoute: typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRouteImport
+      parentRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRoute
+    }
+    '/_authenticated/c/$complexSlug/parqueadero/configuracion': {
+      id: '/_authenticated/c/$complexSlug/parqueadero/configuracion'
+      path: '/configuracion'
+      fullPath: '/c/$complexSlug/parqueadero/configuracion'
+      preLoaderRoute: typeof AuthenticatedCComplexSlugParqueaderoConfiguracionRouteImport
       parentRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRoute
     }
     '/_authenticated/c/$complexSlug/comunicacion/soporte': {
@@ -1045,6 +1045,7 @@ const AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren =
   )
 
 interface AuthenticatedCComplexSlugParqueaderoRouteRouteChildren {
+  AuthenticatedCComplexSlugParqueaderoConfiguracionRoute: typeof AuthenticatedCComplexSlugParqueaderoConfiguracionRoute
   AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute: typeof AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute
   AuthenticatedCComplexSlugParqueaderoDashboardRoute: typeof AuthenticatedCComplexSlugParqueaderoDashboardRoute
   AuthenticatedCComplexSlugParqueaderoHistoricoRoute: typeof AuthenticatedCComplexSlugParqueaderoHistoricoRoute
@@ -1054,6 +1055,8 @@ interface AuthenticatedCComplexSlugParqueaderoRouteRouteChildren {
 
 const AuthenticatedCComplexSlugParqueaderoRouteRouteChildren: AuthenticatedCComplexSlugParqueaderoRouteRouteChildren =
   {
+    AuthenticatedCComplexSlugParqueaderoConfiguracionRoute:
+      AuthenticatedCComplexSlugParqueaderoConfiguracionRoute,
     AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute:
       AuthenticatedCComplexSlugParqueaderoControlDeAccesoRoute,
     AuthenticatedCComplexSlugParqueaderoDashboardRoute:
@@ -1096,7 +1099,6 @@ interface AuthenticatedCComplexSlugRouteRouteChildren {
   AuthenticatedCComplexSlugComunicacionRouteRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRouteWithChildren
   AuthenticatedCComplexSlugParqueaderoRouteRoute: typeof AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren
   AuthenticatedCComplexSlugZonasSocialesRouteRoute: typeof AuthenticatedCComplexSlugZonasSocialesRouteRouteWithChildren
-  AuthenticatedCComplexSlugConfiguracionRoute: typeof AuthenticatedCComplexSlugConfiguracionRoute
   AuthenticatedCComplexSlugUsuariosRoute: typeof AuthenticatedCComplexSlugUsuariosRoute
   AuthenticatedCComplexSlugIndexRoute: typeof AuthenticatedCComplexSlugIndexRoute
   AuthenticatedCComplexSlugResidentesIndexRoute: typeof AuthenticatedCComplexSlugResidentesIndexRoute
@@ -1112,8 +1114,6 @@ const AuthenticatedCComplexSlugRouteRouteChildren: AuthenticatedCComplexSlugRout
       AuthenticatedCComplexSlugParqueaderoRouteRouteWithChildren,
     AuthenticatedCComplexSlugZonasSocialesRouteRoute:
       AuthenticatedCComplexSlugZonasSocialesRouteRouteWithChildren,
-    AuthenticatedCComplexSlugConfiguracionRoute:
-      AuthenticatedCComplexSlugConfiguracionRoute,
     AuthenticatedCComplexSlugUsuariosRoute:
       AuthenticatedCComplexSlugUsuariosRoute,
     AuthenticatedCComplexSlugIndexRoute: AuthenticatedCComplexSlugIndexRoute,
@@ -1170,13 +1170,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
