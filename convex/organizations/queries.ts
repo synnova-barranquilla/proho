@@ -41,7 +41,7 @@ export const getWithDetails = query({
     const organization = await ctx.db.get(args.orgId)
     if (!organization) return null
 
-    const [admins, pendingInvitations, allUsers] = await Promise.all([
+    const [admins, pendingInvitations] = await Promise.all([
       ctx.db
         .query('users')
         .withIndex('by_organization_id_and_org_role', (q) =>
@@ -56,11 +56,19 @@ export const getWithDetails = query({
           q.eq('organizationId', args.orgId).eq('status', 'PENDING'),
         )
         .collect(),
-
-      ctx.db.query('users').collect(),
     ])
 
-    const userMap = new Map(allUsers.map((u) => [u._id, u]))
+    const invitedByIds = [
+      ...new Set(pendingInvitations.map((inv) => inv.invitedBy)),
+    ]
+    const invitedByUsers = await Promise.all(
+      invitedByIds.map((id) => ctx.db.get(id)),
+    )
+    const userMap = new Map(
+      invitedByUsers
+        .filter((u): u is NonNullable<typeof u> => u !== null)
+        .map((u) => [u._id, u]),
+    )
 
     const enrichedInvitations = pendingInvitations.map((inv) => ({
       ...inv,

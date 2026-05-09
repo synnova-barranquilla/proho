@@ -60,10 +60,12 @@ async function getComplexOccupancy(
 ): Promise<OccupancySnapshot> {
   const records = await ctx.db
     .query('accessRecords')
-    .withIndex('by_complex_and_exit', (q) =>
-      q.eq('complexId', complexId).eq('exitedAt', undefined),
+    .withIndex('by_complex_decision_exit', (q) =>
+      q
+        .eq('complexId', complexId)
+        .eq('finalDecision', 'ALLOWED')
+        .eq('exitedAt', undefined),
     )
-    .filter((q) => q.eq(q.field('finalDecision'), 'ALLOWED'))
     .collect()
 
   let cars = 0

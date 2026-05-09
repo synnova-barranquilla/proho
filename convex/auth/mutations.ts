@@ -196,8 +196,9 @@ export const handleLogin = mutation({
       if (existing.orgRole === 'MEMBER') {
         const membership = await ctx.db
           .query('complexMemberships')
-          .withIndex('by_user_id', (q) => q.eq('userId', existing._id))
-          .filter((q) => q.eq(q.field('active'), true))
+          .withIndex('by_user_and_active', (q) =>
+            q.eq('userId', existing._id).eq('active', true),
+          )
           .first()
         if (membership) {
           const complex = await ctx.db.get(membership.complexId)
@@ -278,7 +279,7 @@ export const repairResidentLinks = internalMutation({
 
       const user = await ctx.db
         .query('users')
-        .filter((q) => q.eq(q.field('email'), resident.email))
+        .withIndex('by_email', (q) => q.eq('email', resident.email!))
         .first()
       if (!user) continue
 
