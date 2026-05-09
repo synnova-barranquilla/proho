@@ -120,10 +120,15 @@ export function HistoricoTab({ complexId }: HistoricoTabProps) {
 
   const periodoMs = PERIODO_OPTIONS.find((p) => p.value === periodo)?.ms ?? 0
 
+  const cutoffTimestamp = useMemo(
+    () => (periodoMs ? Date.now() - periodoMs : undefined),
+    [periodoMs],
+  )
+
   const { data: registros } = useSuspenseQuery(
     convexQuery(api.accessRecords.queries.listHistory, {
       complexId,
-      cutoffTimestamp: periodoMs ? Date.now() - periodoMs : undefined,
+      cutoffTimestamp,
     }),
   )
 
