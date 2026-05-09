@@ -194,7 +194,7 @@ export function MonthCalendar({
                 type="button"
                 onClick={() => onSelectDate(cell.date)}
                 className={cn(
-                  'flex min-h-12 flex-col items-center justify-center gap-0.5',
+                  'flex min-h-12 flex-col items-center justify-center gap-1',
                   !cell.isCurrentMonth && 'text-muted-foreground/40',
                   cell.isCurrentMonth &&
                     isPast &&
