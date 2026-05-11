@@ -333,6 +333,50 @@ export const escalateConversation = internalMutation({
   },
 })
 
+export const countActiveConversations = internalQuery({
+  args: { residentId: v.id('residents') },
+  handler: async (ctx, args) => {
+    const active = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', args.residentId).eq('status', 'active'),
+      )
+      .collect()
+    const escalated = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', args.residentId).eq('status', 'escalated'),
+      )
+      .collect()
+    return active.length + escalated.length
+  },
+})
+
+export const updateConversationTitle = internalMutation({
+  args: {
+    conversationId: v.id('conversations'),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.conversationId, {
+      title: args.title,
+      updatedAt: Date.now(),
+    })
+  },
+})
+
+export const updateLastMessagePreview = internalMutation({
+  args: {
+    conversationId: v.id('conversations'),
+    preview: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.conversationId, {
+      lastMessagePreview: args.preview.slice(0, 80),
+    })
+  },
+})
+
 export const flagTicketAbusive = internalMutation({
   args: {
     ticketId: v.id('tickets'),

@@ -17,6 +17,9 @@ export const SEVEN_DAYS_MS = 7 * MS_PER_DAY
 /** After this many ms of inactivity a conversation is auto-closed (30 min). */
 export const CONVERSATION_INACTIVITY_MS = 30 * 60 * 1000
 
+/** Max simultaneous active + escalated conversations per resident. */
+export const MAX_ACTIVE_CONVERSATIONS = 5
+
 /** Lookback window for detecting recurring tickets from the same resident. */
 export const RECURRENCE_LOOKBACK_MS = 90 * MS_PER_DAY
 

@@ -465,6 +465,35 @@ export const getMyActiveConversation = query({
   },
 })
 
+export const getMyActiveConversations = query({
+  args: {
+    complexId: v.id('complexes'),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: ['OWNER', 'TENANT', 'LESSEE'],
+    })
+
+    const residentId = membership?.residentId
+    if (!residentId) return []
+
+    const active = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', residentId).eq('status', 'active'),
+      )
+      .collect()
+    const escalated = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', residentId).eq('status', 'escalated'),
+      )
+      .collect()
+
+    return [...active, ...escalated].sort((a, b) => b.updatedAt - a.updatedAt)
+  },
+})
+
 export const listMyConversations = query({
   args: {
     complexId: v.id('complexes'),

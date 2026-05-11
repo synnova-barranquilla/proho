@@ -10,16 +10,26 @@ import {
   Bot,
   Download,
   FileText,
+  Info,
   Loader2,
   MessageSquarePlus,
   Paperclip,
+  Plus,
   Send,
+  X,
+  Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Avatar, AvatarFallback } from '#/components/ui/avatar'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '#/components/ui/dropdown-menu'
 import {
   ResponsiveDialog,
   ResponsiveDialogClose,
@@ -35,6 +45,7 @@ import { useUploadThing } from '#/lib/uploadthing'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { MAX_ACTIVE_CONVERSATIONS } from '../../../convex/lib/constants'
 import { BotStreamingIndicator } from './bot-streaming-indicator'
 import { QuickActionsBar } from './quick-actions-bar'
 import {
@@ -53,6 +64,8 @@ interface ConversationItem {
   _id: Id<'conversations'>
   threadId: string
   status: string
+  title?: string
+  lastMessagePreview?: string
   typingStaff?: Record<string, number>
   createdAt: number
   updatedAt: number
@@ -68,8 +81,8 @@ export function ResidentChat({ complexId }: ResidentChatProps) {
 }
 
 function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
-  const { data: activeConversation } = useSuspenseQuery(
-    convexQuery(api.communications.queries.getMyActiveConversation, {
+  const { data: activeConversations } = useSuspenseQuery(
+    convexQuery(api.communications.queries.getMyActiveConversations, {
       complexId,
     }),
   )
@@ -80,19 +93,43 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
 
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [showList, setShowList] = useState(true)
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false)
+  const [pendingNewConversation, setPendingNewConversation] = useState(false)
+  const prevConvIdsRef = useRef<Set<string>>(new Set())
 
-  // Auto-select active conversation on mount (only once)
+  const atLimit = activeConversations.length >= MAX_ACTIVE_CONVERSATIONS
+
+  // Auto-select most recent active conversation on mount
   const didAutoSelect = useRef(false)
   useEffect(() => {
-    if (!didAutoSelect.current && activeConversation?.threadId) {
-      setSelectedThreadId(activeConversation.threadId)
+    if (!didAutoSelect.current && activeConversations.length > 0) {
+      setSelectedThreadId(activeConversations[0].threadId)
       setShowList(false)
       didAutoSelect.current = true
     }
-  }, [activeConversation?.threadId])
+  }, [activeConversations])
 
-  const activeThreadId = activeConversation?.threadId ?? null
+  // Auto-navigate to newly created conversation
+  useEffect(() => {
+    if (!pendingNewConversation) {
+      prevConvIdsRef.current = new Set(conversations.map((c) => c.threadId))
+      return
+    }
+
+    const prevIds = prevConvIdsRef.current
+    const newConv = conversations.find(
+      (c) =>
+        !prevIds.has(c.threadId) &&
+        (c.status === 'active' || c.status === 'escalated'),
+    )
+
+    if (newConv) {
+      setSelectedThreadId(newConv.threadId)
+      setShowList(false)
+      setPendingNewConversation(false)
+      prevConvIdsRef.current = new Set(conversations.map((c) => c.threadId))
+    }
+  }, [conversations, pendingNewConversation])
 
   const selectedConv = conversations.find(
     (c) => c.threadId === selectedThreadId,
@@ -100,34 +137,41 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
   const isSelectedActive =
     selectedConv?.status === 'active' || selectedConv?.status === 'escalated'
 
-  // Close conversation mutation (for "nueva conversacion")
   const closeConversationFn = useConvexMutation(
     api.communications.mutations.closeConversation,
   )
   const closeMut = useMutation({ mutationFn: closeConversationFn })
 
-  const handleNewConversation = useCallback(async () => {
-    if (activeConversation) {
-      // There's an active conversation - need to close it first
-      try {
-        await closeMut.mutateAsync({ complexId })
-        setSelectedThreadId(null)
-        setShowList(false) // show empty state / welcome on mobile
-        toast.success('Conversacion cerrada. Puedes iniciar una nueva.')
-      } catch (err) {
-        if (err instanceof ConvexError) {
-          const d = err.data as { message?: string }
-          toast.error(d.message ?? 'Error al cerrar conversacion')
-        } else {
-          toast.error('Error inesperado')
-        }
-      }
-    } else {
-      // No active conversation - just clear selection
-      setSelectedThreadId(null)
-      setShowList(false)
+  const handleNewConversation = useCallback(() => {
+    if (atLimit) {
+      toast.error(
+        `Tienes ${MAX_ACTIVE_CONVERSATIONS} conversaciones activas. Cierra una para iniciar otra.`,
+      )
+      return
     }
-  }, [activeConversation, closeMut, complexId])
+    setSelectedThreadId(null)
+    setShowList(false)
+  }, [atLimit])
+
+  const handleCloseConversation = useCallback(async () => {
+    if (!selectedConv) return
+    try {
+      await closeMut.mutateAsync({
+        complexId,
+        conversationId: selectedConv._id,
+      })
+      setSelectedThreadId(null)
+      setShowList(true)
+      toast.success('Conversacion cerrada.')
+    } catch (err) {
+      if (err instanceof ConvexError) {
+        const d = err.data as { message?: string }
+        toast.error(d.message ?? 'Error al cerrar conversacion')
+      } else {
+        toast.error('Error inesperado')
+      }
+    }
+  }, [selectedConv, closeMut, complexId])
 
   const handleSelectConversation = useCallback((threadId: string) => {
     setSelectedThreadId(threadId)
@@ -138,17 +182,56 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
     setShowList(true)
   }, [])
 
+  const sendResidentMessageFn = useConvexMutation(
+    api.communications.mutations.sendResidentMessage,
+  )
+  const sendQuickActionMut = useMutation({
+    mutationFn: sendResidentMessageFn,
+  })
+
+  const handleQuickActionFromFab = useCallback(
+    async (label: string, quickActionId: Id<'quickActions'>) => {
+      if (atLimit) {
+        toast.error(
+          `Tienes ${MAX_ACTIVE_CONVERSATIONS} conversaciones activas. Cierra una para iniciar otra.`,
+        )
+        return
+      }
+      setPendingNewConversation(true)
+      try {
+        await sendQuickActionMut.mutateAsync({
+          complexId,
+          content: label,
+          quickActionId,
+        })
+      } catch (err) {
+        setPendingNewConversation(false)
+        if (err instanceof ConvexError) {
+          const d = err.data as { message?: string }
+          toast.error(d.message ?? 'Error al enviar accion rapida')
+        } else {
+          toast.error('Error inesperado')
+        }
+      }
+    },
+    [atLimit, complexId, sendQuickActionMut],
+  )
+
   return (
     <>
-      <ResponsiveDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      {/* Close conversation confirmation dialog */}
+      <ResponsiveDialog
+        open={closeConfirmOpen}
+        onOpenChange={setCloseConfirmOpen}
+      >
         <ResponsiveDialogContent className="max-w-sm">
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle>
-              Iniciar nueva conversacion?
+              Cerrar esta conversacion?
             </ResponsiveDialogTitle>
             <ResponsiveDialogDescription>
-              Tu conversacion actual sera cerrada. Si tienes un caso abierto,
-              seguira activo y podras verlo en tu historial.
+              La conversacion sera marcada como resuelta. Podras verla en tu
+              historial.
             </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
           <ResponsiveDialogFooter>
@@ -157,11 +240,11 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
             />
             <Button
               onClick={() => {
-                setConfirmOpen(false)
-                handleNewConversation()
+                setCloseConfirmOpen(false)
+                handleCloseConversation()
               }}
             >
-              Cerrar e iniciar nueva
+              Cerrar conversacion
             </Button>
           </ResponsiveDialogFooter>
         </ResponsiveDialogContent>
@@ -180,14 +263,13 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
             <Button
               variant="outline"
               size="sm"
-              disabled={closeMut.isPending}
-              onClick={() => {
-                if (activeConversation) {
-                  setConfirmOpen(true)
-                } else {
-                  handleNewConversation()
-                }
-              }}
+              disabled={atLimit}
+              onClick={handleNewConversation}
+              title={
+                atLimit
+                  ? `Limite de ${MAX_ACTIVE_CONVERSATIONS} conversaciones activas`
+                  : undefined
+              }
             >
               <MessageSquarePlus className="h-4 w-4" />
               Nueva
@@ -196,9 +278,12 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
 
           <ConversationList
             conversations={conversations}
-            activeThreadId={activeThreadId}
+            activeConversations={activeConversations}
             selectedThreadId={selectedThreadId}
             onSelect={handleSelectConversation}
+            complexId={complexId}
+            atLimit={atLimit}
+            onQuickAction={handleQuickActionFromFab}
           />
         </div>
 
@@ -209,27 +294,49 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
             showList ? 'hidden lg:flex' : 'flex',
           )}
         >
-          {selectedThreadId ? (
+          {selectedThreadId && selectedConv ? (
             <>
-              {/* Mobile back button */}
-              <div className="flex items-center gap-2 border-b px-4 py-2 lg:hidden">
+              {/* Header with back button, title, and close button */}
+              <div className="flex items-center gap-2 border-b px-4 py-2">
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   onClick={handleBackToList}
+                  className="lg:hidden"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm font-medium">
-                  {selectedConv
-                    ? (CONV_STATUS_LABELS[selectedConv.status] ??
-                      selectedConv.status)
-                    : 'Conversacion'}
-                </span>
-                {selectedConv?.ticket && (
-                  <span className="text-xs font-mono text-muted-foreground">
-                    {selectedConv.ticket.publicId}
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-medium">
+                    {selectedConv.title ??
+                      CONV_STATUS_LABELS[selectedConv.status]}
                   </span>
+                  {selectedConv.ticket && (
+                    <span className="ml-2 text-xs font-mono text-muted-foreground">
+                      {selectedConv.ticket.publicId}
+                    </span>
+                  )}
+                </div>
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    'text-[10px]',
+                    CONV_STATUS_VARIANTS[selectedConv.status],
+                  )}
+                >
+                  {CONV_STATUS_LABELS[selectedConv.status] ??
+                    selectedConv.status}
+                </Badge>
+                {selectedConv.status === 'active' && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => setCloseConfirmOpen(true)}
+                    disabled={closeMut.isPending}
+                    title="Cerrar conversacion"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
 
@@ -246,7 +353,12 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
               )}
             </>
           ) : (
-            <EmptyState complexId={complexId} onBackToList={handleBackToList} />
+            <EmptyState
+              complexId={complexId}
+              onBackToList={handleBackToList}
+              onMessageSent={() => setPendingNewConversation(true)}
+              atLimit={atLimit}
+            />
           )}
         </div>
       </div>
@@ -256,31 +368,44 @@ function ChatLayout({ complexId }: { complexId: Id<'complexes'> }) {
 
 function ConversationList({
   conversations,
-  activeThreadId,
+  activeConversations,
   selectedThreadId,
   onSelect,
+  complexId,
+  atLimit,
+  onQuickAction,
 }: {
   conversations: ConversationItem[]
-  activeThreadId: string | null
+  activeConversations: { threadId: string }[]
   selectedThreadId: string | null
   onSelect: (threadId: string) => void
+  complexId: Id<'complexes'>
+  atLimit: boolean
+  onQuickAction: (label: string, quickActionId: Id<'quickActions'>) => void
 }) {
+  const activeThreadIds = new Set(activeConversations.map((c) => c.threadId))
+
   if (conversations.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center p-6">
+      <div className="relative flex flex-1 items-center justify-center p-6">
         <p className="text-center text-sm text-muted-foreground">
           Sin conversaciones. Inicia una nueva para comenzar.
         </p>
+        <Suspense fallback={null}>
+          <QuickActionsFab
+            complexId={complexId}
+            atLimit={atLimit}
+            onAction={onQuickAction}
+          />
+        </Suspense>
       </div>
     )
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="relative flex-1 overflow-y-auto">
       {conversations.map((conv) => {
-        const isActive =
-          conv.threadId === activeThreadId &&
-          (conv.status === 'active' || conv.status === 'escalated')
+        const isActive = activeThreadIds.has(conv.threadId)
         const isSelected = conv.threadId === selectedThreadId
 
         return (
@@ -299,28 +424,103 @@ function ConversationList({
             )}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                {conv.title ?? 'Sin titulo'}
+              </span>
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'ml-2 shrink-0 text-[10px]',
+                  CONV_STATUS_VARIANTS[conv.status],
+                )}
+              >
+                {CONV_STATUS_LABELS[conv.status] ?? conv.status}
+              </Badge>
+            </div>
+            {conv.lastMessagePreview && (
+              <p className="truncate text-xs text-muted-foreground">
+                {conv.lastMessagePreview}
+              </p>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">
                 {new Date(conv.createdAt).toLocaleDateString('es-CO', {
                   day: 'numeric',
                   month: 'short',
                   year: 'numeric',
                 })}
               </span>
-              <Badge
-                variant="secondary"
-                className={cn('text-[10px]', CONV_STATUS_VARIANTS[conv.status])}
-              >
-                {CONV_STATUS_LABELS[conv.status] ?? conv.status}
-              </Badge>
+              {conv.ticket && (
+                <span className="text-[10px] font-mono text-muted-foreground">
+                  {conv.ticket.publicId}
+                </span>
+              )}
             </div>
-            {conv.ticket && (
-              <span className="text-xs font-mono text-muted-foreground">
-                Ticket {conv.ticket.publicId}
-              </span>
-            )}
           </button>
         )
       })}
+
+      <QuickActionsFab
+        complexId={complexId}
+        atLimit={atLimit}
+        onAction={onQuickAction}
+      />
+    </div>
+  )
+}
+
+function QuickActionsFab({
+  complexId,
+  atLimit,
+  onAction,
+}: {
+  complexId: Id<'complexes'>
+  atLimit: boolean
+  onAction: (label: string, quickActionId: Id<'quickActions'>) => void
+}) {
+  const { data: quickActions } = useSuspenseQuery(
+    convexQuery(api.communications.queries.listQuickActions, { complexId }),
+  )
+
+  if (quickActions.length === 0) return null
+
+  return (
+    <div className="absolute bottom-4 right-4">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              size="icon"
+              className="h-10 w-10 rounded-full shadow-lg"
+              disabled={atLimit}
+              title={
+                atLimit
+                  ? `Limite de ${MAX_ACTIVE_CONVERSATIONS} conversaciones activas`
+                  : 'Acciones rapidas'
+              }
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent align="end" side="top" className="w-56">
+          {quickActions.map((action) => (
+            <DropdownMenuItem
+              key={action._id}
+              onClick={() =>
+                onAction(action.label, action._id as Id<'quickActions'>)
+              }
+            >
+              {action.isInfoOnly ? (
+                <Info className="mr-2 h-4 w-4 text-blue-500" />
+              ) : (
+                <Zap className="mr-2 h-4 w-4 text-muted-foreground" />
+              )}
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }
@@ -328,9 +528,13 @@ function ConversationList({
 function EmptyState({
   complexId,
   onBackToList,
+  onMessageSent,
+  atLimit,
 }: {
   complexId: Id<'complexes'>
   onBackToList: () => void
+  onMessageSent: () => void
+  atLimit: boolean
 }) {
   const [input, setInput] = useState('')
   const [optimisticUserMsg, setOptimisticUserMsg] = useState<string | null>(
@@ -348,8 +552,16 @@ function EmptyState({
       const trimmed = text.trim()
       if (!trimmed) return
 
+      if (atLimit) {
+        toast.error(
+          `Tienes ${MAX_ACTIVE_CONVERSATIONS} conversaciones activas. Cierra una para iniciar otra.`,
+        )
+        return
+      }
+
       setInput('')
       setOptimisticUserMsg(trimmed)
+      onMessageSent()
 
       try {
         await sendMut.mutateAsync({
@@ -367,7 +579,7 @@ function EmptyState({
         }
       }
     },
-    [complexId, sendMut],
+    [complexId, sendMut, onMessageSent, atLimit],
   )
 
   const handleQuickAction = useCallback(
@@ -580,7 +792,6 @@ function ActiveChatView({
           size: file.size,
         })
 
-        // Marker message so the attachment renders inline in the chat thread
         const attachmentMeta = JSON.stringify({
           fileName: file.name,
           fileUrl: file.ufsUrl,
@@ -590,6 +801,7 @@ function ActiveChatView({
         await sendMut.mutateAsync({
           complexId,
           content: `[ATTACHMENT:${attachmentMeta}]`,
+          conversationId,
         })
       }
     },
@@ -622,6 +834,7 @@ function ActiveChatView({
           complexId,
           content: trimmed,
           quickActionId,
+          conversationId,
         })
       } catch (err) {
         setOptimisticUserMsg(null)
@@ -633,7 +846,7 @@ function ActiveChatView({
         }
       }
     },
-    [complexId, sendMut, clearTyping],
+    [complexId, sendMut, clearTyping, conversationId],
   )
 
   const handleQuickAction = useCallback(

@@ -6,7 +6,10 @@ import { v } from 'convex/values'
 import { components, internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import { action, internalAction, type ActionCtx } from '../_generated/server'
-import { CONVERSATION_INACTIVITY_MS } from '../lib/constants'
+import {
+  CONVERSATION_INACTIVITY_MS,
+  MAX_ACTIVE_CONVERSATIONS,
+} from '../lib/constants'
 import { supportAgent } from './agent'
 import { isBusinessHours } from './businessHours'
 
@@ -50,6 +53,16 @@ async function handleEscalation(
     priority: string
   }
   if (!output.escalated) return false
+
+  // Regenerate title before escalation for staff context
+  try {
+    await ctx.runAction(
+      internal.communications.actions.generateConversationTitle,
+      { threadId: ids.threadId, conversationId: ids.conversationId },
+    )
+  } catch (error) {
+    console.error('[handleEscalation] Title regeneration failed:', error)
+  }
 
   try {
     const escalationResult = await ctx.runMutation(
@@ -121,16 +134,43 @@ export const handleResidentMessage = internalAction({
     complexId: v.id('complexes'),
     residentId: v.id('residents'),
     content: v.string(),
+    conversationId: v.optional(v.id('conversations')),
   },
   handler: async (ctx, args) => {
-    let conversation = await ctx.runQuery(
-      internal.communications.helpers.getActiveConversationInternal,
-      { complexId: args.complexId, residentId: args.residentId },
-    )
+    let conversation: {
+      _id: Id<'conversations'>
+      threadId: string
+      status: string
+    } | null = null
+    let isNewConversation = false
+
+    if (args.conversationId) {
+      conversation = await ctx.runQuery(
+        internal.communications.helpers.getConversationInternal,
+        { conversationId: args.conversationId },
+      )
+      if (!conversation) {
+        console.error(
+          `[handleResidentMessage] Conversation ${args.conversationId} not found`,
+        )
+        return
+      }
+    }
 
     let threadId: string
 
     if (!conversation) {
+      const activeCount = await ctx.runQuery(
+        internal.communications.helpers.countActiveConversations,
+        { residentId: args.residentId },
+      )
+      if (activeCount >= MAX_ACTIVE_CONVERSATIONS) {
+        console.error(
+          `[handleResidentMessage] Resident ${args.residentId} at conversation limit (${activeCount})`,
+        )
+        return
+      }
+
       threadId = await createThread(ctx, components.agent, {})
 
       const conversationId = await ctx.runMutation(
@@ -147,8 +187,8 @@ export const handleResidentMessage = internalAction({
         threadId,
         status: 'active' as const,
       }
+      isNewConversation = true
     } else {
-      // Escalated — save user message only, no bot response
       if (conversation.status === 'escalated') {
         await saveMessage(ctx, components.agent, {
           threadId: conversation.threadId,
@@ -158,6 +198,10 @@ export const handleResidentMessage = internalAction({
         await ctx.runMutation(
           internal.communications.helpers.updateConversationTimestamp,
           { conversationId: conversation._id },
+        )
+        await ctx.runMutation(
+          internal.communications.helpers.updateLastMessagePreview,
+          { conversationId: conversation._id, preview: args.content },
         )
         return
       }
@@ -254,6 +298,29 @@ export const handleResidentMessage = internalAction({
       { conversationId: conversation._id },
     )
 
+    await ctx.runMutation(
+      internal.communications.helpers.updateLastMessagePreview,
+      { conversationId: conversation._id, preview: args.content },
+    )
+
+    // Generate/regenerate conversation title at key moments
+    try {
+      const recentForTitle = await listMessages(ctx, components.agent, {
+        threadId,
+        paginationOpts: { numItems: 10, cursor: null },
+        excludeToolMessages: true,
+      })
+      const messageCount = recentForTitle.page.length
+      if (isNewConversation || messageCount === 3 || messageCount === 4) {
+        await ctx.runAction(
+          internal.communications.actions.generateConversationTitle,
+          { threadId, conversationId: conversation._id },
+        )
+      }
+    } catch (error) {
+      console.error('[handleResidentMessage] Title generation failed:', error)
+    }
+
     // Auto-escalate if bot sent 3+ consecutive replies without resolution
     try {
       const recentMessages = await listMessages(ctx, components.agent, {
@@ -314,6 +381,7 @@ export const handleQuickAction = internalAction({
     complexId: v.id('complexes'),
     residentId: v.id('residents'),
     quickActionId: v.id('quickActions'),
+    conversationId: v.optional(v.id('conversations')),
   },
   handler: async (ctx, args) => {
     const quickAction = await ctx.runQuery(
@@ -326,32 +394,33 @@ export const handleQuickAction = internalAction({
       return
     }
 
-    let conversation = await ctx.runQuery(
-      internal.communications.helpers.getActiveConversationInternal,
-      { complexId: args.complexId, residentId: args.residentId },
+    // Quick actions always create a new conversation (no conversationId forwarded)
+    const activeCount = await ctx.runQuery(
+      internal.communications.helpers.countActiveConversations,
+      { residentId: args.residentId },
+    )
+    if (activeCount >= MAX_ACTIVE_CONVERSATIONS) {
+      console.error(
+        `[handleQuickAction] Resident ${args.residentId} at conversation limit (${activeCount})`,
+      )
+      return
+    }
+
+    const threadId = await createThread(ctx, components.agent, {})
+
+    const conversationId = await ctx.runMutation(
+      internal.communications.helpers.createConversation,
+      {
+        complexId: args.complexId,
+        residentId: args.residentId,
+        threadId,
+      },
     )
 
-    let threadId: string
-
-    if (!conversation) {
-      threadId = await createThread(ctx, components.agent, {})
-
-      const conversationId = await ctx.runMutation(
-        internal.communications.helpers.createConversation,
-        {
-          complexId: args.complexId,
-          residentId: args.residentId,
-          threadId,
-        },
-      )
-
-      conversation = {
-        _id: conversationId,
-        threadId,
-        status: 'active' as const,
-      }
-    } else {
-      threadId = conversation.threadId
+    const conversation = {
+      _id: conversationId,
+      threadId,
+      status: 'active' as const,
     }
 
     if (quickAction.isInfoOnly && quickAction.response) {
@@ -372,6 +441,20 @@ export const handleQuickAction = internalAction({
         internal.communications.helpers.updateConversationTimestamp,
         { conversationId: conversation._id },
       )
+      await ctx.runMutation(
+        internal.communications.helpers.updateLastMessagePreview,
+        { conversationId: conversation._id, preview: quickAction.label },
+      )
+
+      // Generate title for the quick action conversation
+      try {
+        await ctx.runAction(
+          internal.communications.actions.generateConversationTitle,
+          { threadId, conversationId: conversation._id },
+        )
+      } catch (error) {
+        console.error('[handleQuickAction] Title generation failed:', error)
+      }
     } else {
       const categoryHint = quickAction.suggestedCategory
         ? ` [Categoría sugerida: ${quickAction.suggestedCategory}]`
@@ -383,8 +466,35 @@ export const handleQuickAction = internalAction({
           complexId: args.complexId,
           residentId: args.residentId,
           content: `${quickAction.label}${categoryHint}`,
+          conversationId: conversation._id,
         },
       )
+    }
+  },
+})
+
+export const generateConversationTitle = internalAction({
+  args: {
+    threadId: v.string(),
+    conversationId: v.id('conversations'),
+  },
+  handler: async (ctx, args) => {
+    try {
+      const result = await supportAgent.generateText(
+        ctx,
+        { threadId: args.threadId },
+        {
+          prompt:
+            'Genera un título de 3-6 palabras en español que resuma el tema principal de esta conversación. Solo responde con el título, sin comillas ni puntuación final.',
+        },
+      )
+
+      await ctx.runMutation(
+        internal.communications.helpers.updateConversationTitle,
+        { conversationId: args.conversationId, title: result.text.trim() },
+      )
+    } catch (error) {
+      console.error('[generateConversationTitle] Failed:', error)
     }
   },
 })
