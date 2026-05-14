@@ -9,7 +9,6 @@ import {
   FileText,
   Headset,
   Home,
-  MessageSquare,
   Settings,
   Shield,
   ShieldCheck,
@@ -453,22 +452,6 @@ function ComplexScopedSidebar({
                 </SidebarMenuItem>
                 {isStaff ? (
                   <>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        isActive={isActive(
-                          `${base}/comunicacion/conversaciones`,
-                        )}
-                        render={
-                          <Link
-                            to="/c/$complexSlug/comunicacion/conversaciones"
-                            params={{ complexSlug: slug }}
-                          >
-                            <MessageSquare />
-                            <span>Conversaciones</span>
-                          </Link>
-                        }
-                      />
-                    </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         isActive={isActive(`${base}/comunicacion/adjuntos`)}
