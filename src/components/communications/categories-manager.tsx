@@ -229,7 +229,7 @@ interface CategoryDoc {
   priority: string
   assignedRole: string
   keywords: string[]
-  generatesTicket: boolean
+  generatesTicket?: boolean
   isSystem: boolean
   isEnabled: boolean
 }
