@@ -985,10 +985,31 @@ function ConversationDetail({
 
         {/* Attachments panel */}
         {showAttachments && (
-          <AttachmentsPanel
-            conversationId={item._id}
-            onClose={() => setShowAttachments(false)}
-          />
+          <Suspense
+            fallback={
+              <div className="flex w-64 shrink-0 flex-col border-l">
+                <div className="flex items-center justify-between border-b px-3 py-2">
+                  <span className="text-xs font-medium">Adjuntos</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() => setShowAttachments(false)}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="flex flex-1 items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              </div>
+            }
+          >
+            <AttachmentsPanel
+              conversationId={item._id}
+              onClose={() => setShowAttachments(false)}
+            />
+          </Suspense>
         )}
       </div>
     </div>
