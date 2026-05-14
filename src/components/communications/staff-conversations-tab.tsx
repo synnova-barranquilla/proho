@@ -219,7 +219,7 @@ function ConversationDetail({
             } else if (isStaff && staffLabel) {
               senderLabel = staffLabel
             } else {
-              senderLabel = 'Asistente Synnova'
+              senderLabel = 'Nova'
             }
 
             const initials = isStaff
@@ -290,8 +290,8 @@ function ConversationDetail({
 
       {conversation.status === 'escalated' && (
         <p className="text-center text-xs text-muted-foreground">
-          Esta conversación fue escalada a un ticket. Responde desde el detalle
-          del ticket.
+          Esta conversación fue escalada a un PQR. Responde desde el detalle del
+          PQR.
         </p>
       )}
 

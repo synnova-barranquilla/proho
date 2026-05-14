@@ -1,5 +1,5 @@
 export function BotStreamingIndicator({
-  label = 'Asistente Synnova escribiendo...',
+  label = 'Nova escribiendo...',
 }: {
   label?: string
 }) {

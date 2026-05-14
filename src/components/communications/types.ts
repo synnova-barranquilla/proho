@@ -97,6 +97,11 @@ export const PRIORITY_CONFIG: {
   { key: 'low', label: 'Baja', badgeClass: 'bg-gray-400 text-white' },
 ]
 
+export const ROLE_LABELS: Record<string, string> = {
+  ADMIN: 'Administrador',
+  AUXILIAR: 'Auxiliar Operativo',
+}
+
 export const ORIGIN_LABELS: Record<string, string> = {
   digital: 'Digital',
   in_person: 'Presencial',

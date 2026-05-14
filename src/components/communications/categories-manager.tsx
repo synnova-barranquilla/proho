@@ -229,6 +229,7 @@ interface CategoryDoc {
   priority: string
   assignedRole: string
   keywords: string[]
+  generatesTicket: boolean
   isSystem: boolean
   isEnabled: boolean
 }
@@ -333,6 +334,9 @@ function CategoryDialog({
   const [keywords, setKeywords] = useState<string[]>(
     category && category.keywords.length > 0 ? category.keywords : [''],
   )
+  const [generatesTicket, setGeneratesTicket] = useState(
+    category?.generatesTicket ?? true,
+  )
 
   const generatedKey = slugify(label)
 
@@ -421,6 +425,7 @@ function CategoryDialog({
           priority,
           assignedRole,
           keywords: cleanKeywords,
+          generatesTicket,
         })
         toast.success('Categoría creada')
       }
@@ -515,6 +520,21 @@ function CategoryDialog({
                     </Select>
                   )}
                 </Field>
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <div className="space-y-0.5">
+                  <FieldLabel className="text-sm font-medium">
+                    Genera PQR
+                  </FieldLabel>
+                  <p className="text-muted-foreground text-xs">
+                    Al escalar, crea un PQR automáticamente
+                  </p>
+                </div>
+                <Switch
+                  checked={generatesTicket}
+                  onCheckedChange={setGeneratesTicket}
+                  disabled={isReadOnly}
+                />
               </div>
               <Field>
                 <FieldLabel>Palabras clave</FieldLabel>

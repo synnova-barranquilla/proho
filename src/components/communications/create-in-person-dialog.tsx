@@ -110,12 +110,12 @@ export function CreateInPersonDialog({
         priority,
         initialDescription: description.trim(),
       })
-      toast.success(`Ticket ${result.publicId} creado`)
+      toast.success(`PQR ${result.publicId} creado`)
       handleClose()
     } catch (err) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
-        toast.error(d.message ?? 'Error al crear ticket')
+        toast.error(d.message ?? 'Error al crear PQR')
       } else {
         toast.error('Error inesperado')
       }
@@ -131,7 +131,7 @@ export function CreateInPersonDialog({
     >
       <ResponsiveDialogContent className="max-w-md">
         <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>Crear ticket presencial</ResponsiveDialogTitle>
+          <ResponsiveDialogTitle>Crear PQR presencial</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
         <ResponsiveDialogBody>
           <div className="flex flex-col gap-4">
@@ -206,7 +206,7 @@ export function CreateInPersonDialog({
               !description.trim()
             }
           >
-            {createMut.isPending ? 'Creando...' : 'Crear ticket'}
+            {createMut.isPending ? 'Creando...' : 'Crear PQR'}
           </Button>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

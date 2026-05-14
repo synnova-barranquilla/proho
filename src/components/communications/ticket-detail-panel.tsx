@@ -52,6 +52,7 @@ import {
   parseAttachment,
   PRIORITY_LABELS,
   PRIORITY_VARIANTS,
+  ROLE_LABELS,
   STATUS_LABELS,
   STATUS_VARIANTS,
   type AttachmentMeta,
@@ -138,7 +139,7 @@ export function TicketDetailPanel({
   if (!ticket) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16">
-        <p className="text-muted-foreground">Ticket no encontrado</p>
+        <p className="text-muted-foreground">PQR no encontrado</p>
         <Button variant="outline" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Volver
@@ -160,11 +161,11 @@ export function TicketDetailPanel({
         ticketId,
         closedBy: 'admin',
       })
-      toast.success('Ticket cerrado')
+      toast.success('PQR cerrado')
     } catch (err) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
-        toast.error(d.message ?? 'Error al cerrar ticket')
+        toast.error(d.message ?? 'Error al cerrar PQR')
       } else {
         toast.error('Error inesperado')
       }
@@ -174,11 +175,11 @@ export function TicketDetailPanel({
   const handleReopen = async () => {
     try {
       await reopenTicketMut.mutateAsync({ ticketId })
-      toast.success('Ticket reabierto')
+      toast.success('PQR reabierto')
     } catch (err) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
-        toast.error(d.message ?? 'Error al reabrir ticket')
+        toast.error(d.message ?? 'Error al reabrir PQR')
       } else {
         toast.error('Error inesperado')
       }
@@ -188,7 +189,7 @@ export function TicketDetailPanel({
   const handleReassign = async (newRole: 'ADMIN' | 'AUXILIAR') => {
     try {
       await reassignTicketMut.mutateAsync({ ticketId, newRole })
-      toast.success(`Ticket reasignado a ${newRole}`)
+      toast.success(`PQR reasignado a ${newRole}`)
     } catch (err) {
       if (err instanceof ConvexError) {
         const d = err.data as { message?: string }
@@ -482,7 +483,9 @@ export function TicketDetailPanel({
                 </DetailRow>
 
                 <DetailRow label="Asignado a">
-                  <span className="text-sm">{ticket.assignedRole}</span>
+                  <span className="text-sm">
+                    {ROLE_LABELS[ticket.assignedRole] ?? ticket.assignedRole}
+                  </span>
                 </DetailRow>
 
                 <DetailRow label="Origen">
@@ -561,7 +564,7 @@ export function TicketDetailPanel({
                     className="w-full"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Reabrir ticket
+                    Reabrir PQR
                   </Button>
                 ) : (
                   <Button
@@ -571,7 +574,7 @@ export function TicketDetailPanel({
                     className="w-full"
                   >
                     <X className="mr-2 h-4 w-4" />
-                    Cerrar ticket
+                    Cerrar PQR
                   </Button>
                 )}
 
@@ -778,7 +781,7 @@ function TicketMessageBubble({ message }: { message: UIMessageLike }) {
   } else if (isStaff && staffLabel) {
     senderLabel = staffLabel
   } else {
-    senderLabel = 'Asistente Synnova'
+    senderLabel = 'Nova'
   }
 
   return (

@@ -21,6 +21,7 @@ import { CreateInPersonDialog } from './create-in-person-dialog'
 import { TicketDetailPanel } from './ticket-detail-panel'
 import {
   PRIORITY_CONFIG,
+  ROLE_LABELS,
   STATUS_LABELS,
   STATUS_VARIANTS,
   timeAgo,
@@ -192,10 +193,10 @@ export function StaffTicketsTab({ complexId }: StaffTicketsTabProps) {
         <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
           <Ticket className="h-10 w-10 text-muted-foreground/50" />
           <p className="font-medium text-muted-foreground">
-            No hay tickets que mostrar
+            No hay PQR que mostrar
           </p>
           <p className="text-sm text-muted-foreground/80">
-            Los tickets aparecerán aquí cuando se creen.
+            Los PQR aparecerán aquí cuando se creen.
           </p>
         </div>
       ) : (
@@ -265,7 +266,8 @@ export function StaffTicketsTab({ complexId }: StaffTicketsTabProps) {
                           {STATUS_LABELS[ticket.status as TicketStatus]}
                         </span>
                         <span className="shrink-0 text-xs text-muted-foreground">
-                          {ticket.assignedRole}
+                          {ROLE_LABELS[ticket.assignedRole] ??
+                            ticket.assignedRole}
                         </span>
                         <span className="shrink-0 text-xs text-muted-foreground">
                           {timeAgo(ticket.updatedAt)}
@@ -287,7 +289,7 @@ export function StaffTicketsTab({ complexId }: StaffTicketsTabProps) {
           className="w-full"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Crear ticket presencial
+          Crear PQR presencial
         </Button>
       </div>
 

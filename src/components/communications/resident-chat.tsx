@@ -613,7 +613,7 @@ function EmptyState({
         className="flex flex-1 flex-col items-center justify-center gap-2 overflow-y-auto px-4 py-12 text-center"
       >
         <Bot className="h-10 w-10 text-muted-foreground/40" />
-        <p className="font-medium text-muted-foreground">Asistente Synnova</p>
+        <p className="font-medium text-muted-foreground">Nova</p>
         <p className="max-w-sm text-sm text-muted-foreground/80">
           Escribe tu mensaje o usa una accion rapida para iniciar una
           conversacion. Te ayudaremos con solicitudes, reportes y consultas del
@@ -880,9 +880,7 @@ function ActiveChatView({
         {!hasMessages && (
           <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
             <Bot className="h-10 w-10 text-muted-foreground/40" />
-            <p className="font-medium text-muted-foreground">
-              Asistente Synnova
-            </p>
+            <p className="font-medium text-muted-foreground">Nova</p>
             <p className="max-w-sm text-sm text-muted-foreground/80">
               Escribe tu mensaje o usa una accion rapida para iniciar una
               conversacion. Te ayudaremos con solicitudes, reportes y consultas
@@ -1091,7 +1089,7 @@ function MessageBubble({
   } else if (isStaff && staffLabel) {
     senderLabel = staffLabel
   } else {
-    senderLabel = 'Asistente Synnova'
+    senderLabel = 'Nova'
   }
 
   const initials = isStaff
@@ -1102,7 +1100,7 @@ function MessageBubble({
         .slice(0, 2)
     : isResident
       ? 'TU'
-      : 'SY'
+      : 'NV'
 
   return (
     <div
