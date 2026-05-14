@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html><head><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,'Inter',sans-serif);background:transparent}
+.shell{display:flex;flex-direction:column;height:620px;border:0.5px solid var(--color-border-tertiary,#E5E4DF);border-radius:12px;overflow:hidden;background:var(--color-background-primary,#fff)}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:0.5px solid var(--color-border-tertiary,#E5E4DF);height:48px;flex-shrink:0;background:var(--color-background-secondary,#F9F8F5)}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-dot{width:22px;height:22px;border-radius:6px;background:#534AB7;display:flex;align-items:center;justify-content:center;font-size:11px;color:#EEEDFE;font-weight:600;flex-shrink:0}
+.app-name{font-size:13px;font-weight:500;color:var(--color-text-primary,#1A1A1A)}
+.divider-v{width:0.5px;height:16px;background:var(--color-border-tertiary,#E5E4DF);margin:0 4px}
+.section-name{font-size:12px;color:var(--color-text-tertiary,#999)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.icon-btn{width:28px;height:28px;border-radius:6px;border:0.5px solid var(--color-border-tertiary,#E5E4DF);background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary,#666)}
+.icon-btn:hover{background:var(--color-background-secondary,#F9F8F5)}
+.avatar-sm{width:28px;height:28px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#534AB7}
+.create-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:0 13px;height:30px;border-radius:6px;background:#534AB7;color:#EEEDFE;border:none;cursor:pointer;white-space:nowrap}
+.create-btn:hover{background:#3C3489}
+
+/* TABS */
+.tab-bar{display:flex;align-items:center;padding:0 16px;border-bottom:0.5px solid var(--color-border-tertiary,#E5E4DF);height:42px;flex-shrink:0;background:var(--color-background-primary,#fff);gap:2px}
+.tab{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:0 12px;height:100%;border:none;background:none;cursor:pointer;color:var(--color-text-secondary,#666);border-bottom:2px solid transparent}
+.tab:hover{color:var(--color-text-primary,#1A1A1A)}
+.tab.active{color:var(--color-text-primary,#1A1A1A);border-bottom-color:var(--color-text-primary,#1A1A1A)}
+.tab-badge{font-size:10px;font-weight:500;padding:1px 6px;border-radius:99px;line-height:1.4}
+.badge-red{background:#FCEBEB;color:#A32D2D}
+.badge-amber{background:#FAEEDA;color:#854F0B}
+.badge-gray{background:#F0EFEA;color:#888}
+.badge-purple{background:#EEEDFE;color:#3C3489}
+
+/* STATS */
+.stats-bar{display:flex;align-items:center;gap:24px;padding:0 16px;height:36px;border-bottom:0.5px solid var(--color-border-tertiary,#E5E4DF);flex-shrink:0;background:var(--color-background-secondary,#F9F8F5)}
+.stat-item{font-size:11px;color:var(--color-text-tertiary,#999);display:flex;align-items:center;gap:5px}
+.stat-item strong{color:var(--color-text-primary,#1A1A1A);font-weight:500}
+.stat-item strong.green{color:#3B6D11}
+
+/* BODY */
+.body{display:grid;grid-template-columns:280px 1fr;flex:1;overflow:hidden}
+.list-panel{border-right:0.5px solid var(--color-border-tertiary,#E5E4DF);display:flex;flex-direction:column;overflow:hidden}
+.list-header{padding:9px 14px;border-bottom:0.5px solid var(--color-border-tertiary,#E5E4DF);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.list-label{font-size:11px;color:var(--color-text-tertiary,#999);flex:1}
+.filter-checks{display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:0.5px solid var(--color-border-tertiary,#E5E4DF);background:var(--color-background-secondary,#F9F8F5);flex-shrink:0}
+.filter-label{font-size:11px;color:var(--color-text-tertiary,#999);margin-right:2px}
+.check-item{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+.check-item input[type=checkbox]{width:13px;height:13px;accent-color:#534AB7;cursor:pointer}
+.check-item span{font-size:11px;font-weight:500;color:var(--color-text-secondary,#666)}
+.conv-list{overflow-y:auto;flex:1}
+.conv-item{padding:11px 14px;border-bottom:0.5px solid var(--color-border-tertiary,#E5E4DF);cursor:pointer;transition:background .1s}
+.conv-item:hover{background:var(--color-background-secondary,#F9F8F5)}
+.conv-item.selected{background:#EEEDFE}
+.conv-item.selected .conv-name{color:#3C3489}
+.conv-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.conv-name{font-size:12px;font-weight:500;color:var(--color-text-primary,#1A1A1A);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.conv-time{font-size:10px;color:var(--color-text-tertiary,#999);flex-shrink:0}
+.conv-preview{font-size:11px;color:var(--color-text-secondary,#666);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.conv-footer{display:flex;align-items:center;gap:5px}
+.prio-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.prio-dot.Alta{background:#E24B4A}.prio-dot.Media{background:#EF9F27}.prio-dot.Baja{background:#97C459}
+.unit-label{font-size:10px;color:var(--color-text-tertiary,#999)}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:#534AB7;margin-left:auto;flex-shrink:0}
+.tag-chip{font-size:10px;padding:1px 6px;border-radius:99px;font-weight:500;margin-left:auto}
+.tag-admin{background:#EAF3DE;color:#27500A}
+.tag-bot{background:#EEEDFE;color:#3C3489}
+.tag-presencial{background:#FFF3E0;color:#7A4000;border:0.5px solid #FFCC80}
+
+/* CHAT */
+.chat-panel{display:flex;flex-direction:column;overflow:hidden}
+.chat-header{padding:11px 16px;border-bottom:0.5px solid var(--color-border-tertiary,#E5E4DF);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.avatar{width:32px;height:32px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#534AB7;flex-shrink:0}
+.ch-name{font-size:13px;font-weight:500;color:var(--color-text-primary,#1A1A1A)}
+.ch-unit{font-size:11px;color:var(--color-text-secondary,#666);margin-top:1px}
+.ch-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
+.resolve-btn{font-size:11px;padding:5px 12px;border-radius:6px;border:0.5px solid #97C459;background:#EAF3DE;color:#27500A;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:5px}
+.resolve-btn:hover{background:#C0DD97}
+.wait-btn{font-size:11px;padding:5px 12px;border-radius:6px;border:0.5px solid #E5E4DF;background:#fff;color:#666;cursor:pointer;display:flex;align-items:center;gap:5px}
+.wait-btn:hover{background:#F9F8F5}
+.status-pill{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500}
+.sp-pending{background:#FCEBEB;color:#A32D2D}
+.sp-waiting{background:#FAEEDA;color:#854F0B}
+.sp-closed-admin{background:#EAF3DE;color:#27500A}
+.sp-closed-bot{background:#EEEDFE;color:#3C3489}
+.sp-presencial{background:#FFF3E0;color:#7A4000}
+.prio-banner{font-size:11px;padding:5px 14px;display:flex;align-items:center;gap:6px;border-bottom:0.5px solid var(--color-border-tertiary,#E5E4DF);flex-shrink:0}
+.prio-banner.Alta{background:#FCEBEB;color:#A32D2D}
+.prio-banner.Media{background:#FAEEDA;color:#854F0B}
+.messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:78%;display:flex;flex-direction:column;gap:2px}
+.msg.resident{align-self:flex-start}.msg.admin{align-self:flex-end}.msg.bot{align-self:flex-end}
+.msg-bubble{font-size:12px;line-height:1.5;padding:8px 11px;border-radius:10px}
+.msg.resident .msg-bubble{background:#F9F8F5;color:#1A1A1A;border-bottom-left-radius:3px}
+.msg.admin .msg-bubble{background:#534AB7;color:#EEEDFE;border-bottom-right-radius:3px}
+.msg.bot .msg-bubble{background:#3C3489;color:#EEEDFE;border-bottom-right-radius:3px}
+.msg-meta{font-size:10px;color:#999}
+.msg.admin .msg-meta,.msg.bot .msg-meta{text-align:right}
+.bot-label{font-size:9px;opacity:.7}
+.compose{padding:10px 14px;border-top:0.5px solid var(--color-border-tertiary,#E5E4DF);flex-shrink:0}
+.compose-box{border:0.5px solid #ccc;border-radius:6px;overflow:hidden}
+.compose-input{width:100%;font-size:12px;padding:9px 12px;border:none;outline:none;background:#fff;color:#1A1A1A;resize:none;font-family:inherit;line-height:1.5}
+.compose-footer{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-top:0.5px solid #E5E4DF;background:#F9F8F5}
+.send-btn{font-size:11px;padding:4px 12px;border-radius:6px;background:#534AB7;color:#EEEDFE;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:500}
+.send-btn:hover{background:#3C3489}
+.empty-chat{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#999;font-size:13px}
+.empty-list{padding:24px;text-align:center;font-size:12px;color:#999}
+
+/* PQR presencial detail */
+.pqr-detail{flex:1;overflow-y:auto;padding:20px}
+.pqr-card{border:0.5px solid #E5E4DF;border-radius:8px;overflow:hidden;margin-bottom:16px}
+.pqr-card-header{padding:11px 14px;background:#FFF8F0;border-bottom:0.5px solid #FFE0B2;display:flex;align-items:center;gap:8px}
+.pqr-card-title{font-size:12px;font-weight:500;color:#7A4000}
+.pqr-fields{padding:14px;display:flex;flex-direction:column;gap:10px}
+.pqr-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pqr-field{display:flex;flex-direction:column;gap:2px}
+.pqr-field label{font-size:10px;font-weight:500;color:#999;text-transform:uppercase;letter-spacing:.04em}
+.pqr-field span{font-size:12px;color:#1A1A1A;font-weight:500}
+.pqr-desc{font-size:12px;color:#444;line-height:1.5}
+.send-followup-area{border:0.5px solid #E5E4DF;border-radius:8px;overflow:hidden}
+.send-followup-header{padding:10px 14px;background:#F9F8F5;border-bottom:0.5px solid #E5E4DF;font-size:12px;font-weight:500;color:#1A1A1A;display:flex;align-items:center;gap:6px}
+.send-followup-header .hint{font-size:11px;color:#999;font-weight:400;margin-left:4px}
+.followup-input{width:100%;font-size:12px;padding:10px 14px;border:none;outline:none;background:#fff;color:#1A1A1A;resize:none;font-family:inherit;line-height:1.5}
+.followup-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:0.5px solid #E5E4DF;background:#F9F8F5}
+.followup-note{font-size:11px;color:#999;display:flex;align-items:center;gap:5px}
+.send-followup-btn{font-size:11px;padding:5px 14px;border-radius:6px;background:#534AB7;color:#EEEDFE;border:none;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:5px}
+.send-followup-btn:hover{background:#3C3489}
+.sent-notice{font-size:11px;color:#3B6D11;padding:8px 14px;background:#EAF3DE;border-top:0.5px solid #97C459;display:flex;align-items:center;gap:6px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:#fff;border-radius:10px;border:0.5px solid #E5E4DF;width:420px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+.modal-header{padding:14px 16px;border-bottom:0.5px solid #E5E4DF;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:14px;font-weight:500;color:#1A1A1A}
+.modal-close{background:none;border:none;cursor:pointer;color:#999;font-size:20px;line-height:1;padding:0}
+.modal-close:hover{color:#1A1A1A}
+.modal-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:500;color:#666;letter-spacing:.02em}
+.field input,.field select,.field textarea{font-size:12px;padding:7px 10px;border-radius:6px;border:0.5px solid #ccc;background:#fff;color:#1A1A1A;outline:none;font-family:inherit;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#534AB7}
+.field textarea{resize:none;line-height:1.5}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-footer{padding:12px 16px;border-top:0.5px solid #E5E4DF;display:flex;justify-content:flex-end;gap:8px}
+.btn-cancel{font-size:12px;padding:6px 14px;border-radius:6px;border:0.5px solid #ccc;background:none;color:#666;cursor:pointer}
+.btn-cancel:hover{background:#F9F8F5}
+.btn-submit{font-size:12px;padding:6px 14px;border-radius:6px;background:#534AB7;color:#EEEDFE;border:none;cursor:pointer;font-weight:500}
+.btn-submit:hover{background:#3C3489}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;font-size:12px;padding:8px 16px;border-radius:99px;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style></head><body>
+
+<div class="shell" id="shell">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-dot">CB</div>
+      <span class="app-name">Conjunto Demo Barranquilla</span>
+      <div class="divider-v"></div>
+      <span class="section-name">Soporte</span>
+    </div>
+    <div class="topbar-right">
+      <button class="create-btn" onclick="openModal()">+ Crear PQR presencial</button>
+      <button class="icon-btn"><i class="ti ti-search" style="font-size:14px"></i></button>
+      <div class="avatar-sm">DG</div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" id="tab-pending" onclick="setFilter('pending')">
+      Por responder <span class="tab-badge badge-red" id="badge-pending">5</span>
+    </button>
+    <button class="tab" id="tab-waiting" onclick="setFilter('waiting')">
+      Esperando residente <span class="tab-badge badge-amber" id="badge-waiting">2</span>
+    </button>
+    <button class="tab" id="tab-closed" onclick="setFilter('closed')">
+      Resueltos <span class="tab-badge badge-gray" id="badge-closed">3</span>
+    </button>
+    <button class="tab" id="tab-presencial" onclick="setFilter('presencial')">
+      PQR Presencial <span class="tab-badge badge-purple" id="badge-presencial">0</span>
+    </button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item"><strong id="s-pending">5</strong> pendientes</div>
+    <div class="stat-item"><strong id="s-waiting">2</strong> en espera</div>
+    <div class="stat-item"><strong class="green" id="s-closed">3</strong> resueltos hoy</div>
+    <div class="stat-item"><strong id="s-presencial" style="color:#534AB7">0</strong> PQR presenciales</div>
+  </div>
+
+  <div class="body">
+    <div class="list-panel">
+      <div class="list-header">
+        <span class="list-label" id="list-label">Alta prioridad primero</span>
+        <button class="icon-btn"><i class="ti ti-adjustments-horizontal" style="font-size:14px"></i></button>
+      </div>
+      <div id="filter-checks-container"></div>
+      <div class="conv-list" id="conv-list"></div>
+    </div>
+    <div class="chat-panel" id="chat-panel">
+      <div class="empty-chat">
+        <i class="ti ti-message-circle" style="font-size:28px;opacity:.3"></i>
+        Selecciona una conversación
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Crear PQR presencial</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Unidad</label><input id="f-unit" type="text" placeholder="Ej. TB-405"></div>
+        <div class="field"><label>Residente</label><input id="f-name" type="text" placeholder="Nombre completo"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Categoría</label>
+          <select id="f-tag"><option value="">Seleccionar...</option><option>leaks</option><option>noise</option><option>maintenance</option><option>moving</option><option>other</option></select>
+        </div>
+        <div class="field"><label>Prioridad</label>
+          <select id="f-priority"><option>Alta</option><option>Media</option><option>Baja</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Descripción del problema</label>
+        <textarea id="f-desc" rows="3" placeholder="Describe el problema o solicitud del residente..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-submit" onclick="submitPQR()">Registrar PQR</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let CONVS=[
+  {id:1,type:'digital',name:'Yositoko Lakasa',unit:'TB-405',initials:'YL',tag:'leaks',priority:'Alta',status:'pending',closedBy:null,time:'2m',preview:'El baño sigue con goteras desde ayer...',messages:[
+    {from:'resident',text:'Buenas tardes, el baño sigue con goteras desde ayer en la noche y ya mojó el piso de madera.',time:'10:32'},
+    {from:'resident',text:'¿Cuándo pueden venir a revisarlo? Es urgente.',time:'10:33'},
+  ]},
+  {id:2,type:'digital',name:'Cristhian De Marchena',unit:'T1-101',initials:'CD',tag:'noise',priority:'Alta',status:'pending',closedBy:null,time:'15m',preview:'El vecino del piso de arriba hace mucho ruido...',messages:[
+    {from:'resident',text:'El vecino del piso de arriba lleva dos noches haciendo ruido hasta las 2am.',time:'09:45'},
+  ]},
+  {id:3,type:'digital',name:'Álvaro Noguera',unit:'TA-103',initials:'AN',tag:'moving',priority:'Media',status:'pending',closedBy:null,time:'1h',preview:'Quiero reservar el ascensor para mudanza...',messages:[
+    {from:'resident',text:'Necesito reservar el ascensor de servicio para una mudanza este sábado.',time:'08:20'},
+  ]},
+  {id:4,type:'digital',name:'Fernanda Ríos',unit:'TC-202',initials:'FR',tag:'maintenance',priority:'Media',status:'pending',closedBy:null,time:'2h',preview:'La luz del parqueadero P2 no funciona...',messages:[
+    {from:'resident',text:'La luz del parqueadero nivel P2 lleva una semana sin funcionar.',time:'08:05'},
+  ]},
+  {id:5,type:'digital',name:'Rodrigo Castellanos',unit:'TB-301',initials:'RC',tag:'other',priority:'Baja',status:'pending',closedBy:null,time:'3h',preview:'¿Cuál es el horario de la piscina?',messages:[
+    {from:'resident',text:'¿Me podrían confirmar el horario de la piscina para este fin de semana?',time:'07:50'},
+  ]},
+  {id:6,type:'digital',name:'Yositoko Lakasa',unit:'TB-405',initials:'YL',tag:'maintenance',priority:'Alta',status:'waiting',closedBy:null,time:'30m',preview:'El técnico pasará mañana entre 9am y 12m.',messages:[
+    {from:'resident',text:'La lavadora dejó de funcionar, ¿pueden enviar a alguien?',time:'09:00'},
+    {from:'admin',text:'Hola Yositoko, el técnico pasará mañana entre 9am y 12m. ¿Le queda bien ese horario?',time:'09:15'},
+  ]},
+  {id:7,type:'digital',name:'Mónica Herrera',unit:'TA-205',initials:'MH',tag:'other',priority:'Media',status:'waiting',closedBy:null,time:'2h',preview:'Perfecto, muchas gracias.',messages:[
+    {from:'resident',text:'¿Hay algún reglamento sobre mascotas en las zonas comunes?',time:'07:30'},
+    {from:'admin',text:'Sí Mónica, con correa y bolsas. El reglamento completo está en el portal.',time:'07:45'},
+    {from:'resident',text:'Perfecto, muchas gracias por la información.',time:'08:00'},
+  ]},
+  {id:8,type:'digital',name:'Jorge Paternina',unit:'TC-401',initials:'JP',tag:'leaks',priority:'Alta',status:'closed',closedBy:'admin',time:'ayer',preview:'Gracias, quedó perfecto.',messages:[
+    {from:'resident',text:'La tubería del baño principal estaba goteando.',time:'ayer'},
+    {from:'admin',text:'Enviamos al técnico esta mañana, ¿quedó resuelto?',time:'ayer'},
+    {from:'resident',text:'Sí, gracias, quedó perfecto.',time:'ayer'},
+  ]},
+  {id:9,type:'digital',name:'Valentina Torres',unit:'TA-108',initials:'VT',tag:'other',priority:'Baja',status:'closed',closedBy:'bot',time:'ayer',preview:'Consulta resuelta automáticamente.',messages:[
+    {from:'resident',text:'¿Cuáles son los horarios del salón comunal?',time:'ayer'},
+    {from:'bot',text:'El salón comunal está disponible de lunes a viernes 8am–10pm y fines de semana 9am–11pm.',time:'ayer'},
+    {from:'resident',text:'Perfecto, gracias.',time:'ayer'},
+  ]},
+  {id:10,type:'digital',name:'Laura Mendoza',unit:'TC-315',initials:'LM',tag:'maintenance',priority:'Alta',status:'closed',closedBy:'admin',time:'hoy',preview:'Problema resuelto por técnico.',messages:[
+    {from:'resident',text:'El ascensor lleva 2 horas detenido en el piso 3.',time:'hoy'},
+    {from:'admin',text:'Ya contactamos al técnico, estará allí en 20 minutos.',time:'hoy'},
+    {from:'resident',text:'Gracias, ya está funcionando.',time:'hoy'},
+  ]},
+];
+
+let filter='pending';
+let selectedId=null;
+let filterAdmin=true;
+let filterBot=true;
+let nextId=11;
+
+function prio(p){return p==='Alta'?0:p==='Media'?1:2;}
+
+// --- FILTER ---
+window.setFilter=function(f){
+  filter=f; selectedId=null;
+  ['pending','waiting','closed','presencial'].forEach(k=>
+    document.getElementById('tab-'+k).classList.toggle('active',k===f));
+  const labels={pending:'Alta prioridad primero',waiting:'Respondidos, esperando al residente',
+    closed:'Historial resueltos',presencial:'Registros presenciales · sin conversación digital'};
+  document.getElementById('list-label').textContent=labels[f];
+  renderFilterChecks(); renderList(); renderChat();
+};
+
+window.toggleFilter=function(t,v){
+  if(t==='admin')filterAdmin=v; else filterBot=v;
+  selectedId=null; renderList(); renderChat();
+};
+
+function renderFilterChecks(){
+  const c=document.getElementById('filter-checks-container');
+  if(filter!=='closed'){c.innerHTML='';return;}
+  c.innerHTML=`<div class="filter-checks">
+    <span class="filter-label">Ver:</span>
+    <label class="check-item"><input type="checkbox" ${filterAdmin?'checked':''} onchange="toggleFilter('admin',this.checked)"><span>Admin</span></label>
+    <label class="check-item"><input type="checkbox" ${filterBot?'checked':''} onchange="toggleFilter('bot',this.checked)"><span>Bot</span></label>
+  </div>`;
+}
+
+function getList(){
+  if(filter==='presencial')
+    return CONVS.filter(c=>c.type==='presencial').sort((a,b)=>prio(a.priority)-prio(b.priority));
+  if(filter==='closed')
+    return CONVS.filter(c=>c.status==='closed'&&((c.closedBy==='admin'&&filterAdmin)||(c.closedBy==='bot'&&filterBot)))
+      .sort((a,b)=>prio(a.priority)-prio(b.priority));
+  return CONVS.filter(c=>c.type==='digital'&&c.status===filter).sort((a,b)=>prio(a.priority)-prio(b.priority));
+}
+
+function renderList(){
+  const list=getList();
+  const el=document.getElementById('conv-list');
+  if(!list.length){el.innerHTML=`<div class="empty-list">${filter==='presencial'?'Ningún PQR presencial registrado aún':'Sin conversaciones'}</div>`;return;}
+  el.innerHTML=list.map(c=>{
+    let rightTag='';
+    if(c.type==='presencial')
+      rightTag=`<span class="tag-chip tag-presencial">${c.followupSent?'Seguimiento enviado':'Sin notificar'}</span>`;
+    else if(c.status==='closed')
+      rightTag=`<span class="tag-chip ${c.closedBy==='bot'?'tag-bot':'tag-admin'}">${c.closedBy==='bot'?'Bot':'Admin'}</span>`;
+    else if(c.status==='pending')
+      rightTag='<span class="unread-dot"></span>';
+    return `<div class="conv-item${selectedId===c.id?' selected':''}" onclick="selectConv(${c.id})">
+      <div class="conv-top">
+        <span class="conv-name">${c.name}</span>
+        <span class="conv-time">${c.time}</span>
+      </div>
+      <div class="conv-preview">${c.preview}</div>
+      <div class="conv-footer">
+        <span class="prio-dot ${c.priority}"></span>
+        <span class="unit-label">${c.unit} · ${c.tag}</span>
+        ${rightTag}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.selectConv=function(id){selectedId=id;renderList();renderChat();};
+
+// --- CHAT ACTIONS ---
+window.markWaiting=function(id){
+  const c=CONVS.find(x=>x.id===id);
+  if(c){c.status='waiting';selectedId=null;}
+  renderList();renderChat();updateStats();
+};
+window.markClosed=function(id){
+  const c=CONVS.find(x=>x.id===id);
+  if(c){c.status='closed';c.closedBy='admin';selectedId=null;}
+  renderList();renderChat();updateStats();
+};
+window.sendMsg=function(id){
+  const inp=document.getElementById('compose-input');
+  const text=inp?inp.value.trim():'';
+  if(!text)return;
+  const c=CONVS.find(x=>x.id===id);
+  if(!c)return;
+  c.messages.push({from:'admin',text,time:'ahora'});
+  c.preview=text; c.status='waiting'; selectedId=null;
+  inp.value='';
+  renderList();renderChat();updateStats();
+};
+
+// --- SEND FOLLOWUP FROM PQR ---
+window.sendFollowup=function(id){
+  const inp=document.getElementById('followup-input');
+  const text=inp?inp.value.trim():'';
+  if(!text){showToast('Escribe un mensaje antes de enviar');return;}
+  const c=CONVS.find(x=>x.id===id);
+  if(!c)return;
+  // Convert to waiting conversation
+  c.followupSent=true;
+  c.followupMsg=text;
+  showToast('✓ Notificación enviada al residente · aparece en "Esperando residente"');
+  // Create a digital waiting thread
+  const newConv={
+    id:nextId++, type:'digital',
+    name:c.name, unit:c.unit, initials:c.initials,
+    tag:c.tag, priority:c.priority,
+    status:'waiting', closedBy:null,
+    time:'ahora', preview:text,
+    messages:[
+      {from:'admin',text:`[Seguimiento PQR presencial] ${text}`,time:'ahora'}
+    ],
+    fromPQR:true
+  };
+  CONVS.push(newConv);
+  selectedId=null;
+  renderList();renderChat();updateStats();
+};
+
+function renderChat(){
+  const panel=document.getElementById('chat-panel');
+  if(!selectedId){
+    panel.innerHTML=`<div class="empty-chat"><i class="ti ti-message-circle" style="font-size:28px;opacity:.3"></i>Selecciona una conversación</div>`;
+    return;
+  }
+  const c=CONVS.find(x=>x.id===selectedId);
+  if(!c)return;
+
+  // PQR presencial detail view
+  if(c.type==='presencial'){
+    const sentBlock=c.followupSent
+      ?`<div class="sent-notice">✓ Seguimiento enviado al residente · la conversación está en "Esperando residente"</div>`
+      :`<div class="send-followup-area">
+        <div class="send-followup-header">
+          Enviar seguimiento al residente
+          <span class="hint">· genera notificación y abre hilo en "Esperando residente"</span>
+        </div>
+        <textarea class="followup-input" id="followup-input" rows="3" placeholder="Ej: Llamamos a averiguar con la inmobiliaria y en 3 días realizarán la visita..."></textarea>
+        <div class="followup-footer">
+          <span class="followup-note">Solo envía si necesitas comunicarle algo al residente</span>
+          <button class="send-followup-btn" onclick="sendFollowup(${c.id})">Enviar y notificar →</button>
+        </div>
+      </div>`;
+    panel.innerHTML=`
+      <div class="chat-header">
+        <div class="avatar">${c.initials}</div>
+        <div>
+          <div class="ch-name">${c.name} <span class="status-pill sp-presencial">Presencial</span></div>
+          <div class="ch-unit">${c.unit} · ${c.tag} · Prioridad ${c.priority}</div>
+        </div>
+        <div class="ch-actions">
+          <button class="resolve-btn" onclick="markPQRClosed(${c.id})">✓ Marcar resuelto</button>
+        </div>
+      </div>
+      <div class="pqr-detail">
+        <div class="pqr-card">
+          <div class="pqr-card-header">📋 Registro PQR presencial</div>
+          <div class="pqr-fields">
+            <div class="pqr-field-row">
+              <div class="pqr-field"><label>Unidad</label><span>${c.unit}</span></div>
+              <div class="pqr-field"><label>Residente</label><span>${c.name}</span></div>
+            </div>
+            <div class="pqr-field-row">
+              <div class="pqr-field"><label>Categoría</label><span>${c.tag}</span></div>
+              <div class="pqr-field"><label>Prioridad</label><span>${c.priority}</span></div>
+            </div>
+            <div class="pqr-field"><label>Descripción</label><p class="pqr-desc">${c.desc}</p></div>
+            <div class="pqr-field"><label>Registrado</label><span>${c.time}</span></div>
+          </div>
+        </div>
+        ${sentBlock}
+      </div>`;
+    return;
+  }
+
+  // Normal conversation
+  const isBot=c.closedBy==='bot'&&c.status==='closed';
+  const spMap={pending:'sp-pending',waiting:'sp-waiting',closed:isBot?'sp-closed-bot':'sp-closed-admin'};
+  const lbMap={pending:'Por responder',waiting:'Esperando residente',closed:isBot?'Resuelto por bot':'Resuelto'};
+  const msgs=c.messages.map(m=>`
+    <div class="msg ${m.from}">
+      <div class="msg-bubble">${m.text}${m.from==='bot'?'<div class="bot-label">· Asistente virtual</div>':''}</div>
+      <div class="msg-meta">${m.time}</div>
+    </div>`).join('');
+  const showBanner=c.priority==='Alta'||c.priority==='Media';
+  const compose=c.status!=='closed'?`
+    <div class="compose"><div class="compose-box">
+      <textarea class="compose-input" id="compose-input" rows="2" placeholder="Escribe tu respuesta..."></textarea>
+      <div class="compose-footer">
+        <span style="font-size:11px;color:#999">Al enviar → pasa a "Esperando residente"</span>
+        <button class="send-btn" onclick="sendMsg(${c.id})">Enviar →</button>
+      </div>
+    </div></div>`
+    :`<div style="padding:10px 16px;font-size:11px;color:#999;border-top:0.5px solid #E5E4DF">Conversación cerrada · ${isBot?'Resuelta por bot':'Resuelta por admin'}</div>`;
+  panel.innerHTML=`
+    <div class="chat-header">
+      <div class="avatar">${c.initials}</div>
+      <div>
+        <div class="ch-name">${c.name} ${c.fromPQR?'<span class="status-pill sp-presencial" style="font-size:10px">desde PQR</span>':''} <span class="status-pill ${spMap[c.status]}">${lbMap[c.status]}</span></div>
+        <div class="ch-unit">${c.unit} · ${c.tag}</div>
+      </div>
+      <div class="ch-actions">
+        ${c.status==='pending'?`<button class="wait-btn" onclick="markWaiting(${c.id})">En espera</button>`:''}
+        ${c.status!=='closed'?`<button class="resolve-btn" onclick="markClosed(${c.id})">✓ Resolver</button>`:''}
+      </div>
+    </div>
+    ${showBanner?`<div class="prio-banner ${c.priority}">⚠ Prioridad ${c.priority} · ${c.tag}</div>`:''}
+    <div class="messages">${msgs}</div>
+    ${compose}`;
+}
+
+window.markPQRClosed=function(id){
+  const c=CONVS.find(x=>x.id===id);
+  if(c){c.status='closed';c.closedBy='admin';}
+  selectedId=null; renderList(); renderChat(); updateStats();
+};
+
+// --- MODAL ---
+window.openModal=function(){document.getElementById('modal').style.display='flex';}
+window.closeModal=function(){document.getElementById('modal').style.display='none';}
+window.submitPQR=function(){
+  const unit=document.getElementById('f-unit').value.trim();
+  const name=document.getElementById('f-name').value.trim();
+  const tag=document.getElementById('f-tag').value;
+  const priority=document.getElementById('f-priority').value;
+  const desc=document.getElementById('f-desc').value.trim();
+  if(!unit||!name||!tag||!desc){showToast('Completa todos los campos');return;}
+  const initials=name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  CONVS.push({
+    id:nextId++, type:'presencial',
+    name, unit, initials, tag, priority,
+    status:'presencial', closedBy:null,
+    time:'ahora', preview:desc.slice(0,50)+(desc.length>50?'...':''),
+    desc, followupSent:false
+  });
+  closeModal();
+  setFilter('presencial');
+  updateStats();
+  showToast('✓ PQR presencial registrado');
+};
+
+function updateStats(){
+  const p=CONVS.filter(c=>c.type==='digital'&&c.status==='pending').length;
+  const w=CONVS.filter(c=>c.type==='digital'&&c.status==='waiting').length;
+  const cl=CONVS.filter(c=>c.status==='closed').length;
+  const pr=CONVS.filter(c=>c.type==='presencial'&&c.status!=='closed').length;
+  document.getElementById('badge-pending').textContent=p;
+  document.getElementById('badge-waiting').textContent=w;
+  document.getElementById('badge-closed').textContent=cl;
+  document.getElementById('badge-presencial').textContent=pr;
+  document.getElementById('s-pending').textContent=p;
+  document.getElementById('s-waiting').textContent=w;
+  document.getElementById('s-closed').textContent=cl;
+  document.getElementById('s-presencial').textContent=pr;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+renderList(); renderChat(); updateStats();
+</script>
+</body></html>

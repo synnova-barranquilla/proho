@@ -307,7 +307,61 @@
 
 ---
 
-### 2.10 Otros competidores identificados
+### 2.10 Edifia
+
+| Aspecto    | Detalle                                        |
+| ---------- | ---------------------------------------------- |
+| **Web**    | [edifia.com.co](https://www.edifia.com.co/)    |
+| **Origen** | Colombia                                       |
+| **Tipo**   | SaaS de administracion de propiedad horizontal |
+
+**Modulos:**
+
+- Gestion del conjunto: torres, unidades, areas comunes
+- Directorio de residentes: propietarios, arrendatarios, personas autorizadas
+- Contabilidad completa: presupuestos, cuentas por cobrar, ingresos/egresos, estados financieros, dashboard en tiempo real
+- Parqueadero de visitantes: control con seguimiento de tiempo, tarifas, IVA automatico, rotacion de cupos
+- Circulares y comunicaciones: via email o plataforma (98% tasa de entrega reportada)
+- Paqueteria: registro con notificacion automatica al residente
+- Reservas de areas comunes: calendario con reglas, horarios, disponibilidad y flujos de aprobacion
+- Mantenimiento preventivo: programacion y registro
+- Generacion de documentos con IA: actas, informes, presentaciones, certificados, asistente legal
+- Roles diferenciados: administrador, residente, contador
+
+**Pricing:**
+
+- **Licencia Porteria (por conjunto):**
+  - Hasta 30 unidades: $33,500 COP/mes (anual $335,000)
+  - Hasta 130 unidades: $64,900 COP/mes (anual $649,000)
+  - Hasta 250 unidades: $115,900 COP/mes (anual $1,159,900)
+  - Hasta 500 unidades: $186,400 COP/mes (anual $1,864,000)
+  - Hasta 750 unidades: $265,000 COP/mes (anual $2,650,000)
+  - Hasta 1000+ unidades: $343,900 COP/mes (anual $3,439,000)
+  - Todos los planes incluyen creditos de IA (~17% descuento en plan anual)
+- **Licencia Personal (administradores independientes):**
+  - Personal: $38,900 COP/mes (hasta 2 propiedades, 240 creditos IA, 20 GB)
+  - Personal Extra: $49,500 COP/mes (hasta 4 propiedades, 350 creditos IA, 50 GB)
+- **Add-ons:** Creditos IA adicionales ($124-$12,400), almacenamiento cloud ($15,000-$55,000/mes), citofonia/intercomunicador ($60-$185/min)
+
+**Apps:** Solo web responsive, sin apps nativas (iOS/Android)
+
+**Diferenciadores:**
+
+- IA integrada en el core: generacion automatica de actas, informes, certificados con creditos incluidos
+- Modulo de parqueadero de visitantes con tarifas y IVA automatico
+- Licencia Personal para administradores independientes multi-propiedad
+- Precios agresivamente bajos (desde ~USD $8/mes)
+- Pricing 100% publico y transparente
+
+**Notas:**
+
+- Producto joven/emergente, sin indexacion en Google ni cobertura mediatica
+- Sin clientes conocidos publicados ni metricas de traccion
+- No confundir con Edifito (edifito.co), empresa chilena diferente
+
+---
+
+### 2.11 Otros competidores identificados
 
 | Competidor            | Web                                                      | Enfoque                                  |
 | --------------------- | -------------------------------------------------------- | ---------------------------------------- |
@@ -320,22 +374,24 @@
 
 ## 3. Matriz Comparativa
 
-| Caracteristica       | Munily         | Kontry         | KaiLiving     | Kipo             | ADMON             | Edifito           | Helisa      | Copropiedad | DecoPropiedad |
-| -------------------- | -------------- | -------------- | ------------- | ---------------- | ----------------- | ----------------- | ----------- | ----------- | ------------- |
-| **Contabilidad**     | Si             | Si             | Si            | Si (facturacion) | Si                | Si                | Si (fuerte) | No          | Si (fuerte)   |
-| **PQRS**             | Si             | Si             | Si            | Si               | Si                | -                 | -           | -           | -             |
-| **Control acceso**   | Si (facial)    | -              | Si            | -                | -                 | -                 | -           | -           | -             |
-| **Reservas**         | Si             | -              | Si            | -                | Si                | -                 | -           | -           | -             |
-| **Asambleas**        | -              | Si             | -             | Si (votacion)    | Si                | Si                | -           | -           | -             |
-| **App movil**        | Si             | Si             | Si            | Si               | Si                | Si                | -           | Si          | -             |
-| **WhatsApp**         | Si (cobros)    | Si             | Si (bot 24/7) | -                | -                 | -                 | -           | -           | -             |
-| **Intercomunicador** | Si             | -              | Si            | Si               | Si                | -                 | -           | -           | -             |
-| **Boton panico**     | Si             | -              | -             | Si               | -                 | -                 | -           | -           | -             |
-| **IA**               | Si (Mario)     | No             | No            | No               | No                | No                | No          | No          | No            |
-| **Marketplace**      | No             | Si (comercios) | No            | No               | Si (inmobiliario) | No                | No          | No          | No            |
-| **Freemium**         | No             | No             | No            | **Si**           | Prueba gratis     | No                | No          | No          | Demo gratis   |
-| **Internacional**    | Si (2+ paises) | No             | No            | No               | No                | **Si (9 paises)** | No          | No          | No            |
-| **Y Combinator**     | **Si**         | No             | No            | No               | No                | No                | No          | No          | No            |
+| Caracteristica       | Munily         | Kontry         | KaiLiving     | Kipo             | ADMON             | Edifito           | Helisa      | Copropiedad | DecoPropiedad | Edifia               |
+| -------------------- | -------------- | -------------- | ------------- | ---------------- | ----------------- | ----------------- | ----------- | ----------- | ------------- | -------------------- |
+| **Contabilidad**     | Si             | Si             | Si            | Si (facturacion) | Si                | Si                | Si (fuerte) | No          | Si (fuerte)   | Si                   |
+| **PQRS**             | Si             | Si             | Si            | Si               | Si                | -                 | -           | -           | -             | -                    |
+| **Control acceso**   | Si (facial)    | -              | Si            | -                | -                 | -                 | -           | -           | -             | -                    |
+| **Reservas**         | Si             | -              | Si            | -                | Si                | -                 | -           | -           | -             | Si                   |
+| **Asambleas**        | -              | Si             | -             | Si (votacion)    | Si                | Si                | -           | -           | -             | -                    |
+| **App movil**        | Si             | Si             | Si            | Si               | Si                | Si                | -           | Si          | -             | No (solo web)        |
+| **WhatsApp**         | Si (cobros)    | Si             | Si (bot 24/7) | -                | -                 | -                 | -           | -           | -             | -                    |
+| **Intercomunicador** | Si             | -              | Si            | Si               | Si                | -                 | -           | -           | -             | Add-on               |
+| **Boton panico**     | Si             | -              | -             | Si               | -                 | -                 | -           | -           | -             | -                    |
+| **IA**               | Si (Mario)     | No             | No            | No               | No                | No                | No          | No          | No            | **Si (docs/legal)**  |
+| **Marketplace**      | No             | Si (comercios) | No            | No               | Si (inmobiliario) | No                | No          | No          | No            | No                   |
+| **Freemium**         | No             | No             | No            | **Si**           | Prueba gratis     | No                | No          | No          | Demo gratis   | No                   |
+| **Internacional**    | Si (2+ paises) | No             | No            | No               | No                | **Si (9 paises)** | No          | No          | No            | No                   |
+| **Y Combinator**     | **Si**         | No             | No            | No               | No                | No                | No          | No          | No            | No                   |
+| **Parqueadero**      | -              | -              | -             | -                | -                 | -                 | -           | -           | -             | **Si (con tarifas)** |
+| **Pricing publico**  | No             | No             | No            | Si               | No                | No                | Si          | No          | No            | **Si**               |
 
 ---
 
@@ -352,6 +408,7 @@
 | Edifito        | Multiples planes     | No publico         |
 | DecoPropiedad  | SaaS                 | No publico         |
 | Copropiedad.co | No especificado      | No publico         |
+| Edifia         | Tiered por unidades  | Desde $33,500 COP  |
 
 **Observacion:** La mayoria de competidores no publica precios, lo que indica un modelo de venta consultiva. Kipo con su modelo freemium es la excepcion y podria ser una estrategia disruptiva de referencia.
 
