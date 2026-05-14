@@ -1,6 +1,8 @@
 'use node'
 
+import { google } from '@ai-sdk/google'
 import { createThread, listMessages, saveMessage } from '@convex-dev/agent'
+import { generateText } from 'ai'
 import { v } from 'convex/values'
 
 import { components, internal } from '../_generated/api'
@@ -64,42 +66,74 @@ async function handleEscalation(
     console.error('[handleEscalation] Title regeneration failed:', error)
   }
 
-  try {
-    const escalationResult = await ctx.runMutation(
-      internal.communications.helpers.escalateConversation,
-      {
-        complexId: ids.complexId,
-        residentId: ids.residentId,
-        conversationId: ids.conversationId,
-        summary: output.summary || 'Escalado por el asistente',
-        categories:
-          output.categories.length > 0 ? output.categories : ['other'],
-        priority: output.priority as 'high' | 'medium' | 'low',
-      },
-    )
+  const categories =
+    output.categories.length > 0 ? output.categories : ['other']
+  const priority = output.priority as 'high' | 'medium' | 'low'
 
-    if (escalationResult) {
-      const roleLabel =
-        escalationResult.assignedRole === 'AUXILIAR'
-          ? 'Auxiliar Operativo'
-          : 'Coordinador(a) Administrativo(a)'
+  // Backend decides: check if any matched category has generatesTicket: true
+  const enabledCategories = await ctx.runQuery(
+    internal.communications.helpers.getEnabledCategories,
+    { complexId: ids.complexId },
+  )
+  const shouldCreateTicket = categories.some((catKey) => {
+    const cat = enabledCategories.find((c) => c.key === catKey)
+    return cat?.generatesTicket === true
+  })
+
+  try {
+    if (shouldCreateTicket) {
+      const escalationResult = await ctx.runMutation(
+        internal.communications.helpers.escalateConversation,
+        {
+          complexId: ids.complexId,
+          residentId: ids.residentId,
+          conversationId: ids.conversationId,
+          summary: output.summary || 'Escalado por el asistente',
+          categories,
+          priority,
+        },
+      )
+
+      if (escalationResult) {
+        const roleLabel =
+          escalationResult.assignedRole === 'AUXILIAR'
+            ? 'auxiliar operativo'
+            : 'administrador'
+
+        const isHigh = priority === 'high'
+        const content = isHigh
+          ? `Entiendo, el ${roleLabel} se pondrá en contacto contigo cuanto antes para darte solución.`
+          : `Listo. Acabamos de avisarle al ${roleLabel}, se pondrá en contacto contigo para ayudarte con la situación.`
+
+        await saveMessage(ctx, components.agent, {
+          threadId: ids.threadId,
+          message: { role: 'assistant', content },
+        })
+      }
+    } else {
+      // Soft handoff: escalate without creating a ticket
+      await ctx.runMutation(
+        internal.communications.helpers.escalateConversationWithoutTicket,
+        { conversationId: ids.conversationId, categories },
+      )
 
       await saveMessage(ctx, components.agent, {
         threadId: ids.threadId,
         message: {
           role: 'assistant',
-          content: `Tu caso ha sido registrado con el número ${escalationResult.publicId} y asignado al ${roleLabel}. Te responderá pronto. A partir de ahora, las respuestas las recibirás directamente del equipo.`,
+          content:
+            'En breves instantes la administración dará respuesta a tu duda.',
         },
       })
     }
   } catch (escalationError) {
-    console.error('[handleResidentMessage] escalation failed:', escalationError)
+    console.error('[handleEscalation] escalation failed:', escalationError)
     await saveMessage(ctx, components.agent, {
       threadId: ids.threadId,
       message: {
         role: 'assistant',
         content:
-          'Hubo un problema al crear tu caso de soporte. Por favor intenta de nuevo.',
+          'Hubo un problema procesando tu solicitud. Un miembro del equipo revisará tu caso.',
       },
     })
   }
@@ -236,10 +270,46 @@ export const handleResidentMessage = internalAction({
     const bh = complexConfig?.businessHours
     const tz = complexConfig?.timezone ?? 'America/Bogota'
 
-    if (!isBusinessHours(bh, tz)) {
+    if (!isBusinessHours(bh, tz) && !isNewConversation) {
       systemParts.push(
-        `NOTA: Estamos fuera de horario laboral. Informa al residente que las respuestas del equipo administrativo podrían ser más demoradas, pero sigue atendiendo normalmente.`,
+        `NOTA: Estamos fuera de horario laboral. Si escalas, agrega al final: "Ten en cuenta que las respuestas podrían demorar un poco al estar fuera de horario."`,
       )
+    }
+
+    // Inject enabled categories so the bot picks from a valid list
+    const enabledCategories = await ctx.runQuery(
+      internal.communications.helpers.getEnabledCategories,
+      { complexId: args.complexId },
+    )
+    if (enabledCategories.length > 0) {
+      systemParts.push(
+        `CATEGORÍAS DISPONIBLES (usa solo estas claves al escalar):`,
+      )
+      for (const cat of enabledCategories) {
+        systemParts.push(`- ${cat.key}: ${cat.label}`)
+      }
+    }
+
+    // Inject regulations (normativas) as bot context
+    if (complexConfig?.regulations) {
+      systemParts.push(
+        `NORMATIVAS DEL CONJUNTO (usa esta info para responder dudas de residentes):`,
+      )
+      systemParts.push(complexConfig.regulations)
+    }
+
+    // Inject past conversation summaries for this resident
+    const pastConversations = await ctx.runQuery(
+      internal.communications.helpers.getRecentResolvedConversationSummaries,
+      { residentId: args.residentId, limit: 5 },
+    )
+    if (pastConversations.length > 0) {
+      systemParts.push(
+        `HISTORIAL DEL RESIDENTE (conversaciones anteriores resueltas):`,
+      )
+      for (const conv of pastConversations) {
+        systemParts.push(`- ${conv.title}: ${conv.preview}`)
+      }
     }
 
     const systemContext =
@@ -473,6 +543,35 @@ export const handleQuickAction = internalAction({
   },
 })
 
+/**
+ * Fetch recent thread messages and format as a text transcript for
+ * standalone AI SDK generateText calls (does NOT write to the thread).
+ */
+async function getThreadTranscript(
+  ctx: ActionCtx,
+  threadId: string,
+  limit = 20,
+): Promise<string> {
+  const recent = await listMessages(ctx, components.agent, {
+    threadId,
+    paginationOpts: { numItems: limit, cursor: null },
+    excludeToolMessages: true,
+  })
+
+  return recent.page
+    .map((m) => {
+      const role = m.message?.role ?? 'unknown'
+      const content =
+        typeof m.message?.content === 'string'
+          ? m.message.content
+          : JSON.stringify(m.message?.content ?? '')
+      return `[${role}]: ${content}`
+    })
+    .join('\n')
+}
+
+const offlineModel = google('gemini-2.5-flash')
+
 export const generateConversationTitle = internalAction({
   args: {
     threadId: v.string(),
@@ -480,14 +579,14 @@ export const generateConversationTitle = internalAction({
   },
   handler: async (ctx, args) => {
     try {
-      const result = await supportAgent.generateText(
-        ctx,
-        { threadId: args.threadId },
-        {
-          prompt:
-            'Genera un título de 3-6 palabras en español que resuma el tema principal de esta conversación. Solo responde con el título, sin comillas ni puntuación final.',
-        },
-      )
+      const transcript = await getThreadTranscript(ctx, args.threadId, 10)
+
+      const result = await generateText({
+        model: offlineModel,
+        system:
+          'Genera un título de 3-6 palabras en español que resuma el tema principal de la conversación. Solo responde con el título, sin comillas ni puntuación final.',
+        prompt: transcript,
+      })
 
       await ctx.runMutation(
         internal.communications.helpers.updateConversationTitle,
@@ -501,7 +600,7 @@ export const generateConversationTitle = internalAction({
 
 /**
  * Suggest a response for an admin/auxiliar to send to the resident.
- * Public action (called from the frontend).
+ * Uses raw AI SDK generateText so it does NOT write to the agent thread.
  */
 export const suggestResponse = action({
   args: {
@@ -517,7 +616,6 @@ export const suggestResponse = action({
       return { text: null, error: 'Ticket not found' }
     }
 
-    // Actions lack direct db access; delegate auth to an internal query
     await ctx.runQuery(
       internal.communications.helpers.requireCommsAccessCheck,
       { complexId: ticket.complexId },
@@ -536,17 +634,19 @@ export const suggestResponse = action({
       return { text: null, error: 'Conversation not found' }
     }
 
-    const threadId: string = conversation.threadId
-
     try {
-      const result: { text: string } = await supportAgent.generateText(
+      const transcript = await getThreadTranscript(
         ctx,
-        { threadId },
-        {
-          prompt:
-            'Basándote en la conversación anterior, sugiere una respuesta profesional en español para que el administrador envíe al residente. Sé conciso y resolutivo.',
-        },
+        conversation.threadId,
+        20,
       )
+
+      const result = await generateText({
+        model: offlineModel,
+        system:
+          'Basándote en la conversación, sugiere una respuesta profesional en español para que el administrador envíe al residente. Sé conciso y resolutivo. Solo responde con el mensaje sugerido.',
+        prompt: transcript,
+      })
 
       return { text: result.text, error: null }
     } catch (error) {
@@ -558,6 +658,7 @@ export const suggestResponse = action({
 
 /**
  * Generate and save a summary for a ticket based on its conversation.
+ * Uses raw AI SDK generateText so it does NOT write to the agent thread.
  */
 export const computeTicketSummary = internalAction({
   args: {
@@ -587,14 +688,18 @@ export const computeTicketSummary = internalAction({
     }
 
     try {
-      const result = await supportAgent.generateText(
+      const transcript = await getThreadTranscript(
         ctx,
-        { threadId: conversation.threadId },
-        {
-          prompt:
-            'Resume esta conversación en 2-3 oraciones en español. Enfócate en el problema reportado y la resolución.',
-        },
+        conversation.threadId,
+        30,
       )
+
+      const result = await generateText({
+        model: offlineModel,
+        system:
+          'Resume esta conversación en 2-3 oraciones en español. Enfócate en el problema reportado y la resolución.',
+        prompt: transcript,
+      })
 
       await ctx.runMutation(
         internal.communications.helpers.patchTicketSummary,

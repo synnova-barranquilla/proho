@@ -123,6 +123,7 @@ export const categoryFields = {
   priority: ticketPriorities,
   assignedRole: v.union(v.literal('AUXILIAR'), v.literal('ADMIN')),
   keywords: v.array(v.string()),
+  generatesTicket: v.boolean(),
   isSystem: v.boolean(),
   isEnabled: v.boolean(),
   displayOrder: v.number(),

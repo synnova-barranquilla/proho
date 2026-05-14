@@ -16,6 +16,7 @@ const DEFAULT_CATEGORIES: Array<{
   priority: TicketPriority
   assignedRole: AssignedRole
   keywords: string[]
+  generatesTicket: boolean
 }> = [
   {
     key: 'leaks',
@@ -23,6 +24,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'high',
     assignedRole: 'AUXILIAR',
     keywords: ['fuga', 'filtración', 'goteo', 'humedad', 'agua'],
+    generatesTicket: true,
   },
   {
     key: 'elevator',
@@ -30,6 +32,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'high',
     assignedRole: 'AUXILIAR',
     keywords: ['ascensor', 'elevador', 'atrapado'],
+    generatesTicket: true,
   },
   {
     key: 'power',
@@ -37,6 +40,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'high',
     assignedRole: 'AUXILIAR',
     keywords: ['luz', 'energía', 'electricidad', 'apagón', 'corte'],
+    generatesTicket: true,
   },
   {
     key: 'security_cameras',
@@ -44,6 +48,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'high',
     assignedRole: 'AUXILIAR',
     keywords: ['cámara', 'seguridad', 'vigilancia', 'video'],
+    generatesTicket: true,
   },
   {
     key: 'vehicle_permits',
@@ -51,6 +56,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'high',
     assignedRole: 'ADMIN',
     keywords: ['permiso', 'vehículo', 'parqueadero', 'estacionamiento'],
+    generatesTicket: true,
   },
   {
     key: 'lost_packages',
@@ -58,6 +64,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'high',
     assignedRole: 'ADMIN',
     keywords: ['paquete', 'correspondencia', 'extraviado', 'perdido'],
+    generatesTicket: true,
   },
   {
     key: 'recurrent_complaints',
@@ -65,6 +72,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'high',
     assignedRole: 'ADMIN',
     keywords: ['recurrente', 'repetido', 'otra vez'],
+    generatesTicket: true,
   },
   {
     key: 'maintenance',
@@ -72,13 +80,15 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'medium',
     assignedRole: 'AUXILIAR',
     keywords: ['mantenimiento', 'reparación', 'daño', 'arreglo'],
+    generatesTicket: true,
   },
   {
     key: 'low_water_pressure',
     label: 'Baja presión de agua',
-    priority: 'medium',
+    priority: 'high',
     assignedRole: 'AUXILIAR',
     keywords: ['presión', 'agua', 'baja'],
+    generatesTicket: true,
   },
   {
     key: 'marijuana_odors',
@@ -86,6 +96,23 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'medium',
     assignedRole: 'ADMIN',
     keywords: ['olor', 'marihuana', 'ruido', 'bulla', 'música'],
+    generatesTicket: true,
+  },
+  {
+    key: 'estados_de_cuenta',
+    label: 'Estados de cuenta',
+    priority: 'high',
+    assignedRole: 'ADMIN',
+    keywords: ['estado de cuenta', 'paz y salvo', 'factura', 'cuota'],
+    generatesTicket: true,
+  },
+  {
+    key: 'quejas',
+    label: 'Quejas de convivencia',
+    priority: 'medium',
+    assignedRole: 'ADMIN',
+    keywords: ['queja', 'convivencia', 'vecino', 'molestia'],
+    generatesTicket: true,
   },
   {
     key: 'social_area_reservations',
@@ -93,6 +120,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'medium',
     assignedRole: 'ADMIN',
     keywords: ['reserva', 'salón', 'zona social', 'bbq', 'coworking', 'salon'],
+    generatesTicket: false,
   },
   {
     key: 'moving',
@@ -100,6 +128,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'medium',
     assignedRole: 'ADMIN',
     keywords: ['mudanza', 'trasteo', 'traslado'],
+    generatesTicket: false,
   },
   {
     key: 'damage_inquiry',
@@ -114,6 +143,7 @@ const DEFAULT_CATEGORIES: Array<{
       'culpa',
       'responsable',
     ],
+    generatesTicket: true,
   },
   {
     key: 'service_cut_paid',
@@ -121,6 +151,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'medium',
     assignedRole: 'ADMIN',
     keywords: ['corte', 'servicio', 'pagado', 'reconexión'],
+    generatesTicket: true,
   },
   {
     key: 'other',
@@ -128,6 +159,7 @@ const DEFAULT_CATEGORIES: Array<{
     priority: 'low',
     assignedRole: 'AUXILIAR',
     keywords: [],
+    generatesTicket: false,
   },
 ]
 
@@ -199,6 +231,7 @@ export const seedPlatformDefaults = internalMutation({
         priority: cat.priority,
         assignedRole: cat.assignedRole,
         keywords: cat.keywords,
+        generatesTicket: cat.generatesTicket,
         isSystem: true,
         isEnabled: true,
         displayOrder: i,
@@ -241,6 +274,7 @@ export const createCategory = mutation({
     priority: ticketPriorities,
     assignedRole: v.union(v.literal('AUXILIAR'), v.literal('ADMIN')),
     keywords: v.array(v.string()),
+    generatesTicket: v.boolean(),
   },
   handler: async (ctx, args) => {
     await requireCommsAccess(ctx, args.complexId, {
@@ -266,6 +300,7 @@ export const createCategory = mutation({
       priority: args.priority,
       assignedRole: args.assignedRole,
       keywords: args.keywords,
+      generatesTicket: args.generatesTicket,
       isSystem: false,
       isEnabled: true,
       displayOrder: maxOrder + 1,
@@ -284,6 +319,7 @@ export const updateCategory = mutation({
       v.union(v.literal('AUXILIAR'), v.literal('ADMIN')),
     ),
     keywords: v.optional(v.array(v.string())),
+    generatesTicket: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const category = await ctx.db.get(args.categoryId)
@@ -314,6 +350,8 @@ export const updateCategory = mutation({
     if (args.priority !== undefined) patch.priority = args.priority
     if (args.assignedRole !== undefined) patch.assignedRole = args.assignedRole
     if (args.keywords !== undefined) patch.keywords = args.keywords
+    if (args.generatesTicket !== undefined)
+      patch.generatesTicket = args.generatesTicket
 
     await ctx.db.patch(category._id, patch)
 

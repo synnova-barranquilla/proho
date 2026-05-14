@@ -333,6 +333,84 @@ export const escalateConversation = internalMutation({
   },
 })
 
+/** Marks conversation as escalated WITHOUT creating a ticket (soft handoff to admin). */
+export const escalateConversationWithoutTicket = internalMutation({
+  args: {
+    conversationId: v.id('conversations'),
+    categories: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.conversationId, {
+      status: 'escalated',
+      updatedAt: Date.now(),
+    })
+  },
+})
+
+/** Returns enabled categories for a complex (merged with platform defaults). */
+export const getEnabledCategories = internalQuery({
+  args: { complexId: v.id('complexes') },
+  handler: async (ctx, args) => {
+    const complexCategories = await ctx.db
+      .query('categories')
+      .withIndex('by_complex', (q) =>
+        q.eq('complexId', args.complexId).eq('isEnabled', true),
+      )
+      .collect()
+
+    const platformCategories = await ctx.db
+      .query('categories')
+      .withIndex('by_complex', (q) =>
+        q.eq('complexId', PLATFORM_COMPLEX_ID).eq('isEnabled', true),
+      )
+      .collect()
+
+    const customKeys = new Set(complexCategories.map((c) => c.key))
+    return [
+      ...complexCategories,
+      ...platformCategories.filter((p) => !customKeys.has(p.key)),
+    ]
+  },
+})
+
+/** Returns summaries of the last N resolved conversations for a resident. */
+export const getRecentResolvedConversationSummaries = internalQuery({
+  args: {
+    residentId: v.id('residents'),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 5
+
+    const resolved = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q.eq('residentId', args.residentId).eq('status', 'resolved_by_bot'),
+      )
+      .order('desc')
+      .take(limit)
+
+    const closed = await ctx.db
+      .query('conversations')
+      .withIndex('by_resident_and_status', (q) =>
+        q
+          .eq('residentId', args.residentId)
+          .eq('status', 'closed_by_inactivity'),
+      )
+      .order('desc')
+      .take(limit)
+
+    const all = [...resolved, ...closed]
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .slice(0, limit)
+
+    return all.map((c) => ({
+      title: c.title ?? 'Sin título',
+      preview: c.lastMessagePreview ?? '',
+    }))
+  },
+})
+
 export const countActiveConversations = internalQuery({
   args: { residentId: v.id('residents') },
   handler: async (ctx, args) => {

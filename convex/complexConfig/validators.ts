@@ -36,6 +36,7 @@ export const complexConfigFields = {
   timezone: v.optional(v.string()),
   ticketPrefix: v.optional(v.string()),
   ticketSequence: v.optional(v.number()),
+  regulations: v.optional(v.string()),
 }
 
 export const defaultBusinessHours = {
