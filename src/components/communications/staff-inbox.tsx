@@ -133,6 +133,7 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
     admin: true,
     bot: true,
   })
+  const [resolvedRange, setResolvedRange] = useState<1 | 7 | 30>(1)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
   const { data: inboxItems } = useSuspenseQuery(
@@ -179,9 +180,7 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
   )
 
   const resolvedItems = useMemo(() => {
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
-    const cutoff = todayStart.getTime()
+    const cutoff = Date.now() - resolvedRange * 24 * 60 * 60 * 1000
 
     return (inboxItems as InboxItem[])
       .filter((item) => {
@@ -196,7 +195,6 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
         if (!isResolved) return false
         if (item.updatedAt < cutoff) return false
 
-        // Apply admin/bot filter
         const closedByBot =
           item.status === 'resolved_by_bot' ||
           item.ticket?.status === 'closed_by_bot'
@@ -211,7 +209,7 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
         return true
       })
       .sort((a, b) => b.updatedAt - a.updatedAt)
-  }, [inboxItems, resolvedFilter])
+  }, [inboxItems, resolvedFilter, resolvedRange])
 
   const inPersonItems = useMemo(
     () =>
@@ -251,9 +249,7 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
     : null
 
   const selectedInPerson = selectedTicketId
-    ? ((inPersonItems).find(
-        (i) => i._id === selectedTicketId,
-      ) ?? null)
+    ? (inPersonItems.find((i) => i._id === selectedTicketId) ?? null)
     : null
 
   const handleTabChange = useCallback((tab: TabKey) => {
@@ -296,34 +292,6 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
         />
       </div>
 
-      {/* Stats bar */}
-      <div className="flex shrink-0 items-center gap-6 border-b bg-muted/30 px-4 py-1.5">
-        <span className="text-[11px] text-muted-foreground">
-          <strong className="font-medium text-foreground">
-            {stats.pending}
-          </strong>{' '}
-          pendientes
-        </span>
-        <span className="text-[11px] text-muted-foreground">
-          <strong className="font-medium text-foreground">
-            {stats.waiting}
-          </strong>{' '}
-          en espera
-        </span>
-        <span className="text-[11px] text-muted-foreground">
-          <strong className="font-medium text-green-700 dark:text-green-400">
-            {stats.resolved}
-          </strong>{' '}
-          resueltos hoy
-        </span>
-        <span className="text-[11px] text-muted-foreground">
-          <strong className="font-medium text-violet-700 dark:text-violet-400">
-            {stats.presencial}
-          </strong>{' '}
-          PQR presenciales
-        </span>
-      </div>
-
       {/* Body: list + detail */}
       <div className="flex min-h-0 flex-1">
         {/* Left panel */}
@@ -360,6 +328,23 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
                 />
                 <span className="text-[11px] font-medium">Bot</span>
               </label>
+              <div className="ml-auto flex items-center gap-1">
+                {([1, 7, 30] as const).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setResolvedRange(d)}
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors',
+                      resolvedRange === d
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                    )}
+                  >
+                    {d === 1 ? '1d' : d === 7 ? '7d' : '30d'}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
