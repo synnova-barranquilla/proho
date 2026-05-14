@@ -17,6 +17,7 @@ import {
 } from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import {
+  ArrowLeft,
   Bot,
   CheckCircle2,
   Download,
@@ -277,16 +278,28 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
     ? (inPersonItems.find((i) => i._id === selectedTicketId) ?? null)
     : null
 
+  const hasSelection = selectedConvId !== null || selectedTicketId !== null
+
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab)
     setSelectedConvId(null)
     setSelectedTicketId(null)
   }, [])
 
+  const handleBack = useCallback(() => {
+    setSelectedConvId(null)
+    setSelectedTicketId(null)
+  }, [])
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg border">
-      {/* Tab bar */}
-      <div className="flex shrink-0 items-center gap-0.5 border-b bg-background px-4">
+      {/* Tab bar — hidden on mobile when viewing detail */}
+      <div
+        className={cn(
+          'shrink-0 items-center gap-0.5 overflow-x-auto border-b bg-background px-2 md:flex md:px-4',
+          hasSelection ? 'hidden' : 'flex',
+        )}
+      >
         <TabButton
           active={activeTab === 'pending'}
           onClick={() => handleTabChange('pending')}
@@ -319,8 +332,14 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
 
       {/* Body: list + detail */}
       <div className="flex min-h-0 flex-1">
-        {/* Left panel */}
-        <div className="flex w-72 shrink-0 flex-col border-r">
+        {/* Left panel — full-width on mobile, hidden when detail is open */}
+        <div
+          className={cn(
+            'flex shrink-0 flex-col border-r',
+            hasSelection ? 'hidden md:flex' : 'flex',
+            'w-full md:w-72',
+          )}
+        >
           {/* Filter checkboxes for resolved tab */}
           {activeTab === 'resolved' && (
             <div className="flex items-center gap-3 border-b bg-muted/30 px-3 py-1.5">
@@ -430,19 +449,26 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
           </div>
         </div>
 
-        {/* Right panel */}
-        <div className="flex min-w-0 flex-1 flex-col">
+        {/* Right panel — full-width on mobile when selected, hidden when nothing selected */}
+        <div
+          className={cn(
+            'min-w-0 flex-1 flex-col',
+            hasSelection ? 'flex' : 'hidden md:flex',
+          )}
+        >
           {selectedConv ? (
             <Suspense fallback={<DetailSkeleton />}>
               <ConversationDetail
                 item={selectedConv}
                 categoryLabels={categoryLabels}
+                onBack={handleBack}
               />
             </Suspense>
           ) : selectedInPerson ? (
             <InPersonDetail
               item={selectedInPerson}
               categoryLabels={categoryLabels}
+              onBack={handleBack}
             />
           ) : (
             <EmptyDetail />
@@ -481,7 +507,7 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={cn(
-        'inline-flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-xs font-medium transition-colors',
+        'inline-flex shrink-0 items-center gap-1 border-b-2 px-2 py-2.5 text-[11px] font-medium transition-colors md:gap-1.5 md:px-3 md:text-xs',
         active
           ? 'border-foreground text-foreground'
           : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -691,9 +717,11 @@ function EmptyDetail() {
 function ConversationDetail({
   item,
   categoryLabels,
+  onBack,
 }: {
   item: InboxItem
   categoryLabels: Record<string, string>
+  onBack: () => void
 }) {
   const [replyContent, setReplyContent] = useState('')
   const [showAttachments, setShowAttachments] = useState(false)
@@ -816,7 +844,15 @@ function ConversationDetail({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex shrink-0 items-center gap-2.5 border-b px-4 py-2.5">
+      <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2.5 md:px-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 shrink-0 p-0 md:hidden"
+          onClick={onBack}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <Avatar size="sm">
           <AvatarFallback className="bg-violet-100 text-[10px] font-semibold text-violet-700 dark:bg-violet-900 dark:text-violet-300">
             {initials}
@@ -1112,9 +1148,11 @@ function AttachmentsPanel({
 function InPersonDetail({
   item,
   categoryLabels,
+  onBack,
 }: {
   item: InPersonItem
   categoryLabels: Record<string, string>
+  onBack: () => void
 }) {
   const name = item.resident
     ? `${item.resident.firstName} ${item.resident.lastName}`
@@ -1156,7 +1194,15 @@ function InPersonDetail({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex shrink-0 items-center gap-2.5 border-b px-4 py-2.5">
+      <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2.5 md:px-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 shrink-0 p-0 md:hidden"
+          onClick={onBack}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <Avatar size="sm">
           <AvatarFallback className="bg-amber-100 text-[10px] font-semibold text-amber-700 dark:bg-amber-900 dark:text-amber-300">
             {initials}
