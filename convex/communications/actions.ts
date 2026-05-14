@@ -657,6 +657,46 @@ export const suggestResponse = action({
 })
 
 /**
+ * Suggest a response based on a conversation (no ticket required).
+ * Uses raw AI SDK generateText so it does NOT write to the agent thread.
+ */
+export const suggestResponseForConversation = action({
+  args: {
+    conversationId: v.id('conversations'),
+  },
+  handler: async (ctx, args) => {
+    const conversation = await ctx.runQuery(
+      internal.communications.helpers.getConversationInternal,
+      { conversationId: args.conversationId },
+    )
+
+    if (!conversation) {
+      return { text: null, error: 'Conversation not found' }
+    }
+
+    try {
+      const transcript = await getThreadTranscript(
+        ctx,
+        conversation.threadId,
+        20,
+      )
+
+      const result = await generateText({
+        model: offlineModel,
+        system:
+          'Basándote en la conversación, sugiere una respuesta profesional en español para que el administrador envíe al residente. Sé conciso y resolutivo. Solo responde con el mensaje sugerido.',
+        prompt: transcript,
+      })
+
+      return { text: result.text, error: null }
+    } catch (error) {
+      console.error('Error generating suggested response:', error)
+      return { text: null, error: 'Error generating suggestion' }
+    }
+  },
+})
+
+/**
  * Generate and save a summary for a ticket based on its conversation.
  * Uses raw AI SDK generateText so it does NOT write to the agent thread.
  */

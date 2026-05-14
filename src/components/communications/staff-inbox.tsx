@@ -10,7 +10,11 @@ import {
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 
 import { useUIMessages } from '@convex-dev/agent/react'
-import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import {
+  convexQuery,
+  useConvexAction,
+  useConvexMutation,
+} from '@convex-dev/react-query'
 import { ConvexError } from 'convex/values'
 import {
   Bot,
@@ -19,6 +23,7 @@ import {
   Loader2,
   MessageSquare,
   Send,
+  Sparkles,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -26,6 +31,11 @@ import { Avatar, AvatarFallback } from '#/components/ui/avatar'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '#/components/ui/tooltip'
 import { cn } from '#/lib/utils'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -145,6 +155,18 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
       complexId,
     }),
   )
+
+  const { data: categories } = useSuspenseQuery(
+    convexQuery(api.communications.queries.listCategories, { complexId }),
+  )
+
+  const categoryLabels = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const cat of categories) {
+      map[cat.key] = cat.label
+    }
+    return map
+  }, [categories])
 
   // ---- Tab filtering ----
 
@@ -375,6 +397,7 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
                     key={item._id}
                     item={item}
                     selected={selectedTicketId === item._id}
+                    categoryLabels={categoryLabels}
                     onClick={() => {
                       setSelectedTicketId(item._id)
                       setSelectedConvId(null)
@@ -393,6 +416,7 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
                   item={item}
                   tab={activeTab}
                   selected={selectedConvId === item._id}
+                  categoryLabels={categoryLabels}
                   onClick={() => {
                     setSelectedConvId(item._id)
                     setSelectedTicketId(null)
@@ -407,10 +431,16 @@ function StaffInboxInner({ complexId }: StaffInboxProps) {
         <div className="flex min-w-0 flex-1 flex-col">
           {selectedConv ? (
             <Suspense fallback={<DetailSkeleton />}>
-              <ConversationDetail item={selectedConv} />
+              <ConversationDetail
+                item={selectedConv}
+                categoryLabels={categoryLabels}
+              />
             </Suspense>
           ) : selectedInPerson ? (
-            <InPersonDetail item={selectedInPerson} />
+            <InPersonDetail
+              item={selectedInPerson}
+              categoryLabels={categoryLabels}
+            />
           ) : (
             <EmptyDetail />
           )}
@@ -476,11 +506,13 @@ function ConversationListItem({
   tab,
   selected,
   onClick,
+  categoryLabels,
 }: {
   item: InboxItem
   tab: TabKey
   selected: boolean
   onClick: () => void
+  categoryLabels: Record<string, string>
 }) {
   const residentName = item.resident
     ? `${item.resident.firstName} ${item.resident.lastName}`
@@ -489,7 +521,8 @@ function ConversationListItem({
   const unitLabel = item.unit ? `T${item.unit.tower}-${item.unit.number}` : ''
 
   const priority = item.ticket?.priority ?? 'low'
-  const category = item.ticket?.categories[0] ?? ''
+  const catKey = item.ticket?.categories[0] ?? ''
+  const category = catKey ? (categoryLabels[catKey] ?? catKey) : ''
 
   const isResolvedByBot =
     item.status === 'resolved_by_bot' || item.ticket?.status === 'closed_by_bot'
@@ -574,10 +607,12 @@ function InPersonListItem({
   item,
   selected,
   onClick,
+  categoryLabels,
 }: {
   item: InPersonItem
   selected: boolean
   onClick: () => void
+  categoryLabels: Record<string, string>
 }) {
   const name = item.resident
     ? `${item.resident.firstName} ${item.resident.lastName}`
@@ -616,7 +651,9 @@ function InPersonListItem({
         />
         <span className="text-[10px] text-muted-foreground">
           {unitLabel}
-          {item.categories[0] ? ` · ${item.categories[0]}` : ''}
+          {item.categories[0]
+            ? ` · ${categoryLabels[item.categories[0]] ?? item.categories[0]}`
+            : ''}
         </span>
         <span
           className={cn(
@@ -648,7 +685,13 @@ function EmptyDetail() {
 // Right panel: conversation detail
 // ---------------------------------------------------------------------------
 
-function ConversationDetail({ item }: { item: InboxItem }) {
+function ConversationDetail({
+  item,
+  categoryLabels,
+}: {
+  item: InboxItem
+  categoryLabels: Record<string, string>
+}) {
   const [replyContent, setReplyContent] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -706,6 +749,26 @@ function ConversationDetail({ item }: { item: InboxItem }) {
     api.communications.mutations.closeTicket,
   )
   const closeMut = useMutation({ mutationFn: closeTicketFn })
+
+  const suggestFn = useConvexAction(
+    api.communications.actions.suggestResponseForConversation,
+  )
+  const suggestMut = useMutation({ mutationFn: suggestFn })
+
+  const handleSuggest = useCallback(async () => {
+    try {
+      const result = await suggestMut.mutateAsync({
+        conversationId: item._id,
+      })
+      if (result.text) {
+        setReplyContent(result.text)
+      } else {
+        toast.error(result.error ?? 'No se pudo generar la sugerencia')
+      }
+    } catch {
+      toast.error('Error al generar respuesta')
+    }
+  }, [suggestMut, item._id])
 
   const handleSend = useCallback(async () => {
     const text = replyContent.trim()
@@ -770,7 +833,7 @@ function ConversationDetail({ item }: { item: InboxItem }) {
           <p className="text-[11px] text-muted-foreground">
             {unitLabel}
             {item.ticket?.categories[0]
-              ? ` · ${item.ticket.categories[0]}`
+              ? ` · ${categoryLabels[item.ticket.categories[0]] ?? item.ticket.categories[0]}`
               : ''}
           </p>
         </div>
@@ -803,7 +866,9 @@ function ConversationDetail({ item }: { item: InboxItem }) {
           )}
         >
           Prioridad {PRIORITY_LABELS[priority] ?? priority}
-          {item.ticket?.categories[0] ? ` · ${item.ticket.categories[0]}` : ''}
+          {item.ticket?.categories[0]
+            ? ` · ${categoryLabels[item.ticket.categories[0]] ?? item.ticket.categories[0]}`
+            : ''}
         </div>
       )}
 
@@ -858,19 +923,41 @@ function ConversationDetail({ item }: { item: InboxItem }) {
               <span className="text-[11px] text-muted-foreground">
                 Al enviar pasa a &quot;Esperando residente&quot;
               </span>
-              <Button
-                size="sm"
-                className="h-7 text-xs"
-                onClick={handleSend}
-                disabled={!replyContent.trim() || sendMut.isPending}
-              >
-                {sendMut.isPending ? (
-                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Send className="mr-1 h-3.5 w-3.5" />
-                )}
-                Enviar
-              </Button>
+              <div className="flex items-center gap-1.5">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 w-7 p-0"
+                      onClick={handleSuggest}
+                      disabled={suggestMut.isPending}
+                    >
+                      {suggestMut.isPending ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Generar respuesta automática con IA
+                  </TooltipContent>
+                </Tooltip>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={handleSend}
+                  disabled={!replyContent.trim() || sendMut.isPending}
+                >
+                  {sendMut.isPending ? (
+                    <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Send className="mr-1 h-3.5 w-3.5" />
+                  )}
+                  Enviar
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -883,7 +970,13 @@ function ConversationDetail({ item }: { item: InboxItem }) {
 // Right panel: in-person ticket detail
 // ---------------------------------------------------------------------------
 
-function InPersonDetail({ item }: { item: InPersonItem }) {
+function InPersonDetail({
+  item,
+  categoryLabels,
+}: {
+  item: InPersonItem
+  categoryLabels: Record<string, string>
+}) {
   const name = item.resident
     ? `${item.resident.firstName} ${item.resident.lastName}`
     : 'Residente desconocido'
@@ -944,8 +1037,10 @@ function InPersonDetail({ item }: { item: InPersonItem }) {
           </div>
           <p className="text-[11px] text-muted-foreground">
             {unitLabel}
-            {item.categories[0] ? ` · ${item.categories[0]}` : ''} · Prioridad{' '}
-            {PRIORITY_LABELS[item.priority] ?? item.priority}
+            {item.categories[0]
+              ? ` · ${categoryLabels[item.categories[0]] ?? item.categories[0]}`
+              : ''}{' '}
+            · Prioridad {PRIORITY_LABELS[item.priority] ?? item.priority}
           </p>
         </div>
         {!isClosed && (
@@ -990,7 +1085,9 @@ function InPersonDetail({ item }: { item: InPersonItem }) {
                   Categoria
                 </span>
                 <span className="text-xs font-medium">
-                  {item.categories.join(', ') || '--'}
+                  {item.categories
+                    .map((c) => categoryLabels[c] ?? c)
+                    .join(', ') || '--'}
                 </span>
               </div>
               <div className="flex flex-col gap-0.5">
