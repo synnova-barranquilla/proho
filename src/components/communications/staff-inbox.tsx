@@ -19,11 +19,14 @@ import { ConvexError } from 'convex/values'
 import {
   Bot,
   CheckCircle2,
+  Download,
   FileText,
   Loader2,
   MessageSquare,
+  Paperclip,
   Send,
   Sparkles,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -693,6 +696,7 @@ function ConversationDetail({
   categoryLabels: Record<string, string>
 }) {
   const [replyContent, setReplyContent] = useState('')
+  const [showAttachments, setShowAttachments] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const residentName = item.resident
@@ -838,19 +842,30 @@ function ConversationDetail({
           </p>
         </div>
         <div className="flex items-center gap-1.5">
-          {canReply && item.ticket && (
-            <>
+          <Tooltip>
+            <TooltipTrigger>
               <Button
-                variant="outline"
+                variant={showAttachments ? 'secondary' : 'outline'}
                 size="sm"
-                className="h-7 border-green-300 bg-green-50 text-xs text-green-700 hover:bg-green-100 dark:border-green-800 dark:bg-green-950/20 dark:text-green-400"
-                onClick={handleResolve}
-                disabled={closeMut.isPending}
+                className="h-7 w-7 p-0"
+                onClick={() => setShowAttachments((v) => !v)}
               >
-                <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                Resolver
+                <Paperclip className="h-3.5 w-3.5" />
               </Button>
-            </>
+            </TooltipTrigger>
+            <TooltipContent>Adjuntos</TooltipContent>
+          </Tooltip>
+          {canReply && item.ticket && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 border-green-300 bg-green-50 text-xs text-green-700 hover:bg-green-100 dark:border-green-800 dark:bg-green-950/20 dark:text-green-400"
+              onClick={handleResolve}
+              disabled={closeMut.isPending}
+            >
+              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+              Resolver
+            </Button>
           )}
         </div>
       </div>
@@ -872,96 +887,199 @@ function ConversationDetail({
         </div>
       )}
 
-      {/* Messages */}
-      <div
-        ref={scrollRef}
-        className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-4 py-3"
-      >
-        {messages.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Sin mensajes
-          </p>
-        ) : (
-          messages.map((msg) => (
-            <InboxMessageBubble
-              key={msg.key}
-              message={msg}
-              residentName={residentName}
-            />
-          ))
-        )}
-        {isStreaming && <BotStreamingIndicator />}
-      </div>
+      {/* Main content: messages + optional attachments panel */}
+      <div className="flex min-h-0 flex-1">
+        {/* Chat column */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          {/* Messages */}
+          <div
+            ref={scrollRef}
+            className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-4 py-3"
+          >
+            {messages.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Sin mensajes
+              </p>
+            ) : (
+              messages.map((msg) => (
+                <InboxMessageBubble
+                  key={msg.key}
+                  message={msg}
+                  residentName={residentName}
+                />
+              ))
+            )}
+            {isStreaming && <BotStreamingIndicator />}
+          </div>
 
-      {/* Read-only notice for active/closed conversations */}
-      {!canReply && (
-        <div className="shrink-0 border-t px-4 py-2 text-center text-xs text-muted-foreground">
-          {item.status === 'active'
-            ? 'Conversacion activa con el bot. Solo lectura.'
-            : 'Conversacion cerrada.'}
-        </div>
-      )}
+          {/* Read-only notice for active/closed conversations */}
+          {!canReply && (
+            <div className="shrink-0 border-t px-4 py-2 text-center text-xs text-muted-foreground">
+              {item.status === 'active'
+                ? 'Conversacion activa con el bot. Solo lectura.'
+                : 'Conversacion cerrada.'}
+            </div>
+          )}
 
-      {/* Compose area */}
-      {canReply && (
-        <div className="shrink-0 border-t px-3 py-2.5">
-          <div className="overflow-hidden rounded-md border">
-            <textarea
-              value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSend()
-                }
-              }}
-              placeholder="Escribe tu respuesta..."
-              rows={2}
-              className="w-full resize-none border-none bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
-            />
-            <div className="flex items-center justify-between border-t bg-muted/30 px-3 py-1.5">
-              <span className="text-[11px] text-muted-foreground">
-                Al enviar pasa a &quot;Esperando residente&quot;
-              </span>
-              <div className="flex items-center gap-1.5">
-                <Tooltip>
-                  <TooltipTrigger>
+          {/* Compose area */}
+          {canReply && (
+            <div className="shrink-0 border-t px-3 py-2.5">
+              <div className="overflow-hidden rounded-md border">
+                <textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSend()
+                    }
+                  }}
+                  placeholder="Escribe tu respuesta..."
+                  rows={2}
+                  className="w-full resize-none border-none bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
+                />
+                <div className="flex items-center justify-between border-t bg-muted/30 px-3 py-1.5">
+                  <span className="text-[11px] text-muted-foreground">
+                    Al enviar pasa a &quot;Esperando residente&quot;
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 w-7 p-0"
+                          onClick={handleSuggest}
+                          disabled={suggestMut.isPending}
+                        >
+                          {suggestMut.isPending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Generar respuesta automática con IA
+                      </TooltipContent>
+                    </Tooltip>
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="h-7 w-7 p-0"
-                      onClick={handleSuggest}
-                      disabled={suggestMut.isPending}
+                      className="h-7 text-xs"
+                      onClick={handleSend}
+                      disabled={!replyContent.trim() || sendMut.isPending}
                     >
-                      {suggestMut.isPending ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      {sendMut.isPending ? (
+                        <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
                       ) : (
-                        <Sparkles className="h-3.5 w-3.5" />
+                        <Send className="mr-1 h-3.5 w-3.5" />
                       )}
+                      Enviar
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Generar respuesta automática con IA
-                  </TooltipContent>
-                </Tooltip>
-                <Button
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={handleSend}
-                  disabled={!replyContent.trim() || sendMut.isPending}
-                >
-                  {sendMut.isPending ? (
-                    <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Send className="mr-1 h-3.5 w-3.5" />
-                  )}
-                  Enviar
-                </Button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+
+        {/* Attachments panel */}
+        {showAttachments && (
+          <AttachmentsPanel
+            conversationId={item._id}
+            onClose={() => setShowAttachments(false)}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Attachments panel (right sidebar inside conversation detail)
+// ---------------------------------------------------------------------------
+
+function AttachmentsPanel({
+  conversationId,
+  onClose,
+}: {
+  conversationId: Id<'conversations'>
+  onClose: () => void
+}) {
+  const { data: attachments } = useSuspenseQuery(
+    convexQuery(api.communications.queries.listAttachmentsByConversation, {
+      conversationId,
+    }),
+  )
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  return (
+    <div className="flex w-64 shrink-0 flex-col border-l">
+      <div className="flex items-center justify-between border-b px-3 py-2">
+        <span className="text-xs font-medium">
+          Adjuntos ({attachments.length})
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0"
+          onClick={onClose}
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {attachments.length === 0 ? (
+          <p className="px-3 py-6 text-center text-xs text-muted-foreground">
+            Sin adjuntos en esta conversación
+          </p>
+        ) : (
+          <div className="flex flex-col gap-1 p-2">
+            {attachments.map((att) => {
+              const isImage = att.mimeType.startsWith('image/')
+              const isVideo = att.mimeType.startsWith('video/')
+
+              return (
+                <a
+                  key={att._id}
+                  href={att.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-start gap-2 rounded-md p-2 transition-colors hover:bg-muted/50"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-muted">
+                    {isImage ? (
+                      <img
+                        src={att.fileUrl}
+                        alt={att.fileName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : isVideo ? (
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[11px] font-medium group-hover:underline">
+                      {att.fileName}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {formatSize(att.size)} · {timeAgo(att.createdAt)}
+                    </p>
+                  </div>
+                  <Download className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100" />
+                </a>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

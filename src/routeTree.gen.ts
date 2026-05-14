@@ -18,7 +18,6 @@ import { Route as AuthenticatedCComplexSlugComunicacionAccionesRouteImport } fro
 import { Route as AuthenticatedCComplexSlugComunicacionAdjuntosRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/adjuntos'
 import { Route as AuthenticatedCComplexSlugComunicacionCategoriasRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/categorias'
 import { Route as AuthenticatedCComplexSlugComunicacionComunicadosRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/comunicados'
-import { Route as AuthenticatedCComplexSlugComunicacionConversacionesRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/conversaciones'
 import { Route as AuthenticatedCComplexSlugComunicacionIndexRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/index'
 import { Route as AuthenticatedCComplexSlugComunicacionNormativasRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/normativas'
 import { Route as AuthenticatedCComplexSlugComunicacionRouteRouteImport } from './routes/_authenticated/c/$complexSlug/comunicacion/route'
@@ -314,12 +313,6 @@ const AuthenticatedCComplexSlugComunicacionNormativasRoute =
     path: '/normativas',
     getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
   } as any)
-const AuthenticatedCComplexSlugComunicacionConversacionesRoute =
-  AuthenticatedCComplexSlugComunicacionConversacionesRouteImport.update({
-    id: '/conversaciones',
-    path: '/conversaciones',
-    getParentRoute: () => AuthenticatedCComplexSlugComunicacionRouteRoute,
-  } as any)
 const AuthenticatedCComplexSlugComunicacionComunicadosRoute =
   AuthenticatedCComplexSlugComunicacionComunicadosRouteImport.update({
     id: '/comunicados',
@@ -379,7 +372,6 @@ export interface FileRoutesByFullPath {
   '/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
   '/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/c/$complexSlug/comunicacion/comunicados': typeof AuthenticatedCComplexSlugComunicacionComunicadosRoute
-  '/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
   '/c/$complexSlug/comunicacion/normativas': typeof AuthenticatedCComplexSlugComunicacionNormativasRoute
   '/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
   '/c/$complexSlug/parqueadero/configuracion': typeof AuthenticatedCComplexSlugParqueaderoConfiguracionRoute
@@ -424,7 +416,6 @@ export interface FileRoutesByTo {
   '/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
   '/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/c/$complexSlug/comunicacion/comunicados': typeof AuthenticatedCComplexSlugComunicacionComunicadosRoute
-  '/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
   '/c/$complexSlug/comunicacion/normativas': typeof AuthenticatedCComplexSlugComunicacionNormativasRoute
   '/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
   '/c/$complexSlug/parqueadero/configuracion': typeof AuthenticatedCComplexSlugParqueaderoConfiguracionRoute
@@ -477,7 +468,6 @@ export interface FileRoutesById {
   '/_authenticated/c/$complexSlug/comunicacion/adjuntos': typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
   '/_authenticated/c/$complexSlug/comunicacion/categorias': typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   '/_authenticated/c/$complexSlug/comunicacion/comunicados': typeof AuthenticatedCComplexSlugComunicacionComunicadosRoute
-  '/_authenticated/c/$complexSlug/comunicacion/conversaciones': typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
   '/_authenticated/c/$complexSlug/comunicacion/normativas': typeof AuthenticatedCComplexSlugComunicacionNormativasRoute
   '/_authenticated/c/$complexSlug/comunicacion/soporte': typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
   '/_authenticated/c/$complexSlug/parqueadero/configuracion': typeof AuthenticatedCComplexSlugParqueaderoConfiguracionRoute
@@ -530,7 +520,6 @@ export interface FileRouteTypes {
     | '/c/$complexSlug/comunicacion/adjuntos'
     | '/c/$complexSlug/comunicacion/categorias'
     | '/c/$complexSlug/comunicacion/comunicados'
-    | '/c/$complexSlug/comunicacion/conversaciones'
     | '/c/$complexSlug/comunicacion/normativas'
     | '/c/$complexSlug/comunicacion/soporte'
     | '/c/$complexSlug/parqueadero/configuracion'
@@ -575,7 +564,6 @@ export interface FileRouteTypes {
     | '/c/$complexSlug/comunicacion/adjuntos'
     | '/c/$complexSlug/comunicacion/categorias'
     | '/c/$complexSlug/comunicacion/comunicados'
-    | '/c/$complexSlug/comunicacion/conversaciones'
     | '/c/$complexSlug/comunicacion/normativas'
     | '/c/$complexSlug/comunicacion/soporte'
     | '/c/$complexSlug/parqueadero/configuracion'
@@ -627,7 +615,6 @@ export interface FileRouteTypes {
     | '/_authenticated/c/$complexSlug/comunicacion/adjuntos'
     | '/_authenticated/c/$complexSlug/comunicacion/categorias'
     | '/_authenticated/c/$complexSlug/comunicacion/comunicados'
-    | '/_authenticated/c/$complexSlug/comunicacion/conversaciones'
     | '/_authenticated/c/$complexSlug/comunicacion/normativas'
     | '/_authenticated/c/$complexSlug/comunicacion/soporte'
     | '/_authenticated/c/$complexSlug/parqueadero/configuracion'
@@ -980,13 +967,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionNormativasRouteImport
       parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
     }
-    '/_authenticated/c/$complexSlug/comunicacion/conversaciones': {
-      id: '/_authenticated/c/$complexSlug/comunicacion/conversaciones'
-      path: '/conversaciones'
-      fullPath: '/c/$complexSlug/comunicacion/conversaciones'
-      preLoaderRoute: typeof AuthenticatedCComplexSlugComunicacionConversacionesRouteImport
-      parentRoute: typeof AuthenticatedCComplexSlugComunicacionRouteRoute
-    }
     '/_authenticated/c/$complexSlug/comunicacion/comunicados': {
       id: '/_authenticated/c/$complexSlug/comunicacion/comunicados'
       path: '/comunicados'
@@ -1061,7 +1041,6 @@ interface AuthenticatedCComplexSlugComunicacionRouteRouteChildren {
   AuthenticatedCComplexSlugComunicacionAdjuntosRoute: typeof AuthenticatedCComplexSlugComunicacionAdjuntosRoute
   AuthenticatedCComplexSlugComunicacionCategoriasRoute: typeof AuthenticatedCComplexSlugComunicacionCategoriasRoute
   AuthenticatedCComplexSlugComunicacionComunicadosRoute: typeof AuthenticatedCComplexSlugComunicacionComunicadosRoute
-  AuthenticatedCComplexSlugComunicacionConversacionesRoute: typeof AuthenticatedCComplexSlugComunicacionConversacionesRoute
   AuthenticatedCComplexSlugComunicacionNormativasRoute: typeof AuthenticatedCComplexSlugComunicacionNormativasRoute
   AuthenticatedCComplexSlugComunicacionSoporteRoute: typeof AuthenticatedCComplexSlugComunicacionSoporteRoute
   AuthenticatedCComplexSlugComunicacionIndexRoute: typeof AuthenticatedCComplexSlugComunicacionIndexRoute
@@ -1077,8 +1056,6 @@ const AuthenticatedCComplexSlugComunicacionRouteRouteChildren: AuthenticatedCCom
       AuthenticatedCComplexSlugComunicacionCategoriasRoute,
     AuthenticatedCComplexSlugComunicacionComunicadosRoute:
       AuthenticatedCComplexSlugComunicacionComunicadosRoute,
-    AuthenticatedCComplexSlugComunicacionConversacionesRoute:
-      AuthenticatedCComplexSlugComunicacionConversacionesRoute,
     AuthenticatedCComplexSlugComunicacionNormativasRoute:
       AuthenticatedCComplexSlugComunicacionNormativasRoute,
     AuthenticatedCComplexSlugComunicacionSoporteRoute:
