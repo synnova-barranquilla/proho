@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 
 import { ResidentChat } from '#/components/communications/resident-chat'
-import { StaffTicketsTab } from '#/components/communications/staff-tickets-tab'
+import { StaffInbox } from '#/components/communications/staff-inbox'
 import { TabSkeleton } from '#/components/ui/skeleton'
 import { useEffectiveComplexRole } from '#/lib/complex-role'
 
@@ -21,7 +21,7 @@ function SoportePage() {
   return (
     <Suspense fallback={<TabSkeleton />}>
       {isStaff ? (
-        <StaffTicketsTab complexId={complexId} />
+        <StaffInbox complexId={complexId} />
       ) : (
         <ResidentChat complexId={complexId} />
       )}

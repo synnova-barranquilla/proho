@@ -633,6 +633,90 @@ export const listAttachmentsByComplex = query({
   },
 })
 
+export const listInboxItems = query({
+  args: { complexId: v.id('complexes') },
+  handler: async (ctx, args) => {
+    await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: [...ALL_COMMS_ROLES],
+    })
+
+    const conversations = await ctx.db
+      .query('conversations')
+      .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
+      .collect()
+
+    const tickets = await ctx.db
+      .query('tickets')
+      .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
+      .collect()
+
+    const ticketByConversation = new Map<string, (typeof tickets)[number]>()
+    for (const t of tickets) {
+      if (t.conversationId) ticketByConversation.set(t.conversationId, t)
+    }
+
+    const [residents, units] = await Promise.all([
+      ctx.db
+        .query('residents')
+        .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+        .collect(),
+      ctx.db
+        .query('units')
+        .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+        .collect(),
+    ])
+
+    const residentMap = new Map(residents.map((r) => [r._id, r]))
+    const unitMap = new Map(units.map((u) => [u._id, u]))
+
+    return conversations
+      .map((conv) => {
+        const resident = residentMap.get(conv.residentId) ?? null
+        const unit = resident ? (unitMap.get(resident.unitId) ?? null) : null
+        const ticket = ticketByConversation.get(conv._id) ?? null
+
+        return { ...conv, resident, unit, ticket }
+      })
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+  },
+})
+
+export const listInPersonTickets = query({
+  args: { complexId: v.id('complexes') },
+  handler: async (ctx, args) => {
+    await requireCommsAccess(ctx, args.complexId, {
+      allowedRoles: [...ALL_COMMS_ROLES],
+    })
+
+    const tickets = await ctx.db
+      .query('tickets')
+      .withIndex('by_complex', (q) => q.eq('complexId', args.complexId))
+      .collect()
+
+    const inPerson = tickets.filter((t) => t.origin === 'in_person')
+
+    const [residents, units] = await Promise.all([
+      ctx.db
+        .query('residents')
+        .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+        .collect(),
+      ctx.db
+        .query('units')
+        .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+        .collect(),
+    ])
+
+    const residentMap = new Map(residents.map((r) => [r._id, r]))
+    const unitMap = new Map(units.map((u) => [u._id, u]))
+
+    return inPerson.map((t) => ({
+      ...t,
+      resident: residentMap.get(t.residentId) ?? null,
+      unit: unitMap.get(t.unitId) ?? null,
+    }))
+  },
+})
+
 export const listConversations = query({
   args: {
     complexId: v.id('complexes'),

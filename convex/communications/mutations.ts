@@ -667,6 +667,65 @@ export const sendAdminMessage = mutation({
   },
 })
 
+export const sendAdminMessageToConversation = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const conversation = await ctx.db.get(args.conversationId)
+    if (!conversation) {
+      throwConvexError(ERROR_CODES.VALIDATION_ERROR, 'Conversation not found')
+    }
+
+    const { membership } = await requireCommsAccess(
+      ctx,
+      conversation.complexId,
+      {
+        allowedRoles: [...STAFF_ROLES],
+      },
+    )
+
+    const senderRole =
+      membership?.role === 'AUXILIAR'
+        ? 'Auxiliar Operativo'
+        : 'Coordinador(a) Administrativo(a)'
+
+    await ctx.scheduler.runAfter(
+      0,
+      internal.communications.actions.saveAdminMessageToThread,
+      {
+        threadId: conversation.threadId,
+        content: args.content,
+        senderRole,
+      },
+    )
+
+    await ctx.db.patch(args.conversationId, {
+      updatedAt: Date.now(),
+    })
+
+    const ticket = await ctx.db
+      .query('tickets')
+      .withIndex('by_conversation', (q) =>
+        q.eq('conversationId', args.conversationId),
+      )
+      .first()
+
+    if (
+      ticket &&
+      (ticket.status === 'open_waiting_admin' || ticket.status === 'reopened')
+    ) {
+      await ctx.db.patch(ticket._id, {
+        status: 'open_waiting_resident',
+        updatedAt: Date.now(),
+      })
+    }
+
+    return { success: true }
+  },
+})
+
 export const closeConversation = mutation({
   args: {
     complexId: v.id('complexes'),
