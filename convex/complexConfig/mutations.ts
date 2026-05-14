@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 import { mutation } from '../_generated/server'
 import { requireComplexAccess } from '../lib/auth'
 import { ERROR_CODES, throwConvexError } from '../lib/errors'
-import { complexConfigDefaults } from './validators'
+import { businessHoursSchema, complexConfigDefaults } from './validators'
 
 /**
  * Updates the complex configuration. Upsert: if no row exists, creates it
@@ -90,6 +90,41 @@ export const updateRegulations = mutation({
       complexId: args.complexId,
       ...complexConfigDefaults,
       regulations: args.regulations,
+    })
+    return { success: true, configId }
+  },
+})
+
+/**
+ * Updates business hours for the communications module.
+ * Only ADMIN role can modify.
+ */
+export const updateBusinessHours = mutation({
+  args: {
+    complexId: v.id('complexes'),
+    businessHours: businessHoursSchema,
+  },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId, {
+      allowedRoles: ['ADMIN'],
+    })
+
+    const existing = await ctx.db
+      .query('complexConfig')
+      .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+      .unique()
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        businessHours: args.businessHours,
+      })
+      return { success: true, configId: existing._id }
+    }
+
+    const configId = await ctx.db.insert('complexConfig', {
+      complexId: args.complexId,
+      ...complexConfigDefaults,
+      businessHours: args.businessHours,
     })
     return { success: true, configId }
   },

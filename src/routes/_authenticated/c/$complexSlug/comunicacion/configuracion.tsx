@@ -2,17 +2,17 @@ import { Suspense } from 'react'
 
 import { createFileRoute, Navigate } from '@tanstack/react-router'
 
-import { NormativasManager } from '#/components/communications/normativas-manager'
+import { CommsConfigPage } from '#/components/communications/comms-config-page'
 import { TabSkeleton } from '#/components/ui/skeleton'
 import { useEffectiveComplexRole } from '#/lib/complex-role'
 
 export const Route = createFileRoute(
-  '/_authenticated/c/$complexSlug/comunicacion/normativas',
+  '/_authenticated/c/$complexSlug/comunicacion/configuracion',
 )({
-  component: NormativasPage,
+  component: ConfiguracionPage,
 })
 
-function NormativasPage() {
+function ConfiguracionPage() {
   const { complexId, complexSlug } = Route.useRouteContext()
   const role = useEffectiveComplexRole()
   const isStaff = role === 'ADMIN' || role === 'AUXILIAR'
@@ -28,7 +28,7 @@ function NormativasPage() {
 
   return (
     <Suspense fallback={<TabSkeleton />}>
-      <NormativasManager complexId={complexId} />
+      <CommsConfigPage complexId={complexId} />
     </Suspense>
   )
 }

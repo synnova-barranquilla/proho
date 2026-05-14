@@ -480,6 +480,22 @@ function ComplexScopedSidebar({
                         }
                       />
                     </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive(
+                          `${base}/comunicacion/configuracion`,
+                        )}
+                        render={
+                          <Link
+                            to="/c/$complexSlug/comunicacion/configuracion"
+                            params={{ complexSlug: slug }}
+                          >
+                            <Settings />
+                            <span>Configuración</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
                   </>
                 ) : null}
               </SidebarMenu>
