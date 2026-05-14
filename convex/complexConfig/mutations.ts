@@ -61,3 +61,36 @@ export const upsert = mutation({
     return { success: true, configId }
   },
 })
+
+/**
+ * Updates the free-text regulations that the chatbot uses as context.
+ * Only ADMIN role can modify.
+ */
+export const updateRegulations = mutation({
+  args: {
+    complexId: v.id('complexes'),
+    regulations: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireComplexAccess(ctx, args.complexId, {
+      allowedRoles: ['ADMIN'],
+    })
+
+    const existing = await ctx.db
+      .query('complexConfig')
+      .withIndex('by_complex_id', (q) => q.eq('complexId', args.complexId))
+      .unique()
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { regulations: args.regulations })
+      return { success: true, configId: existing._id }
+    }
+
+    const configId = await ctx.db.insert('complexConfig', {
+      complexId: args.complexId,
+      ...complexConfigDefaults,
+      regulations: args.regulations,
+    })
+    return { success: true, configId }
+  },
+})
